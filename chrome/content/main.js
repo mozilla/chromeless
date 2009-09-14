@@ -46,16 +46,18 @@ window.addEventListener(
         );
       }
 
-      // Ensure the module works when imported into a window via a
-      // script src tag.
-      SecurableModuleTests.run(SecurableModule, log, rootDir);
-
       // Ensure the module works when loaded as a JS module.
+      log("running tests in JS module", "info");
       var jsmSecurableModule = {};
       var jsmTests = {};
       Cu.import("resource://jetpack/modules/booster.js", jsmSecurableModule);
       Cu.import("resource://jetpack/modules/booster-tests.js", jsmTests);
       jsmTests.run(jsmSecurableModule, log, rootDir);
+
+      // Ensure the module works when imported into a window via a
+      // script src tag.
+      log("running tests in window", "info");
+      SecurableModuleTests.run(SecurableModule, log, rootDir);
 
       dump("tests passed: " + passed + "\n");
       dump("tests failed: " + failed + "\n");
