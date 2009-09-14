@@ -54,6 +54,19 @@
        assertEqual(e.message, 'Module "foo" not found');
      }
 
+     loader = new SecurableModule.Loader({fs: {}});
+     try {
+       loader.runScript({contents: 'Components.classes'});
+       log("modules shouldn't have chrome privileges by default.",
+           "fail");
+     } catch (e) {
+       assertEqual(
+         e.message,
+         ("Permission denied for <http://www.mozilla.org> " +
+          "to get property XPCComponents.classes")
+       );
+     }
+
      // Run all CommonJS SecurableModule compliance tests.
      var testDirs = [];
      var enumer = rootDir.directoryEntries;
