@@ -1,5 +1,6 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+const Cu = Components.utils;
 
 function quit() {
   var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
@@ -33,10 +34,8 @@ window.addEventListener(
     }
 
     try {
-      Components.utils.import("resource://jetpack/modules/booster.js",
-                              SecurableModule);
-      Components.utils.import("resource://jetpack/modules/booster-tests.js",
-                              Tests);
+      Cu.import("resource://jetpack/modules/booster.js", SecurableModule);
+      Cu.import("resource://jetpack/modules/booster-tests.js", Tests);
       Tests.run(SecurableModule, log);
       dump("tests passed: " + passed + "\n");
       dump("tests failed: " + failed + "\n");
