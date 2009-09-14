@@ -5,7 +5,7 @@
 
    var exports = new Object();
 
-   exports.run = function run(SecurableModule, log) {
+   exports.run = function run(SecurableModule, log, rootDir) {
      var output = [];
      function print(message) {
        output.push(message);
@@ -38,6 +38,14 @@
                        'require("beets").beets);'});
      assertEqual(output[0], 'hi from beets');
      assertEqual(output[1], 'beets is 5');
+
+     rootDir.append('monkeys');
+     var localFs = new SecurableModule.LocalFileSystem(rootDir);
+     loader = new SecurableModule.Loader(
+       {fs: localFs,
+        globals: {sys: {print: log}}
+       });
+     loader.runScript({contents: 'require("program")'});
    };
 
    if (global.window) {

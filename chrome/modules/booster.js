@@ -95,17 +95,51 @@
    };
 
    exports.LocalFileSystem = function LocalFileSystem(root) {
-       if (typeof(root) != 'string')
-         throw new Error('Expected string for root');
-       this._root = root;
+     if (!(root instanceof Ci.nsIFile))
+       throw new Error('Expected nsIFile for root');
+     this._rootFile = root;
+     this._rootURI = this._ios.newFileURI(root);
    };
 
    exports.LocalFileSystem.prototype = {
+     get _ios() {
+       return Cc['@mozilla.org/network/io-service;1']
+              .getService(Ci.nsIIOService);
+     },
      resolveModule: function resolveModule(base, path) {
+       path = path + ".js";
 
+       var baseURI;
+       var baseFile;
+       if (!base) {
+         baseURI = this._rootURI;
+         baseFile = this._rootFile;
+       } else {
+         baseURI = this._ios.newURI(base, null, null);
+         baseFile = baseURI.QueryInterface(Ci.nsIFileURL).file;
+       }
+       var newURI = this._ios.newURI(path, null, baseURI);
+       var newFile = newURI.QueryInterface(Ci.nsIFileURL).file;
+       if (newFile.exists() &&
+           newFile.isFile() &&
+           newURI.spec.indexOf(this._rootURI.spec) == 0)
+         return newURI.spec;
+       return null;
      },
      getFile: function getFile(path) {
-
+       var pathURI = this._ios.newURI(path, null, null);
+       var pathFile = pathURI.QueryInterface(Ci.nsIFileURL).file;
+       var data = new String();
+       var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
+                      .createInstance(Ci.nsIFileInputStream);
+       var siStream = Cc['@mozilla.org/scriptableinputstream;1']
+                      .createInstance(Ci.nsIScriptableInputStream);
+       fiStream.init(pathFile, 1, 0, false);
+       siStream.init(fiStream);
+       data += siStream.read(-1);
+       siStream.close();
+       fiStream.close();
+       return {contents: data};
      }
    };
 

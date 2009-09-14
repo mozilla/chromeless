@@ -34,9 +34,24 @@ window.addEventListener(
     }
 
     try {
+      var dirSvc = Cc["@mozilla.org/file/directory_service;1"]
+                   .getService(Ci.nsIDirectoryServiceProvider);
+      var rootDir = dirSvc.getFile("CurWorkD", {});
+      rootDir.append("interoperablejs-read-only");
+      rootDir.append("compliance");
+      if (!rootDir.exists()) {
+        throw new Error(
+          ("Compliance test directory doesn't exist at " +
+           rootDir.path + ". Please obtain it by running " +
+           "'svn checkout " +
+           "http://interoperablejs.googlecode.com/svn/trunk/ " +
+           "interoperablejs-read-only'.")
+        );
+      }
+
       Cu.import("resource://jetpack/modules/booster.js", SecurableModule);
       Cu.import("resource://jetpack/modules/booster-tests.js", Tests);
-      Tests.run(SecurableModule, log);
+      Tests.run(SecurableModule, log, rootDir);
       dump("tests passed: " + passed + "\n");
       dump("tests failed: " + failed + "\n");
       if (passed >= 0 && failed == 0)
@@ -46,6 +61,8 @@ window.addEventListener(
     } catch (e) {
       dump("Exception: " + e + " (" + e.fileName +
            ":" + e.lineNumber + ")\n");
+      if (e.stack)
+        dump("Stack:\n" + e.stack);
       dump("FAIL\n");
     }
     quit();
