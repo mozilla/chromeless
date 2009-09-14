@@ -63,24 +63,24 @@
        var self = this;
 
        return function require(module) {
-         module = self._fs.resolveModule(rootDir, module);
-         if (!module)
+         var path = self._fs.resolveModule(rootDir, module);
+         if (!path)
            throw new Error('Module "' + module + '" not found');
-         if (!(module in self._modules)) {
-           var options = self._fs.getFile(module);
+         if (!(path in self._modules)) {
+           var options = self._fs.getFile(path);
            if (options.filename === undefined)
-             options.filename = module;
+             options.filename = path;
 
            var exports = new Object();
            var sandbox = self._sandboxFactory.createSandbox(options);
            for (name in self._globals)
              sandbox.defineProperty(name, self._globals[name]);
-           sandbox.defineProperty('require', self._makeRequire(module));
+           sandbox.defineProperty('require', self._makeRequire(path));
            sandbox.defineProperty('exports', exports);
-           self._modules[module] = exports;
+           self._modules[path] = exports;
            sandbox.evaluate(options);
          }
-         return self._modules[module];
+         return self._modules[path];
        };
      },
 
@@ -111,7 +111,7 @@
 
        var baseURI;
        var baseFile;
-       if (!base) {
+       if (!base || path.charAt(0) != '.') {
          baseURI = this._rootURI;
          baseFile = this._rootFile;
        } else {

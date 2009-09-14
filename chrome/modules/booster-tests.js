@@ -39,13 +39,25 @@
      assertEqual(output[0], 'hi from beets');
      assertEqual(output[1], 'beets is 5');
 
-     rootDir.append('monkeys');
-     var localFs = new SecurableModule.LocalFileSystem(rootDir);
-     loader = new SecurableModule.Loader(
-       {fs: localFs,
-        globals: {sys: {print: log}}
-       });
-     loader.runScript({contents: 'require("program")'});
+     var testDirs = [];
+     var enumer = rootDir.directoryEntries;
+     while (enumer.hasMoreElements()) {
+       var testDir = enumer.getNext().QueryInterface(Ci.nsIFile);
+       if (testDir.isDirectory() &&
+           testDir.leafName.charAt(0) != '.')
+         testDirs.push(testDir);
+     }
+
+     for (var i = 0; i < testDirs.length; i++) {
+       var testDir = testDirs[i];
+       log("running compliance test '" + testDir.leafName + "'", "info");
+       var localFs = new SecurableModule.LocalFileSystem(testDir);
+       loader = new SecurableModule.Loader(
+         {fs: localFs,
+          globals: {sys: {print: log}}
+         });
+       loader.runScript({contents: 'require("program")'});
+     }
    };
 
    if (global.window) {
