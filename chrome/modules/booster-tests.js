@@ -6,11 +6,7 @@
    var exports = new Object();
 
    exports.run = function run(SecurableModule, log, rootDir) {
-     var output = [];
-     function print(message) {
-       output.push(message);
-     }
-
+     // Test micro-framework functions.
      function assertEqual(a, b) {
        var op = "!=";
        var label = "fail";
@@ -22,6 +18,8 @@
        log(message, label);
      }
 
+     // Basic test of module loading with a fake fs.
+     var output = [];
      var loader = new SecurableModule.Loader(
        {fs: {
           resolveModule: function(root, path) {
@@ -32,13 +30,31 @@
                                ' exports.beets = 5;')};
           }
         },
-        globals: {print: print}
+        globals: {print: function(msg) { output.push(msg); }}
        });
      loader.runScript({contents: 'print("beets is " + ' +
                        'require("beets").beets);'});
      assertEqual(output[0], 'hi from beets');
      assertEqual(output[1], 'beets is 5');
 
+     // Ensure loading nonexistent modules raises an error.
+     loader = new SecurableModule.Loader(
+       {fs: {
+          resolveModule: function() { return null; },
+          getFile: function(path) {
+            throw new Error('I should never get called.');
+          }
+        }
+       });
+     try {
+       loader.runScript({contents: 'require("foo");'});
+       log("loading of nonexistent module did not raise exception",
+           "fail");
+     } catch (e) {
+       assertEqual(e.message, 'Module "foo" not found');
+     }
+
+     // Run all CommonJS SecurableModule compliance tests.
      var testDirs = [];
      var enumer = rootDir.directoryEntries;
      while (enumer.hasMoreElements()) {
