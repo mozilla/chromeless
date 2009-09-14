@@ -3,24 +3,57 @@
    const Ci = Components.interfaces;
    const Cu = Components.utils;
 
-   var exports = {
-     Loader: function Loader(options) {
-       options = {__proto__: options};
-       if (options.fs === undefined)
-         throw new Error('Must pass options.fs');
-       if (options.defaultPrincipal === undefined)
-         options.defaultPrincipal = Cc['@mozilla.org/systemprincipal;1']
-                                    .createInstance(Ci.nsIPrincipal);
-       if (options.modules === undefined)
-         options.modules = {};
-       if (options.globals === undefined)
-         options.globals = {};
+   var exports = new Object();
 
-       this._fs = options.fs;
-       this._modules = options.modules;
-       this._globals = options.globals;
-       this._defaultPrincipal = options.defaultPrincipal;
+   exports.SandboxFactory = function SandboxFactory() {
+     this._defaultPrincipal = Cc['@mozilla.org/systemprincipal;1']
+                              .createInstance(Ci.nsIPrincipal);
+   },
+
+   exports.SandboxFactory.prototype = {
+     createSandbox: function createSandbox(options) {
+       var principal = this._defaultPrincipal;
+       if (options.principal)
+         principal = options.principal;
+
+       return {
+         _sandbox: new Cu.Sandbox(principal),
+         defineProperty: function defineProperty(name, value) {
+           this._sandbox[name] = value;
+         },
+         evaluate: function evaluate(options) {
+           options = {__proto__: options};
+           if (typeof(options.contents) != 'string')
+             throw new Error('Expected string for options.contents');
+           if (options.lineno === undefined)
+             options.lineno = 1;
+           if (typeof(options.filename) != 'string')
+             options.filename = '<string>';
+           return Cu.evalInSandbox(options.contents,
+                                   this._sandbox,
+                                   '1.8',
+                                   options.filename,
+                                   options.lineno);
+         }
+       };
      }
+   };
+
+   exports.Loader = function Loader(options) {
+     options = {__proto__: options};
+     if (options.fs === undefined)
+       throw new Error('Must pass options.fs');
+     if (options.sandboxFactory === undefined)
+       options.sandboxFactory = new exports.SandboxFactory();
+     if (options.modules === undefined)
+       options.modules = {};
+     if (options.globals === undefined)
+       options.globals = {};
+
+     this._fs = options.fs;
+     this._sandboxFactory = options.sandboxFactory;
+     this._modules = options.modules;
+     this._globals = options.globals;
    };
 
    exports.Loader.prototype = {
@@ -32,27 +65,18 @@
          if (!module)
            throw new Error('Module "' + module + '" not found');
          if (!(module in self._modules)) {
-           var principal = self._defaultPrincipal;
-
            var options = self._fs.getFile(module);
            if (options.filename === undefined)
              options.filename = module;
-           if (options.lineno === undefined)
-             options.lineno = 1;
-           if (options.principal)
-             principal = options.principal;
 
-           var sandbox = Cu.Sandbox(principal);
+           var exports = new Object();
+           var sandbox = self._sandboxFactory.createSandbox(options);
            for (name in self._globals)
-             sandbox[name] = self._globals[name];
-           sandbox.require = self._makeRequire(module);
-           sandbox.exports = new Object();
-           self._modules[module] = sandbox.exports;
-           Cu.evalInSandbox(options.contents,
-                            sandbox,
-                            '1.8',
-                            options.filename,
-                            options.lineno);
+             sandbox.defineProperty(name, self._globals[name]);
+           sandbox.defineProperty('require', self._makeRequire(module));
+           sandbox.defineProperty('exports', exports);
+           self._modules[module] = exports;
+           sandbox.evaluate(options);
          }
          return self._modules[module];
        };
@@ -60,26 +84,26 @@
 
      runScript: function runScript(options) {
        options = {__proto__: options};
-       if (typeof(options.contents) != 'string')
-         throw new Error('Expected string for options.contents');
-       if (typeof(options.filename) != 'string')
-         options.filename = '<string>';
-       if (options.lineno === undefined)
-         options.lineno = 1;
-
-       var principal = this._defaultPrincipal;
-       if (options.principal)
-         principal = options.principal;
-
-       var sandbox = Cu.Sandbox(principal);
+       var sandbox = this._sandboxFactory.createSandbox(options);
        for (name in this._globals)
-         sandbox[name] = this._globals[name];
-       sandbox.require = this._makeRequire(null);
-       Cu.evalInSandbox(options.contents,
-                        sandbox,
-                        '1.8',
-                        options.filename,
-                        options.lineno);
+         sandbox.defineProperty(name, this._globals[name]);
+       sandbox.defineProperty('require', this._makeRequire(null));
+       return sandbox.evaluate(options);
+     }
+   };
+
+   exports.LocalFileSystem = function LocalFileSystem(root) {
+       if (typeof(root) != 'string')
+         throw new Error('Expected string for root');
+       this._root = root;
+   };
+
+   exports.LocalFileSystem.prototype = {
+     resolveModule: function resolveModule(base, path) {
+
+     },
+     getFile: function getFile(path) {
+
      }
    };
 
