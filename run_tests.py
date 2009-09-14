@@ -69,9 +69,26 @@ if __name__ == '__main__':
     myfile = os.path.abspath(__file__)
     mydir = os.path.dirname(myfile)
 
+    OUT_FILENAME = '.test_output'
+    output = open(OUT_FILENAME, 'w')
     starttime = time.time()
-    result = subprocess.call([options.binary,
-                              '-app',
-                              os.path.join(mydir, 'application.ini')])
+    popen = subprocess.Popen(
+        [options.binary,
+         '-app',
+         os.path.join(mydir, 'application.ini')],
+        stdout=output
+        )
+    popen.wait()
+    output.close()
+    lines = open(OUT_FILENAME, 'r').readlines()
+    os.remove(OUT_FILENAME)
+
+    print "".join(lines)
+    if popen.returncode == 0 and lines[-1].strip() == 'OK':
+        print "All tests succeeded."
+        retval = 0
+    else:
+        print "Some tests failed."
+        retval = -1
     print "Total time: %f seconds" % (time.time() - starttime)
-    sys.exit(result)
+    sys.exit(retval)
