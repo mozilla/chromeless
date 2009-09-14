@@ -5,9 +5,14 @@
 
    var exports = new Object();
 
-   exports.SandboxFactory = function SandboxFactory() {
-     // By default, use a principal with limited privileges.
-     this._defaultPrincipal = "http://www.mozilla.org";
+   exports.SandboxFactory = function SandboxFactory(defaultPrincipal) {
+     if (defaultPrincipal === undefined)
+       // By default, use a principal with limited privileges.
+       defaultPrincipal = "http://www.mozilla.org";
+     if (defaultPrincipal == "system")
+       defaultPrincipal = Cc["@mozilla.org/systemprincipal;1"]
+                          .createInstance(Ci.nsIPrincipal);
+     this._defaultPrincipal = defaultPrincipal;
    },
 
    exports.SandboxFactory.prototype = {
