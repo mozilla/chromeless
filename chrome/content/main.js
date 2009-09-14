@@ -13,15 +13,34 @@ window.addEventListener(
   function() {
     var SecurableModule = {};
     var Tests = {};
+
+    var passed = 0;
+    var failed = 0;
+    function log(message, label) {
+      dump(label + ": " + message + "\n");
+      switch (label) {
+      case "pass":
+        passed++;
+        break;
+      case "fail":
+        failed++;
+        break;
+      case "info":
+        break;
+      default:
+        throw new Exception("Unexpected label: " + label);
+      }
+    }
+
     try {
       Components.utils.import("resource://jetpack/modules/booster.js",
                               SecurableModule);
       Components.utils.import("resource://jetpack/modules/booster-tests.js",
                               Tests);
-      var result = Tests.run(SecurableModule);
-      dump("tests passed: " + result.passed + "\n");
-      dump("tests failed: " + result.failed + "\n");
-      if (result.success)
+      Tests.run(SecurableModule, log);
+      dump("tests passed: " + passed + "\n");
+      dump("tests failed: " + failed + "\n");
+      if (passed >= 0 && failed == 0)
         dump("OK\n");
       else
         dump("FAIL\n");
