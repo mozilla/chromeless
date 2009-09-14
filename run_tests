@@ -1,0 +1,3 @@
+#! /bin/bash
+
+/Applications/Firefox.app/Contents/MacOS/firefox-bin -app $PWD/application.ini
