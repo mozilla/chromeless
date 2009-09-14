@@ -12,9 +12,6 @@ function quit() {
 window.addEventListener(
   "load",
   function() {
-    var SecurableModule = {};
-    var Tests = {};
-
     var passed = 0;
     var failed = 0;
     function log(message, label) {
@@ -49,9 +46,17 @@ window.addEventListener(
         );
       }
 
-      Cu.import("resource://jetpack/modules/booster.js", SecurableModule);
-      Cu.import("resource://jetpack/modules/booster-tests.js", Tests);
-      Tests.run(SecurableModule, log, rootDir);
+      // Ensure the module works when imported into a window via a
+      // script src tag.
+      SecurableModuleTests.run(SecurableModule, log, rootDir);
+
+      // Ensure the module works when loaded as a JS module.
+      var jsmSecurableModule = {};
+      var jsmTests = {};
+      Cu.import("resource://jetpack/modules/booster.js", jsmSecurableModule);
+      Cu.import("resource://jetpack/modules/booster-tests.js", jsmTests);
+      jsmTests.run(jsmSecurableModule, log, rootDir);
+
       dump("tests passed: " + passed + "\n");
       dump("tests failed: " + failed + "\n");
       if (passed >= 0 && failed == 0)
