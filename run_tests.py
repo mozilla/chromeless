@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 import optparse
+import cStringIO as StringIO
 
 class FirefoxBinaryFinder(object):
     """Finds the local Firefox binary, taken from MozRunner."""
@@ -69,26 +70,26 @@ if __name__ == '__main__':
     myfile = os.path.abspath(__file__)
     mydir = os.path.dirname(myfile)
 
-    OUT_FILENAME = '.test_output'
-    output = open(OUT_FILENAME, 'w')
     starttime = time.time()
     popen = subprocess.Popen(
         [options.binary,
          '-app',
          os.path.join(mydir, 'application.ini')],
-        stdout=output
+        stdout=subprocess.PIPE
         )
-    popen.wait()
-    output.close()
-    lines = open(OUT_FILENAME, 'r').readlines()
-    os.remove(OUT_FILENAME)
+    output = StringIO.StringIO()
+    while popen.poll() is None:
+        chars = popen.stdout.read(10)
+        output.write(chars)
+        sys.stdout.write(chars)
 
-    print "".join(lines)
+    print "Total time: %f seconds" % (time.time() - starttime)
+
+    lines = output.getvalue().splitlines()
     if popen.returncode == 0 and lines[-1].strip() == 'OK':
         print "All tests succeeded."
         retval = 0
     else:
         print "Some tests failed."
         retval = -1
-    print "Total time: %f seconds" % (time.time() - starttime)
     sys.exit(retval)
