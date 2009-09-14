@@ -7,8 +7,6 @@
 
    exports.SandboxFactory = function SandboxFactory() {
      // By default, use a principal with limited privileges.
-     // this._defaultPrincipal = Cc['@mozilla.org/systemprincipal;1']
-     //                          .createInstance(Ci.nsIPrincipal);
      this._defaultPrincipal = "http://www.mozilla.org";
    },
 
