@@ -18,8 +18,7 @@ window.addEventListener(
                               SecurableModule);
       Components.utils.import("resource://jetpack/modules/booster-tests.js",
                               Tests);
-      var result = Tests.run(SecurableModule,
-                             function log(msg) { dump(msg + "\n"); });
+      var result = Tests.run(SecurableModule);
       dump("tests passed: " + result.passed + "\n");
       dump("tests failed: " + result.failed + "\n");
       if (result.success)

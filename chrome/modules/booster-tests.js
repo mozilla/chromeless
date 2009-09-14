@@ -6,6 +6,11 @@
    var exports = new Object();
 
    exports.run = function run(SecurableModule, log) {
+     if (log === undefined)
+       log = function log(msg) {
+         dump(msg + "\n");
+       };
+
      var result = {success: false,
                    passed: 0,
                    failed: 0};
