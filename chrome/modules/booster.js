@@ -27,11 +27,13 @@
              throw new Error('Expected string for options.contents');
            if (options.lineno === undefined)
              options.lineno = 1;
+           if (options.jsVersion === undefined)
+             options.jsVersion = "1.8";
            if (typeof(options.filename) != 'string')
              options.filename = '<string>';
            return Cu.evalInSandbox(options.contents,
                                    this._sandbox,
-                                   '1.8',
+                                   options.jsVersion,
                                    options.filename,
                                    options.lineno);
          }
@@ -110,7 +112,7 @@
    if (global.window) {
      // We're being loaded in a chrome window, or a web page with
      // UniversalXPConnect privileges.
-     global.SecurableModuleLoader = exports;
+     global.SecurableModule = exports;
    } else if (global.exports) {
      // We're being loaded in a SecurableModule.
      for (name in exports) {

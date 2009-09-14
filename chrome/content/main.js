@@ -11,24 +11,25 @@ function quit() {
 window.addEventListener(
   "load",
   function() {
-    var SecurableModules = {};
+    var SecurableModule = {};
+    var Tests = {};
     try {
       Components.utils.import("resource://jetpack/modules/booster.js",
-                              SecurableModules);
-      var loader = new SecurableModules.Loader(
-        {fs: {
-           resolveModule: function(root, path) {
-             return path;
-           },
-           getFile: function(path) {
-             return {contents: 'dump("hi from ' + path + '\\n"); exports.beets = 5;'};
-           }
-         }
-        });
-      loader.runScript({contents: 'dump("beets is " + require("beets").beets + "\\n");'});
+                              SecurableModule);
+      Components.utils.import("resource://jetpack/modules/booster-tests.js",
+                              Tests);
+      var result = Tests.run(SecurableModule,
+                             function log(msg) { dump(msg + "\n"); });
+      dump("tests passed: " + result.passed + "\n");
+      dump("tests failed: " + result.failed + "\n");
+      if (result.success)
+        dump("OK\n");
+      else
+        dump("FAIL\n");
     } catch (e) {
       dump("Exception: " + e + " (" + e.fileName +
            ":" + e.lineNumber + ")\n");
+      dump("FAIL\n");
     }
     quit();
   },
