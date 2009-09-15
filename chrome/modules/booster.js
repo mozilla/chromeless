@@ -62,9 +62,15 @@
      options = {__proto__: options};
      if (options.fs === undefined) {
        var rootPath = options.rootPath ? options.rootPath : null;
-       if (!rootPath && !baseURI)
-         throw new Error("Need a root path for module filesystem");
-       var fsRoot = ios.newURI(rootPath, null, baseURI);
+       var fsRoot;
+       if (rootPath instanceof Ci.nsIURI ||
+           rootPath instanceof Ci.nsIFile)
+         fsRoot = rootPath;
+       else {
+         if (!rootPath && !baseURI)
+           throw new Error("Need a root path for module filesystem");
+         fsRoot = ios.newURI(rootPath, null, baseURI);
+       }
        options.fs = new exports.LocalFileSystem(fsRoot);
      }
      if (options.sandboxFactory === undefined)

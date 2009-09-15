@@ -94,6 +94,8 @@
        var newURI = ios.newURI('lib/', null, SecurableModule.baseURI);
        fs = new SecurableModule.LocalFileSystem(newURI);
        assertEqual(fs._rootURIDir, newURI.spec);
+       loader = new SecurableModule.Loader();
+       assertEqual(loader._fs._rootURI.spec, SecurableModule.baseURI.spec);
      }
 
      // Run all CommonJS SecurableModule compliance tests.
@@ -109,9 +111,8 @@
      for (var i = 0; i < testDirs.length; i++) {
        var testDir = testDirs[i];
        log("running compliance test '" + testDir.leafName + "'", "info");
-       var localFs = new SecurableModule.LocalFileSystem(testDir);
        loader = new SecurableModule.Loader(
-         {fs: localFs,
+         {rootPath: testDir,
           globals: {sys: {print: log}}
          });
        loader.require("program");
