@@ -41,8 +41,8 @@
        });
      loader.runScript({contents: 'print("beets is " + ' +
                        'require("beets").beets);'});
-     assertEqual(output[0], 'hi from beets');
-     assertEqual(output[1], 'beets is 5');
+     assertEqual(output[0], 'hi from beets', 'module should load');
+     assertEqual(output[1], 'beets is 5', 'module should export');
 
      // Ensure loading nonexistent modules raises an error.
      loader = new SecurableModule.Loader(
@@ -58,7 +58,8 @@
        log("loading of nonexistent module did not raise exception",
            "fail");
      } catch (e) {
-       assertEqual(e.message, 'Module "foo" not found');
+       assertEqual(e.message, 'Module "foo" not found',
+                   'loading of nonexistent module should raise error');
      }
 
      loader = new SecurableModule.Loader({fs: {}});
@@ -70,7 +71,8 @@
        assertEqual(
          e.message,
          ("Permission denied for <http://www.mozilla.org> " +
-          "to get property XPCComponents.classes")
+          "to get property XPCComponents.classes"),
+         "modules shouldn't have chrome privileges by default."
        );
      }
 
@@ -83,23 +85,31 @@
 
      // Test the way LocalFileSystem infers root directories.
      var fs = new SecurableModule.LocalFileSystem(rootDir);
-     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec);
+     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec,
+                 "fs rootdir should be same as passed-in dir");
+
      var someFile = rootDir.clone();
-     someFile.append("nonexistent");
+     someFile.append("ORACLE");
      fs = new SecurableModule.LocalFileSystem(someFile);
-     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec);
+     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec,
+                 "fs rootdir sould be dirname of file");
+
      someFile = rootDir.clone();
      someFile.append("monkeys");
      fs = new SecurableModule.LocalFileSystem(someFile);
-     assertEqual(fs._rootURIDir, ios.newFileURI(someFile).spec);
+     assertEqual(fs._rootURIDir, ios.newFileURI(someFile).spec,
+                 "fs rootdir should be same as passed-in subdir");
 
      if (SecurableModule.baseURI) {
        // Note that a '/' must be put after the directory name.
        var newURI = ios.newURI('lib/', null, SecurableModule.baseURI);
        fs = new SecurableModule.LocalFileSystem(newURI);
-       assertEqual(fs._rootURIDir, newURI.spec);
+       assertEqual(fs._rootURIDir, newURI.spec,
+                   "fs rootdir should be subdir of document's dir");
+
        loader = new SecurableModule.Loader();
-       assertEqual(loader._fs._rootURI.spec, SecurableModule.baseURI.spec);
+       assertEqual(loader._fs._rootURI.spec, SecurableModule.baseURI.spec,
+                   "fs rootdir should be document's dir");
      } else {
        try {
          loader = new SecurableModule.Loader();
