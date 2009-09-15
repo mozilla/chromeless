@@ -114,7 +114,7 @@
          {fs: localFs,
           globals: {sys: {print: log}}
          });
-       loader.runScript({contents: 'require("program")'});
+       loader.runScript('require("program")');
      }
    };
 

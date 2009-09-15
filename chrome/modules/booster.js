@@ -105,6 +105,8 @@
      },
 
      runScript: function runScript(options) {
+       if (typeof(options) == 'string')
+         options = {contents: options};
        options = {__proto__: options};
        var sandbox = this._sandboxFactory.createSandbox(options);
        for (name in this._globals)
