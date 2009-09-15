@@ -72,7 +72,7 @@
 
      loader = new SecurableModule.Loader(
        {fs: {},
-        sandboxFactory: new SecurableModule.SandboxFactory("system")
+        defaultPrincipal: "system"
        });
      loader.runScript({contents: 'Components.classes'});
      log("modules should be able to have chrome privileges.", "pass");

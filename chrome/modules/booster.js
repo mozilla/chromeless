@@ -73,8 +73,11 @@
        }
        options.fs = new exports.LocalFileSystem(fsRoot);
      }
-     if (options.sandboxFactory === undefined)
-       options.sandboxFactory = new exports.SandboxFactory();
+     if (options.sandboxFactory === undefined) {
+       options.sandboxFactory = new exports.SandboxFactory(
+         options.defaultPrincipal
+       );
+     }
      if (options.modules === undefined)
        options.modules = {};
      if (options.globals === undefined)
