@@ -5,6 +5,9 @@
 
    var exports = new Object();
 
+   var ios = Cc['@mozilla.org/network/io-service;1']
+             .getService(Ci.nsIIOService);
+
    exports.run = function run(SecurableModule, log, rootDir) {
      // Test micro-framework functions.
      function assertEqual(a, b) {
@@ -73,6 +76,25 @@
        });
      loader.runScript({contents: 'Components.classes'});
      log("modules should be able to have chrome privileges.", "pass");
+
+     // Test the way LocalFileSystem infers root directories.
+     var fs = new SecurableModule.LocalFileSystem(rootDir);
+     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec);
+     var someFile = rootDir.clone();
+     someFile.append("nonexistent");
+     fs = new SecurableModule.LocalFileSystem(someFile);
+     assertEqual(fs._rootURIDir, ios.newFileURI(rootDir).spec);
+     someFile = rootDir.clone();
+     someFile.append("monkeys");
+     fs = new SecurableModule.LocalFileSystem(someFile);
+     assertEqual(fs._rootURIDir, ios.newFileURI(someFile).spec);
+
+     if (SecurableModule.baseURI) {
+       // Note that a '/' must be put after the directory name.
+       var newURI = ios.newURI('lib/', null, SecurableModule.baseURI);
+       fs = new SecurableModule.LocalFileSystem(newURI);
+       assertEqual(fs._rootURIDir, newURI.spec);
+     }
 
      // Run all CommonJS SecurableModule compliance tests.
      var testDirs = [];

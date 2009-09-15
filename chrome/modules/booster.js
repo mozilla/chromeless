@@ -13,6 +13,7 @@
    var baseURI = null;
    if (global.window)
      baseURI = ios.newURI(global.location.href, null, null);
+   exports.baseURI = baseURI;
 
    exports.SandboxFactory = function SandboxFactory(defaultPrincipal) {
      if (defaultPrincipal === undefined)
@@ -120,7 +121,12 @@
        root = ios.newFileURI(root);
      if (!(root instanceof Ci.nsIURI))
        throw new Error('Expected nsIFile, nsIURI, or string for root');
+
+     // TODO: This feels hacky, and like there will be edge cases.
+     var rootDir = root.spec.slice(0, root.spec.lastIndexOf("/") + 1);
+
      this._rootURI = root;
+     this._rootURIDir = rootDir;
    };
 
    exports.LocalFileSystem.prototype = {
@@ -133,9 +139,7 @@
        else
          baseURI = ios.newURI(base, null, null);
        var newURI = ios.newURI(path, null, baseURI);
-       var rootUriDir = this._rootURI.spec;
-       rootUriDir = rootUriDir.slice(0, rootUriDir.lastIndexOf("/") + 1);
-       if (newURI.spec.indexOf(rootUriDir) == 0) {
+       if (newURI.spec.indexOf(this._rootURIDir) == 0) {
          var channel = ios.newChannelFromURI(newURI);
          try {
            channel.open().close();
