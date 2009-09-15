@@ -70,6 +70,20 @@ if __name__ == '__main__':
     myfile = os.path.abspath(__file__)
     mydir = os.path.dirname(myfile)
 
+    test_dir = os.path.join(mydir, 'interoperablejs-read-only')
+    if not os.path.exists(test_dir):
+        print "CommonJS compliance test directory not found."
+        print
+        print "Attempting to retrieve it now via svn."
+        print
+        retval = subprocess.call(
+            ['svn', 'checkout',
+             'http://interoperablejs.googlecode.com/svn/trunk/',
+             'interoperablejs-read-only']
+            )
+        if retval:
+            sys.exit(1)
+
     starttime = time.time()
     popen = subprocess.Popen(
         [options.binary,

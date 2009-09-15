@@ -36,15 +36,9 @@ window.addEventListener(
       var rootDir = dirSvc.getFile("CurWorkD", {});
       rootDir.append("interoperablejs-read-only");
       rootDir.append("compliance");
-      if (!rootDir.exists()) {
-        throw new Error(
-          ("Compliance test directory doesn't exist at " +
-           rootDir.path + ". Please obtain it by running " +
-           "'svn checkout " +
-           "http://interoperablejs.googlecode.com/svn/trunk/ " +
-           "interoperablejs-read-only'.")
-        );
-      }
+      if (!rootDir.exists())
+        throw new Error("Compliance test directory doesn't exist at " +
+                        rootDir.path);
 
       // Ensure the module works when loaded as a JS module.
       log("running tests in JS module", "info");
