@@ -60,24 +60,12 @@
 
    exports.Loader = function Loader(options) {
      options = {__proto__: options};
-     if (options.fs === undefined) {
-       var rootPath = options.rootPath ? options.rootPath : null;
-       var fsRoot;
-       if (rootPath instanceof Ci.nsIURI ||
-           rootPath instanceof Ci.nsIFile)
-         fsRoot = rootPath;
-       else {
-         if (!rootPath && !baseURI)
-           throw new Error("Need a root path for module filesystem");
-         fsRoot = ios.newURI(rootPath, null, baseURI);
-       }
-       options.fs = new exports.LocalFileSystem(fsRoot);
-     }
-     if (options.sandboxFactory === undefined) {
+     if (options.fs === undefined)
+       options.fs = new exports.LocalFileSystem(options.rootPath);
+     if (options.sandboxFactory === undefined)
        options.sandboxFactory = new exports.SandboxFactory(
          options.defaultPrincipal
        );
-     }
      if (options.modules === undefined)
        options.modules = {};
      if (options.globals === undefined)
@@ -132,6 +120,11 @@
    };
 
    exports.LocalFileSystem = function LocalFileSystem(root) {
+     if (root === undefined) {
+       if (!baseURI)
+         throw new Error("Need a root path for module filesystem");
+       root = baseURI;
+     }
      if (typeof(root) == 'string')
        root = ios.newURI(root, null, baseURI);
      if (root instanceof Ci.nsIFile)
