@@ -37,6 +37,8 @@
            this._sandbox[name] = value;
          },
          evaluate: function evaluate(options) {
+           if (typeof(options) == 'string')
+             options = {contents: options};
            options = {__proto__: options};
            if (typeof(options.contents) != 'string')
              throw new Error('Expected string for options.contents');
