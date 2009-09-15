@@ -10,15 +10,19 @@
 
    exports.run = function run(SecurableModule, log, rootDir) {
      // Test micro-framework functions.
-     function assertEqual(a, b) {
-       var op = "!=";
-       var label = "fail";
+     function assertEqual(a, b, message) {
        if (a == b) {
-         op = "==";
-         label = "pass";
+         if (!message)
+           message = "a == b == " + uneval(a);
+         log(message, "pass");
+       } else {
+         var inequality = uneval(a) + " != " + uneval(b);
+         if (!message)
+           message = inequality;
+         else
+           message += " (" + inequality + ")";
+         log(message, "fail");
        }
-       var message = uneval(a) + op + uneval(b);
-       log(message, label);
      }
 
      // Basic test of module loading with a fake fs.
