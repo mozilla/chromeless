@@ -106,6 +106,10 @@
        };
      },
 
+     require: function require(module) {
+       return (this._makeRequire(null))(module);
+     },
+
      runScript: function runScript(options) {
        if (typeof(options) == 'string')
          options = {contents: options};
