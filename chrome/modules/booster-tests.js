@@ -96,6 +96,15 @@
        assertEqual(fs._rootURIDir, newURI.spec);
        loader = new SecurableModule.Loader();
        assertEqual(loader._fs._rootURI.spec, SecurableModule.baseURI.spec);
+     } else {
+       try {
+         loader = new SecurableModule.Loader();
+         log("Loader() w/ no params in a non-document context should " +
+             "raise an exception.", "fail");
+       } catch (e if e.message == "Need a root path for module filesystem") {
+         log("Loader() w/ no params in a non-document context should " +
+             "raise an exception.", "pass");
+       }
      }
 
      // Run all CommonJS SecurableModule compliance tests.
