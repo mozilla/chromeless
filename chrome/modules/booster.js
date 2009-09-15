@@ -2,8 +2,17 @@
    const Cc = Components.classes;
    const Ci = Components.interfaces;
    const Cu = Components.utils;
+   const Cr = Components.results;
 
    var exports = new Object();
+
+   var ios = Cc['@mozilla.org/network/io-service;1']
+             .getService(Ci.nsIIOService);
+
+   // The base URI to we use when we're given relative URLs, if any.
+   var baseURI = null;
+   if (global.window)
+     baseURI = ios.newURI(global.location.href, null, null);
 
    exports.SandboxFactory = function SandboxFactory(defaultPrincipal) {
      if (defaultPrincipal === undefined)
@@ -48,8 +57,13 @@
 
    exports.Loader = function Loader(options) {
      options = {__proto__: options};
-     if (options.fs === undefined)
-       throw new Error('Must pass options.fs');
+     if (options.fs === undefined) {
+       var rootPath = options.rootPath ? options.rootPath : null;
+       if (!rootPath && !baseURI)
+         throw new Error("Need a root path for module filesystem");
+       var fsRoot = ios.newURI(rootPath, null, baseURI);
+       options.fs = new exports.LocalFileSystem(fsRoot);
+     }
      if (options.sandboxFactory === undefined)
        options.sandboxFactory = new exports.SandboxFactory();
      if (options.modules === undefined)
@@ -100,50 +114,48 @@
    };
 
    exports.LocalFileSystem = function LocalFileSystem(root) {
-     if (!(root instanceof Ci.nsIFile))
-       throw new Error('Expected nsIFile for root');
-     this._rootFile = root;
-     this._rootURI = this._ios.newFileURI(root);
+     if (typeof(root) == 'string')
+       root = ios.newURI(root, null, baseURI);
+     if (root instanceof Ci.nsIFile)
+       root = ios.newFileURI(root);
+     if (!(root instanceof Ci.nsIURI))
+       throw new Error('Expected nsIFile, nsIURI, or string for root');
+     this._rootURI = root;
    };
 
    exports.LocalFileSystem.prototype = {
-     get _ios() {
-       return Cc['@mozilla.org/network/io-service;1']
-              .getService(Ci.nsIIOService);
-     },
      resolveModule: function resolveModule(base, path) {
        path = path + ".js";
 
        var baseURI;
-       var baseFile;
-       if (!base || path.charAt(0) != '.') {
+       if (!base || path.charAt(0) != '.')
          baseURI = this._rootURI;
-         baseFile = this._rootFile;
-       } else {
-         baseURI = this._ios.newURI(base, null, null);
-         baseFile = baseURI.QueryInterface(Ci.nsIFileURL).file;
-       }
-       var newURI = this._ios.newURI(path, null, baseURI);
-       var newFile = newURI.QueryInterface(Ci.nsIFileURL).file;
-       if (newFile.exists() &&
-           newFile.isFile() &&
-           newURI.spec.indexOf(this._rootURI.spec) == 0)
+       else
+         baseURI = ios.newURI(base, null, null);
+       var newURI = ios.newURI(path, null, baseURI);
+       var rootUriDir = this._rootURI.spec;
+       rootUriDir = rootUriDir.slice(0, rootUriDir.lastIndexOf("/") + 1);
+       if (newURI.spec.indexOf(rootUriDir) == 0) {
+         var channel = ios.newChannelFromURI(newURI);
+         try {
+           channel.open().close();
+         } catch (e if e.result == Cr.NS_ERROR_FILE_NOT_FOUND) {
+           return null;
+         }
          return newURI.spec;
+       }
        return null;
      },
      getFile: function getFile(path) {
-       var pathURI = this._ios.newURI(path, null, null);
-       var pathFile = pathURI.QueryInterface(Ci.nsIFileURL).file;
-       var data = new String();
-       var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
-                      .createInstance(Ci.nsIFileInputStream);
+       var channel = ios.newChannel(path, null, null);
+       var iStream = channel.open();
        var siStream = Cc['@mozilla.org/scriptableinputstream;1']
                       .createInstance(Ci.nsIScriptableInputStream);
-       fiStream.init(pathFile, 1, 0, false);
-       siStream.init(fiStream);
+       siStream.init(iStream);
+       var data = new String();
        data += siStream.read(-1);
        siStream.close();
-       fiStream.close();
+       iStream.close();
        return {contents: data};
      }
    };
