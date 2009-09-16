@@ -45,30 +45,82 @@
    var ios = Cc['@mozilla.org/network/io-service;1']
              .getService(Ci.nsIIOService);
 
+   var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"]
+                         .createInstance(Ci.nsIPrincipal);
+
+   function resolvePrincipal(principal, defaultPrincipal) {
+     if (principal === undefined)
+       return defaultPrincipal;
+     if (principal == "system")
+       return systemPrincipal;
+     return principal;
+   }
+
    // The base URI to we use when we're given relative URLs, if any.
    var baseURI = null;
    if (global.window)
      baseURI = ios.newURI(global.location.href, null, null);
    exports.baseURI = baseURI;
 
+   // The "parent" chrome URI to use if we're loading code that
+   // needs chrome privileges but may not have a filename that
+   // matches any of SpiderMonkey's defined system filename prefixes.
+   // The latter is needed so that wrappers can be automatically
+   // made for the code. For more information on this, see
+   // bug 418356:
+   //
+   // https://bugzilla.mozilla.org/show_bug.cgi?id=418356
+   var parentChromeURIString;
+   if (baseURI)
+     // We're being loaded from a chrome-privileged document, so
+     // use its URL as the parent string.
+     parentChromeURIString = baseURI.spec;
+   else
+     // We're being loaded from a chrome-privileged JS module or
+     // SecurableModule, so use its filename (which may itself
+     // contain a reference to a parent).
+     parentChromeURIString = Components.stack.filename;
+
+   function maybeParentifyFilename(filename) {
+     var doParentifyFilename = true;
+     try {
+       // TODO: Ideally we should just make
+       // nsIChromeRegistry.wrappersEnabled() available from script
+       // and use it here. Until that's in the platform, though,
+       // we'll play it safe and parentify the filename unless
+       // we're absolutely certain things will be ok if we don't.
+       var filenameURI = ios.newURI(options.filename,
+                                    null,
+                                    baseURI);
+       if (filenameURI.scheme == 'chrome')
+         // chrome URIs will always have wrappers made for them.
+         doParentifyFilename = false;
+     } catch (e) {}
+     if (doParentifyFilename)
+       return parentChromeURIString + " -> " + filename;
+     return filename;
+   }
+
+   function getRootDir(urlStr) {
+     // TODO: This feels hacky, and like there will be edge cases.
+     return urlStr.slice(0, urlStr.lastIndexOf("/") + 1);
+   }
+
    exports.SandboxFactory = function SandboxFactory(defaultPrincipal) {
-     if (defaultPrincipal === undefined)
-       // By default, use a principal with limited privileges.
-       defaultPrincipal = "http://www.mozilla.org";
-     if (defaultPrincipal == "system")
-       defaultPrincipal = Cc["@mozilla.org/systemprincipal;1"]
-                          .createInstance(Ci.nsIPrincipal);
-     this._defaultPrincipal = defaultPrincipal;
+     // Unless specified otherwise, use a principal with limited
+     // privileges.
+     this._defaultPrincipal = resolvePrincipal(defaultPrincipal,
+                                               "http://www.mozilla.org");
    },
 
    exports.SandboxFactory.prototype = {
      createSandbox: function createSandbox(options) {
-       var principal = this._defaultPrincipal;
-       if (options.principal)
-         principal = options.principal;
+       var principal = resolvePrincipal(options.principal,
+                                        this._defaultPrincipal);
 
        return {
          _sandbox: new Cu.Sandbox(principal),
+         _principal: principal,
          defineProperty: function defineProperty(name, value) {
            this._sandbox[name] = value;
          },
@@ -84,6 +136,10 @@
              options.jsVersion = "1.8";
            if (typeof(options.filename) != 'string')
              options.filename = '<string>';
+
+           if (this._principal == systemPrincipal)
+             options.filename = maybeParentifyFilename(options.filename);
+
            return Cu.evalInSandbox(options.contents,
                                    this._sandbox,
                                    options.jsVersion,
@@ -168,11 +224,8 @@
      if (!(root instanceof Ci.nsIURI))
        throw new Error('Expected nsIFile, nsIURI, or string for root');
 
-     // TODO: This feels hacky, and like there will be edge cases.
-     var rootDir = root.spec.slice(0, root.spec.lastIndexOf("/") + 1);
-
      this._rootURI = root;
-     this._rootURIDir = rootDir;
+     this._rootURIDir = getRootDir(root.spec);
    };
 
    exports.LocalFileSystem.prototype = {
