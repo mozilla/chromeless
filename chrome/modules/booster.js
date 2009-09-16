@@ -92,8 +92,13 @@
        var filenameURI = ios.newURI(options.filename,
                                     null,
                                     baseURI);
-       if (filenameURI.scheme == 'chrome')
-         // chrome URIs will always have wrappers made for them.
+       if (filenameURI.scheme == 'chrome' &&
+           filenameURI.path.indexOf('/content/') == 0)
+         // Content packages will always have wrappers made for them;
+         // if automatic wrappers have been disabled for the
+         // chrome package via a chrome manifest flag, then
+         // this still works too, to the extent that the
+         // content package is insecure anyways.
          doParentifyFilename = false;
      } catch (e) {}
      if (doParentifyFilename)
