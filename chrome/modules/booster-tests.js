@@ -80,6 +80,28 @@
      assertEqual(output[0], 'hi from beets', 'module should load');
      assertEqual(output[1], 'beets is 5', 'module should export');
 
+     // Ensure parenting of anonymous script filenames works.
+     loader = new SecurableModule.Loader({fs: {}});
+     try {
+       loader.runScript('throw new Error();');
+       log("errors must be propogated from content sandboxes", "fail");
+     } catch (e) {
+       assertEqual(e.fileName, '<string>',
+                   ('anonymous scripts w/o chrome privs should be ' +
+                    'unparented'));
+     }
+
+     loader = new SecurableModule.Loader({fs: {},
+                                          defaultPrincipal: "system"});
+     try {
+       loader.runScript('throw new Error();');
+       log("errors must be propogated from chrome sandboxes", "fail");
+     } catch (e) {
+       assertEqual(e.fileName.slice(-11), '-> <string>',
+                   ('anonymous scripts w/ chrome privs should be ' +
+                    'parented'));
+     }
+
      // Ensure loading nonexistent modules raises an error.
      loader = new SecurableModule.Loader(
        {fs: {
