@@ -135,8 +135,8 @@
            options = {__proto__: options};
            if (typeof(options.contents) != 'string')
              throw new Error('Expected string for options.contents');
-           if (options.lineno === undefined)
-             options.lineno = 1;
+           if (options.lineNo === undefined)
+             options.lineNo = 1;
            if (options.jsVersion === undefined)
              options.jsVersion = "1.8";
            if (typeof(options.filename) != 'string')
@@ -149,7 +149,7 @@
                                    this._sandbox,
                                    options.jsVersion,
                                    options.filename,
-                                   options.lineno);
+                                   options.lineNo);
          }
        };
      }
