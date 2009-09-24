@@ -48,7 +48,15 @@ function quit() {
 window.addEventListener(
   "load",
   function() {
-    dump('OK\n');
+    try {
+      var loader = new SecurableModule.Loader({rootPath: "lib/",
+                                               defaultPrincipal: "system"});
+      loader.require('cuddle').runTests("../tests/");
+      dump('OK\n');
+    } catch (e) {
+      dump(e + "\n\n" + e.stack);
+      dump("FAIL\n");
+    }
     quit();
   },
   false

@@ -3,6 +3,6 @@
 
 <window id="main" title="My App" width="300" height="300"
 xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script src="resource://jetpack/modules/booster.js"></script>
+  <script src="lib/booster.js"></script>
   <script src="main.js"></script>
 </window>
