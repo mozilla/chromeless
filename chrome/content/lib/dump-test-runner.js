@@ -34,27 +34,70 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
+(function(global) {
+   const Cc = Components.classes;
+   const Ci = Components.interfaces;
+   const Cu = Components.utils;
+   const Cr = Components.results;
 
-function quit() {
-  var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
-                   getService(Ci.nsIAppStartup);
+   var exports = new Object();
 
-  appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
-}
+   exports.run = function run(runCallback, print) {
+     if (!print)
+       print = dump;
 
-window.addEventListener(
-  "load",
-  function() {
-    function runTests(log) {
-      var loader = new SecurableModule.Loader({rootPath: "lib/",
-                                               defaultPrincipal: "system"});
-      loader.require('cuddle').runTests("../tests/", log);
-    }
-    DumpTestRunner.run(runTests);
-    quit();
-  },
-  false
-);
+     var passed = 0;
+     var failed = 0;
+
+     function log(message, label) {
+       print(label + ": " + message + "\n");
+       switch (label) {
+       case "pass":
+         passed++;
+         break;
+       case "fail":
+         failed++;
+         break;
+       case "info":
+         break;
+       default:
+         throw new Exception("Unexpected label: " + label);
+       }
+     }
+
+     try {
+       runCallback(log);
+
+       print("tests passed: " + passed + "\n");
+       print("tests failed: " + failed + "\n");
+       if (passed >= 0 && failed == 0)
+         print("OK\n");
+       else
+         print("FAIL\n");
+     } catch (e) {
+       print("Exception: " + e + " (" + e.fileName +
+            ":" + e.lineNumber + ")\n");
+       if (e.stack)
+         print("Stack:\n" + e.stack);
+       print("FAIL\n");
+     }
+   };
+
+   if (global.window) {
+     // We're being loaded in a chrome window, or a web page with
+     // UniversalXPConnect privileges.
+     global.DumpTestRunner = exports;
+   } else if (global.exports) {
+     // We're being loaded in a SecurableModule.
+     for (name in exports) {
+       global.exports[name] = exports[name];
+     }
+   } else {
+     // We're being loaded in a JS module.
+     global.EXPORTED_SYMBOLS = [];
+     for (name in exports) {
+       global.EXPORTED_SYMBOLS.push(name);
+       global[name] = exports[name];
+     }
+   }
+ })(this);
