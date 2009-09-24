@@ -49,9 +49,9 @@ window.addEventListener(
   "load",
   function() {
     function runTests(log) {
-      var loader = new SecurableModule.Loader({rootPath: "lib/",
-                                               defaultPrincipal: "system"});
-      loader.require('cuddle').runTests("../tests/", log);
+      var loader = new Cuddlefish.Loader({rootPath: "lib/",
+                                          SecurableModule: SecurableModule});
+      log("loader instantiates", "pass");
     }
     DumpTestRunner.run(runTests);
     quit();
