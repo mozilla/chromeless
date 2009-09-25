@@ -19,6 +19,13 @@ function message(print, level, args) {
 var Console = exports.Console = function Console(print) {
   if (!print)
     print = dump;
+  if (print === dump) {
+    // If we're just using dump(), auto-enable preferences so
+    // that the developer actually sees the console output.
+    var prefs = Cc["@mozilla.org/preferences-service;1"]
+                .getService(Ci.nsIPrefBranch);
+    prefs.setBoolPref("browser.dom.window.dump.enabled", true);
+  }
   this.print = print;
 };
 
