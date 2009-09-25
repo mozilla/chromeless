@@ -55,8 +55,7 @@ window.addEventListener(
       }
 
       var loader = new Cuddlefish.Loader({rootPath: "lib/",
-                                          print: print,
-                                          SecurableModule: SecurableModule});
+                                          print: print});
       log("loader instantiates", "pass");
 
       loader.runScript("console.log('testing', 1, [2, 3, 4])");

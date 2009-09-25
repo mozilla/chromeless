@@ -42,6 +42,36 @@
 
    var exports = new Object();
 
+   // Load the booster prerequisite, which gives us SecurableModule
+   // functionality.
+   var booster;
+
+   if (global.require)
+     // We're being loaded in a SecurableModule.
+     booster = require("booster");
+   else {
+     var myURI = Components.stack.filename.split(" -> ").slice(-1)[0];
+     var ios = Cc['@mozilla.org/network/io-service;1']
+               .getService(Ci.nsIIOService);
+     var boosterURI = ios.newURI("booster.js", null,
+                                 ios.newURI(myURI, null, null));
+     if (boosterURI.scheme == "chrome") {
+       // The booster module is at a chrome URI, so we can't simply
+       // load it via Cu.import(). Let's assume we're in a
+       // chrome-privileged document and use mozIJSSubScriptLoader.
+       var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
+                    .getService(Ci.mozIJSSubScriptLoader);
+
+       // Import the script, don't pollute the global scope.
+       booster = {__proto__: global};
+       loader.loadSubScript(boosterURI.spec, booster);
+       booster = booster.SecurableModule;
+     } else {
+       booster = {};
+       Cu.import(boosterURI.spec, booster);
+     }
+   }
+
    var Loader = exports.Loader = function Loader(options) {
      var globals = {Cc: Components.classes,
                     Ci: Components.interfaces,
@@ -55,7 +85,7 @@
                           defaultPrincipal: "system",
                           globals: globals};
 
-     var loader = new options.SecurableModule.Loader(loaderOptions);
+     var loader = new booster.Loader(loaderOptions);
 
      if (!globals.console) {
        var console = loader.require("dump-console");
