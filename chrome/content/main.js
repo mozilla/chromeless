@@ -59,8 +59,8 @@ window.addEventListener(
                                           SecurableModule: SecurableModule});
       log("loader instantiates", "pass");
 
-      loader.runScript("console.log('testing', 1)");
-      if (prints[0] == "info: testing 1\n")
+      loader.runScript("console.log('testing', 1, [2, 3, 4])");
+      if (prints[0] == "info: testing 1 2,3,4\n")
         log("console.log() works", "pass");
       else
         log("console.log() returned " + prints[0], "fail");
