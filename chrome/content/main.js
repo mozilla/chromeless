@@ -48,7 +48,7 @@ function quit() {
 window.addEventListener(
   "load",
   function() {
-    function runTests(log) {
+    function runTests(log, assert) {
       var prints = [];
       function print(message) {
         prints.push(message);
@@ -60,10 +60,20 @@ window.addEventListener(
       log("loader instantiates", "pass");
 
       loader.runScript("console.log('testing', 1, [2, 3, 4])");
-      if (prints[0] == "info: testing 1 2,3,4\n")
-        log("console.log() works", "pass");
-      else
-        log("console.log() returned " + prints[0], "fail");
+      assert.isEqual(prints[0], "info: testing 1 2,3,4\n",
+                     "console.log() must work.");
+
+      loader.runScript("console.info('testing', 1, [2, 3, 4])");
+      assert.isEqual(prints[1], "info: testing 1 2,3,4\n",
+                     "console.info() must work.");
+
+      loader.runScript("console.warn('testing', 1, [2, 3, 4])");
+      assert.isEqual(prints[2], "warning: testing 1 2,3,4\n",
+                     "console.warn() must work.");
+
+      loader.runScript("console.error('testing', 1, [2, 3, 4])");
+      assert.isEqual(prints[3], "error: testing 1 2,3,4\n",
+                     "console.error() must work.");
     }
     DumpTestRunner.run(runTests);
     quit();

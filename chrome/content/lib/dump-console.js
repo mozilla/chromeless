@@ -32,5 +32,17 @@ var Console = exports.Console = function Console(print) {
 Console.prototype = {
   log: function log() {
     message(this.print, "info", arguments);
+  },
+
+  info: function info() {
+    message(this.print, "info", arguments);
+  },
+
+  warn: function warn() {
+    message(this.print, "warning", arguments);
+  },
+
+  error: function error() {
+    message(this.print, "error", arguments);
   }
 };
