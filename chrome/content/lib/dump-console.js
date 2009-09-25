@@ -44,5 +44,9 @@ Console.prototype = {
 
   error: function error() {
     message(this.print, "error", arguments);
+  },
+
+  debug: function debug() {
+    message(this.print, "debug", arguments);
   }
 };

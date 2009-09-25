@@ -74,6 +74,10 @@ window.addEventListener(
       loader.runScript("console.error('testing', 1, [2, 3, 4])");
       assert.isEqual(prints[3], "error: testing 1 2,3,4\n",
                      "console.error() must work.");
+
+      loader.runScript("console.debug('testing', 1, [2, 3, 4])");
+      assert.isEqual(prints[4], "debug: testing 1 2,3,4\n",
+                     "console.debug() must work.");
     }
     DumpTestRunner.run(runTests);
     quit();
