@@ -65,8 +65,25 @@
        }
      }
 
+     var assert = {
+       isEqual: function isEqual(a, b, message) {
+         if (a == b) {
+           if (!message)
+             message = "a == b == " + uneval(a);
+           log(message, "pass");
+         } else {
+           var inequality = uneval(a) + " != " + uneval(b);
+           if (!message)
+             message = inequality;
+           else
+             message += " (" + inequality + ")";
+           log(message, "fail");
+         }
+       }
+     };
+
      try {
-       runCallback(log);
+       runCallback(log, assert);
 
        print("tests passed: " + passed + "\n");
        print("tests failed: " + failed + "\n");
