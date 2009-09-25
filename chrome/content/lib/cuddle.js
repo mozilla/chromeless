@@ -43,13 +43,27 @@
    var exports = new Object();
 
    var Loader = exports.Loader = function Loader(options) {
+     var globals = {Cc: Components.classes,
+                    Ci: Components.interfaces,
+                    Cu: Components.utils,
+                    Cr: Components.results};
+
+     if (options.console)
+       globals.console = options.console;
+
      var loaderOptions = {rootPath: options.rootPath,
                           defaultPrincipal: "system",
-                          globals: {Cc: Components.classes,
-                                    Ci: Components.interfaces,
-                                    Cu: Components.utils,
-                                    Cr: Components.results}};
-     var loader = options.SecurableModule.Loader(loaderOptions);
+                          globals: globals};
+
+     var loader = new options.SecurableModule.Loader(loaderOptions);
+
+     if (!globals.console) {
+       var console = loader.require("dump-console");
+       globals.console = new console.Console(options.print);
+     }
+
+     loader.console = globals.console;
+
      return loader;
    };
 

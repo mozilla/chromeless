@@ -49,9 +49,21 @@ window.addEventListener(
   "load",
   function() {
     function runTests(log) {
+      var prints = [];
+      function print(message) {
+        prints.push(message);
+      }
+
       var loader = new Cuddlefish.Loader({rootPath: "lib/",
+                                          print: print,
                                           SecurableModule: SecurableModule});
       log("loader instantiates", "pass");
+
+      loader.runScript("console.log('testing', 1)");
+      if (prints[0] == "info: testing 1\n")
+        log("console.log() works", "pass");
+      else
+        log("console.log() returned " + prints[0], "fail");
     }
     DumpTestRunner.run(runTests);
     quit();
