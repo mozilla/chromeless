@@ -1,5 +1,3 @@
-var timer = require("timer");
-
 var TestRunner = exports.TestRunner = function TestRunner(options) {
   this.test = options.test;
   this.isDone = false;
@@ -7,20 +5,53 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
   this.failed = 0;
   this.onDone = options.onDone;
   this.waitTimeout = null;
-}
+};
 
 TestRunner.prototype = {
   DEFAULT_PAUSE_TIMEOUT: 10000,
+
+  addPass: function addPass(message) {
+    console.log("pass:", message);
+    this.passed++;
+  },
+
+  addFail: function addFail(message) {
+    console.log("fail:", message);
+    this.failed++;
+  },
+
+  addException: function addException(e) {
+    console.log("exception:", e, " (" + e.fileName +
+                ":" + e.lineNumber + ")");
+    if (e.stack)
+      console.log("stack:", e.stack);
+    this.failed++;
+  },
+
+  assertEqual: function assertEqual(a, b, message) {
+    if (a == b) {
+      if (!message)
+        message = "a == b == " + uneval(a);
+      this.addPass(message);
+    } else {
+      var inequality = uneval(a) + " != " + uneval(b);
+      if (!message)
+        message = inequality;
+      else
+        message += " (" + inequality + ")";
+      this.addFail(message);
+    }
+  },
 
   done: function done() {
     if (!this.isDone) {
       this.isDone = true;
       if (this.waitTimeout !== null) {
-        timer.clearTimeout(this.waitTimeout);
+        requre("timer").clearTimeout(this.waitTimeout);
         this.waitTimeout = null;
       }
       if (this.onDone !== null) {
-        this.onDone();
+        this.onDone(this);
         this.onDone = null;
       }
     }
@@ -37,11 +68,15 @@ TestRunner.prototype = {
       self.done();
     }
 
-    this.waitTimeout = timer.setTimeout(tiredOfWaiting, ms);
+    this.waitTimeout = require("timer").setTimeout(tiredOfWaiting, ms);
   },
 
   start: function start() {
-    this.test(this);
+    try {
+      this.test(this);
+    } catch (e) {
+      this.addException(e);
+    }
     if (this.waitTimeout === null)
       this.done();
   }

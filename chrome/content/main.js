@@ -45,16 +45,26 @@ function quit() {
   appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
 }
 
+function onDone(tests) {
+  dump("tests passed: " + tests.passed + "\n");
+  dump("tests failed: " + tests.failed + "\n");
+  if (tests.passed >= 0 && tests.failed == 0)
+    dump("OK\n");
+  else
+    dump("FAIL\n");
+  quit();
+}
+
 window.addEventListener(
   "load",
   function() {
     try {
       var loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
-      loader.require("cuddlefish-tests").run();
+      loader.require("cuddlefish-tests").run(onDone);
     } catch (e) {
       dump(e + "\n");
+      quit();
     }
-    quit();
   },
   false
 );
