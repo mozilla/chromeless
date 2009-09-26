@@ -157,8 +157,17 @@
 
    exports.Loader = function Loader(options) {
      options = {__proto__: options};
-     if (options.fs === undefined)
-       options.fs = new exports.LocalFileSystem(options.rootPath);
+     if (options.fs === undefined) {
+       var rootPaths = options.rootPath || options.rootPaths;
+       if (rootPaths) {
+         if (rootPaths.constructor.name != "Array")
+           rootPaths = [rootPaths];
+         var fses = [new exports.LocalFileSystem(path)
+                     for each (path in rootPaths)];
+         options.fs = new exports.CompositeFileSystem(fses);
+       } else
+         options.fs = new exports.LocalFileSystem();
+     }
      if (options.sandboxFactory === undefined)
        options.sandboxFactory = new exports.SandboxFactory(
          options.defaultPrincipal
@@ -213,6 +222,28 @@
          sandbox.defineProperty(name, this._globals[name]);
        sandbox.defineProperty('require', this._makeRequire(null));
        return sandbox.evaluate(options);
+     }
+   };
+
+   exports.CompositeFileSystem = function CompositeFileSystem(fses) {
+     this._fses = fses;
+     this._pathMap = {};
+   };
+
+   exports.CompositeFileSystem.prototype = {
+     resolveModule: function resolveModule(base, path) {
+       for (var i = 0; i < this._fses.length; i++) {
+         var fs = this._fses[i];
+         var absPath = fs.resolveModule(base, path);
+         if (absPath) {
+           this._pathMap[absPath] = fs;
+           return absPath;
+         }
+       }
+       return null;
+     },
+     getFile: function getFile(path) {
+       return this._pathMap[path].getFile(path);
      }
    };
 

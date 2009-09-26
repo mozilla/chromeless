@@ -82,6 +82,7 @@
        globals.console = options.console;
 
      var loaderOptions = {rootPath: options.rootPath,
+                          rootPaths: options.rootPaths,
                           defaultPrincipal: "system",
                           globals: globals};
 

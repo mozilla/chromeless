@@ -75,7 +75,8 @@ if __name__ == '__main__':
         [options.binary,
          '-app',
          os.path.join(mydir, 'application.ini')],
-        stdout=subprocess.PIPE
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
         )
     output = StringIO.StringIO()
     while popen.poll() is None:
