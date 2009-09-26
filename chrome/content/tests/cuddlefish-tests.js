@@ -1,5 +1,5 @@
 function runTests(log, assert) {
-  var Cuddlefish = require("cuddle");
+  var Cuddlefish = require("cuddlefish");
   var url = require("url");
   var traceback = require("traceback");
 

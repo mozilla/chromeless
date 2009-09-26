@@ -50,7 +50,7 @@ window.addEventListener(
   function() {
     try {
       var loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
-      loader.require("cuddle-tests").run();
+      loader.require("cuddlefish-tests").run();
     } catch (e) {
       dump(e + "\n");
     }
