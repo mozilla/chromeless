@@ -42,33 +42,32 @@
 
    var exports = new Object();
 
-   // Load the booster prerequisite, which gives us SecurableModule
-   // functionality.
-   var booster;
+   // Load the SecurableModule prerequisite.
+   var securableModule;
 
    if (global.require)
      // We're being loaded in a SecurableModule.
-     booster = require("booster");
+     securableModule = require("securable-module");
    else {
      var myURI = Components.stack.filename.split(" -> ").slice(-1)[0];
      var ios = Cc['@mozilla.org/network/io-service;1']
                .getService(Ci.nsIIOService);
-     var boosterURI = ios.newURI("booster.js", null,
-                                 ios.newURI(myURI, null, null));
-     if (boosterURI.scheme == "chrome") {
-       // The booster module is at a chrome URI, so we can't simply
-       // load it via Cu.import(). Let's assume we're in a
+     var securableModuleURI = ios.newURI("securable-module.js", null,
+                                         ios.newURI(myURI, null, null));
+     if (securableModuleURI.scheme == "chrome") {
+       // The securable-module module is at a chrome URI, so we can't
+       // simply load it via Cu.import(). Let's assume we're in a
        // chrome-privileged document and use mozIJSSubScriptLoader.
        var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
                     .getService(Ci.mozIJSSubScriptLoader);
 
        // Import the script, don't pollute the global scope.
-       booster = {__proto__: global};
-       loader.loadSubScript(boosterURI.spec, booster);
-       booster = booster.SecurableModule;
+       securableModule = {__proto__: global};
+       loader.loadSubScript(securableModuleURI.spec, securableModule);
+       securableModule = securableModule.SecurableModule;
      } else {
-       booster = {};
-       Cu.import(boosterURI.spec, booster);
+       securableModule = {};
+       Cu.import(securableModuleURI.spec, securableModule);
      }
    }
 
@@ -86,7 +85,7 @@
                           defaultPrincipal: "system",
                           globals: globals};
 
-     var loader = new booster.Loader(loaderOptions);
+     var loader = new securableModule.Loader(loaderOptions);
 
      if (!globals.console) {
        var console = loader.require("dump-console");
