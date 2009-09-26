@@ -10,12 +10,12 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
 TestRunner.prototype = {
   DEFAULT_PAUSE_TIMEOUT: 10000,
 
-  addPass: function addPass(message) {
+  pass: function pass(message) {
     console.log("pass:", message);
     this.passed++;
   },
 
-  addFail: function addFail(message) {
+  fail: function fail(message) {
     console.log("fail:", message);
     this.failed++;
   },
@@ -32,14 +32,14 @@ TestRunner.prototype = {
     if (a == b) {
       if (!message)
         message = "a == b == " + uneval(a);
-      this.addPass(message);
+      this.pass(message);
     } else {
       var inequality = uneval(a) + " != " + uneval(b);
       if (!message)
         message = inequality;
       else
         message += " (" + inequality + ")";
-      this.addFail(message);
+      this.fail(message);
     }
   },
 

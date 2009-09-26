@@ -12,7 +12,7 @@ function testCuddlefish(test) {
   var rootPaths = [myUrl, url.resolve(myUrl, "../lib/")];
   var loader = new Cuddlefish.Loader({rootPaths: rootPaths,
                                       print: print});
-  test.addPass("loader instantiates within a securablemodule");
+  test.pass("loader instantiates within a securablemodule");
 
   loader.runScript("console.log('testing', 1, [2, 3, 4])");
 
