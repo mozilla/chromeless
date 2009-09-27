@@ -60,7 +60,7 @@ window.addEventListener(
   function() {
     try {
       var loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
-      loader.require("cuddlefish-tests").run(onDone);
+      loader.require("run-suites").run(onDone);
     } catch (e) {
       dump(e + "\n");
       quit();
