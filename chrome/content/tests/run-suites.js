@@ -1,4 +1,5 @@
 var SUITES = ["test-cuddlefish",
+              "test-url",
               "test-console"];
 
 function makeTest(suite, name, test) {
