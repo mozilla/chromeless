@@ -20,7 +20,7 @@ TestRunner.prototype = {
     this.failed++;
   },
 
-  addException: function addException(e) {
+  exception: function exception(e) {
     console.log("exception:", e, " (" + e.fileName +
                 ":" + e.lineNumber + ")");
     if (e.stack)
@@ -75,7 +75,7 @@ TestRunner.prototype = {
     try {
       this.test(this);
     } catch (e) {
-      this.addException(e);
+      this.exception(e);
     }
     if (this.waitTimeout === null)
       this.done();
