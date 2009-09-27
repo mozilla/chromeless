@@ -36,12 +36,25 @@ function testCuddlefish(test) {
                    "console.debug() must work.");
 }
 
-function onDone(runner) {
-};
-
 var run = exports.run = function run(onDone) {
   var unitTest = require("unit-test");
-  var runner = new unitTest.TestRunner({test: testCuddlefish,
-                                        onDone: onDone});
-  runner.start();
+  var tests = [require("test-console").testConsole,
+               testCuddlefish];
+  var results = {passed: 0, failed: 0};
+
+  function runNextTest(lastRunner) {
+    if (lastRunner)
+      for (name in results)
+        results[name] += lastRunner[name];
+
+    var test = tests.pop();
+    if (test) {
+      var runner = new unitTest.TestRunner({test: test,
+                                            onDone: runNextTest});
+      runner.start();
+    } else
+      onDone(results);
+  }
+
+  runNextTest();
 };
