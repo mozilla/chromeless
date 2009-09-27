@@ -42,13 +42,5 @@ var run = exports.run = function run(onDone) {
                testCuddlefish];
   var runner = new unitTest.TestRunner();
 
-  function runNextTest() {
-    var test = tests.pop();
-    if (test) {
-      runner.start({test: test, onDone: runNextTest});
-    } else
-      onDone(runner);
-  }
-
-  runNextTest();
+  runner.startMany({tests: tests, onDone: onDone});
 };

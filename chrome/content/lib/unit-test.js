@@ -67,6 +67,17 @@ TestRunner.prototype = {
     this.waitTimeout = require("timer").setTimeout(tiredOfWaiting, ms);
   },
 
+  startMany: function startMany(options) {
+    function runNextTest(self) {
+      var test = options.tests.pop();
+      if (test)
+        self.start({test: test, onDone: runNextTest});
+      else
+        options.onDone(self);
+    }
+    runNextTest(this);
+  },
+
   start: function start(options) {
     this.test = options.test;
     this.isDone = false;
