@@ -4,16 +4,33 @@ exports.testConsole = function(test) {
     prints.push(message);
   }
   function lastPrint() {
-    return prints.slice(-1)[0];
+    var last = prints.slice(-1)[0];
+    prints = [];
+    return last;
   }
 
   var Console = require("dump-console").Console;
   var con = new Console(print);
 
-  test.pass("console instantiates");
+  test.pass("Console instantiates");
 
   con.log('testing', 1, [2, 3, 4]);
-
   test.assertEqual(lastPrint(), "info: testing 1 2,3,4\n",
-                   "console.log() must work.");
+                   "Console.log() must work.");
+
+  con.info('testing', 1, [2, 3, 4]);
+  test.assertEqual(lastPrint(), "info: testing 1 2,3,4\n",
+                   "Console.info() must work.");
+
+  con.warn('testing', 1, [2, 3, 4]);
+  test.assertEqual(lastPrint(), "warning: testing 1 2,3,4\n",
+                   "Console.warn() must work.");
+
+  con.error('testing', 1, [2, 3, 4]);
+  test.assertEqual(lastPrint(), "error: testing 1 2,3,4\n",
+                   "Console.error() must work.");
+
+  con.debug('testing', 1, [2, 3, 4]);
+  test.assertEqual(lastPrint(), "debug: testing 1 2,3,4\n",
+                   "Console.debug() must work.");
 };

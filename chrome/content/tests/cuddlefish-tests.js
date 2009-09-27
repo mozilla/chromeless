@@ -1,4 +1,4 @@
-function testCuddlefish(test) {
+exports.testLoader = function(test) {
   var Cuddlefish = require("cuddlefish");
   var url = require("url");
   var traceback = require("traceback");
@@ -17,29 +17,13 @@ function testCuddlefish(test) {
   loader.runScript("console.log('testing', 1, [2, 3, 4])");
 
   test.assertEqual(prints[0], "info: testing 1 2,3,4\n",
-                   "console.log() must work.");
-
-  loader.runScript("console.info('testing', 1, [2, 3, 4])");
-  test.assertEqual(prints[1], "info: testing 1 2,3,4\n",
-                   "console.info() must work.");
-
-  loader.runScript("console.warn('testing', 1, [2, 3, 4])");
-  test.assertEqual(prints[2], "warning: testing 1 2,3,4\n",
-                   "console.warn() must work.");
-
-  loader.runScript("console.error('testing', 1, [2, 3, 4])");
-  test.assertEqual(prints[3], "error: testing 1 2,3,4\n",
-                   "console.error() must work.");
-
-  loader.runScript("console.debug('testing', 1, [2, 3, 4])");
-  test.assertEqual(prints[4], "debug: testing 1 2,3,4\n",
-                   "console.debug() must work.");
-}
+                   "global console must work.");
+};
 
 var run = exports.run = function run(onDone) {
   var unitTest = require("unit-test");
   var tests = [require("test-console").testConsole,
-               testCuddlefish];
+               exports.testLoader];
   var runner = new unitTest.TestRunner();
 
   runner.startMany({tests: tests, onDone: onDone});
