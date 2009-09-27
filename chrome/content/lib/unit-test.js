@@ -24,6 +24,18 @@ TestRunner.prototype = {
     this.failed++;
   },
 
+  assertRaises: function assertRaises(func, predicate, message) {
+    try {
+      func();
+      if (message)
+        this.fail(message + " (no exception thrown)");
+      else
+        this.fail("function failed to throw exception");
+    } catch (e) {
+      this.assertEqual(e.message, predicate, message);
+    }
+  },
+
   assertEqual: function assertEqual(a, b, message) {
     if (a == b) {
       if (!message)
