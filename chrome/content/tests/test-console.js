@@ -33,4 +33,12 @@ exports.testConsole = function(test) {
   con.debug('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "debug: testing 1 2,3,4\n",
                    "Console.debug() must work.");
+
+  con.log('testing', undefined);
+  test.assertEqual(lastPrint(), "info: testing undefined\n",
+                   "Console.log() must stringify undefined.");
+
+  con.log('testing', null);
+  test.assertEqual(lastPrint(), "info: testing null\n",
+                   "Console.log() must stringify null.");
 };

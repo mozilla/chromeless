@@ -3,7 +3,12 @@ function stringifyArgs(args) {
   var stringArgs = [];
   for (var i = 0; i < args.length; i++) {
     try {
-      string = args[i].toString();
+      if (args[i] === undefined)
+        string = "undefined";
+      else if (args[i] === null) {
+        string = "null";
+      } else
+        string = args[i].toString();
     } catch (e) {
       string = "<toString() error>";
     }
