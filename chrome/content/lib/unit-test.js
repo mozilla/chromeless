@@ -1,10 +1,6 @@
 var TestRunner = exports.TestRunner = function TestRunner(options) {
-  this.test = options.test;
-  this.isDone = false;
   this.passed = 0;
   this.failed = 0;
-  this.onDone = options.onDone;
-  this.waitTimeout = null;
 };
 
 TestRunner.prototype = {
@@ -71,7 +67,12 @@ TestRunner.prototype = {
     this.waitTimeout = require("timer").setTimeout(tiredOfWaiting, ms);
   },
 
-  start: function start() {
+  start: function start(options) {
+    this.test = options.test;
+    this.isDone = false;
+    this.onDone = options.onDone;
+    this.waitTimeout = null;
+
     try {
       this.test(this);
     } catch (e) {

@@ -40,20 +40,14 @@ var run = exports.run = function run(onDone) {
   var unitTest = require("unit-test");
   var tests = [require("test-console").testConsole,
                testCuddlefish];
-  var results = {passed: 0, failed: 0};
+  var runner = new unitTest.TestRunner();
 
-  function runNextTest(lastRunner) {
-    if (lastRunner)
-      for (name in results)
-        results[name] += lastRunner[name];
-
+  function runNextTest() {
     var test = tests.pop();
     if (test) {
-      var runner = new unitTest.TestRunner({test: test,
-                                            onDone: runNextTest});
-      runner.start();
+      runner.start({test: test, onDone: runNextTest});
     } else
-      onDone(results);
+      onDone(runner);
   }
 
   runNextTest();
