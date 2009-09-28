@@ -70,10 +70,17 @@ window.addEventListener(
       loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
       loader.require("run-suites").run(onDone);
     } catch (e) {
-      dump(e + " (" + e.fileName + ":" +
-           e.lineNumber + ")\n");
-      if (e.stack)
-        dump("stack:\n" + e.stack + "\n");
+      try {
+        dump(loader.require("traceback").format(e) + "\n" + e + "\n");
+      } catch (otherError) {
+        // There's an error in the traceback module or the loader
+        // couldn't even initialize, fall back to a super lame-looking
+        // traceback display.
+        dump(e + " (" + e.fileName + ":" +
+             e.lineNumber + ")\n");
+        if (e.stack)
+          dump("stack:\n" + e.stack + "\n");
+      }
       dump("FAIL\n");
       quit();
     }
