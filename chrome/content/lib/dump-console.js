@@ -53,5 +53,12 @@ Console.prototype = {
 
   debug: function debug() {
     message(this.print, "debug", arguments);
+  },
+
+  exception: function exception(e) {
+    this.error("exception:", e, "(" + e.fileName +
+               ":" + e.lineNumber + ")");
+    if (e.stack)
+      this.error("stack:", e.stack);
   }
 };

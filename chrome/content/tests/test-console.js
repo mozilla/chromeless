@@ -41,4 +41,9 @@ exports.testConsole = function(test) {
   con.log('testing', null);
   test.assertEqual(lastPrint(), "info: testing null\n",
                    "Console.log() must stringify null.");
+
+  con.exception(new Error("blah"));
+  var firstPart = prints[0].slice(0, prints[0].indexOf("("));
+  test.assertEqual(firstPart, "error: exception: Error: blah ",
+                   "Console.exception() must log exception.");
 };

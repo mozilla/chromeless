@@ -19,10 +19,7 @@ TestRunner.prototype = {
   },
 
   exception: function exception(e) {
-    console.log("exception:", e, " (" + e.fileName +
-                ":" + e.lineNumber + ")");
-    if (e.stack)
-      console.log("stack:", e.stack);
+    console.exception(e);
     this.failed++;
   },
 
