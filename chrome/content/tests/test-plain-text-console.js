@@ -47,4 +47,10 @@ exports.testPlainTextConsole = function(test) {
   test.assertEqual(tbLines[0], "error: An exception occurred.");
   test.assertEqual(tbLines[1], "Traceback (most recent call last):");
   test.assertEqual(tbLines.slice(-2)[0], "Error: blah");
+
+  prints = [];
+  con.trace();
+  tbLines = prints[0].split("\n");
+  test.assertEqual(tbLines[0], "info: Traceback (most recent call last):");
+  test.assertEqual(tbLines.slice(-2)[0].trim(), "con.trace();");
 };
