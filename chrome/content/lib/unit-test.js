@@ -1,3 +1,5 @@
+var timer = require("timer");
+
 var TestRunner = exports.TestRunner = function TestRunner(options) {
   this.passed = 0;
   this.failed = 0;
@@ -55,7 +57,7 @@ TestRunner.prototype = {
     if (!this.isDone) {
       this.isDone = true;
       if (this.waitTimeout !== null) {
-        require("timer").clearTimeout(this.waitTimeout);
+        timer.clearTimeout(this.waitTimeout);
         this.waitTimeout = null;
       }
       if (this.onDone !== null) {
@@ -77,18 +79,21 @@ TestRunner.prototype = {
       self.done();
     }
 
-    this.waitTimeout = require("timer").setTimeout(tiredOfWaiting, ms);
+    this.waitTimeout = timer.setTimeout(tiredOfWaiting, ms);
   },
 
   startMany: function startMany(options) {
-    function runNextTest(self) {
-      var test = options.tests.pop();
-      if (test)
-        self.start({test: test, onDone: runNextTest});
-      else
-        options.onDone(self);
+    function scheduleNextTest(self) {
+      function runNextTest() {
+        var test = options.tests.pop();
+        if (test)
+          self.start({test: test, onDone: runNextTest});
+        else
+          options.onDone(self);
+      }
+      timer.setTimeout(runNextTest, 0);
     }
-    runNextTest(this);
+    scheduleNextTest(this);
   },
 
   start: function start(options) {
