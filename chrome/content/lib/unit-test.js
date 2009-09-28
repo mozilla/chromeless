@@ -55,12 +55,13 @@ TestRunner.prototype = {
     if (!this.isDone) {
       this.isDone = true;
       if (this.waitTimeout !== null) {
-        requre("timer").clearTimeout(this.waitTimeout);
+        require("timer").clearTimeout(this.waitTimeout);
         this.waitTimeout = null;
       }
       if (this.onDone !== null) {
-        this.onDone(this);
+        var onDone = this.onDone;
         this.onDone = null;
+        onDone(this);
       }
     }
   },

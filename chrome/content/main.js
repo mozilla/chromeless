@@ -38,6 +38,8 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
+var loader;
+
 function quit() {
   var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
                    getService(Ci.nsIAppStartup);
@@ -46,6 +48,12 @@ function quit() {
 }
 
 function onDone(tests) {
+  try {
+    loader.require("unload").send();
+  } catch (e) {
+    tests.fail("unload.send() threw an exception: " + e);
+  };
+
   dump("tests passed: " + tests.passed + "\n");
   dump("tests failed: " + tests.failed + "\n");
   if (tests.passed >= 0 && tests.failed == 0)
@@ -59,7 +67,7 @@ window.addEventListener(
   "load",
   function() {
     try {
-      var loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
+      loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
       loader.require("run-suites").run(onDone);
     } catch (e) {
       dump(e + "\n");
