@@ -71,6 +71,10 @@
      }
    }
 
+   function unloadLoader() {
+     this.require("unload").send();
+   }
+
    var Loader = exports.Loader = function Loader(options) {
      var globals = {Cc: Components.classes,
                     Ci: Components.interfaces,
@@ -93,6 +97,7 @@
      }
 
      loader.console = globals.console;
+     loader.unload = unloadLoader;
 
      return loader;
    };

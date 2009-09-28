@@ -18,4 +18,10 @@ exports.testLoader = function(test) {
 
   test.assertEqual(prints[0], "info: testing 1 2,3,4\n",
                    "global console must work.");
+
+  var unloadCalled = false;
+
+  loader.require("unload").when(function() { unloadCalled = true; });
+  loader.unload();
+  test.assertEqual(unloadCalled, true, "loader.unload() must work.");
 };
