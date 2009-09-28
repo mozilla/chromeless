@@ -3,6 +3,8 @@ function deParentifyURL(url) {
   return url.split(" -> ").slice(-1)[0];
 }
 
+// TODO: We might want to move this function to url or some similar
+// module.
 function getLocalFile(path) {
   var ios = Cc['@mozilla.org/network/io-service;1']
             .getService(Ci.nsIIOService);
@@ -29,12 +31,7 @@ function safeGetFileLine(path, line) {
   return null;
 }
 
-var fromException = exports.fromException = function fromException(e) {
-  throw new Error("TODO: Implement this!");
-};
-
-var get = exports.get = function get() {
-  var frame = Components.stack.caller;
+function nsIStackFramesToJSON(frame) {
   var stack = [];
 
   while (frame) {
@@ -46,6 +43,16 @@ var get = exports.get = function get() {
   }
 
   return stack;
+};
+
+var fromException = exports.fromException = function fromException(e) {
+  if (e instanceof Ci.nsIException)
+    return nsIStackFramesToJSON(e.location);
+  throw new Error("TODO: Implement this!");
+};
+
+var get = exports.get = function get() {
+  return nsIStackFramesToJSON(Components.stack.caller);
 };
 
 var format = exports.format = function format(tbOrException) {
