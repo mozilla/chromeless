@@ -92,8 +92,8 @@
      var loader = new securableModule.Loader(loaderOptions);
 
      if (!globals.console) {
-       var console = loader.require("dump-console");
-       globals.console = new console.Console(options.print);
+       var console = loader.require("plain-text-console");
+       globals.console = new console.PlainTextConsole(options.print);
      }
 
      loader.console = globals.console;

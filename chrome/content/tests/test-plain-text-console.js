@@ -1,4 +1,4 @@
-exports.testConsole = function(test) {
+exports.testPlainTextConsole = function(test) {
   var prints = [];
   function print(message) {
     prints.push(message);
@@ -9,41 +9,41 @@ exports.testConsole = function(test) {
     return last;
   }
 
-  var Console = require("dump-console").Console;
+  var Console = require("plain-text-console").PlainTextConsole;
   var con = new Console(print);
 
-  test.pass("Console instantiates");
+  test.pass("PlainTextConsole instantiates");
 
   con.log('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "info: testing 1 2,3,4\n",
-                   "Console.log() must work.");
+                   "PlainTextConsole.log() must work.");
 
   con.info('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "info: testing 1 2,3,4\n",
-                   "Console.info() must work.");
+                   "PlainTextConsole.info() must work.");
 
   con.warn('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "warning: testing 1 2,3,4\n",
-                   "Console.warn() must work.");
+                   "PlainTextConsole.warn() must work.");
 
   con.error('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "error: testing 1 2,3,4\n",
-                   "Console.error() must work.");
+                   "PlainTextConsole.error() must work.");
 
   con.debug('testing', 1, [2, 3, 4]);
   test.assertEqual(lastPrint(), "debug: testing 1 2,3,4\n",
-                   "Console.debug() must work.");
+                   "PlainTextConsole.debug() must work.");
 
   con.log('testing', undefined);
   test.assertEqual(lastPrint(), "info: testing undefined\n",
-                   "Console.log() must stringify undefined.");
+                   "PlainTextConsole.log() must stringify undefined.");
 
   con.log('testing', null);
   test.assertEqual(lastPrint(), "info: testing null\n",
-                   "Console.log() must stringify null.");
+                   "PlainTextConsole.log() must stringify null.");
 
   con.exception(new Error("blah"));
   var firstPart = prints[0].slice(0, prints[0].indexOf("("));
   test.assertEqual(firstPart, "error: exception: Error: blah ",
-                   "Console.exception() must log exception.");
+                   "PlainTextConsole.exception() must log exception.");
 };

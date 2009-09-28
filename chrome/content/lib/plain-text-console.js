@@ -21,7 +21,7 @@ function message(print, level, args) {
   print(level + ": " + stringifyArgs(args) + "\n");
 }
 
-var Console = exports.Console = function Console(print) {
+var Console = exports.PlainTextConsole = function PlainTextConsole(print) {
   if (!print)
     print = dump;
   if (print === dump) {

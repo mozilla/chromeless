@@ -1,7 +1,7 @@
 var SUITES = ["test-cuddlefish",
               "test-url",
               "test-timer",
-              "test-console"];
+              "test-plain-text-console"];
 
 function makeTest(suite, name, test) {
   function runTest(runner) {
