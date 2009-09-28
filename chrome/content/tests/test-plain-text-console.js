@@ -43,7 +43,8 @@ exports.testPlainTextConsole = function(test) {
                    "PlainTextConsole.log() must stringify null.");
 
   con.exception(new Error("blah"));
-  var firstPart = prints[0].slice(0, prints[0].indexOf("("));
-  test.assertEqual(firstPart, "error: exception: Error: blah ",
-                   "PlainTextConsole.exception() must log exception.");
+  var tbLines = prints[0].split("\n");
+  test.assertEqual(tbLines[0], "error: An exception occurred.");
+  test.assertEqual(tbLines[1], "Traceback (most recent call last):");
+  test.assertEqual(tbLines.slice(-2)[0], "Error: blah");
 };

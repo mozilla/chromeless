@@ -31,6 +31,28 @@ function safeGetFileLine(path, line) {
   return null;
 }
 
+function errorStackToJSON(stack) {
+  var lines = stack.split("\n");
+
+  var frames = [];
+  lines.forEach(
+    function(line) {
+      if (!line)
+        return;
+      var atIndex = line.indexOf("@");
+      var colonIndex = line.lastIndexOf(":");
+      var filename = deParentifyURL(line.slice(atIndex + 1, colonIndex));
+      var lineNo = parseInt(line.slice(colonIndex + 1));
+      var funcSig = line.slice(0, atIndex);
+      var funcName = funcSig.slice(0, funcSig.indexOf("("));
+      frames.unshift({filename: filename,
+                      funcName: funcName,
+                      lineNo: lineNo});
+    });
+
+  return frames;
+};
+
 function nsIStackFramesToJSON(frame) {
   var stack = [];
 
@@ -48,7 +70,7 @@ function nsIStackFramesToJSON(frame) {
 var fromException = exports.fromException = function fromException(e) {
   if (e instanceof Ci.nsIException)
     return nsIStackFramesToJSON(e.location);
-  throw new Error("TODO: Implement this!");
+  return errorStackToJSON(e.stack);
 };
 
 var get = exports.get = function get() {

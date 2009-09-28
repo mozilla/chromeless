@@ -6,6 +6,23 @@ function throwNsIException() {
   ios.newURI("i'm a malformed URI", null, null);
 }
 
+function throwError() {
+  throw new Error("foob");
+}
+
+exports.testFromExceptionWithError = function(test) {
+  try {
+    throwError();
+    test.fail("an exception should've been thrown");
+  } catch (e if e instanceof Error) {
+    var tb = traceback.fromException(e);
+    test.assertEqual(tb.slice(-1)[0].funcName,
+                     "Error");
+    test.assertEqual(tb.slice(-2)[0].funcName,
+                     "throwError");
+  }
+};
+
 exports.testFromExceptionWithNsIException = function(test) {
   try {
     throwNsIException();

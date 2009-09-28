@@ -56,9 +56,8 @@ Console.prototype = {
   },
 
   exception: function exception(e) {
-    this.error("exception:", e, "(" + e.fileName +
-               ":" + e.lineNumber + ")");
-    if (e.stack)
-      this.error("stack:", e.stack);
+    var fullString = ("An exception occurred.\n" +
+                      require("traceback").format(e) + "\n" + e);
+    this.error(fullString);
   }
 };
