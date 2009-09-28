@@ -3,6 +3,36 @@ function deParentifyURL(url) {
   return url.split(" -> ").slice(-1)[0];
 }
 
+function getLocalFile(path) {
+  var ios = Cc['@mozilla.org/network/io-service;1']
+            .getService(Ci.nsIIOService);
+  var channel = ios.newChannel(path, null, null);
+  var iStream = channel.open();
+  var siStream = Cc['@mozilla.org/scriptableinputstream;1']
+                 .createInstance(Ci.nsIScriptableInputStream);
+  siStream.init(iStream);
+  var data = new String();
+  data += siStream.read(-1);
+  siStream.close();
+  iStream.close();
+  return data;
+}
+
+function safeGetFileLine(path, line) {
+  try {
+    var scheme = require("url").parse(path);
+    // TODO: There should be an easier, more accurate way to figure out
+    // what's the case here.
+    if (!(scheme == "http" || scheme == "https"))
+      return getLocalFile(path).split("\n")[line - 1];
+  } catch (e) {}
+  return null;
+}
+
+var fromException = exports.fromException = function fromException(e) {
+  throw new Error("TODO: Implement this!");
+};
+
 var get = exports.get = function get() {
   var frame = Components.stack.caller;
   var stack = [];
@@ -16,4 +46,30 @@ var get = exports.get = function get() {
   }
 
   return stack;
+};
+
+var format = exports.format = function format(tbOrException) {
+  if (tbOrException === undefined) {
+    tbOrException = get();
+    tbOrException.splice(-1, 1);
+  }
+
+  var tb;
+  if (tbOrException.length === undefined)
+    tb = fromException(tbOrException);
+  else
+    tb = tbOrException;
+
+  var lines = ["Traceback (most recent call last):"];
+
+  tb.forEach(
+    function(frame) {
+      lines.push('  File "' + frame.filename + '", line ' +
+                 frame.lineNo + ', in ' + frame.funcName);
+      var sourceLine = safeGetFileLine(frame.filename, frame.lineNo);
+      if (sourceLine)
+        lines.push('    ' + sourceLine.trim());
+    });
+
+  return lines.join("\n");
 };
