@@ -20,7 +20,7 @@ TimerCallback.prototype = {
         }
       this._callback.apply(null, []);
     } catch (e) {
-      console.log(e);
+      console.exception(e);
     }
   }
 };
