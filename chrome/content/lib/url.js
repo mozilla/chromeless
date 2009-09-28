@@ -13,10 +13,26 @@ function newURI(uriStr) {
 
 var parse = exports.parse = function parse(url) {
   var uri = newURI(url);
+
+  var userPass = null;
+  try {
+    userPass = uri.userPass ? uri.userPass : null;
+  } catch (e if e.result == Cr.NS_ERROR_FAILURE) {}
+
+  var host = null;
+  try {
+    host = uri.host;
+  } catch (e if e.result == Cr.NS_ERROR_FAILURE) {}
+
+  var port = null;
+  try {
+    port = uri.port == -1 ? null : uri.port;
+  } catch (e if e.result == Cr.NS_ERROR_FAILURE) {}
+
   return {scheme: uri.scheme,
-          userPass: uri.userPass,
-          host: uri.host,
-          port: uri.port == -1 ? null : uri.port,
+          userPass: userPass,
+          host: host,
+          port: port,
           path: uri.path};
 };
 

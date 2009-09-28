@@ -24,11 +24,29 @@ exports.testResolve = function(test) {
                    "url.resolve() should add slash to end of domain");
 };
 
-exports.testParse = function(test) {
+exports.testParseHttp = function(test) {
   var info = url.parse("http://foo.com/bar");
   test.assertEqual(info.scheme, "http");
   test.assertEqual(info.host, "foo.com");
   test.assertEqual(info.port, null);
-  test.assertEqual(info.userPass, "");
+  test.assertEqual(info.userPass, null);
   test.assertEqual(info.path, "/bar");
+};
+
+exports.testParseChrome = function(test) {
+  var info = url.parse("chrome://global/content/blah");
+  test.assertEqual(info.scheme, "chrome");
+  test.assertEqual(info.host, "global");
+  test.assertEqual(info.port, null);
+  test.assertEqual(info.userPass, null);
+  test.assertEqual(info.path, "/content/blah");
+};
+
+exports.testParseAbout = function(test) {
+  var info = url.parse("about:boop");
+  test.assertEqual(info.scheme, "about");
+  test.assertEqual(info.host, null);
+  test.assertEqual(info.port, null);
+  test.assertEqual(info.userPass, null);
+  test.assertEqual(info.path, "boop");
 };
