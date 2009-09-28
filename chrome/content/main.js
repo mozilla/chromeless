@@ -70,7 +70,11 @@ window.addEventListener(
       loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
       loader.require("run-suites").run(onDone);
     } catch (e) {
-      dump(e + "\n");
+      dump(e + " (" + e.fileName + ":" +
+           e.lineNumber + ")\n");
+      if (e.stack)
+        dump("stack:\n" + e.stack + "\n");
+      dump("FAIL\n");
       quit();
     }
   },
