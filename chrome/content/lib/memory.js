@@ -75,3 +75,5 @@ var getObjects = exports.getObjects = function getObjects(bin) {
       getLiveObjectsInBin(trackedObjects[name], results);
   return results;
 };
+
+require("unload").when(function() { trackedObjects = {}; });

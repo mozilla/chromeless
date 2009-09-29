@@ -83,6 +83,8 @@
 
      if (options.console)
        globals.console = options.console;
+     if (options.memory)
+       globals.memory = options.memory;
 
      var loaderOptions = {rootPath: options.rootPath,
                           rootPaths: options.rootPaths,
@@ -95,8 +97,11 @@
        var console = loader.require("plain-text-console");
        globals.console = new console.PlainTextConsole(options.print);
      }
+     if (!globals.memory)
+       globals.memory = loader.require("memory");
 
      loader.console = globals.console;
+     loader.memory = globals.memory;
      loader.unload = unloadLoader;
 
      return loader;

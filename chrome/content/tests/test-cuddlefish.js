@@ -24,4 +24,16 @@ exports.testLoader = function(test) {
   loader.require("unload").when(function() { unloadCalled = true; });
   loader.unload();
   test.assertEqual(unloadCalled, true, "loader.unload() must work.");
+
+  loader.runScript("memory.track({}, 'blah');");
+  test.assertEqual([name for each (name in loader.memory.getBins())
+                         if (name == "blah")].length,
+                   1,
+                   "global memory must work.");
+
+  loader.unload();
+  test.assertEqual([name for each (name in loader.memory.getBins())
+                         if (name == "blah")].length,
+                   0,
+                   "global memory must empty after unload.");
 };
