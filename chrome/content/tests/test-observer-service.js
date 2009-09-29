@@ -5,7 +5,6 @@ exports.testObserverService = function(test) {
                 getService(Ci.nsIObserverService);
   var observers = require("observer-service");
   var uri = ios.newURI("http://www.foo.com", null, null);
-  var uri2 = ios.newURI("http://www.bar.com", null, null);
   var timesCalled = 0;
   var lastSubject = null;
   var lastData = null;
@@ -25,12 +24,14 @@ exports.testObserverService = function(test) {
   test.assertEqual(lastData, "some data",
                    "observer-service.add() should pass data");
 
-  observers.notify("blarg", uri2, "some more data");
+  function customSubject() {}
+  function customData() {}
+  observers.notify("blarg", customSubject, customData);
   test.assertEqual(timesCalled, 2,
                    "observer-service.notify() should work");
-  test.assertEqual(lastSubject, uri2,
-                   "observer-service.notify() should pass subject");
-  test.assertEqual(lastData, "some more data",
+  test.assertEqual(lastSubject, customSubject,
+                   "observer-service.notify() should pass+wrap subject");
+  test.assertEqual(lastData, customData,
                    "observer-service.notify() should pass data");
 
   observers.remove("blarg", cb);
