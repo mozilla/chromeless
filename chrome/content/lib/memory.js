@@ -1,5 +1,5 @@
 var compactTimerId;
-var COMPACT_INTERVAL = 1000;
+var COMPACT_INTERVAL = 5000;
 var trackedObjects = {};
 
 function scheduleNextCompaction() {
@@ -35,6 +35,8 @@ var track = exports.track = function track(object, bin, stackFrameNumber) {
     bin = object.constructor.name;
   if (bin == "Object")
     bin = frame.name;
+  if (!bin)
+    bin = "generic";
   if (!(bin in trackedObjects))
     trackedObjects[bin] = [];
 
