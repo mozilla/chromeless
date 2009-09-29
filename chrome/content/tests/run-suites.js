@@ -3,6 +3,7 @@ var SUITES = ["test-cuddlefish",
               "test-timer",
               "test-traceback",
               "test-memory",
+              "test-observer-service",
               "test-plain-text-console"];
 
 function makeTest(suite, name, test) {
