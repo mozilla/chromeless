@@ -36,7 +36,7 @@
 
 // Undo the auto-parentification of URLs done in bug 418356.
 function deParentifyURL(url) {
-  return url.split(" -> ").slice(-1)[0];
+  return url ? url.split(" -> ").slice(-1)[0] : url;
 }
 
 // TODO: We might want to move this function to url or some similar
