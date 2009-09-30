@@ -10,6 +10,34 @@ function throwError() {
   throw new Error("foob");
 }
 
+exports.testFormatDoesNotFetchRemoteFiles = function(test) {
+  var observers = require("observer-service");
+  ["http", "https"].forEach(
+    function(scheme) {
+      var httpRequests = 0;
+      function onHttp() {
+        httpRequests++;
+      }
+
+      observers.add("http-on-modify-request", onHttp);
+
+      try {
+        var tb = [{filename: scheme + "://www.mozilla.org/",
+                   lineNo: 1,
+                   funcName: "blah"}];
+        traceback.format(tb);
+      } catch (e) {
+        test.exception(e);
+      }
+
+      observers.remove("http-on-modify-request", onHttp);
+
+      test.assertEqual(httpRequests, 0,
+                       "traceback.format() does not make " +
+                       scheme + " request");
+    });
+};
+
 exports.testFromExceptionWithError = function(test) {
   try {
     throwError();

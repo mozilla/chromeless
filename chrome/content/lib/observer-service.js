@@ -148,14 +148,17 @@ Observer.prototype = {
         ("observersModuleSubjectWrapper" in subject.wrappedJSObject))
       subject = subject.wrappedJSObject.object;
 
-    if (typeof this.callback == "function") {
-      if (this.thisObject)
-        this.callback.call(this.thisObject, subject, data);
-      else
-        this.callback(subject, data);
+    try {
+      if (typeof this.callback == "function") {
+        if (this.thisObject)
+          this.callback.call(this.thisObject, subject, data);
+        else
+          this.callback(subject, data);
+      } else // typeof this.callback == "object" (nsIObserver)
+        this.callback.observe(subject, topic, data);
+    } catch (e) {
+      console.exception(e);
     }
-    else // typeof this.callback == "object" (nsIObserver)
-      this.callback.observe(subject, topic, data);
   }
 };
 
@@ -166,7 +169,8 @@ function Subject(object) {
   // when notifying our observers) and those that are real JS XPCOM
   // components (which we should pass through unaltered).
   this.wrappedJSObject = {
-    observersModuleSubjectWrapper: true, object: object
+    observersModuleSubjectWrapper: true,
+    object: object
   };
 }
 

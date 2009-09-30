@@ -22,7 +22,7 @@ function getLocalFile(path) {
 
 function safeGetFileLine(path, line) {
   try {
-    var scheme = require("url").parse(path);
+    var scheme = require("url").parse(path).scheme;
     // TODO: There should be an easier, more accurate way to figure out
     // what's the case here.
     if (!(scheme == "http" || scheme == "https"))
