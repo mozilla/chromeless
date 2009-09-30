@@ -10,6 +10,14 @@ exports.testReset = function(test) {
 };
 
 exports.testGetAndSet = function(test) {
+  let svc = Cc["@mozilla.org/preferences-service;1"].
+            getService(Ci.nsIPrefService).
+            getBranch(null);
+  svc.setCharPref("test_get_string_pref", "a normal string");
+  test.assertEqual(prefs.get("test_get_string_pref"), "a normal string",
+                   "preferences-service should read from " +
+                   "application-wide preferences service");
+
   prefs.set("test_set_get_pref.integer", 1);
   test.assertEqual(prefs.get("test_set_get_pref.integer"), 1,
                    "set/get integer preference should work");
