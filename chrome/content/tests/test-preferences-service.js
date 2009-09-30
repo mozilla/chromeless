@@ -1,12 +1,12 @@
 var prefs = require("preferences-service");
 
 exports.testReset = function(test) {
-  prefs.reset("blah");
-  test.assertEqual(prefs.has("blah"), false);
-  test.assertEqual(prefs.isSet("blah"), false);
-  prefs.set("blah", 5);
-  test.assertEqual(prefs.has("blah"), true);
-  test.assertEqual(prefs.isSet("blah"), true);
+  prefs.reset("test_reset_pref");
+  test.assertEqual(prefs.has("test_reset_pref"), false);
+  test.assertEqual(prefs.isSet("test_reset_pref"), false);
+  prefs.set("test_reset_pref", 5);
+  test.assertEqual(prefs.has("test_reset_pref"), true);
+  test.assertEqual(prefs.isSet("test_reset_pref"), true);
 };
 
 exports.testGetAndSet = function(test) {
