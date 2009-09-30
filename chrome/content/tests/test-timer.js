@@ -14,3 +14,17 @@ exports.testClearTimeout = function(test) {
   timer.clearTimeout(id);
   test.waitUntilDone();
 };
+
+exports.testUnload = function(test) {
+  var loader = new test.makeSandboxedLoader();
+  var sbtimer = loader.require("timer");
+
+  var myFunc = function myFunc() {
+    test.fail("myFunc() should not be called in testUnload");
+  };
+
+  sbtimer.setTimeout(myFunc, 1);
+  loader.unload();
+  timer.setTimeout(function() { test.done(); }, 2);
+  test.waitUntilDone();
+};

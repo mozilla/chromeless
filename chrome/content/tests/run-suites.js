@@ -7,6 +7,8 @@ var SUITES = ["test-cuddlefish",
               "test-plain-text-console"];
 
 function makeSandboxedLoader(options) {
+  if (!options)
+    options = {};
   var Cuddlefish = require("cuddlefish");
   var url = require("url");
   var traceback = require("traceback");
