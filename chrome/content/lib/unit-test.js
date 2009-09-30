@@ -84,7 +84,7 @@ TestRunner.prototype = {
       function runNextTest() {
         var test = options.tests.pop();
         if (test)
-          self.start({test: test, onDone: runNextTest});
+          self.start({test: test, onDone: scheduleNextTest});
         else
           options.onDone(self);
       }
