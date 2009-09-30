@@ -4,6 +4,7 @@ var SUITES = ["test-cuddlefish",
               "test-traceback",
               "test-memory",
               "test-observer-service",
+              "test-preferences-service",
               "test-plain-text-console"];
 
 function makeSandboxedLoader(options) {
