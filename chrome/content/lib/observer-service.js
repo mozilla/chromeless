@@ -183,4 +183,12 @@ Subject.prototype = {
 // When we're unloaded, just clear the cache; since all our observers
 // have nsISupportsWeakReference, clearing cache should remove all strong
 // references to them and thus remove them from observation.
-require("unload").when(function() { cache = []; });
+require("unload").when(
+  function removeAllObservers() {
+    // Make a copy of cache first, since cache will be changing as we
+    // iterate through it.
+    cache.slice().forEach(
+      function(observer) {
+        remove(observer.topic, observer.callback, observer.thisObject);
+      });
+  });

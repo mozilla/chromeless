@@ -26,9 +26,6 @@ exports.testUnloadAndErrorLogging = function(test) {
   test.assertEqual(lines.slice(-2)[0], "Error: foo");
 
   loader.unload();
-  cb = null;
-  Cu.forceGC();
-
   observers.notify("blarg", "yo yo");
   test.assertEqual(timesCalled, 1);
 };
