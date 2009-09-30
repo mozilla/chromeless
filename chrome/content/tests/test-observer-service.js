@@ -1,9 +1,35 @@
+var observers = require("observer-service");
+
+exports.testUnload = function(test) {
+  var prints = [];
+  function print(message) {
+    prints.push(message);
+  }
+  var loader = test.makeSandboxedLoader({print: print});
+  var sbobsvc = loader.require("observer-service");
+
+  var timesCalled = 0;
+  var cb = function(subject, data) {
+    timesCalled++;
+  };
+
+  sbobsvc.add("blarg", cb);
+  observers.notify("blarg", "yo yo");
+  test.assertEqual(timesCalled, 1);
+
+  loader.unload();
+  cb = null;
+  Cu.forceGC();
+
+  observers.notify("blarg", "yo yo");
+  test.assertEqual(timesCalled, 1);
+};
+
 exports.testObserverService = function(test) {
   var ios = Cc['@mozilla.org/network/io-service;1']
             .getService(Ci.nsIIOService);
   var service = Cc["@mozilla.org/observer-service;1"].
                 getService(Ci.nsIObserverService);
-  var observers = require("observer-service");
   var uri = ios.newURI("http://www.foo.com", null, null);
   var timesCalled = 0;
   var lastSubject = null;
