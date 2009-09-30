@@ -140,11 +140,3 @@ var reset = exports.reset = function reset(name) {
     // know what other exceptions might be thrown and what they might mean.
   }
 };
-
-var observe = exports.observe = function observe(name, callback) {
-  throw new Error("TODO: Implement this.");
-};
-
-var ignore = exports.ignore = function ignore(name, callback) {
-  throw new Error("TODO: Implement this.");
-};
