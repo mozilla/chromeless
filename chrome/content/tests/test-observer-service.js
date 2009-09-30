@@ -1,6 +1,6 @@
 var observers = require("observer-service");
 
-exports.testUnload = function(test) {
+exports.testUnloadAndErrorLogging = function(test) {
   var prints = [];
   function print(message) {
     prints.push(message);
@@ -12,10 +12,18 @@ exports.testUnload = function(test) {
   var cb = function(subject, data) {
     timesCalled++;
   };
-
+  var badCb = function(subject, data) {
+    throw new Error("foo");
+  };
   sbobsvc.add("blarg", cb);
   observers.notify("blarg", "yo yo");
   test.assertEqual(timesCalled, 1);
+  sbobsvc.add("narg", badCb);
+  observers.notify("narg", "yo yo");
+  var lines = prints[0].split("\n");
+  test.assertEqual(lines[0], "error: An exception occurred.");
+  test.assertEqual(lines[1], "Traceback (most recent call last):");
+  test.assertEqual(lines.slice(-2)[0], "Error: foo");
 
   loader.unload();
   cb = null;
