@@ -67,7 +67,11 @@
        securableModule = securableModule.SecurableModule;
      } else {
        securableModule = {};
-       Cu.import(securableModuleURI.spec, securableModule);
+       try {
+         Cu.import(securableModuleURI.spec, securableModule);
+       } catch (e if e.result == Cr.NS_ERROR_ILLEGAL_VALUE) {
+         Cu.reportError("Failed to load " + securableModuleURI.spec);
+       }
      }
    }
 
