@@ -34,23 +34,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-function stringifyArgs(args) {
-  var string;
-  var stringArgs = [];
-  for (var i = 0; i < args.length; i++) {
-    try {
-      if (args[i] === undefined)
-        string = "undefined";
-      else if (args[i] === null) {
-        string = "null";
-      } else
-        string = args[i].toString();
-    } catch (e) {
-      string = "<toString() error>";
-    }
-    stringArgs.push(string);
+function stringify(arg) {
+  try {
+    return String(arg);
   }
-  return stringArgs.join(" ");
+  catch(ex) {
+    return "<toString() error>";
+  }
+}
+
+function stringifyArgs(args) {
+  return Array.map(args, stringify).join(" ");
 }
 
 function message(print, level, args) {

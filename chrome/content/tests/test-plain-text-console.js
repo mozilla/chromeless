@@ -42,6 +42,14 @@ exports.testPlainTextConsole = function(test) {
   test.assertEqual(lastPrint(), "info: testing null\n",
                    "PlainTextConsole.log() must stringify null.");
 
+  con.log("testing", { toString: function() "obj.toString()" });
+  test.assertEqual(lastPrint(), "info: testing obj.toString()\n",
+                   "PlainTextConsole.log() must stringify custom toString.");
+
+  con.log("testing", { toString: function() { throw "fail!"; } });
+  test.assertEqual(lastPrint(), "info: testing <toString() error>\n",
+                   "PlainTextConsole.log() must stringify custom bad toString.");
+
   con.exception(new Error("blah"));
   var tbLines = prints[0].split("\n");
   test.assertEqual(tbLines[0], "error: An exception occurred.");
