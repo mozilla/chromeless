@@ -40,7 +40,7 @@
    const Cu = Components.utils;
    const Cr = Components.results;
 
-   var exports = new Object();
+   var exports = {};
 
    // Load the SecurableModule prerequisite.
    var securableModule;

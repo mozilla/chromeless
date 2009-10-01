@@ -40,7 +40,7 @@
    const Cu = Components.utils;
    const Cr = Components.results;
 
-   var exports = new Object();
+   var exports = {};
 
    var ios = Cc['@mozilla.org/network/io-service;1']
              .getService(Ci.nsIIOService);
@@ -196,7 +196,7 @@
            if (options.filename === undefined)
              options.filename = path;
 
-           var exports = new Object();
+           var exports = {};
            var sandbox = self._sandboxFactory.createSandbox(options);
            for (name in self._globals)
              sandbox.defineProperty(name, self._globals[name]);
