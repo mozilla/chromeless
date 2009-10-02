@@ -63,9 +63,20 @@ function onDone(tests) {
   quit();
 }
 
+var consoleListener = {
+  observe: function(object) {
+    var message = object.QueryInterface(Ci.nsIConsoleMessage).message;
+    dump("console: " + message);
+  }
+};
+
 window.addEventListener(
   "load",
   function() {
+    var cService = Cc['@mozilla.org/consoleservice;1'].getService()
+                   .QueryInterface(Ci.nsIConsoleService);
+    cService.registerListener(consoleListener);
+
     try {
       loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
       loader.require("run-suites").run(onDone);

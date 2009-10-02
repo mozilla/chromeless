@@ -69,7 +69,7 @@ var setTimeout = exports.setTimeout = function setTimeout(callback, delay) {
 
   timer.initWithCallback(new TimerCallback(callback),
                          delay,
-                         timerClass.TYPE_ONE_SHOT);
+                         timer.TYPE_ONE_SHOT);
   return timerID;
 };
 
