@@ -87,8 +87,7 @@ window.addEventListener(
         // There's an error in the traceback module or the loader
         // couldn't even initialize, fall back to a super lame-looking
         // traceback display.
-        dump(e + " (" + e.fileName + ":" +
-             e.lineNumber + ")\n");
+        dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
         if (e.stack)
           dump("stack:\n" + e.stack + "\n");
       }
