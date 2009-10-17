@@ -82,10 +82,13 @@ if __name__ == '__main__':
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
     output = StringIO.StringIO()
-    while popen.poll() is None:
+    while True:
         chars = popen.stdout.read(10)
-        output.write(chars)
-        sys.stdout.write(chars)
+        if chars:
+            output.write(chars)
+            sys.stdout.write(chars)
+        elif popen.poll() is not None:
+            break
 
     print "Total time: %f seconds" % (time.time() - starttime)
 
