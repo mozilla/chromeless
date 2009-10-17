@@ -78,7 +78,29 @@ window.addEventListener(
     cService.registerListener(consoleListener);
 
     try {
-      loader = new Cuddlefish.Loader({rootPaths: ["lib/", "tests/"]});
+      var dirSvc = Cc["@mozilla.org/file/directory_service;1"]
+                   .getService(Ci.nsIDirectoryServiceProvider);
+      var ioService = Cc["@mozilla.org/network/io-service;1"]
+                      .getService(Ci.nsIIOService);
+      var resProt = ioService.getProtocolHandler("resource")
+                    .QueryInterface(Ci.nsIResProtocolHandler);
+      var root = dirSvc.getFile("CurWorkD",{});
+      var rootPaths = [];
+
+      ["lib", "tests"].forEach(
+        function(dirName) {
+          var dir = root.clone();
+          dir.append(dirName);
+          if (!(dir.exists() && dir.isDirectory))
+            throw new Error("Directory not found: " + dir.path);
+          var dirUri = ioService.newFileURI(dir);
+          resProt.setSubstitution(dirName, dirUri);
+          rootPaths.push(dirUri.spec);
+        });
+
+      var Cuddlefish = {};
+      Cu.import("resource://lib/cuddlefish.js", Cuddlefish);
+      loader = new Cuddlefish.Loader({rootPaths: rootPaths});
       loader.require("run-suites").run(onDone);
     } catch (e) {
       try {
