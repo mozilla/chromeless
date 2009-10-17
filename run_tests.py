@@ -69,16 +69,18 @@ if __name__ == '__main__':
 
     myfile = os.path.abspath(__file__)
     mydir = os.path.dirname(myfile)
+    harnessdir = os.path.join(mydir, 'harness')
 
     cmdline = [options.binary,
                '-app',
-               os.path.join(mydir, 'application.ini')]
+               os.path.join(harnessdir, 'application.ini')]
 
     if "xulrunner-bin" in options.binary:
         cmdline.remove("-app")
 
     starttime = time.time()
     popen = subprocess.Popen(cmdline,
+                             cwd=harnessdir,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
     output = StringIO.StringIO()

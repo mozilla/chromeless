@@ -84,7 +84,7 @@ window.addEventListener(
                       .getService(Ci.nsIIOService);
       var resProt = ioService.getProtocolHandler("resource")
                     .QueryInterface(Ci.nsIResProtocolHandler);
-      var root = dirSvc.getFile("CurWorkD",{});
+      var root = dirSvc.getFile("CurWorkD",{}).parent;
       var rootPaths = [];
 
       ["lib", "tests"].forEach(
