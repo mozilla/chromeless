@@ -70,14 +70,17 @@ if __name__ == '__main__':
     myfile = os.path.abspath(__file__)
     mydir = os.path.dirname(myfile)
 
+    cmdline = [options.binary,
+               '-app',
+               os.path.join(mydir, 'application.ini')]
+
+    if "xulrunner-bin" in options.binary:
+        cmdline.remove("-app")
+
     starttime = time.time()
-    popen = subprocess.Popen(
-        [options.binary,
-         '-app',
-         os.path.join(mydir, 'application.ini')],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT
-        )
+    popen = subprocess.Popen(cmdline,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
     output = StringIO.StringIO()
     while popen.poll() is None:
         chars = popen.stdout.read(10)
