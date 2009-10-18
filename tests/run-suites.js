@@ -1,21 +1,17 @@
-var SUITES = ["test-cuddlefish",
-              "test-url",
-              "test-timer",
-              "test-traceback",
-              "test-memory",
-              "test-observer-service",
-              "test-preferences-service",
-              "test-plain-text-console",
-              "test-file"];
+var url = require("url");
+var traceback = require("traceback");
+var file = require("file");
+
+function getMyUrl() {
+  return traceback.get().slice(-1)[0].filename;
+}
 
 function makeSandboxedLoader(options) {
   if (!options)
     options = {};
   var Cuddlefish = require("cuddlefish");
-  var url = require("url");
-  var traceback = require("traceback");
 
-  var myUrl = traceback.get().slice(-1)[0].filename;
+  var myUrl = getMyUrl();
   options.rootPaths = [myUrl, url.resolve(myUrl, "../lib/")];
   return new Cuddlefish.Loader(options);
 }
@@ -33,7 +29,13 @@ var run = exports.run = function run(onDone) {
 
   var tests = [];
 
-  SUITES.forEach(
+  var myDir = file.dirname(url.toFilename(getMyUrl()));
+
+  var suites = [name.slice(0, -3)
+                for each (name in file.list(myDir))
+                if (/^test-.*\.js$/.test(name))];
+
+  suites.forEach(
     function(suite) {
       var module = require(suite);
       for (name in module)

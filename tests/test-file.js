@@ -21,3 +21,12 @@ exports.testList = function(test) {
     test.fail("a dir can't contain two files of the same name!");
   test.assertEqual(found[0], true, "file.list() should work");
 };
+
+exports.testJoin = function(test) {
+  var filename = url.toFilename("resource://gre/modules/XPCOMUtils.jsm");
+  var baseDir = file.dirname(filename);
+
+  test.assertEqual(file.join(baseDir, "XPCOMUtils.jsm"),
+                   filename,
+                   "file.join() should work");
+};
