@@ -22,9 +22,11 @@ exports.testGetAndSet = function(test) {
   test.assertEqual(prefs.get("test_set_get_pref.integer"), 1,
                    "set/get integer preference should work");
 
-  prefs.set("test_set_get_number_pref", 3.14159);
-  test.assertEqual(prefs.get("test_set_get_number_pref"), 3,
-                   "setting a float preference should save as integer");
+  test.assertRaises(
+    function() { prefs.set("test_set_get_number_pref", 3.14159); },
+    "cannot store non-integer number: 3.14159",
+    "setting a float preference should raise an error"
+  );
 
   test.assertRaises(
     function() { prefs.set("test_set_get_number_pref", Math.pow(2, 31)); },
