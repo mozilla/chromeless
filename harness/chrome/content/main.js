@@ -91,21 +91,17 @@ window.addEventListener(
         throw new Error("CUDDLEFISH_ROOT env var must exist.");
 
       root.initWithPath(environ.get("CUDDLEFISH_ROOT"));
-      var rootPaths = [];
+      var rootPaths = ["resource://app/lib/",
+                       "resource://app/tests/"];
 
-      ["lib", "tests"].forEach(
-        function(dirName) {
-          var dir = root.clone();
-          dir.append(dirName);
-          if (!(dir.exists() && dir.isDirectory))
-            throw new Error("Directory not found: " + dir.path);
-          var dirUri = ioService.newFileURI(dir);
-          resProt.setSubstitution(dirName, dirUri);
-          rootPaths.push(dirUri.spec);
-        });
+      if (!(root.exists() && root.isDirectory))
+        throw new Error("Directory not found: " + root.path);
+
+      var rootUri = ioService.newFileURI(root);
+      resProt.setSubstitution("app", rootUri);
 
       var Cuddlefish = {};
-      Cu.import("resource://lib/cuddlefish.js", Cuddlefish);
+      Cu.import("resource://app/lib/cuddlefish.js", Cuddlefish);
       loader = new Cuddlefish.Loader({rootPaths: rootPaths});
       loader.require("run-suites").run(onDone);
     } catch (e) {
