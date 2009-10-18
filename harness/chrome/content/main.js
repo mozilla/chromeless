@@ -54,6 +54,7 @@ function onDone(tests) {
     tests.fail("unload.send() threw an exception: " + e);
   };
 
+  dump("\n");
   dump("tests passed: " + tests.passed + "\n");
   dump("tests failed: " + tests.failed + "\n");
   if (tests.passed >= 0 && tests.failed == 0)
@@ -103,7 +104,11 @@ window.addEventListener(
       var Cuddlefish = {};
       Cu.import("resource://app/lib/cuddlefish.js", Cuddlefish);
       loader = new Cuddlefish.Loader({rootPaths: rootPaths});
-      loader.require("run-suites").run(onDone);
+      loader.require("run-suites").run({onDone: onDone,
+                                        onPass: function() {
+                                          dump(".");
+                                        },
+                                        verbose: false});
     } catch (e) {
       try {
         dump(loader.require("traceback").format(e) + "\n" + e + "\n");
