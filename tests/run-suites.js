@@ -5,7 +5,8 @@ var SUITES = ["test-cuddlefish",
               "test-memory",
               "test-observer-service",
               "test-preferences-service",
-              "test-plain-text-console"];
+              "test-plain-text-console",
+              "test-file"];
 
 function makeSandboxedLoader(options) {
   if (!options)

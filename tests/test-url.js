@@ -19,6 +19,10 @@ exports.testResolve = function(test) {
                     "invalid URI: chrome://global",
                     "url.resolve() should throw invalid URI on base");
 
+  test.assertRaises(function() { url.resolve("chrome://foo/bar"); },
+                    "invalid URI: chrome://foo/bar",
+                    "url.resolve() should throw on bad chrome URI");
+
   test.assertEqual(url.resolve("http://www.foo.com", ""),
                    "http://www.foo.com/",
                    "url.resolve() should add slash to end of domain");
@@ -49,4 +53,21 @@ exports.testParseAbout = function(test) {
   test.assertEqual(info.port, null);
   test.assertEqual(info.userPass, null);
   test.assertEqual(info.path, "boop");
+};
+
+exports.testToFilename = function(test) {
+  test.assertRaises(
+    function() { url.toFilename("resource://nonexistent"); },
+    "resource does not exist: resource://nonexistent/",
+    "url.toFilename() on nonexistent resources should throw"
+  );
+
+  test.assertNotEqual(url.toFilename("resource://gre/modules/"), null,
+                      "url.toFilename() on resource: URIs should work");
+
+  test.assertRaises(
+    function() { url.toFilename("http://foo.com/"); },
+    "cannot map to filename: http://foo.com/",
+    "url.toFilename() on http: URIs should raise error"
+  );
 };
