@@ -78,13 +78,19 @@ window.addEventListener(
     cService.registerListener(consoleListener);
 
     try {
-      var dirSvc = Cc["@mozilla.org/file/directory_service;1"]
-                   .getService(Ci.nsIDirectoryServiceProvider);
       var ioService = Cc["@mozilla.org/network/io-service;1"]
                       .getService(Ci.nsIIOService);
       var resProt = ioService.getProtocolHandler("resource")
                     .QueryInterface(Ci.nsIResProtocolHandler);
-      var root = dirSvc.getFile("CurWorkD",{}).parent;
+      var environ = Cc["@mozilla.org/process/environment;1"]
+                    .getService(Ci.nsIEnvironment);
+      var root = Cc['@mozilla.org/file/local;1']
+                 .createInstance(Ci.nsILocalFile);
+
+      if (!environ.exists("CUDDLEFISH_ROOT"))
+        throw new Error("CUDDLEFISH_ROOT env var must exist.");
+
+      root.initWithPath(environ.get("CUDDLEFISH_ROOT"));
       var rootPaths = [];
 
       ["lib", "tests"].forEach(

@@ -78,9 +78,13 @@ if __name__ == '__main__':
     if "xulrunner-bin" in options.binary:
         cmdline.remove("-app")
 
+    env = {}
+    env.update(os.environ)
+    env['CUDDLEFISH_ROOT'] = mydir
+
     starttime = time.time()
     popen = subprocess.Popen(cmdline,
-                             cwd=harnessdir,
+                             env=env,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
     output = StringIO.StringIO()
