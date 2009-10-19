@@ -1,18 +1,12 @@
 var url = require("url");
-var traceback = require("traceback");
 var file = require("file");
-
-function getMyUrl() {
-  return traceback.get().slice(-1)[0].filename;
-}
 
 function makeSandboxedLoader(options) {
   if (!options)
     options = {};
   var Cuddlefish = require("cuddlefish");
 
-  var myUrl = getMyUrl();
-  options.rootPaths = [myUrl, url.resolve(myUrl, "../lib/")];
+  options.rootPaths = [__url__, url.resolve(__url__, "../lib/")];
   return new Cuddlefish.Loader(options);
 }
 
@@ -44,7 +38,7 @@ var run = exports.run = function run(options) {
 
   var tests = [];
 
-  var myDir = file.dirname(url.toFilename(getMyUrl()));
+  var myDir = file.dirname(url.toFilename(__url__));
 
   var suites = [name.slice(0, -3)
                 for each (name in file.list(myDir))
