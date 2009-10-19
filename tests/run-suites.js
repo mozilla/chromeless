@@ -6,7 +6,7 @@ function makeSandboxedLoader(options) {
     options = {};
   var Cuddlefish = require("cuddlefish");
 
-  options.rootPaths = [__url__, url.resolve(__url__, "../lib/")];
+  options.fs = Cuddlefish.loader.fs;
   return new Cuddlefish.Loader(options);
 }
 
