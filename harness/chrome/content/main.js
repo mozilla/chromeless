@@ -64,10 +64,17 @@ function onDone(tests) {
   quit();
 }
 
+var POINTLESS_ERRORS = [
+  "Invalid chrome URI:"
+];
+
 var consoleListener = {
   observe: function(object) {
     var message = object.QueryInterface(Ci.nsIConsoleMessage).message;
-    dump("console: " + message);
+    var pointless = [err for each (err in POINTLESS_ERRORS)
+                         if (message.indexOf(err) == 0)];
+    if (pointless.length == 0)
+      dump("console: " + message);
   }
 };
 
