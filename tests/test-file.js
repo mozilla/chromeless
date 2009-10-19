@@ -20,6 +20,12 @@ exports.testList = function(test) {
   if (found.length > 1)
     test.fail("a dir can't contain two files of the same name!");
   test.assertEqual(found[0], true, "file.list() should work");
+
+  test.assertRaises(
+    function() { file.list(url.toFilename("resource://gre/foo/")); },
+    /^path does not exist: .*$/,
+    "file.list() on nonexistent dir should raise error"
+  );
 };
 
 exports.testJoin = function(test) {
