@@ -78,6 +78,19 @@ var consoleListener = {
   }
 };
 
+function TestRunnerConsole(base, options) {
+  this.__proto__ = {
+    info: function info(first) {
+      if (options.verbose)
+        base.info.apply(base, arguments);
+      else
+        if (first == "pass:")
+          dump(".");
+    },
+    __proto__: base
+  };
+}
+
 window.addEventListener(
   "load",
   function() {
@@ -110,12 +123,18 @@ window.addEventListener(
 
       var jsm = {};
       Cu.import(options.loader, jsm);
-      loader = new jsm.Loader({rootPaths: options.rootPaths});
-      loader.require("run-suites").run({onDone: onDone,
-                                        onPass: function() {
-                                          dump(".");
-                                        },
-                                        verbose: options.verbose});
+      var loaderOptions = {rootPaths: options.rootPaths};
+
+      loader = new jsm.Loader(loaderOptions);
+      var ptc = loader.require("plain-text-console");
+      loader.unload();
+
+      var console = new TestRunnerConsole(new ptc.PlainTextConsole(dump),
+                                          options);
+      loaderOptions.console = console;
+      loader = new jsm.Loader(loaderOptions);
+
+      loader.require("run-suites").run({onDone: onDone});
     } catch (e) {
       try {
         dump(loader.require("traceback").format(e) + "\n" + e + "\n");
