@@ -85,25 +85,25 @@ window.addEventListener(
                     .QueryInterface(Ci.nsIResProtocolHandler);
       var environ = Cc["@mozilla.org/process/environment;1"]
                     .getService(Ci.nsIEnvironment);
-      var root = Cc['@mozilla.org/file/local;1']
-                 .createInstance(Ci.nsILocalFile);
 
-      if (!environ.exists("CUDDLEFISH_ROOT"))
-        throw new Error("CUDDLEFISH_ROOT env var must exist.");
+      if (!environ.exists("HARNESS_OPTIONS"))
+        throw new Error("HARNESS_OPTIONS env var must exist.");
 
-      root.initWithPath(environ.get("CUDDLEFISH_ROOT"));
-      var rootPaths = ["resource://app/lib/",
-                       "resource://app/tests/"];
+      var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
 
-      if (!(root.exists() && root.isDirectory))
-        throw new Error("Directory not found: " + root.path);
+      for (name in options.resources) {
+        var dir = Cc['@mozilla.org/file/local;1']
+                  .createInstance(Ci.nsILocalFile);
+        dir.initWithPath(options.resources[name]);
+        if (!(dir.exists() && dir.isDirectory))
+          throw new Error("directory not found: " + dir.path);
+        var dirUri = ioService.newFileURI(dir);
+        resProt.setSubstitution(name, dirUri);
+      }
 
-      var rootUri = ioService.newFileURI(root);
-      resProt.setSubstitution("app", rootUri);
-
-      var Cuddlefish = {};
-      Cu.import("resource://app/lib/cuddlefish.js", Cuddlefish);
-      loader = new Cuddlefish.Loader({rootPaths: rootPaths});
+      var jsm = {};
+      Cu.import(options.loader, jsm);
+      loader = new jsm.Loader({rootPaths: options.rootPaths});
       loader.require("run-suites").run({onDone: onDone,
                                         onPass: function() {
                                           dump(".");
