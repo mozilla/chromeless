@@ -108,7 +108,7 @@ window.addEventListener(
                                         onPass: function() {
                                           dump(".");
                                         },
-                                        verbose: false});
+                                        verbose: options.verbose});
     } catch (e) {
       try {
         dump(loader.require("traceback").format(e) + "\n" + e + "\n");

@@ -57,8 +57,14 @@ class FirefoxBinaryFinder(object):
 
 def run(**kwargs):
     parser_options = {
-        ("-b", "--binary",): dict(dest="binary", help="Binary path.", 
-                                  metavar=None, default=None),
+        ("-b", "--binary",): dict(dest="binary",
+                                  help="Binary path.", 
+                                  metavar=None,
+                                  default=None),
+        ("-v", "--verbose",): dict(dest="verbose",
+                                   help="Enable lots of output.",
+                                   action="store_true",
+                                   default=False),
         }
 
     parser = optparse.OptionParser()
@@ -78,9 +84,14 @@ def run(**kwargs):
     if "xulrunner-bin" in options.binary:
         cmdline.remove("-app")
 
+    harness_options = {}
+    harness_options.update(kwargs)
+    for option in parser.option_list[1:]:
+        harness_options[option.dest] = getattr(options, option.dest)
+
     env = {}
     env.update(os.environ)
-    env['HARNESS_OPTIONS'] = json.dumps(kwargs)
+    env['HARNESS_OPTIONS'] = json.dumps(harness_options)
 
     starttime = time.time()
     popen = subprocess.Popen(cmdline,
