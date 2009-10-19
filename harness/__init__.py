@@ -3,8 +3,12 @@ import os
 import subprocess
 import time
 import optparse
-import simplejson as json
 import cStringIO as StringIO
+
+mydir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(mydir, 'python-modules'))
+
+import simplejson as json
 
 class FirefoxBinaryFinder(object):
     """Finds the local Firefox binary, taken from MozRunner."""
@@ -78,12 +82,16 @@ def run(**kwargs):
         kwargs['setup']()
         del kwargs['setup']
 
+    if 'resources' in kwargs:
+        resources = kwargs['resources']
+        for name in resources:
+            resources[name] = os.path.abspath(resources[name])
+
     mydir = os.path.dirname(os.path.abspath(__file__))
-    harnessdir = os.path.dirname(mydir)
 
     cmdline = [options.binary,
                '-app',
-               os.path.join(harnessdir, 'application.ini')]
+               os.path.join(mydir, 'application.ini')]
 
     if "xulrunner-bin" in options.binary:
         cmdline.remove("-app")
