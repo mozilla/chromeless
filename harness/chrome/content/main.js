@@ -55,9 +55,9 @@ function onDone(tests) {
   };
 
   dump("\n");
-  dump("tests passed: " + tests.passed + "\n");
-  dump("tests failed: " + tests.failed + "\n");
-  if (tests.passed >= 0 && tests.failed == 0)
+  var total = tests.passed + tests.failed;
+  dump(tests.passed + " of " + total + " tests passed.\n");
+  if (total > 0 && tests.failed == 0)
     dump("OK\n");
   else
     dump("FAIL\n");
