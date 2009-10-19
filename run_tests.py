@@ -2,13 +2,13 @@ import sys
 import os
 import subprocess
 
-if __name__ == '__main__':
-    mydir = os.path.dirname(os.path.abspath(__file__))
-    sys.path.insert(0, os.path.join(mydir, 'harness', 'python-modules'))
+mydir = os.path.dirname(os.path.abspath(__file__))
+js_interop_dir = os.path.join(mydir, 'interoperablejs-read-only')
+sys.path.insert(0, os.path.join(mydir, 'harness', 'python-modules'))
 
-    import harness
+import harness
 
-    js_interop_dir = os.path.join(mydir, 'interoperablejs-read-only')
+def setup():
     if not os.path.exists(js_interop_dir):
         print "CommonJS compliance test directory not found."
         print
@@ -22,7 +22,9 @@ if __name__ == '__main__':
         if retval:
             sys.exit(1)
 
-    harness.run(resources={'app': mydir,
+if __name__ == '__main__':
+    harness.run(setup=setup,
+                resources={'app': mydir,
                            'interoperablejs': js_interop_dir},
                 rootPaths=["resource://app/lib/",
                            "resource://app/tests/"],

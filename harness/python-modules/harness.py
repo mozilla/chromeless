@@ -74,6 +74,10 @@ def run(**kwargs):
     if not options.binary:
         options.binary = FirefoxBinaryFinder().find_binary()
 
+    if 'setup' in kwargs:
+        kwargs['setup']()
+        del kwargs['setup']
+
     mydir = os.path.dirname(os.path.abspath(__file__))
     harnessdir = os.path.dirname(mydir)
 
