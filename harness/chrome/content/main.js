@@ -134,7 +134,13 @@ window.addEventListener(
       loaderOptions.console = console;
       loader = new jsm.Loader(loaderOptions);
 
-      loader.require("run-suites").run({onDone: onDone});
+      var unitTest = loader.require("unit-test");
+      var url = loader.require("url");
+      var dirs = [url.toFilename(path)
+                  for each (path in options.rootPaths)];
+
+      unitTest.findAndRunTests({dirs: dirs,
+                                onDone: onDone});
     } catch (e) {
       try {
         dump(loader.require("traceback").format(e) + "\n" + e + "\n");
