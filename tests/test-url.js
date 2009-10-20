@@ -71,3 +71,11 @@ exports.testToFilename = function(test) {
     "url.toFilename() on http: URIs should raise error"
   );
 };
+
+exports.testFromFilename = function(test) {
+  var fileUrl = url.fromFilename(url.toFilename(__url__));
+  test.assertEqual(url.parse(fileUrl).scheme, 'file',
+                   'url.toFilename() should return a file: url');
+  test.assertEqual(url.fromFilename(url.toFilename(fileUrl)),
+                   fileUrl);
+};
