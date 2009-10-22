@@ -10,6 +10,71 @@ sys.path.insert(0, os.path.join(mydir, 'python-modules'))
 
 import simplejson as json
 
+# When launching a temporary new Firefox profile, use these preferences.
+DEFAULT_FIREFOX_PREFS = {
+    'browser.startup.homepage' : 'about:blank',
+    'startup.homepage_welcome_url' : 'about:blank',
+    }
+
+# When launching a temporary new Thunderbird profile, use these preferences.
+# Note that these were taken from:
+# http://mxr.mozilla.org/comm-central/source/mail/test/mozmill/runtest.py
+DEFAULT_THUNDERBIRD_PREFS = {
+    # say yes to debug output via dump
+    'browser.dom.window.dump.enabled': True,
+    # say no to slow script warnings
+    'dom.max_chrome_script_run_time': 200,
+    'dom.max_script_run_time': 0,
+    # disable extension stuffs
+    'extensions.update.enabled'    : False,
+    'extensions.update.notifyUser' : False,
+    # do not ask about being the default mail client
+    'mail.shell.checkDefaultClient': False,
+    # disable non-gloda indexing daemons
+    'mail.winsearch.enable': False,
+    'mail.winsearch.firstRunDone': True,
+    'mail.spotlight.enable': False,
+    'mail.spotlight.firstRunDone': True,
+    # disable address books for undisclosed reasons
+    'ldap_2.servers.osx.position': 0,
+    'ldap_2.servers.oe.position': 0,
+    # disable the first use junk dialog
+    'mailnews.ui.junk.firstuse': False,
+    # other unknown voodoo
+    # -- dummied up local accounts to stop the account wizard
+    'mail.account.account1.server' :  "server1",
+    'mail.account.account2.identities' :  "id1",
+    'mail.account.account2.server' :  "server2",
+    'mail.accountmanager.accounts' :  "account1,account2",
+    'mail.accountmanager.defaultaccount' :  "account2",
+    'mail.accountmanager.localfoldersserver' :  "server1",
+    'mail.identity.id1.fullName' :  "Tinderbox",
+    'mail.identity.id1.smtpServer' :  "smtp1",
+    'mail.identity.id1.useremail' :  "tinderbox@invalid.com",
+    'mail.identity.id1.valid' :  True,
+    'mail.root.none-rel' :  "[ProfD]Mail",
+    'mail.root.pop3-rel' :  "[ProfD]Mail",
+    'mail.server.server1.directory-rel' :  "[ProfD]Mail/Local Folders",
+    'mail.server.server1.hostname' :  "Local Folders",
+    'mail.server.server1.name' :  "Local Folders",
+    'mail.server.server1.type' :  "none",
+    'mail.server.server1.userName' :  "nobody",
+    'mail.server.server2.check_new_mail' :  False,
+    'mail.server.server2.directory-rel' :  "[ProfD]Mail/tinderbox",
+    'mail.server.server2.download_on_biff' :  True,
+    'mail.server.server2.hostname' :  "tinderbox",
+    'mail.server.server2.login_at_startup' :  False,
+    'mail.server.server2.name' :  "tinderbox@invalid.com",
+    'mail.server.server2.type' :  "pop3",
+    'mail.server.server2.userName' :  "tinderbox",
+    'mail.smtp.defaultserver' :  "smtp1",
+    'mail.smtpserver.smtp1.hostname' :  "tinderbox",
+    'mail.smtpserver.smtp1.username' :  "tinderbox",
+    'mail.smtpservers' :  "smtp1",
+    'mail.startup.enabledMailCheckOnce' :  True,
+    'mailnews.start_page_override.mstone' :  "ignore",
+    }
+
 class FirefoxBinaryFinder(object):
     """Finds the local Firefox binary, taken from MozRunner."""
     
@@ -69,14 +134,35 @@ def run(**kwargs):
                                    help="Enable lots of output.",
                                    action="store_true",
                                    default=False),
+        ("-a", "--app",): dict(dest="app",
+                               help=("App to run: xulrunner, firefox, "
+                                     "or thunderbird. Default is "
+                                     "xulrunner."),
+                               metavar=None,
+                               default="xulrunner")
         }
 
     parser = optparse.OptionParser()
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
     (options, args) = parser.parse_args()
-    if not options.binary:
-        options.binary = FirefoxBinaryFinder().find_binary()
+
+    if options.app == "xulrunner":
+        if not options.binary:
+            options.binary = FirefoxBinaryFinder().find_binary()
+    else:
+        import mozrunner
+        if options.app == "firefox":
+            profile_class = mozrunner.FirefoxProfile
+            preferences = DEFAULT_FIREFOX_PREFS
+            runner_class = mozrunner.FirefoxRunner
+        elif options.app == "thunderbird":
+            profile_class = mozrunner.ThunderbirdProfile
+            preferences = DEFAULT_THUNDERBIRD_PREFS
+            runner_class = mozrunner.ThunderbirdRunner
+        else:
+            print "Unknown app: %s" % options.app
+            sys.exit(1)
 
     if 'setup' in kwargs:
         kwargs['setup']()
@@ -89,13 +175,6 @@ def run(**kwargs):
 
     mydir = os.path.dirname(os.path.abspath(__file__))
 
-    cmdline = [options.binary,
-               '-app',
-               os.path.join(mydir, 'application.ini')]
-
-    if "xulrunner-bin" in options.binary:
-        cmdline.remove("-app")
-
     harness_options = {}
     harness_options.update(kwargs)
     for option in parser.option_list[1:]:
@@ -103,13 +182,34 @@ def run(**kwargs):
 
     env = {}
     env.update(os.environ)
+    env['MOZ_NO_REMOTE'] = '1'
     env['HARNESS_OPTIONS'] = json.dumps(harness_options)
 
     starttime = time.time()
-    popen = subprocess.Popen(cmdline,
-                             env=env,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+
+    popen_kwargs = dict(stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT)
+
+    if options.app == "xulrunner":
+        cmdline = [options.binary,
+                   '-app',
+                   os.path.join(mydir, 'application.ini')]
+
+        if "xulrunner-bin" in options.binary:
+            cmdline.remove("-app")
+
+        popen = subprocess.Popen(cmdline, env=env, **popen_kwargs)
+    else:
+        plugins = [mydir]
+        profile = profile_class(plugins=plugins,
+                                preferences=preferences)
+        runner = runner_class(profile=profile,
+                              binary=options.binary,
+                              env=env,
+                              kp_kwargs=popen_kwargs)
+        runner.start()
+        popen = runner.process_handler
+
     output = StringIO.StringIO()
     while True:
         chars = popen.stdout.read(10)
@@ -122,7 +222,7 @@ def run(**kwargs):
     print "Total time: %f seconds" % (time.time() - starttime)
 
     lines = output.getvalue().splitlines()
-    if popen.returncode == 0 and lines[-1].strip() == 'OK':
+    if popen.returncode == 0 and lines and lines[-1].strip() == 'OK':
         print "All tests succeeded."
         retval = 0
     else:
