@@ -39,15 +39,28 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
+const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
+const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
+const HARNESS_ID = "xulapp@toolness.com";
+
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var window;
+
+function startTests() {
+  if (!window) {
+    var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
+             .getService(Ci.nsIWindowWatcher);
+    window = ww.openWindow(null, "chrome://myapp/content/main.xul",
+                           "harness", "chrome,centerscreen", null);
+  }
+}
 
 function HarnessService() {}
 HarnessService.prototype = {
   classDescription: "Harness Service",
   contractID: "@mozilla.org/harness/service;1",
-  classID: Components.ID("{74b89fb0-f200-4ae8-a3ec-dd164117f6df}"),
+  classID: Components.ID("{74b89fb1-f200-4ae8-a3ec-dd164117f6df}"),
   _xpcom_categories: [{ category: "app-startup", service: true }],
 
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
@@ -56,12 +69,35 @@ HarnessService.prototype = {
   observe: function BSS__observe(subject, topic, data) {
     switch (topic) {
     case "app-startup":
-      if (!window) {
-        var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-                 .getService(Ci.nsIWindowWatcher);
-        window = ww.openWindow(null, "chrome://myapp/content/main.xul",
-                               "harness", "chrome,centerscreen", null);
+      var appInfo = Cc["@mozilla.org/xre/app-info;1"]
+                    .getService(Ci.nsIXULAppInfo);
+      let obSvc = Cc["@mozilla.org/observer-service;1"]
+                  .getService(Ci.nsIObserverService);
+
+      switch (appInfo.ID) {
+      case HARNESS_ID:
+        startTests();
+        break;
+      case FIREFOX_ID:
+        obSvc.addObserver(this, "sessionstore-windows-restored", true);
+        break;
+      case THUNDERBIRD_ID:
+        obSvc.addObserver(this, "final-ui-startup", true);
+        break;
       }
+      break;
+    case "final-ui-startup":
+      // Thunderbird-only.
+      //
+      // TODO: This doesn't currently work; raises lots of Cu.import()
+      // NS_ERROR_FILE_NOT_FOUND errors, which could actually have
+      // any cause (since exceptions raised in JS module bodies are
+      // propagated as NS_ERROR_FILE_NOT_FOUND).
+      startTests();
+      break;
+    case "sessionstore-windows-restored":
+      // Firefox-only.
+      startTests();
       break;
     }
   }
