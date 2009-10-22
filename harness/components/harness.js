@@ -81,19 +81,7 @@ HarnessService.prototype = {
       case FIREFOX_ID:
         obSvc.addObserver(this, "sessionstore-windows-restored", true);
         break;
-      case THUNDERBIRD_ID:
-        obSvc.addObserver(this, "final-ui-startup", true);
-        break;
       }
-      break;
-    case "final-ui-startup":
-      // Thunderbird-only.
-      //
-      // TODO: This doesn't currently work; raises lots of Cu.import()
-      // NS_ERROR_FILE_NOT_FOUND errors, which could actually have
-      // any cause (since exceptions raised in JS module bodies are
-      // propagated as NS_ERROR_FILE_NOT_FOUND).
-      startTests();
       break;
     case "sessionstore-windows-restored":
       // Firefox-only.

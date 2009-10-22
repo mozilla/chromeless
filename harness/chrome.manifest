@@ -1,1 +1,2 @@
 content myapp chrome/content/
+overlay chrome://messenger/content/messenger.xul chrome://myapp/content/messenger.xul
