@@ -13,11 +13,15 @@ exports.testLoader = function(test) {
   test.assertEqual(prints[0], "info: testing 1 2,3,4\n",
                    "global console must work.");
 
-  var unloadCalled = false;
+  var unloadsCalled = '';
 
-  loader.require("unload").when(function() { unloadCalled = true; });
+  loader.require("unload").when(function() { unloadsCalled += 'a'; });
+  loader.require("unload").when(function() { unloadsCalled += 'b'; });
+
   loader.unload();
-  test.assertEqual(unloadCalled, true, "loader.unload() must work.");
+
+  test.assertEqual(unloadsCalled, 'ba',
+                   "loader.unload() must call cb's in LIFO order.");
 
   loader.runScript("memory.track({}, 'blah');");
   test.assertEqual([name for each (name in loader.memory.getBins())
