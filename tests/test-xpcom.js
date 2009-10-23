@@ -66,3 +66,26 @@ exports.testXpcom = function(test, text) {
 exports.testXpcomAgain = function(test) {
   exports.testXpcom(test, "hai2u again");
 };
+
+exports.testUnload = function(test) {
+  var loader = new test.makeSandboxedLoader();
+  var sbxpcom = loader.require("xpcom");
+
+  function Component() {}
+
+  Component.prototype = {
+    QueryInterface: sbxpcom.utils.generateQI([Ci.nsISupports])
+  };
+
+  var contractID = "@mozilla.org/blargle;1";
+  sbxpcom.register({name: "test component",
+                    contractID: contractID,
+                    create: Component});
+
+  var manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
+  test.assertEqual(manager.isContractIDRegistered(contractID), true);
+
+  loader.unload();
+
+  test.assertEqual(manager.isContractIDRegistered(contractID), false);
+};
