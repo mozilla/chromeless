@@ -1,6 +1,6 @@
 var xpcom = require("xpcom");
 
-exports.testXpcom = function(test, text) {
+exports.testRegister = function(test, text) {
   if (!text)
     text = "hai2u";
 
@@ -63,8 +63,8 @@ exports.testXpcom = function(test, text) {
   test.assertEqual(manager.isContractIDRegistered(contractID), false);
 };
 
-exports.testXpcomAgain = function(test) {
-  exports.testXpcom(test, "hai2u again");
+exports.testReRegister = function(test) {
+  exports.testRegister(test, "hai2u again");
 };
 
 exports.testMakeUuid = function(test) {
