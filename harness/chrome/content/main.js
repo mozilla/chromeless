@@ -38,8 +38,6 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-var loader;
-
 function quit() {
   var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
                    getService(Ci.nsIAppStartup);
@@ -47,114 +45,70 @@ function quit() {
   appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
 }
 
-function onDone(tests) {
-  try {
-    loader.require("unload").send();
-  } catch (e) {
-    tests.fail("unload.send() threw an exception: " + e);
-  };
-
-  dump("\n");
-  var total = tests.passed + tests.failed;
-  dump(tests.passed + " of " + total + " tests passed.\n");
-  if (total > 0 && tests.failed == 0)
-    dump("OK\n");
-  else
-    dump("FAIL\n");
+function logErrorAndBail(e) {
+  // This is an error logger of last resort; if we're here, then
+  // we weren't able to initialize Cuddlefish and display a nice
+  // traceback through it.
+  dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
+  if (e.stack)
+    dump("stack:\n" + e.stack + "\n");
+  dump("FAIL\n");
   quit();
 }
 
-var POINTLESS_ERRORS = [
-  "Invalid chrome URI:"
-];
+function bootstrapAndRunTests() {
+  try {
+    var ioService = Cc["@mozilla.org/network/io-service;1"]
+                    .getService(Ci.nsIIOService);
+    var resProt = ioService.getProtocolHandler("resource")
+                  .QueryInterface(Ci.nsIResProtocolHandler);
+    var environ = Cc["@mozilla.org/process/environment;1"]
+                  .getService(Ci.nsIEnvironment);
 
-var consoleListener = {
-  observe: function(object) {
-    var message = object.QueryInterface(Ci.nsIConsoleMessage).message;
-    var pointless = [err for each (err in POINTLESS_ERRORS)
-                         if (message.indexOf(err) == 0)];
-    if (pointless.length == 0)
-      dump("console: " + message);
-  }
-};
+    if (!environ.exists("HARNESS_OPTIONS"))
+      throw new Error("HARNESS_OPTIONS env var must exist.");
 
-function TestRunnerConsole(base, options) {
-  this.__proto__ = {
-    info: function info(first) {
-      if (options.verbose)
-        base.info.apply(base, arguments);
+    var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
+
+    for (name in options.resources) {
+      var dir = Cc['@mozilla.org/file/local;1']
+                .createInstance(Ci.nsILocalFile);
+      dir.initWithPath(options.resources[name]);
+      if (!(dir.exists() && dir.isDirectory))
+        throw new Error("directory not found: " + dir.path);
+      var dirUri = ioService.newFileURI(dir);
+      resProt.setSubstitution(name, dirUri);
+    }
+
+    var jsm = {};
+    Cu.import(options.loader, jsm);
+    var rootPaths = options.rootPaths.slice();
+    rootPaths.push(window.location.href);
+
+    var loader = new jsm.Loader({rootPaths: rootPaths});
+    var runner = loader.require("test-runner");
+
+    options.print = function() { dump.apply(undefined, arguments); };
+
+    options.onDone = function onDone(tests) {
+      if (loader)
+        try {
+          loader.unload();
+          loader = null;
+        } catch (e) {
+          logErrorAndBail(e);
+        }
+      if (tests.passed > 0 && tests.failed == 0)
+        dump("OK\n");
       else
-        if (first == "pass:")
-          dump(".");
-    },
-    __proto__: base
-  };
+        dump("FAIL\n");
+      quit();
+    };
+
+    runner.runTests(options);
+  } catch (e) {
+    logErrorAndBail(e);
+  }
 }
 
-window.addEventListener(
-  "load",
-  function() {
-    var cService = Cc['@mozilla.org/consoleservice;1'].getService()
-                   .QueryInterface(Ci.nsIConsoleService);
-    cService.registerListener(consoleListener);
-
-    try {
-      var ioService = Cc["@mozilla.org/network/io-service;1"]
-                      .getService(Ci.nsIIOService);
-      var resProt = ioService.getProtocolHandler("resource")
-                    .QueryInterface(Ci.nsIResProtocolHandler);
-      var environ = Cc["@mozilla.org/process/environment;1"]
-                    .getService(Ci.nsIEnvironment);
-
-      if (!environ.exists("HARNESS_OPTIONS"))
-        throw new Error("HARNESS_OPTIONS env var must exist.");
-
-      var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
-
-      for (name in options.resources) {
-        var dir = Cc['@mozilla.org/file/local;1']
-                  .createInstance(Ci.nsILocalFile);
-        dir.initWithPath(options.resources[name]);
-        if (!(dir.exists() && dir.isDirectory))
-          throw new Error("directory not found: " + dir.path);
-        var dirUri = ioService.newFileURI(dir);
-        resProt.setSubstitution(name, dirUri);
-      }
-
-      var jsm = {};
-      Cu.import(options.loader, jsm);
-      var loaderOptions = {rootPaths: options.rootPaths};
-
-      loader = new jsm.Loader(loaderOptions);
-      var ptc = loader.require("plain-text-console");
-      loader.unload();
-
-      var console = new TestRunnerConsole(new ptc.PlainTextConsole(dump),
-                                          options);
-      loaderOptions.console = console;
-      loader = new jsm.Loader(loaderOptions);
-
-      var unitTest = loader.require("unit-test");
-      var url = loader.require("url");
-      var dirs = [url.toFilename(path)
-                  for each (path in options.rootPaths)];
-
-      unitTest.findAndRunTests({dirs: dirs,
-                                onDone: onDone});
-    } catch (e) {
-      try {
-        dump(loader.require("traceback").format(e) + "\n" + e + "\n");
-      } catch (otherError) {
-        // There's an error in the traceback module or the loader
-        // couldn't even initialize, fall back to a super lame-looking
-        // traceback display.
-        dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
-        if (e.stack)
-          dump("stack:\n" + e.stack + "\n");
-      }
-      dump("FAIL\n");
-      quit();
-    }
-  },
-  false
-);
+window.addEventListener("load", bootstrapAndRunTests, false);
