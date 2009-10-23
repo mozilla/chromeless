@@ -62,14 +62,31 @@ exports.testToFilename = function(test) {
     "url.toFilename() on nonexistent resources should throw"
   );
 
-  test.assertNotEqual(url.toFilename("resource://gre/modules/"), null,
-                      "url.toFilename() on resource: URIs should work");
+  test.assertMatches(url.toFilename("resource://gre/modules/"),
+                     /.*modules$/,
+                     "url.toFilename() on resource: URIs should work");
 
   test.assertRaises(
     function() { url.toFilename("http://foo.com/"); },
     "cannot map to filename: http://foo.com/",
     "url.toFilename() on http: URIs should raise error"
   );
+
+  try {
+    test.assertMatches(
+      url.toFilename("chrome://global/content/console.xul"),
+      /.*console\.xul$/,
+      "url.toFilename() w/ console.xul works when it maps to filesystem"
+    );
+  } catch (e) {
+    if (/chrome url isn\'t on filesystem/.test(e.message))
+      test.pass("accessing console.xul in jar raises exception");
+    else
+      test.fail("accessing console.xul raises " + e);
+  }
+
+  test.assertMatches(url.toFilename("chrome://myapp/content/main.js"),
+                     /.*main\.js$/);
 };
 
 exports.testFromFilename = function(test) {
