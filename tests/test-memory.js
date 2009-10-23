@@ -6,6 +6,6 @@ exports.testMemory = function(test) {
   var objs = memory.getObjects("testMemory.testObj");
   test.assertEqual(objs[0].weakref.get(), obj);
   obj = null;
-  Cu.forceGC();
+  memory.gc();
   test.assertEqual(objs[0].weakref.get(), null);
 };
