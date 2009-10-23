@@ -67,6 +67,14 @@ exports.testXpcomAgain = function(test) {
   exports.testXpcom(test, "hai2u again");
 };
 
+exports.testMakeUuid = function(test) {
+  var first = xpcom.makeUuid().toString();
+  var second = xpcom.makeUuid().toString();
+  test.assertMatches(first, /{[0-9a-f\-]+}/);
+  test.assertMatches(second, /{[0-9a-f\-]+}/);
+  test.assertNotEqual(first, second);
+};
+
 exports.testUnload = function(test) {
   var loader = new test.makeSandboxedLoader();
   var sbxpcom = loader.require("xpcom");
