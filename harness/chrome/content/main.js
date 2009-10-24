@@ -56,6 +56,15 @@ function logErrorAndBail(e) {
   quit();
 }
 
+function getDir(path) {
+  var dir = Cc['@mozilla.org/file/local;1']
+            .createInstance(Ci.nsILocalFile);
+  dir.initWithPath(path);
+  if (!(dir.exists() && dir.isDirectory))
+    throw new Error("directory not found: " + dir.path);
+  return dir;
+}
+
 function bootstrapAndRunTests() {
   try {
     var ioService = Cc["@mozilla.org/network/io-service;1"]
@@ -70,12 +79,16 @@ function bootstrapAndRunTests() {
 
     var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
 
+    var compMgr = Components.manager;
+    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+
+    for each (dirName in options.components) {
+      var dir = getDir(dirName);
+      compMgr.autoRegister(dir);
+    }
+
     for (name in options.resources) {
-      var dir = Cc['@mozilla.org/file/local;1']
-                .createInstance(Ci.nsILocalFile);
-      dir.initWithPath(options.resources[name]);
-      if (!(dir.exists() && dir.isDirectory))
-        throw new Error("directory not found: " + dir.path);
+      var dir = getDir(options.resources[name]);
       var dirUri = ioService.newFileURI(dir);
       resProt.setSubstitution(name, dirUri);
     }

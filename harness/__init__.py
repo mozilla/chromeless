@@ -126,6 +126,10 @@ class FirefoxBinaryFinder(object):
 
 def run(**kwargs):
     parser_options = {
+        ("-c", "--components",): dict(dest="components",
+                                      help=("Extra XPCOM component "
+                                            "dir(s), comma-separated."),
+                                      default=None),
         ("-b", "--binary",): dict(dest="binary",
                                   help="Binary path.", 
                                   metavar=None,
@@ -167,6 +171,18 @@ def run(**kwargs):
     if 'setup' in kwargs:
         kwargs['setup']()
         del kwargs['setup']
+
+    if not options.components:
+        options.components = []
+    else:
+        options.components = options.components.split(",")
+
+    if 'components' in kwargs:
+        options.components.extend(kwargs['components'])
+        del kwargs['components']
+
+    options.components = [os.path.abspath(path)
+                          for path in options.components]
 
     if 'resources' in kwargs:
         resources = kwargs['resources']
