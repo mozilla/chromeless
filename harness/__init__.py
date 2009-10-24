@@ -127,24 +127,23 @@ class FirefoxBinaryFinder(object):
 def run(**kwargs):
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
-                                 help="# of times to run tests.",
+                                 help="number of times to run tests",
                                  default=1),
         ("-c", "--components",): dict(dest="components",
-                                      help=("Extra XPCOM component "
-                                            "dir(s), comma-separated."),
+                                      help=("extra XPCOM component "
+                                            "dir(s), comma-separated"),
                                       default=None),
         ("-b", "--binary",): dict(dest="binary",
-                                  help="Binary path.", 
+                                  help="path to app binary", 
                                   metavar=None,
                                   default=None),
         ("-v", "--verbose",): dict(dest="verbose",
-                                   help="Enable lots of output.",
+                                   help="enable lots of output",
                                    action="store_true",
                                    default=False),
         ("-a", "--app",): dict(dest="app",
-                               help=("App to run: xulrunner, firefox, "
-                                     "or thunderbird. Default is "
-                                     "xulrunner."),
+                               help=("app to run: xulrunner (default), "
+                                     "firefox, or thunderbird"),
                                metavar=None,
                                default="xulrunner")
         }
