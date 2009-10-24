@@ -126,6 +126,9 @@ class FirefoxBinaryFinder(object):
 
 def run(**kwargs):
     parser_options = {
+        ("-x", "--times",): dict(dest="iterations",
+                                 help="# of times to run tests.",
+                                 default=1),
         ("-c", "--components",): dict(dest="components",
                                       help=("Extra XPCOM component "
                                             "dir(s), comma-separated."),
@@ -171,6 +174,8 @@ def run(**kwargs):
     if 'setup' in kwargs:
         kwargs['setup']()
         del kwargs['setup']
+
+    options.iterations = int(options.iterations)
 
     if not options.components:
         options.components = []

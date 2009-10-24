@@ -47,17 +47,39 @@ var onDone;
 // Function to print text to a console, w/o CR at the end.
 var print;
 
-function testsDone(tests) {
-  try {
-    sandbox.require("unload").send();
-  } catch (e) {
-    tests.fail("unload.send() threw an exception: " + e);
-  };
+// The directories to look for tests in.
+var dirs;
 
-  print("\n");
-  var total = tests.passed + tests.failed;
-  print(tests.passed + " of " + total + " tests passed.\n");
-  onDone(tests);
+// How many more times to run all tests.
+var iterationsLeft;
+
+// Combined results from all test runs.
+var results = {passed: 0,
+               failed: 0};
+
+function nextIteration(tests) {
+  if (tests) {
+    results.passed += tests.passed;
+    results.failed += tests.failed;
+    iterationsLeft--;
+  }
+  if (iterationsLeft)
+    sandbox.require("unit-test").findAndRunTests({dirs: dirs,
+                                                  onDone: nextIteration});
+  else {
+    try {
+      sandbox.require("unload").send();
+    } catch (e) {
+      results.failed++;
+      console.error("unload.send() threw an exception.");
+      console.exception(e);
+    };
+
+    print("\n");
+    var total = results.passed + results.failed;
+    print(results.passed + " of " + total + " tests passed.\n");
+    onDone(results);
+  }
 }
 
 var POINTLESS_ERRORS = [
@@ -88,6 +110,7 @@ function TestRunnerConsole(base, options) {
 }
 
 var runTests = exports.runTests = function runTests(options) {
+  iterationsLeft = options.iterations;
   onDone = options.onDone;
   print = options.print;
   try {
@@ -97,15 +120,14 @@ var runTests = exports.runTests = function runTests(options) {
     var ptc = require("plain-text-console");
     var url = require("url");
 
-    var dirs = [url.toFilename(path)
-                for each (path in options.rootPaths)];
+    dirs = [url.toFilename(path)
+            for each (path in options.rootPaths)];
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
 
     sandbox = new cuddlefish.Loader({console: console,
                                      __proto__: options});
-    sandbox.require("unit-test").findAndRunTests({dirs: dirs,
-                                                  onDone: testsDone});
+    nextIteration();
   } catch (e) {
     print(require("traceback").format(e) + "\n" + e + "\n");
     onDone({passed: 0, failed: 1});
