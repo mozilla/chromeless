@@ -22,9 +22,34 @@ exports.testList = function(test) {
   test.assertEqual(found[0], true, "file.list() should work");
 
   test.assertRaises(
+    function() { file.list(url.toFilename(__url__)); },
+    /^path is not a directory: .*$/,
+    "file.list() on non-dir should raise error"
+  );
+
+  test.assertRaises(
     function() { file.list(url.toFilename("resource://gre/foo/")); },
     /^path does not exist: .*$/,
     "file.list() on nonexistent dir should raise error"
+  );
+};
+
+exports.testRead = function(test) {
+  var filename = url.toFilename(__url__);
+  var contents = file.read(filename);
+  test.assertMatches(contents, /file\.read\(\) should work/,
+                     "file.read() should work");
+
+  test.assertRaises(
+    function() { file.read(filename + "blah"); },
+    /^path does not exist: .*$/,
+    "file.read() on nonexistent file should raise error"
+  );
+
+  test.assertRaises(
+    function() { file.read(url.toFilename("resource://gre/modules/")); },
+    /^path is not a file: .*$/,
+    "file.read() on dir should raise error"
   );
 };
 
