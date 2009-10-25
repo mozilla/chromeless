@@ -57,11 +57,26 @@ var iterationsLeft;
 var results = {passed: 0,
                failed: 0};
 
+function reportMemoryUsage() {
+  memory.gc();
+
+  var mgr = Cc["@mozilla.org/memory-reporter-manager;1"]
+            .getService(Ci.nsIMemoryReporterManager);
+  var reporters = mgr.enumerateReporters();
+  if (reporters.hasMoreElements())
+    print("\n");
+  while (reporters.hasMoreElements()) {
+    var reporter = reporters.getNext();
+    reporter.QueryInterface(Ci.nsIMemoryReporter);
+    print(reporter.description + ": " + reporter.memoryUsed + "\n");
+  }
+}
+
 function nextIteration(tests) {
   if (tests) {
     results.passed += tests.passed;
     results.failed += tests.failed;
-    memory.gc();
+    reportMemoryUsage();
     iterationsLeft--;
   }
   if (iterationsLeft)
