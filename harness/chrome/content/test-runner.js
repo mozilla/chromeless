@@ -61,6 +61,7 @@ function nextIteration(tests) {
   if (tests) {
     results.passed += tests.passed;
     results.failed += tests.failed;
+    memory.gc();
     iterationsLeft--;
   }
   if (iterationsLeft)
