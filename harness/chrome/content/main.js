@@ -38,10 +38,32 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-function quit() {
+// Absolute path to a file that we put our result code in. Ordinarily
+// we'd just exit the process with a zero or nonzero return code, but
+// there doesn't appear to be a way to do this in XULRunner.
+var resultFile;
+
+function quit(result) {
+  dump(result + "\n");
+
+  if (resultFile) {
+    try {
+      var file = Cc["@mozilla.org/file/local;1"]
+                 .createInstance(Ci.nsILocalFile);
+      file.initWithPath(resultFile);
+
+      var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                     .createInstance(Ci.nsIFileOutputStream);
+      foStream.init(file, -1, -1, 0);
+      foStream.write(result, result.length);
+      foStream.close();
+    } catch (e) {
+      dump(e + "\n");
+    }
+  }
+
   var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
                    getService(Ci.nsIAppStartup);
-
   appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
 }
 
@@ -52,8 +74,7 @@ function logErrorAndBail(e) {
   dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
   if (e.stack)
     dump("stack:\n" + e.stack + "\n");
-  dump("FAIL\n");
-  quit();
+  quit("FAIL");
 }
 
 function getDir(path) {
@@ -78,6 +99,8 @@ function bootstrapAndRunTests() {
       throw new Error("HARNESS_OPTIONS env var must exist.");
 
     var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
+
+    resultFile = options.resultFile;
 
     var compMgr = Components.manager;
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
@@ -112,10 +135,9 @@ function bootstrapAndRunTests() {
           logErrorAndBail(e);
         }
       if (tests.passed > 0 && tests.failed == 0)
-        dump("OK\n");
+        quit("OK");
       else
-        dump("FAIL\n");
-      quit();
+        quit("FAIL");
     };
 
     runner.runTests(options);

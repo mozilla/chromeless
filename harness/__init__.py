@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import time
+import tempfile
 import optparse
 import cStringIO as StringIO
 
@@ -9,6 +10,9 @@ mydir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(mydir, 'python-modules'))
 
 import simplejson as json
+
+# Maximum time we'll wait for tests to finish, in seconds.
+MAX_WAIT_TIMEOUT = 5 * 60
 
 # When launching a temporary new Firefox profile, use these preferences.
 DEFAULT_FIREFOX_PREFS = {
@@ -193,9 +197,13 @@ def run(**kwargs):
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
+    resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
+    if os.path.exists(resultfile):
+        os.remove(resultfile)
+
     mydir = os.path.dirname(os.path.abspath(__file__))
 
-    harness_options = {}
+    harness_options = {'resultFile': resultfile}
     harness_options.update(kwargs)
     for option in parser.option_list[1:]:
         harness_options[option.dest] = getattr(options, option.dest)
@@ -207,8 +215,7 @@ def run(**kwargs):
 
     starttime = time.time()
 
-    popen_kwargs = dict(stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT)
+    popen_kwargs = {}
 
     if options.app == "xulrunner":
         cmdline = [options.binary,
@@ -230,19 +237,25 @@ def run(**kwargs):
         runner.start()
         popen = runner.process_handler
 
-    output = StringIO.StringIO()
-    while True:
-        chars = popen.stdout.read(10)
-        if chars:
-            output.write(chars)
-            sys.stdout.write(chars)
-        elif popen.poll() is not None:
-            break
+    done = False
+    while not done:
+        time.sleep(0.01)
+        if popen.poll() is not None:
+            # Sometimes the child process will spawn yet another
+            # child and terminate the parent, so look for the
+            # result file.
+            if (os.path.exists(resultfile) and
+                open(resultfile).read() in ['OK', 'FAIL']):
+                done = True
+        if time.time() - starttime > MAX_WAIT_TIMEOUT:
+            # TODO: Kill the child process.
+            raise Exception("Wait timeout exceeded (%ds)" %
+                            MAX_WAIT_TIMEOUT)
 
     print "Total time: %f seconds" % (time.time() - starttime)
 
-    lines = output.getvalue().splitlines()
-    if popen.returncode == 0 and lines and lines[-1].strip() == 'OK':
+    output = open(resultfile, 'r').read()
+    if popen.returncode == 0 and output == 'OK':
         print "All tests succeeded."
         retval = 0
     else:
