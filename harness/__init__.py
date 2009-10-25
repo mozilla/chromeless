@@ -238,15 +238,19 @@ def run(**kwargs):
         popen = runner.process_handler
 
     done = False
+    output = None
     while not done:
-        time.sleep(0.01)
+        time.sleep(0.05)
         if popen.poll() is not None:
             # Sometimes the child process will spawn yet another
             # child and terminate the parent, so look for the
             # result file.
-            if (os.path.exists(resultfile) and
-                open(resultfile).read() in ['OK', 'FAIL']):
+            if popen.returncode != 0:
                 done = True
+            elif os.path.exists(resultfile):
+                output = open(resultfile).read()
+                if output in ['OK', 'FAIL']:
+                    done = True
         if time.time() - starttime > MAX_WAIT_TIMEOUT:
             # TODO: Kill the child process.
             raise Exception("Wait timeout exceeded (%ds)" %
@@ -254,7 +258,6 @@ def run(**kwargs):
 
     print "Total time: %f seconds" % (time.time() - starttime)
 
-    output = open(resultfile, 'r').read()
     if popen.returncode == 0 and output == 'OK':
         print "All tests succeeded."
         retval = 0
