@@ -122,7 +122,7 @@ function bootstrapAndRunTests() {
     rootPaths.push(window.location.href);
 
     var loader = new jsm.Loader({rootPaths: rootPaths});
-    var runner = loader.require("test-runner");
+    var harness = loader.require("harness");
 
     options.print = function() { dump.apply(undefined, arguments); };
 
@@ -140,7 +140,7 @@ function bootstrapAndRunTests() {
         quit("FAIL");
     };
 
-    runner.runTests(options);
+    harness.runTests(options);
   } catch (e) {
     logErrorAndBail(e);
   }
