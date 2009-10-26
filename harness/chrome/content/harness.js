@@ -72,15 +72,36 @@ function analyzeRawProfilingData(data) {
   }
   graph = newGraph;
 
-  var count = 0;
-  for (id in graph)
-    count++;
-
   var modules = 0;
-  for (name in data.namedObjects)
+  var moduleIds = [];
+  var moduleObjs = {UNKNOWN: 0};
+  for (name in data.namedObjects) {
+    moduleObjs[name] = 0;
+    moduleIds[data.namedObjects[name]] = name;
     modules++;
+  }
+
+  var count = 0;
+  for (id in graph) {
+    var parent = graph[id].parent;
+    while (parent) {
+      if (parent in moduleIds) {
+        var name = moduleIds[parent];
+        moduleObjs[name]++;
+        break;
+      }
+      if (!(parent in graph)) {
+        moduleObjs.UNKNOWN++;
+        break;
+      }
+      parent = graph[parent].parent;
+    }
+    count++;
+  }
 
   print("\nobject count is " + count + " in " + modules + " modules\n");
+  for (name in moduleObjs)
+    print("  " + moduleObjs[name] + " in " + name + "\n");
 }
 
 function reportMemoryUsage() {
