@@ -53,12 +53,63 @@ var dirs;
 // How many more times to run all tests.
 var iterationsLeft;
 
+// Information on memory profiler binary component (optional).
+var profiler;
+
 // Combined results from all test runs.
 var results = {passed: 0,
                failed: 0};
 
+function analyzeRawProfilingData(data) {
+  var graph = data.graph;
+  var shapes = {};
+
+  // Convert keys in the graph from strings to ints.
+  // TODO: Can we get rid of this ridiculousness?
+  var newGraph = {};
+  for (id in graph) {
+    newGraph[parseInt(id)] = graph[id];
+  }
+  graph = newGraph;
+
+  var count = 0;
+  for (id in graph)
+    count++;
+
+  var modules = 0;
+  for (name in data.namedObjects)
+    modules++;
+
+  print("\nobject count is " + count + " in " + modules + " modules\n");
+}
+
 function reportMemoryUsage() {
   memory.gc();
+
+  if (profiler) {
+    var namedObjects = {};
+    for (url in sandbox.modules) {
+      var exports = sandbox.modules[url];
+      for (name in exports) {
+        var obj = exports[name];
+        if (obj &&
+            obj.__parent__ &&
+            (typeof(obj) == "function" ||
+             typeof(obj) == "object")) {
+          namedObjects[url] = obj.__parent__;
+          break;
+        }
+      }
+    }
+
+    var result = profiler.binary.profileMemory(profiler.script,
+                                               profiler.scriptUrl,
+                                               1,
+                                               namedObjects);
+    result = JSON.parse(result);
+    if (result.success)
+      analyzeRawProfilingData(result.data);
+  }
 
   var mgr = Cc["@mozilla.org/memory-reporter-manager;1"]
             .getService(Ci.nsIMemoryReporterManager);
@@ -129,12 +180,23 @@ var runTests = exports.runTests = function runTests(options) {
   iterationsLeft = options.iterations;
   onDone = options.onDone;
   print = options.print;
+
   try {
     cService.registerListener(consoleListener);
 
     var cuddlefish = require("cuddlefish");
     var ptc = require("plain-text-console");
     var url = require("url");
+
+    try {
+      profiler = {
+        binary: Cc["@labs.mozilla.com/jetpackdi;1"].createInstance().get(),
+        scriptUrl: url.resolve(__url__, "profiler.js")
+      };
+
+      profiler.scriptPath = url.toFilename(profiler.scriptUrl);
+      profiler.script = require("file").read(profiler.scriptPath);
+    } catch (e) {}
 
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
