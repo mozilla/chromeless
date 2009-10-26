@@ -109,19 +109,8 @@ function reportMemoryUsage() {
 
   if (profiler) {
     var namedObjects = {};
-    for (url in sandbox.modules) {
-      var exports = sandbox.modules[url];
-      for (name in exports) {
-        var obj = exports[name];
-        if (obj &&
-            obj.__parent__ &&
-            (typeof(obj) == "function" ||
-             typeof(obj) == "object")) {
-          namedObjects[url] = obj.__parent__;
-          break;
-        }
-      }
-    }
+    for (url in sandbox.sandboxes)
+      namedObjects[url] = sandbox.sandboxes[url].globalScope;
 
     var result = profiler.binary.profileMemory(profiler.script,
                                                profiler.scriptUrl,
