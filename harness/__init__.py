@@ -10,6 +10,7 @@ mydir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(mydir, 'python-modules'))
 
 import simplejson as json
+import mozrunner
 
 # Maximum time we'll wait for tests to finish, in seconds.
 MAX_WAIT_TIMEOUT = 5 * 60
@@ -79,54 +80,10 @@ DEFAULT_THUNDERBIRD_PREFS = {
     'mailnews.start_page_override.mstone' :  "ignore",
     }
 
-class FirefoxBinaryFinder(object):
-    """Finds the local Firefox binary, taken from MozRunner."""
-    
-    @property
-    def names(self):
-        if sys.platform == 'darwin':
-            return ['firefox', 'minefield', 'shiretoko']
-        if sys.platform == 'linux2':
-            return ['firefox', 'mozilla-firefox', 'iceweasel']
-        if os.name == 'nt' or sys.platform == 'cygwin':
-            return ['firefox']
-
-    def find_binary(self):
-        """Finds the binary for self.names if one was not provided."""
-        binary = None
-        if sys.platform == 'linux2':
-            for name in reversed(self.names):
-                binary = findInPath(name)
-        elif os.name == 'nt' or sys.platform == 'cygwin':
-            for name in reversed(self.names):
-                binary = findInPath(name)
-                if binary is None:
-                    for bin in [os.path.join(os.environ['ProgramFiles'], 
-                                             'Mozilla Firefox', 'firefox.exe'),
-                                os.path.join(os.environ['ProgramFiles'], 
-                                             'Mozilla Firefox3', 'firefox.exe'),
-                                ]:
-                        if os.path.isfile(bin):
-                            binary = bin
-                            break
-        elif sys.platform == 'darwin':
-            for name in reversed(self.names):
-                appdir = os.path.join('Applications', name.capitalize()+'.app')
-                if os.path.isdir(os.path.join(os.path.expanduser('~/'), appdir)):
-                    binary = os.path.join(os.path.expanduser('~/'), appdir, 
-                                          'Contents/MacOS/'+name+'-bin')
-                elif os.path.isdir('/'+appdir):
-                    binary = os.path.join("/"+appdir, 'Contents/MacOS/'+name+'-bin')
-                    
-                if binary is not None:
-                    if not os.path.isfile(binary):
-                        binary = binary.replace(name+'-bin', 'firefox-bin')
-                    if not os.path.isfile(binary):
-                        binary = None
-        if binary is None:
-            raise Exception('Mozrunner could not locate your binary, '
-                            'you will need to set it.')
-        return binary
+def find_firefox_binary():
+    dummy_profile = {}
+    runner = mozrunner.FirefoxRunner(profile=dummy_profile)
+    return runner.find_binary()
 
 def run(**kwargs):
     parser_options = {
@@ -159,9 +116,8 @@ def run(**kwargs):
 
     if options.app == "xulrunner":
         if not options.binary:
-            options.binary = FirefoxBinaryFinder().find_binary()
+            options.binary = find_firefox_binary()
     else:
-        import mozrunner
         if options.app == "firefox":
             profile_class = mozrunner.FirefoxProfile
             preferences = DEFAULT_FIREFOX_PREFS
