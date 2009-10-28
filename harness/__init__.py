@@ -181,6 +181,9 @@ def run(**kwargs):
         if "xulrunner-bin" in options.binary:
             cmdline.remove("-app")
 
+        if sys.platform == 'linux2' and not env.get('LD_LIBRARY_PATH'):
+            env['LD_LIBRARY_PATH'] = os.path.dirname(options.binary)
+
         popen = subprocess.Popen(cmdline, env=env, **popen_kwargs)
     else:
         plugins = [mydir]
