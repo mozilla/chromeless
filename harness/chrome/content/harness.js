@@ -131,6 +131,12 @@ function reportMemoryUsage() {
     reporter.QueryInterface(Ci.nsIMemoryReporter);
     print(reporter.description + ": " + reporter.memoryUsed + "\n");
   }
+
+  var weakrefs = [info.weakref.get()
+                  for each (info in sandbox.memory.getObjects())];
+  weakrefs = [weakref for each (weakref in weakrefs) if (weakref)];
+  print("Tracked memory objects in testing sandbox: " +
+        weakrefs.length + "\n");
 }
 
 function cleanup() {
