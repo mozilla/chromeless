@@ -23,15 +23,14 @@ exports.testLoader = function(test) {
   test.assertEqual(unloadsCalled, 'ba',
                    "loader.unload() must call cb's in LIFO order.");
 
+  loader = test.makeSandboxedLoader();
+
   loader.runScript("memory.track({}, 'blah');");
+
   test.assertEqual([name for each (name in loader.memory.getBins())
                          if (name == "blah")].length,
                    1,
                    "global memory must work.");
 
   loader.unload();
-  test.assertEqual([name for each (name in loader.memory.getBins())
-                         if (name == "blah")].length,
-                   0,
-                   "global memory must empty after unload.");
 };

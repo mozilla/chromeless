@@ -133,6 +133,41 @@ function reportMemoryUsage() {
   }
 }
 
+function cleanup() {
+  try {
+    for (name in sandbox.sandboxes)
+      sandbox.memory.track(sandbox.sandboxes[name].globalScope,
+                           "module global scope: " + name);
+    sandbox.memory.track(sandbox, "Cuddlefish Loader");
+
+    var weakrefs = [info.weakref
+                    for each (info in sandbox.memory.getObjects())];
+
+    sandbox.unload();
+    sandbox = null;
+
+    memory.gc();
+
+    weakrefs.forEach(
+      function(weakref) {
+        var ref = weakref.get();
+        if (ref !== null) {
+          var data = ref.__url__ ? ref.__url__ : ref;
+          console.warn("LEAK", data);
+        }
+      });
+  } catch (e) {
+    results.failed++;
+    console.error("unload.send() threw an exception.");
+    console.exception(e);
+  };
+
+  print("\n");
+  var total = results.passed + results.failed;
+  print(results.passed + " of " + total + " tests passed.\n");
+  onDone(results);
+}
+
 function nextIteration(tests) {
   if (tests) {
     results.passed += tests.passed;
@@ -143,20 +178,8 @@ function nextIteration(tests) {
   if (iterationsLeft)
     sandbox.require("unit-test").findAndRunTests({dirs: dirs,
                                                   onDone: nextIteration});
-  else {
-    try {
-      sandbox.require("unload").send();
-    } catch (e) {
-      results.failed++;
-      console.error("unload.send() threw an exception.");
-      console.exception(e);
-    };
-
-    print("\n");
-    var total = results.passed + results.failed;
-    print(results.passed + " of " + total + " tests passed.\n");
-    onDone(results);
-  }
+  else
+    require("timer").setTimeout(cleanup, 0);
 }
 
 var POINTLESS_ERRORS = [
