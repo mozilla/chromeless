@@ -122,25 +122,38 @@ function bootstrapAndRunTests() {
     rootPaths.push(window.location.href);
 
     var loader = new jsm.Loader({rootPaths: rootPaths});
-    var harness = loader.require("harness");
 
-    options.print = function() { dump.apply(undefined, arguments); };
+    if (options.main) {
+      var obsvc = loader.require("observer-service");
+      obsvc.add("quit-application-granted",
+                function() {
+                  loader.unload();
+                  quit("OK");
+                });
 
-    options.onDone = function onDone(tests) {
-      if (loader)
-        try {
-          loader.unload();
-          loader = null;
-        } catch (e) {
-          logErrorAndBail(e);
-        }
-      if (tests.passed > 0 && tests.failed == 0)
-        quit("OK");
-      else
-        quit("FAIL");
-    };
+      var program = loader.require(options.main);
+      program.main(options);
+    } else {
+      var harness = loader.require("harness");
 
-    harness.runTests(options);
+      options.print = function() { dump.apply(undefined, arguments); };
+
+      options.onDone = function onDone(tests) {
+        if (loader)
+          try {
+            loader.unload();
+            loader = null;
+          } catch (e) {
+            logErrorAndBail(e);
+          }
+        if (tests.passed > 0 && tests.failed == 0)
+          quit("OK");
+        else
+          quit("FAIL");
+      };
+
+      harness.runTests(options);
+    }
   } catch (e) {
     logErrorAndBail(e);
   }

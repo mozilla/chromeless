@@ -106,7 +106,12 @@ def run(**kwargs):
                                help=("app to run: xulrunner (default), "
                                      "firefox, or thunderbird"),
                                metavar=None,
-                               default="xulrunner")
+                               default="xulrunner"),
+        ("-m", "--main",): dict(dest="main",
+                                help=("run a module with a main() "
+                                      "export instead of tests"),
+                                metavar=None,
+                                default=None),
         }
 
     parser = optparse.OptionParser()
