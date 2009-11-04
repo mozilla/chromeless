@@ -85,8 +85,10 @@ exports.testToFilename = function(test) {
       test.fail("accessing console.xul raises " + e);
   }
 
-  test.assertMatches(url.toFilename("chrome://myapp/content/main.js"),
-                     /.*main\.js$/);
+  // TODO: Are there any chrome URLs that we're certain exist on the
+  // filesystem?
+  // test.assertMatches(url.toFilename("chrome://myapp/content/main.js"),
+  //                    /.*main\.js$/);
 };
 
 exports.testFromFilename = function(test) {

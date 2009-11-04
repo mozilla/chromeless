@@ -45,14 +45,145 @@ const HARNESS_ID = "xulapp@toolness.com";
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-var window;
+// Whether we've initialized or not yet.
+var isStarted;
+
+// nsILocalFile corresponding to this file.
+var myFile;
+
+// Absolute path to a file that we put our result code in. Ordinarily
+// we'd just exit the process with a zero or nonzero return code, but
+// there doesn't appear to be a way to do this in XULRunner.
+var resultFile;
+
+function quit(result) {
+  dump(result + "\n");
+
+  if (resultFile) {
+    try {
+      var file = Cc["@mozilla.org/file/local;1"]
+                 .createInstance(Ci.nsILocalFile);
+      file.initWithPath(resultFile);
+
+      var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                     .createInstance(Ci.nsIFileOutputStream);
+      foStream.init(file, -1, -1, 0);
+      foStream.write(result, result.length);
+      foStream.close();
+    } catch (e) {
+      dump(e + "\n");
+    }
+  }
+
+  var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
+                   getService(Ci.nsIAppStartup);
+  appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+}
+
+function logErrorAndBail(e) {
+  // This is an error logger of last resort; if we're here, then
+  // we weren't able to initialize Cuddlefish and display a nice
+  // traceback through it.
+  dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
+  if (e.stack)
+    dump("stack:\n" + e.stack + "\n");
+  quit("FAIL");
+}
+
+function getDir(path) {
+  var dir = Cc['@mozilla.org/file/local;1']
+            .createInstance(Ci.nsILocalFile);
+  dir.initWithPath(path);
+  if (!(dir.exists() && dir.isDirectory))
+    throw new Error("directory not found: " + dir.path);
+  return dir;
+}
+
+function bootstrapAndRunTests() {
+  try {
+    var ioService = Cc["@mozilla.org/network/io-service;1"]
+                    .getService(Ci.nsIIOService);
+    var resProt = ioService.getProtocolHandler("resource")
+                  .QueryInterface(Ci.nsIResProtocolHandler);
+    var environ = Cc["@mozilla.org/process/environment;1"]
+                  .getService(Ci.nsIEnvironment);
+
+    if (!environ.exists("HARNESS_OPTIONS"))
+      throw new Error("HARNESS_OPTIONS env var must exist.");
+
+    var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
+
+    resultFile = options.resultFile;
+
+    var compMgr = Components.manager;
+    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+
+    for each (dirName in options.components) {
+      var dir = getDir(dirName);
+      compMgr.autoRegister(dir);
+    }
+
+    for (name in options.resources) {
+      var dir = getDir(options.resources[name]);
+      var dirUri = ioService.newFileURI(dir);
+      resProt.setSubstitution(name, dirUri);
+    }
+
+    var jsm = {};
+    Cu.import(options.loader, jsm);
+    var rootPaths = options.rootPaths.slice();
+    var myModules = myFile.parent.parent;
+    myModules.append("securable-modules");
+    var myModulesURI = ioService.newFileURI(myModules);
+    rootPaths.push(myModulesURI.spec);
+
+    var loader = new jsm.Loader({rootPaths: rootPaths});
+
+    if (options.main) {
+      var obsvc = loader.require("observer-service");
+      obsvc.add("quit-application-granted",
+                function() {
+                  loader.unload();
+                  quit("OK");
+                });
+
+      var program = loader.require(options.main);
+      program.main(options);
+    } else {
+      var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
+               .getService(Ci.nsIWindowWatcher);
+      var window = ww.openWindow(null, "data:text/plain,Running tests...",
+                                 "harness", "centerscreen", null);
+
+      var harness = loader.require("harness");
+
+      options.print = function() { dump.apply(undefined, arguments); };
+
+      options.onDone = function onDone(tests) {
+        if (loader)
+          try {
+            loader.unload();
+            loader = null;
+          } catch (e) {
+            logErrorAndBail(e);
+          }
+        if (tests.passed > 0 && tests.failed == 0)
+          quit("OK");
+        else
+          quit("FAIL");
+      };
+
+      harness.runTests(options);
+    }
+  } catch (e) {
+    logErrorAndBail(e);
+  }
+}
 
 function startTests() {
-  if (!window) {
-    var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-             .getService(Ci.nsIWindowWatcher);
-    window = ww.openWindow(null, "chrome://myapp/content/main.xul",
-                           "harness", "chrome,centerscreen", null);
+  if (!isStarted) {
+    isStarted = true;
+    bootstrapAndRunTests();
   }
 }
 
@@ -92,5 +223,6 @@ HarnessService.prototype = {
 };
 
 function NSGetModule(compMgr, fileSpec) {
+  myFile = fileSpec;
   return XPCOMUtils.generateModule([HarnessService]);
 }
