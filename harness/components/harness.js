@@ -209,10 +209,17 @@ HarnessService.prototype = {
       case HARNESS_ID:
         startTests();
         break;
+      case THUNDERBIRD_ID:
+        obSvc.addObserver(this, "xul-window-visible", true);
+        break;
       case FIREFOX_ID:
         obSvc.addObserver(this, "sessionstore-windows-restored", true);
         break;
       }
+      break;
+    case "xul-window-visible":
+      // Thunderbird-only.
+      startTests();
       break;
     case "sessionstore-windows-restored":
       // Firefox-only.
