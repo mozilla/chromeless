@@ -232,7 +232,7 @@ var runTests = exports.runTests = function runTests(options) {
       if (klass) {
         profiler = {
           binary: klass.createInstance().get(),
-          scriptUrl: url.resolve(__url__, "profiler.js")
+          scriptUrl: url.resolve(__url__, "../profiler-scripts/profiler.js")
         };
 
         profiler.scriptPath = url.toFilename(profiler.scriptUrl);
