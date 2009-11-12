@@ -193,7 +193,7 @@ HarnessService.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
                                          Ci.nsISupportsWeakReference]),
 
-  observe: function BSS__observe(subject, topic, data) {
+  observe: function Harness_observe(subject, topic, data) {
     switch (topic) {
     case "app-startup":
       var appInfo = Cc["@mozilla.org/xre/app-info;1"]
