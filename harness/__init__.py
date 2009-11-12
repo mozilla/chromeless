@@ -3,6 +3,8 @@ import os
 import subprocess
 import time
 import tempfile
+import atexit
+import shutil
 import optparse
 import cStringIO as StringIO
 
@@ -179,9 +181,19 @@ def run(**kwargs):
     popen_kwargs = {}
 
     if options.app == "xulrunner":
+        # TODO: We're reduplicating a lot of mozrunner logic here,
+        # we should probably just get mozrunner to support this
+        # use case.
+
+        xulrunner_profile = tempfile.mkdtemp(suffix='.harness')
         cmdline = [options.binary,
                    '-app',
-                   os.path.join(mydir, 'application.ini')]
+                   os.path.join(mydir, 'application.ini'),
+                   '-profile', xulrunner_profile]
+
+        @atexit.register
+        def remove_xulrunner_profile():
+            shutil.rmtree(xulrunner_profile)
 
         if "xulrunner-bin" in options.binary:
             cmdline.remove("-app")
