@@ -204,10 +204,18 @@ def run(**kwargs):
     for option in parser.option_list[1:]:
         harness_options[option.dest] = getattr(options, option.dest)
 
+    if options.main:
+        del harness_options['iterations']
+    else:
+        harness_options['runTests'] = True
+
     env = {}
     env.update(os.environ)
     env['MOZ_NO_REMOTE'] = '1'
     env['HARNESS_OPTIONS'] = json.dumps(harness_options)
+
+    if options.verbose:
+        print "Configuration: %s" % json.dumps(harness_options)
 
     starttime = time.time()
 
@@ -268,9 +276,15 @@ def run(**kwargs):
     print "Total time: %f seconds" % (time.time() - starttime)
 
     if popen.returncode == 0 and output == 'OK':
-        print "All tests succeeded."
+        if options.main:
+            print "Program terminated successfully."
+        else:
+            print "All tests succeeded."
         retval = 0
     else:
-        print "Some tests failed."
+        if options.main:
+            print "Program terminated unsuccessfully."
+        else:
+            print "Some tests failed."
         retval = -1
     sys.exit(retval)

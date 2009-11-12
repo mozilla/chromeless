@@ -101,7 +101,12 @@ function getDir(path) {
   return dir;
 }
 
-function bootstrapAndRunTests() {
+function bootstrap() {
+  if (isStarted)
+    return;
+
+  isStarted = true;
+
   try {
     var ioService = Cc["@mozilla.org/network/io-service;1"]
                     .getService(Ci.nsIIOService);
@@ -142,7 +147,7 @@ function bootstrapAndRunTests() {
 
       var program = loader.require(options.main);
       program.main(options);
-    } else {
+    } else if (options.runTests) {
       var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
                .getService(Ci.nsIWindowWatcher);
       var window = ww.openWindow(null, "data:text/plain,Running tests...",
@@ -170,13 +175,6 @@ function bootstrapAndRunTests() {
     }
   } catch (e) {
     logErrorAndBail(e);
-  }
-}
-
-function startTests() {
-  if (!isStarted) {
-    isStarted = true;
-    bootstrapAndRunTests();
   }
 }
 
@@ -215,15 +213,15 @@ HarnessService.prototype = {
       break;
     case "xul-window-visible":
       // Thunderbird-only.
-      startTests();
+      bootstrap();
       break;
     case "sessionstore-windows-restored":
       // Firefox-only.
-      startTests();
+      bootstrap();
       break;
     case "final-ui-startup":
       // Any other app.
-      startTests();
+      bootstrap();
       break;
     }
   }
