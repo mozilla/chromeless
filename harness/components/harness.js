@@ -207,7 +207,7 @@ HarnessService.prototype = {
 
       switch (appInfo.ID) {
       case HARNESS_ID:
-        startTests();
+        obSvc.addObserver(this, "final-ui-startup", true);
         break;
       case THUNDERBIRD_ID:
         obSvc.addObserver(this, "xul-window-visible", true);
@@ -216,6 +216,10 @@ HarnessService.prototype = {
         obSvc.addObserver(this, "sessionstore-windows-restored", true);
         break;
       }
+      break;
+    case "final-ui-startup":
+      // XULRunner-only.
+      startTests();
       break;
     case "xul-window-visible":
       // Thunderbird-only.
