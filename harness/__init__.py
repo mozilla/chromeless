@@ -195,7 +195,11 @@ def run(**kwargs):
 
     install_xpts(mydir, options.components)
 
-    harness_options = {'resultFile': resultfile}
+    harness_options = {
+        'resultFile': resultfile,
+        'contractID': '@mozilla.org/harness/service;1',
+        'classID': '{74b89fb1-f200-4ae8-a3ec-dd164117f6df}'
+        }
     harness_options.update(kwargs)
     for option in parser.option_list[1:]:
         harness_options[option.dest] = getattr(options, option.dest)

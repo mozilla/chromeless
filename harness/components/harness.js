@@ -41,9 +41,11 @@ const Cu = Components.utils;
 
 const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
 const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
-const HARNESS_ID = "xulapp@toolness.com";
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+
+// JSON configuration information passed in from the environment.
+var options;
 
 // Whether we've initialized or not yet.
 var isStarted;
@@ -105,15 +107,6 @@ function bootstrapAndRunTests() {
                     .getService(Ci.nsIIOService);
     var resProt = ioService.getProtocolHandler("resource")
                   .QueryInterface(Ci.nsIResProtocolHandler);
-    var environ = Cc["@mozilla.org/process/environment;1"]
-                  .getService(Ci.nsIEnvironment);
-
-    if (!environ.exists("HARNESS_OPTIONS"))
-      throw new Error("HARNESS_OPTIONS env var must exist.");
-
-    var options = JSON.parse(environ.get("HARNESS_OPTIONS"));
-
-    resultFile = options.resultFile;
 
     var compMgr = Components.manager;
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
@@ -190,8 +183,11 @@ function startTests() {
 function HarnessService() {}
 HarnessService.prototype = {
   classDescription: "Harness Service",
-  contractID: "@mozilla.org/harness/service;1",
-  classID: Components.ID("{74b89fb1-f200-4ae8-a3ec-dd164117f6df}"),
+
+  get contractID() { return options.contractID; },
+
+  get classID() { return Components.ID(options.classID); },
+
   _xpcom_categories: [{ category: "app-startup", service: true }],
 
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
@@ -206,20 +202,16 @@ HarnessService.prototype = {
                   .getService(Ci.nsIObserverService);
 
       switch (appInfo.ID) {
-      case HARNESS_ID:
-        obSvc.addObserver(this, "final-ui-startup", true);
-        break;
       case THUNDERBIRD_ID:
         obSvc.addObserver(this, "xul-window-visible", true);
         break;
       case FIREFOX_ID:
         obSvc.addObserver(this, "sessionstore-windows-restored", true);
         break;
+      default:
+        obSvc.addObserver(this, "final-ui-startup", true);
+        break;
       }
-      break;
-    case "final-ui-startup":
-      // XULRunner-only.
-      startTests();
       break;
     case "xul-window-visible":
       // Thunderbird-only.
@@ -229,11 +221,30 @@ HarnessService.prototype = {
       // Firefox-only.
       startTests();
       break;
+    case "final-ui-startup":
+      // Any other app.
+      startTests();
+      break;
     }
   }
 };
 
 function NSGetModule(compMgr, fileSpec) {
   myFile = fileSpec;
+
+  try {
+    var environ = Cc["@mozilla.org/process/environment;1"]
+                  .getService(Ci.nsIEnvironment);
+
+    if (!environ.exists("HARNESS_OPTIONS"))
+      throw new Error("HARNESS_OPTIONS env var must exist.");
+
+    options = JSON.parse(environ.get("HARNESS_OPTIONS"));
+
+    resultFile = options.resultFile;
+  } catch (e) {
+    logErrorAndBail(e);
+  }
+
   return XPCOMUtils.generateModule([HarnessService]);
 }
