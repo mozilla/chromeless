@@ -5,6 +5,7 @@ import time
 import tempfile
 import atexit
 import shutil
+import glob
 import optparse
 import cStringIO as StringIO
 
@@ -87,6 +88,32 @@ def find_firefox_binary():
     runner = mozrunner.FirefoxRunner(profile=dummy_profile)
     return runner.find_binary()
 
+def install_xpts(mydir, component_dirs):
+    """
+    Temporarily 'installs' all XPCOM typelib files in given
+    component directories into the harness components directory.
+
+    This is needed because there doesn't seem to be any way to
+    temporarily install typelibs during the runtime of a
+    XULRunner app.
+    """
+
+    my_components_dir = os.path.join(mydir, 'components')
+    installed_xpts = []
+    for dirname in component_dirs:
+        files = [os.path.basename(name)
+                 for name in glob.glob(os.path.join(dirname, '*.xpt'))]
+        for filename in files:
+            target = os.path.join(my_components_dir, filename)
+            shutil.copyfile(os.path.join(dirname, filename),
+                            target)
+            installed_xpts.append(target)
+
+    @atexit.register
+    def cleanup_installed_xpts():
+        for path in installed_xpts:
+            os.remove(path)
+
 def run(**kwargs):
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
@@ -165,6 +192,8 @@ def run(**kwargs):
         os.remove(resultfile)
 
     mydir = os.path.dirname(os.path.abspath(__file__))
+
+    install_xpts(mydir, options.components)
 
     harness_options = {'resultFile': resultfile}
     harness_options.update(kwargs)
