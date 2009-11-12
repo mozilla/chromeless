@@ -182,9 +182,9 @@ function HarnessService() {}
 HarnessService.prototype = {
   classDescription: "Harness Service",
 
-  get contractID() { return options.contractID; },
+  get contractID() { return options.bootstrap.contractID; },
 
-  get classID() { return Components.ID(options.classID); },
+  get classID() { return Components.ID(options.bootstrap.classID); },
 
   _xpcom_categories: [{ category: "app-startup", service: true }],
 
