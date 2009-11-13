@@ -12,7 +12,7 @@ import __main__
 
 rootdir = os.path.abspath(os.path.dirname(__main__.__file__))
 mydir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mydir, 'python-modules'))
+sys.path.insert(0, os.path.join(mydir, '..', 'python-packages'))
 
 import simplejson as json
 import mozrunner
