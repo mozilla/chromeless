@@ -33,7 +33,7 @@
 
      var url = require("url");
      var path = url.resolve(__url__,
-                            "../interoperablejs-read-only/compliance/");
+                            "interoperablejs-read-only/compliance/");
      path = url.toFilename(path);
 
      var file = Cc['@mozilla.org/file/local;1']

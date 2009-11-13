@@ -1,3 +1,4 @@
 syntax: glob
 *.pyc
-interoperablejs-read-only
+tests/interoperablejs-read-only
+local.json

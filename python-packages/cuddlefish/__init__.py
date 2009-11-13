@@ -114,6 +114,86 @@ def install_xpts(mydir, component_dirs):
         for path in installed_xpts:
             os.remove(path)
 
+def get_config_in_dir(path):
+    package_json = os.path.join(path, 'package.json')
+    return json.loads(open(package_json, 'r').read())
+
+def build_config(root_dir, extra_paths=None):
+    local_json = os.path.join(root_dir, 'local.json')
+    if os.path.exists(local_json):
+        config = json.loads(open(local_json, 'r').read())
+    else:
+        config = {'paths': []}
+
+    if not extra_paths:
+        extra_paths = []
+    extra_paths.append(root_dir)
+    config['paths'].extend(extra_paths)
+
+    paths = [os.path.abspath(path)
+             for path in config['paths']]
+    paths = list(set(paths))
+
+    config['paths'] = paths
+    config['packages'] = {}
+    for path in paths:
+        pkgconfig = get_config_in_dir(path)
+        pkgconfig['root_dir'] = path
+        config['packages'][pkgconfig['name']] = pkgconfig
+    return config
+
+def get_deps_for_target(pkg_cfg, target):
+    visited = []
+    deps_left = [target]
+
+    while deps_left:
+        dep = deps_left.pop()
+        if dep not in visited:
+            visited.append(dep)
+            dep_cfg = pkg_cfg['packages'][dep]
+            deps_left.extend(dep_cfg.get('dependencies', []))
+
+    return visited
+
+def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
+    build = {'resources': {},
+             'rootPaths': []}
+
+    def add_section_to_build(cfg, section):
+        if section in cfg:
+            for dirname in cfg[section]:
+                name = "-".join([prefix + cfg['name'], dirname])
+                build['resources'][name] = os.path.join(cfg['root_dir'], dirname)
+                build['rootPaths'].insert(0, 'resource://%s/' % name)
+
+    def add_dep_to_build(dep):
+        dep_cfg = pkg_cfg['packages'][dep]
+        add_section_to_build(dep_cfg, "lib")
+        if "loader" in dep_cfg:
+            build['loader'] = "resource://%s-%s" % (prefix + dep,
+                                                    dep_cfg["loader"])
+
+    target_cfg = pkg_cfg['packages'][target]
+    add_section_to_build(target_cfg, "tests")
+
+    for dep in deps:
+        add_dep_to_build(dep)
+
+    return build
+
+def call_plugins(pkg_cfg, deps, options):
+    for dep in deps:
+        dep_cfg = pkg_cfg['packages'][dep]
+        dirnames = dep_cfg.get('python-lib', [])
+        dirnames = [os.path.join(dep_cfg['root_dir'], dirname)
+                    for dirname in dirnames]
+        for dirname in dirnames:
+            sys.path.append(dirname)
+        module_names = dep_cfg.get('python-plugins', [])
+        for module_name in module_names:
+            module = __import__(module_name)
+            module.init(dep_cfg['root_dir'], options)
+
 def run(**kwargs):
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
@@ -151,6 +231,15 @@ def run(**kwargs):
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
     (options, args) = parser.parse_args()
+
+    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'], [os.getcwd()])
+    target_cfg = get_config_in_dir(os.getcwd())
+
+    target = target_cfg['name']
+    deps = get_deps_for_target(pkg_cfg, target)
+    build = generate_build_for_target(pkg_cfg, target, deps)
+
+    kwargs.update(build)
 
     if options.export:
         if not options.main:
@@ -227,6 +316,11 @@ def run(**kwargs):
 
     del harness_options['app']
     del harness_options['binary']
+
+    options.cuddlefish_root = os.environ['CUDDLEFISH_ROOT']
+    options.harness_options = harness_options
+
+    call_plugins(pkg_cfg, deps, options)
 
     if options.export:
         install_rdf = os.path.abspath("install.rdf")
