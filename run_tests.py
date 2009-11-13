@@ -20,8 +20,7 @@ def setup():
 
 if __name__ == '__main__':
     harness.run(setup=setup,
-                resources={'app': '.',
-                           'interoperablejs': 'interoperablejs-read-only'},
+                resources={'app': '.'},
                 rootPaths=["resource://app/lib/",
                            "resource://app/tests/"],
                 loader="resource://app/lib/cuddlefish.js")
