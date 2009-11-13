@@ -44,6 +44,9 @@ const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
+// Whether to quit the application when we're done.
+var quitOnFinish = true;
+
 // JSON configuration information passed in from the environment.
 var options;
 
@@ -77,9 +80,11 @@ function quit(result) {
     }
   }
 
-  var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
-                   getService(Ci.nsIAppStartup);
-  appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+  if (quitOnFinish) {
+    var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
+                     getService(Ci.nsIAppStartup);
+    appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+  }
 }
 
 function logErrorAndBail(e) {
@@ -92,12 +97,16 @@ function logErrorAndBail(e) {
   quit("FAIL");
 }
 
+function ensureIsDir(dir) {
+  if (!(dir.exists() && dir.isDirectory))
+    throw new Error("directory not found: " + dir.path);
+}
+
 function getDir(path) {
   var dir = Cc['@mozilla.org/file/local;1']
             .createInstance(Ci.nsILocalFile);
   dir.initWithPath(path);
-  if (!(dir.exists() && dir.isDirectory))
-    throw new Error("directory not found: " + dir.path);
+  ensureIsDir(dir);
   return dir;
 }
 
@@ -122,7 +131,15 @@ function bootstrap() {
     }
 
     for (name in options.resources) {
-      var dir = getDir(options.resources[name]);
+      var path = options.resources[name];
+      var dir;
+      if (typeof(path) == "string")
+        dir = getDir(path);
+      else {
+        dir = myFile.parent.parent;
+        path.forEach(function(part) { dir.append(part); });
+        ensureIsDir(dir);
+      }
       var dirUri = ioService.newFileURI(dir);
       resProt.setSubstitution(name, dirUri);
     }
@@ -234,10 +251,30 @@ function NSGetModule(compMgr, fileSpec) {
     var environ = Cc["@mozilla.org/process/environment;1"]
                   .getService(Ci.nsIEnvironment);
 
-    if (!environ.exists("HARNESS_OPTIONS"))
-      throw new Error("HARNESS_OPTIONS env var must exist.");
+    var jsonData;
+    if (environ.exists("HARNESS_OPTIONS")) {
+      jsonData = environ.get("HARNESS_OPTIONS");
+    } else {
+      quitOnFinish = false;
+      var optionsFile = myFile.parent.parent;
+      optionsFile.append('harness-options.json');
+      if (optionsFile.exists()) {
+        var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
+                       .createInstance(Ci.nsIFileInputStream);
+        var siStream = Cc['@mozilla.org/scriptableinputstream;1']
+                       .createInstance(Ci.nsIScriptableInputStream);
+        fiStream.init(optionsFile, 1, 0, false);
+        siStream.init(fiStream);
+        var data = new String();
+        data += siStream.read(-1);
+        siStream.close();
+        fiStream.close();
+        jsonData = data;
+      } else
+        throw new Error("HARNESS_OPTIONS env var must exist.");
+    }
 
-    options = JSON.parse(environ.get("HARNESS_OPTIONS"));
+    options = JSON.parse(jsonData);
 
     resultFile = options.resultFile;
   } catch (e) {

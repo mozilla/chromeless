@@ -8,7 +8,9 @@ import shutil
 import glob
 import optparse
 import cStringIO as StringIO
+import __main__
 
+rootdir = os.path.abspath(os.path.dirname(__main__.__file__))
 mydir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(mydir, 'python-modules'))
 
@@ -141,12 +143,21 @@ def run(**kwargs):
                                       "export instead of tests"),
                                 metavar=None,
                                 default=None),
+        ("-e", "--export",): dict(dest="export",
+                                  help="export as extension",
+                                  metavar=None,
+                                  default=None),
         }
 
     parser = optparse.OptionParser()
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
     (options, args) = parser.parse_args()
+
+    if options.export:
+        if not options.main:
+            print "Exporting as an extension requires a main script."
+            sys.exit(1)
 
     if options.app == "xulrunner":
         if not options.binary:
@@ -212,8 +223,52 @@ def run(**kwargs):
     else:
         harness_options['runTests'] = True
 
+    if options.export:
+        del harness_options['resultFile']
+        del harness_options['export']
+
     del harness_options['app']
     del harness_options['binary']
+
+    if options.export:
+        install_rdf = os.path.abspath("install.rdf")
+        if not os.path.exists(install_rdf):
+            print "install.rdf not found in root dir (%s)." % rootdir
+            sys.exit(1)
+        print "Exporting extension to %s." % options.export
+
+        import zipfile
+        zfname = options.export
+        zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
+        zf.write(install_rdf, "install.rdf")
+        harness_component = os.path.join(mydir, 'components',
+                                         'harness.js')
+        zf.write(harness_component, os.path.join('components',
+                                                 'harness.js'))
+
+        IGNORED_FILES = [".hgignore", "install.rdf", zfname]
+        IGNORED_DIRS = [".svn", ".hg"]
+        new_resources = {}
+        for resource in harness_options['resources']:
+            base_arcpath = os.path.join('resources', resource)
+            new_resources[resource] = ['resources', resource]
+            abs_dirname = harness_options['resources'][resource]
+            for dirpath, dirnames, filenames in os.walk(abs_dirname):
+                goodfiles = [filename for filename in filenames
+                             if filename not in IGNORED_FILES]
+                for filename in goodfiles:
+                    abspath = os.path.join(dirpath, filename)
+                    arcpath = abspath[len(abs_dirname)+1:]
+                    arcpath = os.path.join(base_arcpath, arcpath)
+                    zf.write(abspath, arcpath)
+                dirnames[:] = [dirname for dirname in dirnames
+                               if dirname not in IGNORED_DIRS]
+        harness_options['resources'] = new_resources
+        open('.options.json', 'w').write(json.dumps(harness_options))
+        zf.write('.options.json', 'harness-options.json')
+        os.remove('.options.json')
+        zf.close()
+        sys.exit(0)
 
     env = {}
     env.update(os.environ)
