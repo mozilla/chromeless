@@ -222,8 +222,8 @@ def run(**kwargs):
         ("-m", "--main",): dict(dest="main",
                                 help=("run a module with a main() "
                                       "export instead of tests"),
-                                metavar=None,
-                                default=None),
+                                action="store_true",
+                                default=False),
         ("-e", "--export",): dict(dest="export",
                                   help="export as extension",
                                   metavar=None,
@@ -245,8 +245,17 @@ def run(**kwargs):
     kwargs.update(build)
 
     if options.export:
-        if not options.main:
-            print "Exporting as an extension requires a main script."
+        options.main = True
+
+    if not options.main and 'tests' not in target_cfg:
+        print "No test suite found, using 'main' instead."
+        options.main = True
+
+    if options.main:
+        if 'main' in target_cfg:
+            options.main = target_cfg['main']
+        else:
+            print "package.json does not have a 'main' entry."
             sys.exit(1)
 
     if options.app == "xulrunner":
