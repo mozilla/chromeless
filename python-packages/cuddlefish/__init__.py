@@ -7,6 +7,7 @@ import atexit
 import shutil
 import glob
 import optparse
+import uuid
 import cStringIO as StringIO
 import __main__
 
@@ -230,6 +231,8 @@ def run(**kwargs):
                                   default=None),
         }
 
+    guid = str(uuid.uuid4())
+
     parser = optparse.OptionParser()
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
@@ -240,7 +243,8 @@ def run(**kwargs):
 
     target = target_cfg['name']
     deps = get_deps_for_target(pkg_cfg, target)
-    build = generate_build_for_target(pkg_cfg, target, deps)
+    build = generate_build_for_target(pkg_cfg, target, deps,
+                                      prefix='%s-' % guid)
 
     kwargs.update(build)
 
@@ -308,8 +312,8 @@ def run(**kwargs):
     harness_options = {
         'resultFile': resultfile,
         'bootstrap': {
-            'contractID': '@mozilla.org/harness/service;1',
-            'classID': '{74b89fb1-f200-4ae8-a3ec-dd164117f6df}'
+            'contractID': '@mozilla.org/harness/service;1;%s' % guid,
+            'classID': '{%s}' % guid
             }
         }
 
@@ -335,23 +339,33 @@ def run(**kwargs):
     call_plugins(pkg_cfg, deps, options)
 
     if options.export:
-        install_rdf = os.path.abspath("install.rdf")
-        if not os.path.exists(install_rdf):
-            print "install.rdf not found (%s)." % install_rdf
-            sys.exit(1)
-        print "Exporting extension to %s." % options.export
-
+        import rdfutils
         import zipfile
-        import uuid
 
-        bootstrap = harness_options['bootstrap']
-        newguid = '{%s}' % str(uuid.uuid4())
-        bootstrap['classID'] = newguid
-        bootstrap['contractID'] += ";" + newguid
+        install_rdf = os.path.join(mydir, "install.rdf")
+        manifest = rdfutils.RDFManifest(install_rdf)
+
+        manifest.set("em:id",
+                     target_cfg.get('id', '{%s}' % str(uuid.uuid4())))
+        manifest.set("em:version",
+                     target_cfg.get('version', '1.0'))
+        manifest.set("em:name",
+                     target_cfg['name'])
+        manifest.set("em:description",
+                     target_cfg.get("description", ""))
+        manifest.set("em:creator",
+                     target_cfg.get("author", ""))
 
         zfname = options.export
+
+        print "Exporting extension to %s." % zfname
+
         zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
-        zf.write(install_rdf, "install.rdf")
+
+        open('.install.rdf', 'w').write(str(manifest))
+        zf.write('.install.rdf', 'install.rdf')
+        os.remove('.install.rdf')
+
         harness_component = os.path.join(mydir, 'components',
                                          'harness.js')
         zf.write(harness_component, os.path.join('components',
@@ -359,6 +373,7 @@ def run(**kwargs):
 
         IGNORED_FILES = [".hgignore", "install.rdf", zfname]
         IGNORED_DIRS = [".svn", ".hg"]
+
         new_resources = {}
         for resource in harness_options['resources']:
             base_arcpath = os.path.join('resources', resource)
@@ -371,13 +386,15 @@ def run(**kwargs):
                     abspath = os.path.join(dirpath, filename)
                     arcpath = abspath[len(abs_dirname)+1:]
                     arcpath = os.path.join(base_arcpath, arcpath)
-                    zf.write(abspath, arcpath)
+                    zf.write(str(abspath), str(arcpath))
                 dirnames[:] = [dirname for dirname in dirnames
                                if dirname not in IGNORED_DIRS]
         harness_options['resources'] = new_resources
+
         open('.options.json', 'w').write(json.dumps(harness_options))
         zf.write('.options.json', 'harness-options.json')
         os.remove('.options.json')
+
         zf.close()
         sys.exit(0)
 
