@@ -394,7 +394,10 @@ def run(**kwargs):
 
         @atexit.register
         def remove_xulrunner_profile():
-            shutil.rmtree(xulrunner_profile)
+            try:
+                shutil.rmtree(xulrunner_profile)
+            except OSError:
+                pass
 
         if "xulrunner-bin" in options.binary:
             cmdline.remove("-app")
