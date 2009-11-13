@@ -238,6 +238,13 @@ def run(**kwargs):
         print "Exporting extension to %s." % options.export
 
         import zipfile
+        import uuid
+
+        bootstrap = harness_options['bootstrap']
+        newguid = '{%s}' % str(uuid.uuid4())
+        bootstrap['classID'] = newguid
+        bootstrap['contractID'] += ";" + newguid
+
         zfname = options.export
         zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
         zf.write(install_rdf, "install.rdf")
