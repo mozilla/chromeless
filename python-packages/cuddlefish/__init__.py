@@ -125,6 +125,9 @@ def build_config(root_dir, extra_paths=None):
     else:
         config = {'paths': []}
 
+    config['paths'] = [os.path.join(root_dir, path)
+                       for path in config['paths']]
+
     if not extra_paths:
         extra_paths = []
     extra_paths.append(root_dir)
