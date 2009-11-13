@@ -209,6 +209,11 @@ HarnessService.prototype = {
                                          Ci.nsISupportsWeakReference]),
 
   observe: function Harness_observe(subject, topic, data) {
+    if (options.main) {
+      bootstrap();
+      return;
+    }
+
     switch (topic) {
     case "app-startup":
       var appInfo = Cc["@mozilla.org/xre/app-info;1"]
