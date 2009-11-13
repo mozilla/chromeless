@@ -2,7 +2,10 @@ import sys
 import os
 import subprocess
 
-import harness
+mydir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(mydir, '..', 'python-packages'))
+
+import cuddlefish
 
 def setup():
     if not os.path.exists('interoperablejs-read-only'):
@@ -19,8 +22,8 @@ def setup():
             sys.exit(1)
 
 if __name__ == '__main__':
-    harness.run(setup=setup,
-                resources={'app': '.'},
-                rootPaths=["resource://app/lib/",
-                           "resource://app/tests/"],
-                loader="resource://app/lib/cuddlefish.js")
+    cuddlefish.run(setup=setup,
+                   resources={'app': '.'},
+                   rootPaths=["resource://app/lib/",
+                              "resource://app/tests/"],
+                   loader="resource://app/lib/cuddlefish.js")

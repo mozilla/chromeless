@@ -10,12 +10,10 @@ import optparse
 import cStringIO as StringIO
 import __main__
 
-rootdir = os.path.abspath(os.path.dirname(__main__.__file__))
-mydir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mydir, '..', 'python-packages'))
-
 import simplejson as json
 import mozrunner
+
+mydir = os.path.dirname(os.path.abspath(__file__))
 
 # Maximum time we'll wait for tests to finish, in seconds.
 MAX_WAIT_TIMEOUT = 5 * 60
@@ -233,7 +231,7 @@ def run(**kwargs):
     if options.export:
         install_rdf = os.path.abspath("install.rdf")
         if not os.path.exists(install_rdf):
-            print "install.rdf not found in root dir (%s)." % rootdir
+            print "install.rdf not found (%s)." % install_rdf
             sys.exit(1)
         print "Exporting extension to %s." % options.export
 
