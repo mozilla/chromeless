@@ -1,9 +1,8 @@
+#! /usr/bin/env python
+
 import sys
 import os
 import subprocess
-
-mydir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(mydir, '..', 'python-packages'))
 
 import cuddlefish
 
