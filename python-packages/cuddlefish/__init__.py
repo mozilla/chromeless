@@ -120,14 +120,12 @@ def get_config_in_dir(path):
     return json.loads(open(package_json, 'r').read())
 
 def build_config(root_dir, extra_paths=None):
-    local_json = os.path.join(root_dir, 'local.json')
-    if os.path.exists(local_json):
-        config = json.loads(open(local_json, 'r').read())
-    else:
-        config = {'paths': []}
-
-    config['paths'] = [os.path.join(root_dir, path)
-                       for path in config['paths']]
+    packages_dir = os.path.join(root_dir, 'packages')
+    config = {'paths': []}
+    if os.path.exists(packages_dir) and os.path.isdir(packages_dir):
+        package_paths = [os.path.join(packages_dir, dirname)
+                         for dirname in os.listdir(packages_dir)]
+        config['paths'].extend(package_paths)
 
     if not extra_paths:
         extra_paths = []
