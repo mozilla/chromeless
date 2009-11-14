@@ -3,9 +3,16 @@ import sys
 
 import simplejson as json
 
+class MalformedJsonFileError(Exception):
+    pass
+
 def get_config_in_dir(path):
     package_json = os.path.join(path, 'package.json')
-    return json.loads(open(package_json, 'r').read())
+    data = open(package_json, 'r').read()
+    try:
+        return json.loads(data)
+    except ValueError, e:
+        raise MalformedJsonFileError(package_json, str(e))
 
 def build_config(root_dir, extra_paths=None):
     packages_dir = os.path.join(root_dir, 'packages')
