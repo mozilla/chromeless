@@ -9,7 +9,6 @@ import glob
 import optparse
 import uuid
 import cStringIO as StringIO
-import __main__
 
 import simplejson as json
 import mozrunner
