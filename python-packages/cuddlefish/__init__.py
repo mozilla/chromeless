@@ -10,6 +10,7 @@ import glob
 
 import simplejson as json
 import mozrunner
+from cuddlefish import packaging
 from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
 from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
 
@@ -53,88 +54,6 @@ def install_xpts(mydir, component_dirs):
     def cleanup_installed_xpts():
         for path in installed_xpts:
             os.remove(path)
-
-def get_config_in_dir(path):
-    package_json = os.path.join(path, 'package.json')
-    return json.loads(open(package_json, 'r').read())
-
-def build_config(root_dir, extra_paths=None):
-    packages_dir = os.path.join(root_dir, 'packages')
-    config = {'paths': []}
-    if os.path.exists(packages_dir) and os.path.isdir(packages_dir):
-        package_paths = [os.path.join(packages_dir, dirname)
-                         for dirname in os.listdir(packages_dir)]
-        config['paths'].extend(package_paths)
-
-    if not extra_paths:
-        extra_paths = []
-    extra_paths.append(root_dir)
-    config['paths'].extend(extra_paths)
-
-    paths = [os.path.abspath(path)
-             for path in config['paths']]
-    paths = list(set(paths))
-
-    config['paths'] = paths
-    config['packages'] = {}
-    for path in paths:
-        pkgconfig = get_config_in_dir(path)
-        pkgconfig['root_dir'] = path
-        config['packages'][pkgconfig['name']] = pkgconfig
-    return config
-
-def get_deps_for_target(pkg_cfg, target):
-    visited = []
-    deps_left = [target]
-
-    while deps_left:
-        dep = deps_left.pop()
-        if dep not in visited:
-            visited.append(dep)
-            dep_cfg = pkg_cfg['packages'][dep]
-            deps_left.extend(dep_cfg.get('dependencies', []))
-
-    return visited
-
-def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
-    build = {'resources': {},
-             'rootPaths': []}
-
-    def add_section_to_build(cfg, section):
-        if section in cfg:
-            for dirname in cfg[section]:
-                name = "-".join([prefix + cfg['name'], dirname])
-                build['resources'][name] = os.path.join(cfg['root_dir'],
-                                                        dirname)
-                build['rootPaths'].insert(0, 'resource://%s/' % name)
-
-    def add_dep_to_build(dep):
-        dep_cfg = pkg_cfg['packages'][dep]
-        add_section_to_build(dep_cfg, "lib")
-        if "loader" in dep_cfg:
-            build['loader'] = "resource://%s-%s" % (prefix + dep,
-                                                    dep_cfg["loader"])
-
-    target_cfg = pkg_cfg['packages'][target]
-    add_section_to_build(target_cfg, "tests")
-
-    for dep in deps:
-        add_dep_to_build(dep)
-
-    return build
-
-def call_plugins(pkg_cfg, deps, options):
-    for dep in deps:
-        dep_cfg = pkg_cfg['packages'][dep]
-        dirnames = dep_cfg.get('python-lib', [])
-        dirnames = [os.path.join(dep_cfg['root_dir'], dirname)
-                    for dirname in dirnames]
-        for dirname in dirnames:
-            sys.path.append(dirname)
-        module_names = dep_cfg.get('python-plugins', [])
-        for module_name in module_names:
-            module = __import__(module_name)
-            module.init(dep_cfg['root_dir'], options)
 
 usage = """
 %(progname)s [options] [command]
@@ -202,7 +121,7 @@ def run():
         print "cannot find 'package.json' in %s." % options.pkgdir
         sys.exit(1)
 
-    target_cfg = get_config_in_dir(options.pkgdir)
+    target_cfg = packaging.get_config_in_dir(options.pkgdir)
 
     use_main = False
     command = args[0]
@@ -279,8 +198,8 @@ def run():
     options.components = [os.path.abspath(path)
                           for path in options.components]
 
-    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'],
-                           [options.pkgdir])
+    pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
+                                     [options.pkgdir])
     target = target_cfg['name']
 
     if command == 'xpi':
@@ -291,9 +210,9 @@ def run():
         guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
         unique_prefix = '%s-' % target
 
-    deps = get_deps_for_target(pkg_cfg, target)
-    build = generate_build_for_target(pkg_cfg, target, deps,
-                                      prefix=unique_prefix)
+    deps = packaging.get_deps_for_target(pkg_cfg, target)
+    build = packaging.generate_build_for_target(pkg_cfg, target, deps,
+                                                prefix=unique_prefix)
 
     if 'resources' in build:
         resources = build['resources']
@@ -332,7 +251,7 @@ def run():
     for option in inherited_options:
         harness_options[option] = getattr(options, option)
 
-    call_plugins(pkg_cfg, deps, options)
+    packaging.call_plugins(pkg_cfg, deps, options)
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
