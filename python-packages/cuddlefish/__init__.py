@@ -228,6 +228,14 @@ def run():
                                      "firefox, or thunderbird"),
                                metavar=None,
                                default="xulrunner"),
+        ("-s", "--srcdir",): dict(dest="moz_srcdir",
+                                  help="Mozilla source dir",
+                                  metavar=None,
+                                  default=None),
+        ("-o", "--objdir",): dict(dest="moz_objdir",
+                                  help="Mozilla objdir",
+                                  metavar=None,
+                                  default=None),
         ("-p", "--pkgdir",): dict(dest="pkgdir",
                                   help=("package dir containing "
                                         "package.json; default is "
@@ -268,7 +276,30 @@ def run():
     use_main = False
     command = args[0]
     if command == "xpcom":
-        raise NotImplementedError()
+        if 'xpcom' not in target_cfg:
+            print "package.json does not have a 'xpcom' entry."
+            sys.exit(1)
+        if not (options.moz_srcdir and options.moz_objdir):
+            print "srcdir and objdir not specified."
+            sys.exit(1)
+        options.moz_srcdir = os.path.expanduser(options.moz_srcdir)
+        options.moz_objdir = os.path.expanduser(options.moz_objdir)
+        xpcom = target_cfg['xpcom']
+        from xpcomutils import build_xpcom_components
+        if 'typelibs' in xpcom:
+            xpt_output_dir = os.path.join(options.pkgdir,
+                                          xpcom['typelibs'])
+        else:
+            xpt_output_dir = None
+        build_xpcom_components(
+            comp_src_dir=os.path.join(options.pkgdir, xpcom['src']),
+            moz_srcdir=options.moz_srcdir,
+            moz_objdir=options.moz_objdir,
+            base_output_dir=os.path.join(options.pkgdir, xpcom['dest']),
+            xpt_output_dir=xpt_output_dir,
+            module_name=xpcom['module']
+            )
+        sys.exit(0)
     elif command == "xpi":
         xpi_name = "%s.xpi" % target_cfg['name']
         use_main = True

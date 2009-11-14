@@ -18,7 +18,8 @@ def run_program(args, **kwargs):
         sys.exit(retval)
 
 def build_xpcom_components(comp_src_dir, moz_srcdir, moz_objdir,
-                           base_output_dir, xpt_output_dir, module_name):
+                           base_output_dir, module_name,
+                           xpt_output_dir=None):
     options = Bunch(srcdir=moz_srcdir,
                     objdir=moz_objdir)
     xpcom_info = Bunch()
@@ -102,6 +103,10 @@ def build_xpcom_components(comp_src_dir, moz_srcdir, moz_objdir,
     for filename in libfiles:
         shutil.copy(os.path.join(comp_xpi_dir, filename),
                     comp_plat_dir)
+
+    if xptfiles and not xpt_output_dir:
+        raise ValueError('typelibs generated, but xpt_output_dir '
+                         'not provided')
 
     for filename in xptfiles:
         shutil.copy(os.path.join(comp_xpi_dir, filename),
