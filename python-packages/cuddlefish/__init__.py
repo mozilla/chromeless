@@ -1,28 +1,11 @@
 import sys
 import os
 import optparse
-import subprocess
-import time
-import tempfile
-import atexit
-import shutil
 import glob
 
-import simplejson as json
-import mozrunner
 from cuddlefish import packaging
-from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
-from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
 
 mydir = os.path.dirname(os.path.abspath(__file__))
-
-# Maximum time we'll wait for tests to finish, in seconds.
-MAX_WAIT_TIMEOUT = 5 * 60
-
-def find_firefox_binary():
-    dummy_profile = {}
-    runner = mozrunner.FirefoxRunner(profile=dummy_profile)
-    return runner.find_binary()
 
 def get_xpts(component_dirs):
     files = []
@@ -30,30 +13,6 @@ def get_xpts(component_dirs):
         xpts = glob.glob(os.path.join(dirname, '*.xpt'))
         files.extend(xpts)
     return files
-
-def install_xpts(mydir, component_dirs):
-    """
-    Temporarily 'installs' all XPCOM typelib files in given
-    component directories into the harness components directory.
-
-    This is needed because there doesn't seem to be any way to
-    temporarily install typelibs during the runtime of a
-    XULRunner app.
-    """
-
-    my_components_dir = os.path.join(mydir, 'components')
-    installed_xpts = []
-    xpts = get_xpts(component_dirs)
-    for abspath in xpts:
-        target = os.path.join(my_components_dir,
-                              os.path.basename(abspath))
-        shutil.copyfile(abspath, target)
-        installed_xpts.append(target)
-
-    @atexit.register
-    def cleanup_installed_xpts():
-        for path in installed_xpts:
-            os.remove(path)
 
 usage = """
 %(progname)s [options] [command]
@@ -172,22 +131,6 @@ def run():
         print "package.json does not have a 'main' entry."
         sys.exit(1)
 
-    if options.app == "xulrunner":
-        if not options.binary:
-            options.binary = find_firefox_binary()
-    else:
-        if options.app == "firefox":
-            profile_class = mozrunner.FirefoxProfile
-            preferences = DEFAULT_FIREFOX_PREFS
-            runner_class = mozrunner.FirefoxRunner
-        elif options.app == "thunderbird":
-            profile_class = mozrunner.ThunderbirdProfile
-            preferences = DEFAULT_THUNDERBIRD_PREFS
-            runner_class = mozrunner.ThunderbirdRunner
-        else:
-            print "Unknown app: %s" % options.app
-            sys.exit(1)
-
     options.iterations = int(options.iterations)
 
     if not options.components:
@@ -221,8 +164,6 @@ def run():
 
     mydir = os.path.dirname(os.path.abspath(__file__))
 
-    install_xpts(mydir, options.components)
-
     dep_xpt_dirs = []
     for dep in deps:
         dep_cfg = pkg_cfg['packages'][dep]
@@ -230,6 +171,8 @@ def run():
             abspath = os.path.join(dep_cfg['root_dir'],
                                    dep_cfg['xpcom']['typelibs'])
             dep_xpt_dirs.append(abspath)
+    dep_xpt_dirs.extend(options.components)
+    xpts = get_xpts(dep_xpt_dirs)
 
     harness_options = {
         'bootstrap': {
@@ -253,101 +196,22 @@ def run():
 
     packaging.call_plugins(pkg_cfg, deps, options)
 
+    retval = 0
+
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
         build_xpi(template_root_dir=mydir,
                   target_cfg=target_cfg,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
-                  xpts=get_xpts(dep_xpt_dirs))
-        sys.exit(0)
-
-    resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
-    if os.path.exists(resultfile):
-        os.remove(resultfile)
-    harness_options['resultFile'] = resultfile
-
-    install_xpts(mydir, dep_xpt_dirs)
-
-    env = {}
-    env.update(os.environ)
-    env['MOZ_NO_REMOTE'] = '1'
-    env['HARNESS_OPTIONS'] = json.dumps(harness_options)
-
-    if options.verbose:
-        print "Configuration: %s" % json.dumps(harness_options)
-
-    starttime = time.time()
-
-    popen_kwargs = {}
-
-    if options.app == "xulrunner":
-        # TODO: We're reduplicating a lot of mozrunner logic here,
-        # we should probably just get mozrunner to support this
-        # use case.
-
-        xulrunner_profile = tempfile.mkdtemp(suffix='.harness')
-        cmdline = [options.binary,
-                   '-app',
-                   os.path.join(mydir, 'application.ini'),
-                   '-profile', xulrunner_profile]
-
-        @atexit.register
-        def remove_xulrunner_profile():
-            try:
-                shutil.rmtree(xulrunner_profile)
-            except OSError:
-                pass
-
-        if "xulrunner-bin" in options.binary:
-            cmdline.remove("-app")
-
-        if sys.platform == 'linux2' and not env.get('LD_LIBRARY_PATH'):
-            env['LD_LIBRARY_PATH'] = os.path.dirname(options.binary)
-
-        popen = subprocess.Popen(cmdline, env=env, **popen_kwargs)
+                  xpts=xpts)
     else:
-        plugins = [mydir]
-        profile = profile_class(plugins=plugins,
-                                preferences=preferences)
-        runner = runner_class(profile=profile,
-                              binary=options.binary,
-                              env=env,
-                              kp_kwargs=popen_kwargs)
-        runner.start()
-        popen = runner.process_handler
+        from cuddlefish.runner import run_app
+        retval = run_app(harness_root_dir=mydir,
+                         harness_options=harness_options,
+                         xpts=xpts,
+                         app_type=options.app,
+                         binary=options.binary,
+                         verbose=options.verbose)
 
-    done = False
-    output = None
-    while not done:
-        time.sleep(0.05)
-        if popen.poll() is not None:
-            # Sometimes the child process will spawn yet another
-            # child and terminate the parent, so look for the
-            # result file.
-            if popen.returncode != 0:
-                done = True
-            elif os.path.exists(resultfile):
-                output = open(resultfile).read()
-                if output in ['OK', 'FAIL']:
-                    done = True
-        if time.time() - starttime > MAX_WAIT_TIMEOUT:
-            # TODO: Kill the child process.
-            raise Exception("Wait timeout exceeded (%ds)" %
-                            MAX_WAIT_TIMEOUT)
-
-    print "Total time: %f seconds" % (time.time() - starttime)
-
-    if popen.returncode == 0 and output == 'OK':
-        if use_main:
-            print "Program terminated successfully."
-        else:
-            print "All tests succeeded."
-        retval = 0
-    else:
-        if use_main:
-            print "Program terminated unsuccessfully."
-        else:
-            print "Some tests failed."
-        retval = -1
     sys.exit(retval)
