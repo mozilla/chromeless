@@ -279,8 +279,9 @@ def run():
     elif command == "run":
         use_main = True
     else:
-        print "Unknown command: %s" % command
-        sys.exit(1)
+        print "Unknown command: %s\n" % command
+        parser.print_help()
+        parser.exit()
 
     if use_main and 'main' not in target_cfg:
         print "package.json does not have a 'main' entry."
