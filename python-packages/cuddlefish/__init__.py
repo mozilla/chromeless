@@ -196,7 +196,17 @@ def call_plugins(pkg_cfg, deps, options):
             module = __import__(module_name)
             module.init(dep_cfg['root_dir'], options)
 
-def run(**kwargs):
+usage = """
+%(progname)s [options] [command]
+
+Commands:
+  xpcom - build xpcom component
+  xpi   - generate an xpi
+  test  - run tests
+  run   - run program
+"""
+
+def run():
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
                                  help="number of times to run tests",
@@ -218,47 +228,63 @@ def run(**kwargs):
                                      "firefox, or thunderbird"),
                                metavar=None,
                                default="xulrunner"),
-        ("-m", "--main",): dict(dest="main",
-                                help=("run a module with a main() "
-                                      "export instead of tests"),
-                                action="store_true",
-                                default=False),
-        ("-e", "--export",): dict(dest="export",
-                                  help="export as extension",
+        ("-p", "--pkgdir",): dict(dest="pkgdir",
+                                  help=("package dir containing "
+                                        "package.json; default is "
+                                        "current directory"),
                                   metavar=None,
-                                  default=None),
+                                  default=os.getcwd()),
         }
 
     guid = str(uuid.uuid4())
 
-    parser = optparse.OptionParser()
+    progname = os.path.basename(sys.argv[0])
+    parser = optparse.OptionParser(
+        usage=(usage.strip() % dict(progname=progname))
+        )
+
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
     (options, args) = parser.parse_args()
 
-    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'], [os.getcwd()])
-    target_cfg = get_config_in_dir(os.getcwd())
+    if not args:
+        parser.print_help()
+        parser.exit()
+
+    options.pkgdir = os.path.abspath(options.pkgdir)
+    if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
+        print "cannot find 'package.json' in %s." % options.pkgdir
+        sys.exit(1)
+
+    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'],
+                           [options.pkgdir])
+    target_cfg = get_config_in_dir(options.pkgdir)
 
     target = target_cfg['name']
     deps = get_deps_for_target(pkg_cfg, target)
     build = generate_build_for_target(pkg_cfg, target, deps,
                                       prefix='%s-' % guid)
 
-    kwargs.update(build)
-
-    if options.export:
-        options.main = True
-
-    if not options.main and 'tests' not in target_cfg:
-        print "No test suite found, using 'main' instead."
-        options.main = True
-
-    if options.main:
-        if 'main' in target_cfg:
-            options.main = target_cfg['main']
-        else:
-            print "package.json does not have a 'main' entry."
+    use_main = False
+    command = args[0]
+    if command == "xpcom":
+        raise NotImplementedError()
+    elif command == "xpi":
+        xpi_name = "%s.xpi" % target_cfg['name']
+        use_main = True
+    elif command == "test":
+        if 'tests' not in target_cfg:
+            print "package.json does not have a 'tests' entry."
             sys.exit(1)
+    elif command == "run":
+        use_main = True
+    else:
+        print "Unknown command: %s" % command
+        sys.exit(1)
+
+    if use_main and 'main' not in target_cfg:
+        print "package.json does not have a 'main' entry."
+        sys.exit(1)
 
     if options.app == "xulrunner":
         if not options.binary:
@@ -276,10 +302,6 @@ def run(**kwargs):
             print "Unknown app: %s" % options.app
             sys.exit(1)
 
-    if 'setup' in kwargs:
-        kwargs['setup']()
-        del kwargs['setup']
-
     options.iterations = int(options.iterations)
 
     if not options.components:
@@ -287,15 +309,11 @@ def run(**kwargs):
     else:
         options.components = options.components.split(",")
 
-    if 'components' in kwargs:
-        options.components.extend(kwargs['components'])
-        del kwargs['components']
-
     options.components = [os.path.abspath(path)
                           for path in options.components]
 
-    if 'resources' in kwargs:
-        resources = kwargs['resources']
+    if 'resources' in build:
+        resources = build['resources']
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
@@ -315,18 +333,20 @@ def run(**kwargs):
             }
         }
 
-    harness_options.update(kwargs)
+    if use_main:
+        harness_options['main'] = target_cfg['main']
+
+    harness_options.update(build)
     for option in parser.option_list[1:]:
         harness_options[option.dest] = getattr(options, option.dest)
 
-    if options.main:
+    if use_main:
         del harness_options['iterations']
     else:
         harness_options['runTests'] = True
 
-    if options.export:
+    if command == 'xpi':
         del harness_options['resultFile']
-        del harness_options['export']
 
     del harness_options['app']
     del harness_options['binary']
@@ -336,7 +356,7 @@ def run(**kwargs):
 
     call_plugins(pkg_cfg, deps, options)
 
-    if options.export:
+    if command == 'xpi':
         import rdfutils
         import zipfile
 
@@ -354,11 +374,9 @@ def run(**kwargs):
         manifest.set("em:creator",
                      target_cfg.get("author", ""))
 
-        zfname = options.export
+        print "Exporting extension to %s." % xpi_name
 
-        print "Exporting extension to %s." % zfname
-
-        zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
+        zf = zipfile.ZipFile(xpi_name, "w", zipfile.ZIP_DEFLATED)
 
         open('.install.rdf', 'w').write(str(manifest))
         zf.write('.install.rdf', 'install.rdf')
@@ -369,7 +387,7 @@ def run(**kwargs):
         zf.write(harness_component, os.path.join('components',
                                                  'harness.js'))
 
-        IGNORED_FILES = [".hgignore", "install.rdf", zfname]
+        IGNORED_FILES = [".hgignore", "install.rdf", xpi_name]
         IGNORED_DIRS = [".svn", ".hg"]
 
         new_resources = {}
@@ -466,13 +484,13 @@ def run(**kwargs):
     print "Total time: %f seconds" % (time.time() - starttime)
 
     if popen.returncode == 0 and output == 'OK':
-        if options.main:
+        if use_main:
             print "Program terminated successfully."
         else:
             print "All tests succeeded."
         retval = 0
     else:
-        if options.main:
+        if use_main:
             print "Program terminated unsuccessfully."
         else:
             print "Some tests failed."
