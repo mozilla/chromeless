@@ -300,10 +300,6 @@ def run():
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
-    resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
-    if os.path.exists(resultfile):
-        os.remove(resultfile)
-
     mydir = os.path.dirname(os.path.abspath(__file__))
 
     install_xpts(mydir, options.components)
@@ -317,30 +313,24 @@ def run():
             dep_xpt_dirs.append(abspath)
 
     harness_options = {
-        'resultFile': resultfile,
         'bootstrap': {
             'contractID': '@mozilla.org/harness/service;1;%s' % guid,
             'classID': '{%s}' % guid
             }
         }
 
+    harness_options.update(build)
+
+    inherited_options = ['verbose']
+
     if use_main:
         harness_options['main'] = target_cfg['main']
-
-    harness_options.update(build)
-    for option in parser.option_list[1:]:
-        harness_options[option.dest] = getattr(options, option.dest)
-
-    if use_main:
-        del harness_options['iterations']
     else:
         harness_options['runTests'] = True
+        inherited_options.extend(['iterations', 'components'])
 
-    if command == 'xpi':
-        del harness_options['resultFile']
-
-    del harness_options['app']
-    del harness_options['binary']
+    for option in inherited_options:
+        harness_options[option] = getattr(options, option)
 
     call_plugins(pkg_cfg, deps, options)
 
@@ -352,6 +342,11 @@ def run():
                   harness_options=harness_options,
                   xpts=get_xpts(dep_xpt_dirs))
         sys.exit(0)
+
+    resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
+    if os.path.exists(resultfile):
+        os.remove(resultfile)
+    harness_options['resultFile'] = resultfile
 
     install_xpts(mydir, dep_xpt_dirs)
 
