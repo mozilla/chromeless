@@ -107,5 +107,5 @@ def build_xpcom_components(comp_src_dir, moz_srcdir, moz_objdir,
         shutil.copy(os.path.join(comp_xpi_dir, filename),
                     xpt_output_dir)
 
-    print "NO"
-    sys.exit(1)
+    clear_dir(comp_dest_dir)
+    clear_dir(comp_xpi_dir)
