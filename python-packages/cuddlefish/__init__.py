@@ -135,7 +135,7 @@ def run():
         options.moz_srcdir = os.path.expanduser(options.moz_srcdir)
         options.moz_objdir = os.path.expanduser(options.moz_objdir)
         xpcom = target_cfg['xpcom']
-        from cuddlefish.xpcomutils import build_xpcom_components
+        from cuddlefish.xpcom import build_xpcom_components
         if 'typelibs' in xpcom:
             xpt_output_dir = os.path.join(options.pkgdir,
                                           xpcom['typelibs'])
