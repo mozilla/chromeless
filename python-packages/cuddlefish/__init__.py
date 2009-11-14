@@ -170,7 +170,8 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
         if section in cfg:
             for dirname in cfg[section]:
                 name = "-".join([prefix + cfg['name'], dirname])
-                build['resources'][name] = os.path.join(cfg['root_dir'], dirname)
+                build['resources'][name] = os.path.join(cfg['root_dir'],
+                                                        dirname)
                 build['rootPaths'].insert(0, 'resource://%s/' % name)
 
     def add_dep_to_build(dep):
@@ -249,8 +250,6 @@ def run():
                                   default=os.getcwd()),
         }
 
-    guid = str(uuid.uuid4())
-
     progname = os.path.basename(sys.argv[0])
     parser = optparse.OptionParser(
         usage=(usage.strip() % dict(progname=progname))
@@ -269,14 +268,7 @@ def run():
         print "cannot find 'package.json' in %s." % options.pkgdir
         sys.exit(1)
 
-    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'],
-                           [options.pkgdir])
     target_cfg = get_config_in_dir(options.pkgdir)
-
-    target = target_cfg['name']
-    deps = get_deps_for_target(pkg_cfg, target)
-    build = generate_build_for_target(pkg_cfg, target, deps,
-                                      prefix='%s-' % guid)
 
     use_main = False
     command = args[0]
@@ -352,6 +344,21 @@ def run():
 
     options.components = [os.path.abspath(path)
                           for path in options.components]
+
+    pkg_cfg = build_config(os.environ['CUDDLEFISH_ROOT'],
+                           [options.pkgdir])
+    target = target_cfg['name']
+
+    if command == 'xpi':
+        guid = str(uuid.uuid4())
+        unique_prefix = '%s-' % guid
+    else:
+        guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
+        unique_prefix = '%s-' % target
+
+    deps = get_deps_for_target(pkg_cfg, target)
+    build = generate_build_for_target(pkg_cfg, target, deps,
+                                      prefix=unique_prefix)
 
     if 'resources' in build:
         resources = build['resources']
