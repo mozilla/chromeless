@@ -342,9 +342,6 @@ def run():
     del harness_options['app']
     del harness_options['binary']
 
-    options.cuddlefish_root = os.environ['CUDDLEFISH_ROOT']
-    options.harness_options = harness_options
-
     call_plugins(pkg_cfg, deps, options)
 
     if command == 'xpi':
