@@ -1,87 +1,22 @@
 import sys
 import os
+import optparse
 import subprocess
 import time
 import tempfile
 import atexit
 import shutil
 import glob
-import optparse
-import uuid
-import cStringIO as StringIO
 
 import simplejson as json
 import mozrunner
+from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
+from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
 
 mydir = os.path.dirname(os.path.abspath(__file__))
 
 # Maximum time we'll wait for tests to finish, in seconds.
 MAX_WAIT_TIMEOUT = 5 * 60
-
-# When launching a temporary new Firefox profile, use these preferences.
-DEFAULT_FIREFOX_PREFS = {
-    'browser.startup.homepage' : 'about:blank',
-    'startup.homepage_welcome_url' : 'about:blank',
-    }
-
-# When launching a temporary new Thunderbird profile, use these preferences.
-# Note that these were taken from:
-# http://mxr.mozilla.org/comm-central/source/mail/test/mozmill/runtest.py
-DEFAULT_THUNDERBIRD_PREFS = {
-    # say yes to debug output via dump
-    'browser.dom.window.dump.enabled': True,
-    # say no to slow script warnings
-    'dom.max_chrome_script_run_time': 200,
-    'dom.max_script_run_time': 0,
-    # disable extension stuffs
-    'extensions.update.enabled'    : False,
-    'extensions.update.notifyUser' : False,
-    # do not ask about being the default mail client
-    'mail.shell.checkDefaultClient': False,
-    # disable non-gloda indexing daemons
-    'mail.winsearch.enable': False,
-    'mail.winsearch.firstRunDone': True,
-    'mail.spotlight.enable': False,
-    'mail.spotlight.firstRunDone': True,
-    # disable address books for undisclosed reasons
-    'ldap_2.servers.osx.position': 0,
-    'ldap_2.servers.oe.position': 0,
-    # disable the first use junk dialog
-    'mailnews.ui.junk.firstuse': False,
-    # other unknown voodoo
-    # -- dummied up local accounts to stop the account wizard
-    'mail.account.account1.server' :  "server1",
-    'mail.account.account2.identities' :  "id1",
-    'mail.account.account2.server' :  "server2",
-    'mail.accountmanager.accounts' :  "account1,account2",
-    'mail.accountmanager.defaultaccount' :  "account2",
-    'mail.accountmanager.localfoldersserver' :  "server1",
-    'mail.identity.id1.fullName' :  "Tinderbox",
-    'mail.identity.id1.smtpServer' :  "smtp1",
-    'mail.identity.id1.useremail' :  "tinderbox@invalid.com",
-    'mail.identity.id1.valid' :  True,
-    'mail.root.none-rel' :  "[ProfD]Mail",
-    'mail.root.pop3-rel' :  "[ProfD]Mail",
-    'mail.server.server1.directory-rel' :  "[ProfD]Mail/Local Folders",
-    'mail.server.server1.hostname' :  "Local Folders",
-    'mail.server.server1.name' :  "Local Folders",
-    'mail.server.server1.type' :  "none",
-    'mail.server.server1.userName' :  "nobody",
-    'mail.server.server2.check_new_mail' :  False,
-    'mail.server.server2.directory-rel' :  "[ProfD]Mail/tinderbox",
-    'mail.server.server2.download_on_biff' :  True,
-    'mail.server.server2.hostname' :  "tinderbox",
-    'mail.server.server2.login_at_startup' :  False,
-    'mail.server.server2.name' :  "tinderbox@invalid.com",
-    'mail.server.server2.type' :  "pop3",
-    'mail.server.server2.userName' :  "tinderbox",
-    'mail.smtp.defaultserver' :  "smtp1",
-    'mail.smtpserver.smtp1.hostname' :  "tinderbox",
-    'mail.smtpserver.smtp1.username' :  "tinderbox",
-    'mail.smtpservers' :  "smtp1",
-    'mail.startup.enabledMailCheckOnce' :  True,
-    'mailnews.start_page_override.mstone' :  "ignore",
-    }
 
 def find_firefox_binary():
     dummy_profile = {}
@@ -281,7 +216,7 @@ def run():
         options.moz_srcdir = os.path.expanduser(options.moz_srcdir)
         options.moz_objdir = os.path.expanduser(options.moz_objdir)
         xpcom = target_cfg['xpcom']
-        from xpcomutils import build_xpcom_components
+        from cuddlefish.xpcomutils import build_xpcom_components
         if 'typelibs' in xpcom:
             xpt_output_dir = os.path.join(options.pkgdir,
                                           xpcom['typelibs'])
@@ -349,6 +284,7 @@ def run():
     target = target_cfg['name']
 
     if command == 'xpi':
+        import uuid
         guid = str(uuid.uuid4())
         unique_prefix = '%s-' % guid
     else:
@@ -412,66 +348,12 @@ def run():
     call_plugins(pkg_cfg, deps, options)
 
     if command == 'xpi':
-        import rdfutils
-        import zipfile
-
-        install_rdf = os.path.join(mydir, "install.rdf")
-        manifest = rdfutils.RDFManifest(install_rdf)
-
-        manifest.set("em:id",
-                     target_cfg.get('id', '{%s}' % str(uuid.uuid4())))
-        manifest.set("em:version",
-                     target_cfg.get('version', '1.0'))
-        manifest.set("em:name",
-                     target_cfg['name'])
-        manifest.set("em:description",
-                     target_cfg.get("description", ""))
-        manifest.set("em:creator",
-                     target_cfg.get("author", ""))
-
-        print "Exporting extension to %s." % xpi_name
-
-        zf = zipfile.ZipFile(xpi_name, "w", zipfile.ZIP_DEFLATED)
-
-        open('.install.rdf', 'w').write(str(manifest))
-        zf.write('.install.rdf', 'install.rdf')
-        os.remove('.install.rdf')
-
-        harness_component = os.path.join(mydir, 'components',
-                                         'harness.js')
-        zf.write(harness_component, os.path.join('components',
-                                                 'harness.js'))
-        xpts = get_xpts(dep_xpt_dirs)
-        for abspath in xpts:
-            zf.write(str(abspath),
-                     str(os.path.join('components',
-                                      os.path.basename(abspath))))
-
-        IGNORED_FILES = [".hgignore", "install.rdf", xpi_name]
-        IGNORED_DIRS = [".svn", ".hg"]
-
-        new_resources = {}
-        for resource in harness_options['resources']:
-            base_arcpath = os.path.join('resources', resource)
-            new_resources[resource] = ['resources', resource]
-            abs_dirname = harness_options['resources'][resource]
-            for dirpath, dirnames, filenames in os.walk(abs_dirname):
-                goodfiles = [filename for filename in filenames
-                             if filename not in IGNORED_FILES]
-                for filename in goodfiles:
-                    abspath = os.path.join(dirpath, filename)
-                    arcpath = abspath[len(abs_dirname)+1:]
-                    arcpath = os.path.join(base_arcpath, arcpath)
-                    zf.write(str(abspath), str(arcpath))
-                dirnames[:] = [dirname for dirname in dirnames
-                               if dirname not in IGNORED_DIRS]
-        harness_options['resources'] = new_resources
-
-        open('.options.json', 'w').write(json.dumps(harness_options))
-        zf.write('.options.json', 'harness-options.json')
-        os.remove('.options.json')
-
-        zf.close()
+        from cuddlefish.xpi import build_xpi
+        build_xpi(template_root_dir=mydir,
+                  target_cfg=target_cfg,
+                  xpi_name=xpi_name,
+                  harness_options=harness_options,
+                  xpts=get_xpts(dep_xpt_dirs))
         sys.exit(0)
 
     install_xpts(mydir, dep_xpt_dirs)
