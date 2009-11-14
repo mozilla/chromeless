@@ -89,6 +89,13 @@ def find_firefox_binary():
     runner = mozrunner.FirefoxRunner(profile=dummy_profile)
     return runner.find_binary()
 
+def get_xpts(component_dirs):
+    files = []
+    for dirname in component_dirs:
+        xpts = glob.glob(os.path.join(dirname, '*.xpt'))
+        files.extend(xpts)
+    return files
+
 def install_xpts(mydir, component_dirs):
     """
     Temporarily 'installs' all XPCOM typelib files in given
@@ -101,14 +108,12 @@ def install_xpts(mydir, component_dirs):
 
     my_components_dir = os.path.join(mydir, 'components')
     installed_xpts = []
-    for dirname in component_dirs:
-        files = [os.path.basename(name)
-                 for name in glob.glob(os.path.join(dirname, '*.xpt'))]
-        for filename in files:
-            target = os.path.join(my_components_dir, filename)
-            shutil.copyfile(os.path.join(dirname, filename),
-                            target)
-            installed_xpts.append(target)
+    xpts = get_xpts(component_dirs)
+    for abspath in xpts:
+        target = os.path.join(my_components_dir,
+                              os.path.basename(abspath))
+        shutil.copyfile(abspath, target)
+        installed_xpts.append(target)
 
     @atexit.register
     def cleanup_installed_xpts():
@@ -361,6 +366,14 @@ def run():
 
     install_xpts(mydir, options.components)
 
+    dep_xpt_dirs = []
+    for dep in deps:
+        dep_cfg = pkg_cfg['packages'][dep]
+        if 'xpcom' in dep_cfg and 'typelibs' in dep_cfg['xpcom']:
+            abspath = os.path.join(dep_cfg['root_dir'],
+                                   dep_cfg['xpcom']['typelibs'])
+            dep_xpt_dirs.append(abspath)
+
     harness_options = {
         'resultFile': resultfile,
         'bootstrap': {
@@ -422,6 +435,11 @@ def run():
                                          'harness.js')
         zf.write(harness_component, os.path.join('components',
                                                  'harness.js'))
+        xpts = get_xpts(dep_xpt_dirs)
+        for abspath in xpts:
+            zf.write(str(abspath),
+                     str(os.path.join('components',
+                                      os.path.basename(abspath))))
 
         IGNORED_FILES = [".hgignore", "install.rdf", xpi_name]
         IGNORED_DIRS = [".svn", ".hg"]
@@ -449,6 +467,8 @@ def run():
 
         zf.close()
         sys.exit(0)
+
+    install_xpts(mydir, dep_xpt_dirs)
 
     env = {}
     env.update(os.environ)
