@@ -301,6 +301,10 @@ def run():
             )
         sys.exit(0)
     elif command == "xpi":
+        if options.components:
+            print ("The --components option may not be used when "
+                   "building an xpi.")
+            sys.exit(1)
         xpi_name = "%s.xpi" % target_cfg['name']
         use_main = True
     elif command == "test":
