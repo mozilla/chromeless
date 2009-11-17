@@ -47,6 +47,9 @@ var quitOnFinish = true;
 // JSON configuration information passed in from the environment.
 var options;
 
+// The loader for securable modules, typically a Cuddlefish loader.
+var loader;
+
 // Whether we've initialized or not yet.
 var isStarted;
 
@@ -116,11 +119,6 @@ function getDir(path) {
 }
 
 function bootstrap() {
-  if (isStarted)
-    return;
-
-  isStarted = true;
-
   try {
     var ioService = Cc["@mozilla.org/network/io-service;1"]
                     .getService(Ci.nsIIOService);
@@ -151,23 +149,9 @@ function bootstrap() {
 
     var jsm = {};
     Cu.import(options.loader, jsm);
-    var rootPaths = options.rootPaths.slice();
-
-    var loader = new jsm.Loader({rootPaths: rootPaths});
-
-    var obsvc = loader.require("observer-service");
-    obsvc.add("quit-application-granted",
-              function() {
-                try {
-                  loader.unload();
-                  loader = null;
-                  quit("OK");
-                } catch (e) {
-                  logErrorAndBail(e);
-                }
-              });
-
+    loader = new jsm.Loader({rootPaths: options.rootPaths.slice()});
     options.quit = quit;
+
     var program = loader.require(options.main);
     program.main(options);
   } catch (e) {
@@ -189,8 +173,28 @@ HarnessService.prototype = {
                                          Ci.nsISupportsWeakReference]),
 
   observe: function Harness_observe(subject, topic, data) {
-    if (topic == "app-startup")
-      bootstrap();
+    try {
+      let obSvc = Cc["@mozilla.org/observer-service;1"]
+                  .getService(Ci.nsIObserverService);
+
+      if (topic == "app-startup") {
+        if (isStarted)
+          return;
+
+        isStarted = true;
+        obSvc.addObserver(this, "quit-application-granted", true);
+        bootstrap();
+      } else if (topic == "quit-application-granted") {
+        obSvc.removeObserver(this, "quit-application-granted", true);
+        if (loader) {
+          loader.unload();
+          loader = null;
+        }
+        quit("OK");
+      }
+    } catch (e) {
+      logErrorAndBail(e);
+    }
   }
 };
 
