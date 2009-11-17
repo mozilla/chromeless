@@ -5,8 +5,6 @@ import glob
 
 from cuddlefish import packaging
 
-mydir = os.path.dirname(os.path.abspath(__file__))
-
 def get_xpts(component_dirs):
     files = []
     for dirname in component_dirs:
@@ -196,16 +194,21 @@ def run():
 
     retval = 0
 
+    app_extension_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "app-extension"
+        )
+
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
-        build_xpi(template_root_dir=mydir,
+        build_xpi(template_root_dir=app_extension_dir,
                   target_cfg=target_cfg,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
                   xpts=xpts)
     else:
         from cuddlefish.runner import run_app
-        retval = run_app(harness_root_dir=mydir,
+        retval = run_app(harness_root_dir=app_extension_dir,
                          harness_options=harness_options,
                          xpts=xpts,
                          app_type=options.app,
