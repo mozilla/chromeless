@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-def init(root_dir, options):
+def init(root_dir):
     interop_dir = os.path.join(root_dir, 'tests',
                                'interoperablejs-read-only')
     if not os.path.exists(interop_dir):

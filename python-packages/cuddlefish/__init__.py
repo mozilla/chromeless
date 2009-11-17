@@ -192,7 +192,7 @@ def run():
     for option in inherited_options:
         harness_options[option] = getattr(options, option)
 
-    packaging.call_plugins(pkg_cfg, deps, options)
+    packaging.call_plugins(pkg_cfg, deps)
 
     retval = 0
 

@@ -79,7 +79,7 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
 
     return build
 
-def call_plugins(pkg_cfg, deps, options):
+def call_plugins(pkg_cfg, deps):
     for dep in deps:
         dep_cfg = pkg_cfg['packages'][dep]
         dirnames = dep_cfg.get('python-lib', [])
@@ -90,4 +90,4 @@ def call_plugins(pkg_cfg, deps, options):
         module_names = dep_cfg.get('python-plugins', [])
         for module_name in module_names:
             module = __import__(module_name)
-            module.init(dep_cfg['root_dir'], options)
+            module.init(root_dir=dep_cfg['root_dir'])
