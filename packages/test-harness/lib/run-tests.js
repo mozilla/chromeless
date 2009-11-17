@@ -6,6 +6,10 @@ var obsvc = require("observer-service");
 var gOptions;
 
 function runTests() {
+  if (!gOptions)
+    // Tests are already running, abort.
+    return;
+
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
