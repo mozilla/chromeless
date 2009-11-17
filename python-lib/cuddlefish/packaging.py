@@ -24,7 +24,6 @@ def build_config(root_dir, extra_paths=None):
 
     if not extra_paths:
         extra_paths = []
-    extra_paths.append(root_dir)
     config['paths'].extend(extra_paths)
 
     paths = [os.path.abspath(path)
