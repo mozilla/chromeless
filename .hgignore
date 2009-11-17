@@ -1,4 +1,3 @@
 syntax: glob
 *.pyc
 tests/interoperablejs-read-only
-packages

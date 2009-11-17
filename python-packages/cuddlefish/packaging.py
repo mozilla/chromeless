@@ -39,9 +39,9 @@ def build_config(root_dir, extra_paths=None):
         config['packages'][pkgconfig['name']] = pkgconfig
     return config
 
-def get_deps_for_target(pkg_cfg, target):
+def get_deps_for_targets(pkg_cfg, targets):
     visited = []
-    deps_left = [target]
+    deps_left = list(targets)
 
     while deps_left:
         dep = deps_left.pop()

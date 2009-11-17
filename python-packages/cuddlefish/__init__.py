@@ -151,7 +151,11 @@ def run():
         guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
         unique_prefix = '%s-' % target
 
-    deps = packaging.get_deps_for_target(pkg_cfg, target)
+    targets = [target]
+    if not use_main:
+        targets.append("test-harness")
+
+    deps = packaging.get_deps_for_targets(pkg_cfg, targets)
     build = packaging.generate_build_for_target(pkg_cfg, target, deps,
                                                 prefix=unique_prefix)
 
@@ -184,7 +188,7 @@ def run():
     if use_main:
         harness_options['main'] = target_cfg['main']
     else:
-        harness_options['runTests'] = True
+        harness_options['main'] = "run-tests"
         inherited_options.extend(['iterations', 'components'])
 
     for option in inherited_options:

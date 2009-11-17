@@ -39,9 +39,6 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
-const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
-
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 // Whether to quit the application when we're done.
@@ -53,6 +50,9 @@ var options;
 // Whether we've initialized or not yet.
 var isStarted;
 
+// Whether we've been asked to quit or not yet.
+var isQuitting;
+
 // nsILocalFile corresponding to this file.
 var myFile;
 
@@ -62,6 +62,11 @@ var myFile;
 var resultFile;
 
 function quit(result) {
+  if (isQuitting)
+    return;
+
+  isQuitting = true;
+
   dump(result + "\n");
 
   if (resultFile) {
@@ -147,49 +152,24 @@ function bootstrap() {
     var jsm = {};
     Cu.import(options.loader, jsm);
     var rootPaths = options.rootPaths.slice();
-    var myModules = myFile.parent.parent;
-    myModules.append("securable-modules");
-    var myModulesURI = ioService.newFileURI(myModules);
-    rootPaths.push(myModulesURI.spec);
 
     var loader = new jsm.Loader({rootPaths: rootPaths});
 
-    if (options.main) {
-      var obsvc = loader.require("observer-service");
-      obsvc.add("quit-application-granted",
-                function() {
+    var obsvc = loader.require("observer-service");
+    obsvc.add("quit-application-granted",
+              function() {
+                try {
                   loader.unload();
+                  loader = null;
                   quit("OK");
-                });
+                } catch (e) {
+                  logErrorAndBail(e);
+                }
+              });
 
-      var program = loader.require(options.main);
-      program.main(options);
-    } else if (options.runTests) {
-      var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-               .getService(Ci.nsIWindowWatcher);
-      var window = ww.openWindow(null, "data:text/plain,Running tests...",
-                                 "harness", "centerscreen", null);
-
-      var harness = loader.require("harness");
-
-      options.print = function() { dump.apply(undefined, arguments); };
-
-      options.onDone = function onDone(tests) {
-        if (loader)
-          try {
-            loader.unload();
-            loader = null;
-          } catch (e) {
-            logErrorAndBail(e);
-          }
-        if (tests.passed > 0 && tests.failed == 0)
-          quit("OK");
-        else
-          quit("FAIL");
-      };
-
-      harness.runTests(options);
-    }
+    options.quit = quit;
+    var program = loader.require(options.main);
+    program.main(options);
   } catch (e) {
     logErrorAndBail(e);
   }
@@ -209,43 +189,8 @@ HarnessService.prototype = {
                                          Ci.nsISupportsWeakReference]),
 
   observe: function Harness_observe(subject, topic, data) {
-    if (options.main) {
+    if (topic == "app-startup")
       bootstrap();
-      return;
-    }
-
-    switch (topic) {
-    case "app-startup":
-      var appInfo = Cc["@mozilla.org/xre/app-info;1"]
-                    .getService(Ci.nsIXULAppInfo);
-      let obSvc = Cc["@mozilla.org/observer-service;1"]
-                  .getService(Ci.nsIObserverService);
-
-      switch (appInfo.ID) {
-      case THUNDERBIRD_ID:
-        obSvc.addObserver(this, "xul-window-visible", true);
-        break;
-      case FIREFOX_ID:
-        obSvc.addObserver(this, "sessionstore-windows-restored", true);
-        break;
-      default:
-        obSvc.addObserver(this, "final-ui-startup", true);
-        break;
-      }
-      break;
-    case "xul-window-visible":
-      // Thunderbird-only.
-      bootstrap();
-      break;
-    case "sessionstore-windows-restored":
-      // Firefox-only.
-      bootstrap();
-      break;
-    case "final-ui-startup":
-      // Any other app.
-      bootstrap();
-      break;
-    }
   }
 };
 
