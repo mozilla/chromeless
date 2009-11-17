@@ -162,8 +162,6 @@ def run():
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
-    mydir = os.path.dirname(os.path.abspath(__file__))
-
     dep_xpt_dirs = []
     for dep in deps:
         dep_cfg = pkg_cfg['packages'][dep]
