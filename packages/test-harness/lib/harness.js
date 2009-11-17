@@ -139,22 +139,13 @@ function reportMemoryUsage() {
         weakrefs.length + "\n");
 }
 
-function cleanup() {
-  try {
-    for (name in sandbox.sandboxes)
-      sandbox.memory.track(sandbox.sandboxes[name].globalScope,
-                           "module global scope: " + name);
-    sandbox.memory.track(sandbox, "Cuddlefish Loader");
+var gWeakrefs;
 
-    var weakrefs = [info.weakref
-                    for each (info in sandbox.memory.getObjects())];
+function showResults() {
+  memory.gc();
 
-    sandbox.unload();
-    sandbox = null;
-
-    memory.gc();
-
-    weakrefs.forEach(
+  if (gWeakrefs)
+    gWeakrefs.forEach(
       function(weakref) {
         var ref = weakref.get();
         if (ref !== null) {
@@ -162,16 +153,34 @@ function cleanup() {
           console.warn("LEAK", data);
         }
       });
+
+  print("\n");
+  var total = results.passed + results.failed;
+  print(results.passed + " of " + total + " tests passed.\n");
+  onDone(results);
+}
+
+function cleanup() {
+  try {
+    for (name in sandbox.sandboxes)
+      sandbox.memory.track(sandbox.sandboxes[name].globalScope,
+                           "module global scope: " + name);
+    sandbox.memory.track(sandbox, "Cuddlefish Loader");
+
+    gWeakrefs = [info.weakref
+                 for each (info in sandbox.memory.getObjects())];
+
+    sandbox.unload();
+    sandbox = null;
+
+    memory.gc();
   } catch (e) {
     results.failed++;
     console.error("unload.send() threw an exception.");
     console.exception(e);
   };
 
-  print("\n");
-  var total = results.passed + results.failed;
-  print(results.passed + " of " + total + " tests passed.\n");
-  onDone(results);
+  require("timer").setTimeout(showResults, 1);
 }
 
 function nextIteration(tests) {
