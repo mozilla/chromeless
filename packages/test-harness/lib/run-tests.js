@@ -15,14 +15,17 @@ function runTests() {
 
   gOptions.print = function() { dump.apply(undefined, arguments); };
 
+  var quit = gOptions.quit;
+
   gOptions.onDone = function onDone(tests) {
     if (tests.passed > 0 && tests.failed == 0)
-      gOptions.quit("OK");
+      quit("OK");
     else
-      gOptions.quit("FAIL");
+      quit("FAIL");
   };
 
   harness.runTests(gOptions);
+  gOptions = null;
 }
 
 exports.main = function main(options) {
