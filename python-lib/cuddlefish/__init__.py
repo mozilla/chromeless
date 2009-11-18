@@ -52,6 +52,10 @@ def run():
                                   help="Mozilla objdir",
                                   metavar=None,
                                   default=None),
+        ("-t", "--templatedir",): dict(dest="templatedir",
+                                       help="XULRunner app/ext. template",
+                                       metavar=None,
+                                       default=None),
         ("-p", "--pkgdir",): dict(dest="pkgdir",
                                   help=("package dir containing "
                                         "package.json; default is "
@@ -198,10 +202,13 @@ def run():
 
     retval = 0
 
-    app_extension_dir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        "app-extension"
-        )
+    if options.templatedir:
+        app_extension_dir = os.path.abspath(options.templatedir)
+    else:
+        app_extension_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "app-extension"
+            )
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
