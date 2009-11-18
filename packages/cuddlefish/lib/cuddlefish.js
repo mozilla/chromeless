@@ -100,6 +100,10 @@
                     Cu: Components.utils,
                     Cr: Components.results};
 
+     if (options.globals)
+       for (var name in options.globals)
+         globals[name] = options.globals[name];
+
      if (options.console)
        globals.console = options.console;
      if (options.memory)

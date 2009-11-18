@@ -4,9 +4,13 @@ exports.testLoader = function(test) {
     prints.push(message);
   }
 
-  var loader = test.makeSandboxedLoader({print: print});
+  var loader = test.makeSandboxedLoader({print: print,
+                                         globals: {foo: 1}});
 
   test.pass("loader instantiates within a securablemodule");
+
+  test.assertEqual(loader.runScript("foo"), 1,
+                   "custom globals must work.");
 
   loader.runScript("console.log('testing', 1, [2, 3, 4])");
 

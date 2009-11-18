@@ -253,8 +253,10 @@ var runTests = exports.runTests = function runTests(options) {
             for each (path in options.rootPaths)];
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
+    var globals = {packaging: packaging};
 
     sandbox = new cuddlefish.Loader({console: console,
+                                     globals: globals,
                                      __proto__: options});
     nextIteration();
   } catch (e) {

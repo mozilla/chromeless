@@ -1,0 +1,6 @@
+{
+    "name": "packaging-tests",
+    "description": "Tests for the XULRunner packaging bootstrapper.",
+    "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>",
+    "tests": ["tests"]
+}

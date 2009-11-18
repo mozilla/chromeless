@@ -148,8 +148,25 @@ function buildLoader() {
 
   var jsm = {};
   Cu.import(options.loader, jsm);
-  return new jsm.Loader({rootPaths: options.rootPaths.slice()});
+  var loader = new jsm.Loader({rootPaths: options.rootPaths.slice(),
+                               globals: {
+                                 packaging: new Packaging()
+                               }});
+  return loader;
 }
+
+function Packaging() {
+}
+
+Packaging.prototype = {
+  get options() {
+    return options;
+  },
+
+  createLoader: function createLoader() {
+    return buildLoader();
+  }
+};
 
 function HarnessService() {
   this.wrappedJSObject = this;
@@ -169,6 +186,10 @@ HarnessService.prototype = {
 
   get loader() {
     return loader;
+  },
+
+  get options() {
+    return options;
   },
 
   observe: function Harness_observe(subject, topic, data) {
