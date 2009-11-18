@@ -1,17 +1,16 @@
 import os
 import zipfile
-import uuid
 
 import simplejson as json
 import cuddlefish.rdf
 
 def build_xpi(template_root_dir, target_cfg, xpi_name,
-              harness_options, xpts):
+              harness_options, xpts, default_id):
     install_rdf = os.path.join(template_root_dir, "install.rdf")
     manifest = cuddlefish.rdf.RDFManifest(install_rdf)
 
     manifest.set("em:id",
-                 target_cfg.get('id', '{%s}' % str(uuid.uuid4())))
+                 target_cfg.get('id', default_id))
     manifest.set("em:version",
                  target_cfg.get('version', '1.0'))
     manifest.set("em:name",

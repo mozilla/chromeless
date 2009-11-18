@@ -149,11 +149,13 @@ def run():
 
     if command == 'xpi':
         import uuid
-        guid = str(uuid.uuid4())
-        unique_prefix = '%s-' % guid
+        harness_guid = str(uuid.uuid4())
+        unique_prefix = '%s-' % harness_guid
     else:
-        guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
+        harness_guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
         unique_prefix = '%s-' % target
+
+    identifier = target_cfg.get('id', '{%s}' % harness_guid)
 
     targets = [target]
     if not use_main:
@@ -178,10 +180,12 @@ def run():
     dep_xpt_dirs.extend(options.components)
     xpts = get_xpts(dep_xpt_dirs)
 
+    harness_contract_id = ('@mozilla.org/harness/service;1?id=%s' %
+                           identifier)
     harness_options = {
         'bootstrap': {
-            'contractID': '@mozilla.org/harness/service;1;%s' % guid,
-            'classID': '{%s}' % guid
+            'contractID': harness_contract_id,
+            'classID': '{%s}' % harness_guid
             }
         }
 
@@ -216,7 +220,8 @@ def run():
                   target_cfg=target_cfg,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
-                  xpts=xpts)
+                  xpts=xpts,
+                  default_id=identifier)
     else:
         from cuddlefish.runner import run_app
         retval = run_app(harness_root_dir=app_extension_dir,
