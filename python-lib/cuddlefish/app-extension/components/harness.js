@@ -118,48 +118,43 @@ function getDir(path) {
   return dir;
 }
 
-function bootstrap() {
-  try {
-    var ioService = Cc["@mozilla.org/network/io-service;1"]
-                    .getService(Ci.nsIIOService);
-    var resProt = ioService.getProtocolHandler("resource")
-                  .QueryInterface(Ci.nsIResProtocolHandler);
+function buildLoader() {
+  var ioService = Cc["@mozilla.org/network/io-service;1"]
+                  .getService(Ci.nsIIOService);
+  var resProt = ioService.getProtocolHandler("resource")
+                .QueryInterface(Ci.nsIResProtocolHandler);
 
-    var compMgr = Components.manager;
-    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+  var compMgr = Components.manager;
+  compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
 
-    for each (dirName in options.components) {
-      var dir = getDir(dirName);
-      compMgr.autoRegister(dir);
-    }
-
-    for (name in options.resources) {
-      var path = options.resources[name];
-      var dir;
-      if (typeof(path) == "string")
-        dir = getDir(path);
-      else {
-        dir = myFile.parent.parent;
-        path.forEach(function(part) { dir.append(part); });
-        ensureIsDir(dir);
-      }
-      var dirUri = ioService.newFileURI(dir);
-      resProt.setSubstitution(name, dirUri);
-    }
-
-    var jsm = {};
-    Cu.import(options.loader, jsm);
-    loader = new jsm.Loader({rootPaths: options.rootPaths.slice()});
-    options.quit = quit;
-
-    var program = loader.require(options.main);
-    program.main(options);
-  } catch (e) {
-    logErrorAndBail(e);
+  for each (dirName in options.components) {
+    var dir = getDir(dirName);
+    compMgr.autoRegister(dir);
   }
+
+  for (name in options.resources) {
+    var path = options.resources[name];
+    var dir;
+    if (typeof(path) == "string")
+      dir = getDir(path);
+    else {
+      dir = myFile.parent.parent;
+      path.forEach(function(part) { dir.append(part); });
+      ensureIsDir(dir);
+    }
+    var dirUri = ioService.newFileURI(dir);
+    resProt.setSubstitution(name, dirUri);
+  }
+
+  var jsm = {};
+  Cu.import(options.loader, jsm);
+  return new jsm.Loader({rootPaths: options.rootPaths.slice()});
 }
 
-function HarnessService() {}
+function HarnessService() {
+  this.wrappedJSObject = this;
+}
+
 HarnessService.prototype = {
   classDescription: "Harness Service",
 
@@ -172,6 +167,10 @@ HarnessService.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
                                          Ci.nsISupportsWeakReference]),
 
+  get loader() {
+    return loader;
+  },
+
   observe: function Harness_observe(subject, topic, data) {
     try {
       let obSvc = Cc["@mozilla.org/observer-service;1"]
@@ -183,7 +182,9 @@ HarnessService.prototype = {
 
         isStarted = true;
         obSvc.addObserver(this, "quit-application-granted", true);
-        bootstrap();
+        loader = buildLoader();
+        var program = loader.require(options.main);
+        program.main(options);
       } else if (topic == "quit-application-granted") {
         obSvc.removeObserver(this, "quit-application-granted", true);
         if (loader) {
@@ -230,6 +231,7 @@ function NSGetModule(compMgr, fileSpec) {
 
     options = JSON.parse(jsonData);
 
+    options.quit = quit;
     resultFile = options.resultFile;
   } catch (e) {
     logErrorAndBail(e);
