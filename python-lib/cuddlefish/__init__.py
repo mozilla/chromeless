@@ -22,7 +22,7 @@ Commands:
   run   - run program
 """
 
-def run():
+def run(arguments=sys.argv[1:]):
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
                                  help="number of times to run tests",
@@ -71,7 +71,7 @@ def run():
 
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args(args=arguments)
 
     if not args:
         parser.print_help()
