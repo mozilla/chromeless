@@ -3,8 +3,21 @@ import sys
 
 import simplejson as json
 
+METADATA_PROPS = ['name', 'description', 'keywords', 'author',
+                  'contributors']
+
 class MalformedJsonFileError(Exception):
     pass
+
+def get_metadata(pkg_cfg, deps):
+    metadata = {}
+    for pkg_name in deps:
+        cfg = pkg_cfg['packages'][pkg_name]
+        metadata[pkg_name] = {}
+        for prop in METADATA_PROPS:
+            if cfg.get(prop):
+                metadata[pkg_name][prop] = cfg[prop]
+    return metadata
 
 def get_config_in_dir(path):
     package_json = os.path.join(path, 'package.json')

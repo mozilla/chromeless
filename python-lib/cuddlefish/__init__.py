@@ -202,6 +202,7 @@ def run():
     for option in inherited_options:
         harness_options[option] = getattr(options, option)
 
+    harness_options['metadata'] = packaging.get_metadata(pkg_cfg, deps)
     packaging.call_plugins(pkg_cfg, deps)
 
     retval = 0
