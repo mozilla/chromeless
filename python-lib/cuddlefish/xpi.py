@@ -29,17 +29,24 @@ def build_xpi(template_root_dir, target_cfg, xpi_name,
     zf.write('.install.rdf', 'install.rdf')
     os.remove('.install.rdf')
 
-    harness_component = os.path.join(template_root_dir, 'components',
-                                     'harness.js')
-    zf.write(harness_component, os.path.join('components',
-                                             'harness.js'))
+    IGNORED_FILES = [".hgignore", "install.rdf", 
+                     "application.ini", xpi_name]
+    IGNORED_DIRS = [".svn", ".hg"]
+
+    for dirpath, dirnames, filenames in os.walk(template_root_dir):
+        filenames = [filename for filename in filenames
+                     if filename not in IGNORED_FILES]
+        dirnames[:] = [dirname for dirname in dirnames
+                       if dirname not in IGNORED_DIRS]
+        for filename in filenames:
+            abspath = os.path.join(dirpath, filename)
+            arcpath = abspath[len(template_root_dir)+1:]
+            zf.write(abspath, arcpath)
+
     for abspath in xpts:
         zf.write(str(abspath),
                  str(os.path.join('components',
                                   os.path.basename(abspath))))
-
-    IGNORED_FILES = [".hgignore", "install.rdf", xpi_name]
-    IGNORED_DIRS = [".svn", ".hg"]
 
     new_resources = {}
     for resource in harness_options['resources']:
