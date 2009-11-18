@@ -3,5 +3,6 @@
     "description": "A harness for running Jetpack tests.",
     "author": "Atul Varma (http://toolness.com/)",
     "dependencies": ["cuddlefish"],
-    "lib": ["lib"]
+    "lib": ["lib"],
+    "tests": ["tests"]
 }
