@@ -86,7 +86,10 @@ def run_app(harness_root_dir, harness_options, xpts,
         cmdline = [binary,
                    '-app',
                    os.path.join(harness_root_dir, 'application.ini'),
-                   '-profile', xulrunner_profile]
+                   '-profile', xulrunner_profile,
+                   # This ensures that dump() calls are visible
+                   # in Windows.
+                   '-console']
 
         @atexit.register
         def remove_xulrunner_profile():
