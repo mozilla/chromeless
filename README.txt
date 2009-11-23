@@ -19,12 +19,12 @@ commands from the root directory of the repository:
 
   source bin/activate
   cd packages/cuddlefish
-  cuddlefisher.py test
+  cfx test
 
 The runner will automatically find a Firefox installation to use as
 the XULRunner host, though you can also specify a different binary
-through the command-line.  Run 'cuddlefisher.py --help' for more
-information on this.
+through the command-line.  Run 'cfx --help' for more information on
+this.
 
 If you have any questions, feel free to send them to the Jetpack
 mailing list:
