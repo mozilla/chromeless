@@ -90,12 +90,14 @@ def get_deps_for_targets(pkg_cfg, targets):
 
 def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
     build = {'resources': {},
+             'resourcePackages': {},
              'rootPaths': []}
 
     def add_section_to_build(cfg, section):
         if section in cfg:
             for dirname in cfg[section]:
                 name = "-".join([prefix + cfg['name'], dirname])
+                build['resourcePackages'][name] = cfg['name']
                 build['resources'][name] = os.path.join(cfg['root_dir'],
                                                         dirname)
                 build['rootPaths'].insert(0, 'resource://%s/' % name)
