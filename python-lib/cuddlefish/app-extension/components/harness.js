@@ -185,6 +185,8 @@ HarnessService.prototype = {
                                          Ci.nsISupportsWeakReference]),
 
   get loader() {
+    if (!loader)
+      loader = buildLoader();
     return loader;
   },
 
@@ -203,9 +205,11 @@ HarnessService.prototype = {
 
         isStarted = true;
         obSvc.addObserver(this, "quit-application-granted", true);
-        loader = buildLoader();
-        var program = loader.require(options.main);
-        program.main(options);
+	if (options.main) {
+          let loader = this.loader;
+          var program = loader.require(options.main);
+          program.main(options);
+	}
       } else if (topic == "quit-application-granted") {
         obSvc.removeObserver(this, "quit-application-granted", true);
         if (loader) {

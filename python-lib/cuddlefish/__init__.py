@@ -130,8 +130,11 @@ def run(arguments=sys.argv[1:]):
         parser.exit()
 
     if use_main and 'main' not in target_cfg:
-        print "package.json does not have a 'main' entry."
-        sys.exit(1)
+        # If the user supplies a template dir, then the main
+        # program may be contained in the template.
+        if not options.templatedir:
+            print "package.json does not have a 'main' entry."
+            sys.exit(1)
 
     options.iterations = int(options.iterations)
 
@@ -194,7 +197,7 @@ def run(arguments=sys.argv[1:]):
     inherited_options = ['verbose']
 
     if use_main:
-        harness_options['main'] = target_cfg['main']
+        harness_options['main'] = target_cfg.get('main')
     else:
         harness_options['main'] = "run-tests"
         inherited_options.extend(['iterations', 'components'])
