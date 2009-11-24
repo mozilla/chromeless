@@ -4,7 +4,7 @@ import sys
 import simplejson as json
 
 METADATA_PROPS = ['name', 'description', 'keywords', 'author',
-                  'contributors']
+                  'contributors', 'license', 'url']
 
 class MalformedJsonFileError(Exception):
     pass
