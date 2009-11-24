@@ -25,7 +25,7 @@ def is_dir(path):
 def apply_default_dir(base_json, base_path, dirname):
     if (not base_json.get(dirname) and
         is_dir(os.path.join(base_path, dirname))):
-        base_json[dirname] = [dirname]
+        base_json[dirname] = dirname
 
 def normalize_string_or_array(base_json, key):
     if base_json.get(key):
@@ -43,7 +43,7 @@ def get_config_in_dir(path):
     if 'name' not in base_json:
         base_json['name'] = os.path.basename(path)
 
-    for dirname in ['lib', 'tests']:
+    for dirname in ['lib', 'tests', 'data']:
         apply_default_dir(base_json, path, dirname)
 
     for key in ['lib', 'tests', 'dependencies']:
@@ -91,26 +91,36 @@ def get_deps_for_targets(pkg_cfg, targets):
 def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
     build = {'resources': {},
              'resourcePackages': {},
+             'packageData': {},
              'rootPaths': []}
 
-    def add_section_to_build(cfg, section):
+    def add_section_to_build(cfg, section, is_code=False,
+                             is_data=False):
         if section in cfg:
-            for dirname in cfg[section]:
+            dirnames = cfg[section]
+            if isinstance(dirnames, basestring):
+                dirnames = [dirnames]
+            for dirname in dirnames:
                 name = "-".join([prefix + cfg['name'], dirname])
                 build['resourcePackages'][name] = cfg['name']
                 build['resources'][name] = os.path.join(cfg['root_dir'],
                                                         dirname)
-                build['rootPaths'].insert(0, 'resource://%s/' % name)
+                resource_url = 'resource://%s/' % name
+                if is_code:
+                    build['rootPaths'].insert(0, resource_url)
+                if is_data:
+                    build['packageData'][cfg['name']] = resource_url
 
     def add_dep_to_build(dep):
         dep_cfg = pkg_cfg['packages'][dep]
-        add_section_to_build(dep_cfg, "lib")
+        add_section_to_build(dep_cfg, "lib", is_code=True)
+        add_section_to_build(dep_cfg, "data", is_data=True)
         if "loader" in dep_cfg:
             build['loader'] = "resource://%s-%s" % (prefix + dep,
                                                     dep_cfg["loader"])
 
     target_cfg = pkg_cfg['packages'][target]
-    add_section_to_build(target_cfg, "tests")
+    add_section_to_build(target_cfg, "tests", is_code=True)
 
     for dep in deps:
         add_dep_to_build(dep)

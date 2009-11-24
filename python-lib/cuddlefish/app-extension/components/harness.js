@@ -148,10 +148,11 @@ function buildLoader() {
 
   var jsm = {};
   Cu.import(options.loader, jsm);
+  var packaging = new Packaging();
   var loader = new jsm.Loader({rootPaths: options.rootPaths.slice(),
-                               globals: {
-                                 packaging: new Packaging()
-                               }});
+                               globals: { packaging: packaging }
+                              });
+  packaging.__setLoader(loader);
   return loader;
 }
 
@@ -159,8 +160,21 @@ function Packaging() {
 }
 
 Packaging.prototype = {
+  __setLoader: function setLoader(loader) {
+    this.__loader = loader;
+  },
+
   get options() {
     return options;
+  },
+
+  getURLForData: function getURLForData() {
+    var traceback = this.__loader.require("traceback");
+    var callerInfo = traceback.get().slice(-2)[0];
+    var url = this.__loader.require("url");
+    var info = url.parse(callerInfo.filename);
+    var pkgName = options.resourcePackages[info.host];
+    dump("PKG NAME IS " + pkgName + "\n");
   },
 
   createLoader: function createLoader() {

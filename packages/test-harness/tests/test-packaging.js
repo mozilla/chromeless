@@ -1,3 +1,5 @@
+var url = require("url");
+
 exports.testPackaging = function(test) {
   test.assertEqual(packaging.options.main,
                    'run-tests',
@@ -17,4 +19,8 @@ exports.testPackaging = function(test) {
   test.assertEqual(packaging.options.metadata['test-harness'].author,
                    'Atul Varma (http://toolness.com/)',
                    "packaging metadata should be available");
+
+  var sample = url.toFilename(packaging.getURLForData("sample.txt"));
+  test.assertEqual(file.read(sample), "this is sample data.",
+		   "packaging data should be available");
 };
