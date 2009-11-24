@@ -19,13 +19,29 @@ def get_metadata(pkg_cfg, deps):
                 metadata[pkg_name][prop] = cfg[prop]
     return metadata
 
+def is_dir(path):
+    return os.path.exists(path) and os.path.isdir(path)
+
+def apply_default_dir(base_json, base_path, dirname):
+    if (not base_json.get(dirname) and
+        is_dir(os.path.join(base_path, dirname))):
+        base_json[dirname] = [dirname]
+
 def get_config_in_dir(path):
     package_json = os.path.join(path, 'package.json')
     data = open(package_json, 'r').read()
     try:
-        return json.loads(data)
+        base_json = json.loads(data)
     except ValueError, e:
         raise MalformedJsonFileError(package_json, str(e))
+
+    if 'name' not in base_json:
+        base_json['name'] = os.path.basename(path)
+
+    for dirname in ['lib', 'tests']:
+        apply_default_dir(base_json, path, dirname)
+
+    return base_json
 
 def build_config(root_dir, extra_paths=None):
     packages_dir = os.path.join(root_dir, 'packages')
