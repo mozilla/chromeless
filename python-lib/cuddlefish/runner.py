@@ -138,14 +138,8 @@ def run_app(harness_root_dir, harness_options, xpts,
     print "Total time: %f seconds" % (time.time() - starttime)
 
     if popen.returncode == 0 and output == 'OK':
-        if harness_options.get('main'):
-            print "Program terminated successfully."
-        else:
-            print "All tests succeeded."
+        print "Program terminated successfully."
         return 0
     else:
-        if harness_options.get('main'):
-            print "Program terminated unsuccessfully."
-        else:
-            print "Some tests failed."
+        print "Program terminated unsuccessfully."
         return -1
