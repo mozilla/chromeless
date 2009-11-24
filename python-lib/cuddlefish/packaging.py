@@ -27,6 +27,11 @@ def apply_default_dir(base_json, base_path, dirname):
         is_dir(os.path.join(base_path, dirname))):
         base_json[dirname] = [dirname]
 
+def normalize_string_or_array(base_json, key):
+    if base_json.get(key):
+        if isinstance(base_json[key], basestring):
+            base_json[key] = [base_json[key]]
+
 def get_config_in_dir(path):
     package_json = os.path.join(path, 'package.json')
     data = open(package_json, 'r').read()
@@ -40,6 +45,9 @@ def get_config_in_dir(path):
 
     for dirname in ['lib', 'tests']:
         apply_default_dir(base_json, path, dirname)
+
+    for key in ['lib', 'tests', 'dependencies']:
+        normalize_string_or_array(base_json, key)
 
     return base_json
 
