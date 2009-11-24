@@ -72,7 +72,6 @@ TestFinder.prototype = {
           function(suite) {
             var module = require(suite);
             for (name in module)
-              if (name.indexOf("test") == 0)
                 tests.push(self._makeTest(suite, name, module[name]));
           });
       });

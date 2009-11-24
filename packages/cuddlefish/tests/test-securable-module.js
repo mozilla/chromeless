@@ -40,13 +40,13 @@
                 .createInstance(Ci.nsILocalFile);
      file.initWithPath(path);
 
-     exports.run(require("securable-module"),
-                 log,
-                 assert,
-                 file);
+     run(require("securable-module"),
+         log,
+         assert,
+         file);
    };
 
-   exports.run = function run(SecurableModule, log, assert, rootDir) {
+   function run(SecurableModule, log, assert, rootDir) {
      // Basic test of module loading with a fake fs.
      var output = [];
 
