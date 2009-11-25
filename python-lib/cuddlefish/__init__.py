@@ -183,7 +183,7 @@ def run(arguments=sys.argv[1:]):
     dep_xpt_dirs.extend(options.components)
     xpts = get_xpts(dep_xpt_dirs)
 
-    harness_contract_id = ('@mozilla.org/harness/service;1?id=%s' %
+    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' %
                            identifier)
     harness_options = {
         'bootstrap': {
