@@ -43,37 +43,45 @@ def get_config_in_dir(path):
     if 'name' not in base_json:
         base_json['name'] = os.path.basename(path)
 
-    for dirname in ['lib', 'tests', 'data']:
+    for dirname in ['lib', 'tests', 'data', 'packages']:
         apply_default_dir(base_json, path, dirname)
 
-    for key in ['lib', 'tests', 'dependencies']:
+    for key in ['lib', 'tests', 'dependencies', 'packages']:
         normalize_string_or_array(base_json, key)
 
     return base_json
 
 def build_config(root_dir, extra_paths=None):
+    paths = []
+
+    def scan_package_dir(package_dir):
+        package_paths = [os.path.join(package_dir, dirname)
+                         for dirname in os.listdir(package_dir)]
+        paths.extend(package_paths)
+
     packages_dir = os.path.join(root_dir, 'packages')
-    config = {'paths': []}
     if os.path.exists(packages_dir) and os.path.isdir(packages_dir):
-        package_paths = [os.path.join(packages_dir, dirname)
-                         for dirname in os.listdir(packages_dir)]
-        config['paths'].extend(package_paths)
+        scan_package_dir(packages_dir)
 
     if not extra_paths:
         extra_paths = []
-    config['paths'].extend(extra_paths)
+    paths.extend(extra_paths)
 
-    paths = [os.path.abspath(path)
-             for path in config['paths']]
-    paths = list(set(paths))
+    paths = list(set([os.path.abspath(path) for path in paths]))
+    packages = {}
 
-    config['paths'] = paths
-    config['packages'] = {}
     for path in paths:
         pkgconfig = get_config_in_dir(path)
         pkgconfig['root_dir'] = path
-        config['packages'][pkgconfig['name']] = pkgconfig
-    return config
+
+        # TODO: Ensure there are no namespace collisions.
+        packages[pkgconfig['name']] = pkgconfig
+
+        if 'packages' in pkgconfig:
+            for package_dir in pkgconfig['packages']:
+                scan_package_dir(os.path.join(path, package_dir))
+
+    return {'paths': paths, 'packages': packages}
 
 def get_deps_for_targets(pkg_cfg, targets):
     visited = []
