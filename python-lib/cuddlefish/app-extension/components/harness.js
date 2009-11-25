@@ -168,13 +168,16 @@ Packaging.prototype = {
     return options;
   },
 
-  getURLForData: function getURLForData() {
+  getURLForData: function getURLForData(path) {
     var traceback = this.__loader.require("traceback");
     var callerInfo = traceback.get().slice(-2)[0];
     var url = this.__loader.require("url");
     var info = url.parse(callerInfo.filename);
     var pkgName = options.resourcePackages[info.host];
-    dump("PKG NAME IS " + pkgName + "\n");
+    if (pkgName in options.packageData)
+      return url.resolve(options.packageData[pkgName], path);
+    else
+      throw new Error("No data for package " + pkgName);
   },
 
   createLoader: function createLoader() {

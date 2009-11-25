@@ -1,4 +1,5 @@
 var url = require("url");
+var file = require("file");
 
 exports.testPackaging = function(test) {
   test.assertEqual(packaging.options.main,
@@ -21,6 +22,6 @@ exports.testPackaging = function(test) {
                    "packaging metadata should be available");
 
   var sample = url.toFilename(packaging.getURLForData("sample.txt"));
-  test.assertEqual(file.read(sample), "this is sample data.",
+  test.assertEqual(file.read(sample), "this is sample data.\r\n",
 		   "packaging data should be available");
 };
