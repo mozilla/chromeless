@@ -91,6 +91,7 @@ def get_deps_for_targets(pkg_cfg, targets):
         dep = deps_left.pop()
         if dep not in visited:
             visited.append(dep)
+            # TODO: Raise a nicer error if dependency not found.
             dep_cfg = pkg_cfg['packages'][dep]
             deps_left.extend(dep_cfg.get('dependencies', []))
 
