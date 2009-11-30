@@ -27,6 +27,7 @@ def run(arguments=sys.argv[1:]):
     # optparse documentation for more info.
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
+                                 type="int",
                                  help="number of times to run tests",
                                  default=1),
         ("-c", "--components",): dict(dest="components",
@@ -137,8 +138,6 @@ def run(arguments=sys.argv[1:]):
         if not options.templatedir:
             print "package.json does not have a 'main' entry."
             sys.exit(1)
-
-    options.iterations = int(options.iterations)
 
     if not options.components:
         options.components = []
