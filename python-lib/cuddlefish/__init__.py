@@ -23,6 +23,8 @@ Commands:
 """
 
 def run(arguments=sys.argv[1:]):
+    # TODO: Separate these options into different sections; see
+    # optparse documentation for more info.
     parser_options = {
         ("-x", "--times",): dict(dest="iterations",
                                  help="number of times to run tests",
