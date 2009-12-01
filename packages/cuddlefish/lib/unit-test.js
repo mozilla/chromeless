@@ -143,6 +143,15 @@ TestRunner.prototype = {
     }
   },
 
+  assert: function assert(a, message) {
+    if (!a) {
+      if (!message)
+        message = "assertion failed, value is " + a;
+      this.fail(message);
+    } else
+      this.pass(message || "assertion successful");
+  },
+
   assertNotEqual: function assertNotEqual(a, b, message) {
     if (a != b) {
       if (!message)
