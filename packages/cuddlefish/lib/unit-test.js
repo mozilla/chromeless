@@ -136,10 +136,15 @@ TestRunner.prototype = {
       else
         this.fail("function failed to throw exception");
     } catch (e) {
-      if (typeof(predicate) == "object")
-        this.assertMatches(e.message, predicate, message);
+      var errorMessage;
+      if (typeof(e) == "string")
+        errorMessage = e;
       else
-        this.assertEqual(e.message, predicate, message);
+        errorMessage = e.message;
+      if (typeof(predicate) == "object")
+        this.assertMatches(errorMessage, predicate, message);
+      else
+        this.assertEqual(errorMessage, predicate, message);
     }
   },
 
