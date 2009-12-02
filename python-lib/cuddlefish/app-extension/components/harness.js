@@ -273,6 +273,9 @@ function NSGetModule(compMgr, fileSpec) {
 
     options = JSON.parse(jsonData);
 
+    if ('noQuit' in options)
+      quitOnFinish = !options.noQuit;
+
     options.quit = quit;
     resultFile = options.resultFile;
   } catch (e) {

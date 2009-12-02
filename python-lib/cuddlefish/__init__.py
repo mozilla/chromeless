@@ -26,6 +26,10 @@ def run(arguments=sys.argv[1:]):
     # TODO: Separate these options into different sections; see
     # optparse documentation for more info.
     parser_options = {
+        ("-n", "--no-quit",): dict(dest="no_quit",
+                                   help="don't quit after running tests",
+                                   action="store_true",
+                                   default=False),
         ("-x", "--times",): dict(dest="iterations",
                                  type="int",
                                  help="number of times to run tests",
@@ -234,6 +238,7 @@ def run(arguments=sys.argv[1:]):
                          xpts=xpts,
                          app_type=options.app,
                          binary=options.binary,
-                         verbose=options.verbose)
+                         verbose=options.verbose,
+                         no_quit=options.no_quit)
 
     sys.exit(retval)

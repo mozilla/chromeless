@@ -42,7 +42,8 @@ def install_xpts(harness_root_dir, xpts):
             os.remove(path)
 
 def run_app(harness_root_dir, harness_options, xpts,
-            app_type, binary=None, verbose=False):
+            app_type, binary=None, verbose=False,
+            no_quit=False):
     if app_type == "xulrunner":
         if not binary:
             binary = find_firefox_binary()
@@ -57,6 +58,8 @@ def run_app(harness_root_dir, harness_options, xpts,
             runner_class = mozrunner.ThunderbirdRunner
         else:
             raise ValueError("Unknown app: %s" % app_type)
+
+    harness_options['noQuit'] = no_quit
 
     resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
     if os.path.exists(resultfile):
