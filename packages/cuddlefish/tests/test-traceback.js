@@ -38,6 +38,23 @@ exports.testFormatDoesNotFetchRemoteFiles = function(test) {
     });
 };
 
+exports.testFromExceptionWithString = function(test) {
+  try {
+    throw "foob";
+    test.fail("an exception should've been thrown");
+  } catch (e if e == "foob") {
+    var tb = traceback.fromException(e);
+    test.assertEqual(tb.length, 0);
+  }
+};
+
+exports.testFormatWithString = function(test) {
+  // This can happen if e.g. a thrown exception was
+  // a string instead of an Error instance.
+  test.assertEqual(traceback.format("blah"),
+		   "Traceback (most recent call last):");
+};
+
 exports.testFromExceptionWithError = function(test) {
   try {
     throwError();

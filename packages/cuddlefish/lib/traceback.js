@@ -106,7 +106,9 @@ function nsIStackFramesToJSON(frame) {
 var fromException = exports.fromException = function fromException(e) {
   if (e instanceof Ci.nsIException)
     return nsIStackFramesToJSON(e.location);
-  return errorStackToJSON(e.stack);
+  if (e.stack)
+    return errorStackToJSON(e.stack);
+  return [];
 };
 
 var get = exports.get = function get() {
@@ -120,15 +122,18 @@ var format = exports.format = function format(tbOrException) {
   }
 
   var tb;
-  if (tbOrException.length === undefined)
-    tb = fromException(tbOrException);
-  else
+  if (typeof(tbOrException) == "object" &&
+      tbOrException.constructor.name == "Array")
     tb = tbOrException;
+  else
+    tb = fromException(tbOrException);
 
   var lines = ["Traceback (most recent call last):"];
 
   tb.forEach(
     function(frame) {
+      if (!(frame.filename || frame.lineNo || frame.funcName))
+	return;
       lines.push('  File "' + frame.filename + '", line ' +
                  frame.lineNo + ', in ' + frame.funcName);
       var sourceLine = safeGetFileLine(frame.filename, frame.lineNo);
