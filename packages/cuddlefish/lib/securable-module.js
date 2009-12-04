@@ -132,6 +132,9 @@
          defineProperty: function defineProperty(name, value) {
            this._sandbox[name] = value;
          },
+         getProperty: function getProperty(name) {
+           return this._sandbox[name];
+         },
          evaluate: function evaluate(options) {
            if (typeof(options) == 'string')
              options = {contents: options};
@@ -206,8 +209,8 @@
            for (name in self.globals)
              sandbox.defineProperty(name, self.globals[name]);
            sandbox.defineProperty('require', self._makeRequire(path));
-           sandbox.defineProperty('exports', exports);
-           self.modules[path] = exports;
+           sandbox.evaluate("var exports = {};");
+           self.modules[path] = sandbox.getProperty("exports");
            sandbox.evaluate(options);
          }
          return self.modules[path];
