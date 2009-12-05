@@ -4,6 +4,7 @@ import optparse
 import glob
 
 from cuddlefish import packaging
+from cuddlefish.bunch import Bunch
 
 def get_xpts(component_dirs):
     files = []
@@ -22,11 +23,89 @@ Commands:
   run   - run program
 """
 
-def parse_args(arguments, parser_options, usage):
+parser_options = {
+    ("-v", "--verbose",): dict(dest="verbose",
+                               help="enable lots of output",
+                               action="store_true",
+                               default=False),
+    ("-t", "--templatedir",): dict(dest="templatedir",
+                                   help="XULRunner app/ext. template",
+                                   metavar=None,
+                                   default=None),
+    ("-p", "--pkgdir",): dict(dest="pkgdir",
+                              help=("package dir containing "
+                                    "package.json; default is "
+                                    "current directory"),
+                              metavar=None,
+                              default=os.getcwd()),
+    }
+
+parser_groups = Bunch(
+    app=Bunch(
+        name="Application Options",
+        options={
+            ("-b", "--binary",): dict(dest="binary",
+                                      help="path to app binary", 
+                                      metavar=None,
+                                      default=None),
+            ("-a", "--app",): dict(dest="app",
+                                   help=("app to run: xulrunner (default), "
+                                         "firefox, or thunderbird"),
+                                   metavar=None,
+                                   default="xulrunner"),
+            }
+        ),
+    xpcom=Bunch(
+        name="XPCOM Compilation Options",
+        options={
+            ("-s", "--srcdir",): dict(dest="moz_srcdir",
+                                      help="Mozilla source dir",
+                                      metavar=None,
+                                      default=None),
+            ("-o", "--objdir",): dict(dest="moz_objdir",
+                                      help="Mozilla objdir",
+                                      metavar=None,
+                                      default=None),
+            }
+        ),
+    tests=Bunch(
+        name="Testing Options",
+        options={
+            ("-n", "--no-quit",): dict(dest="no_quit",
+                                       help="don't quit after running tests",
+                                       action="store_true",
+                                       default=False),
+            ("-d", "--dep-tests",): dict(dest="dep_tests",
+                                         help="include tests for all deps",
+                                         action="store_true",
+                                         default=False),
+            ("-x", "--times",): dict(dest="iterations",
+                                     type="int",
+                                     help="number of times to run tests",
+                                     default=1),
+            ("-c", "--components",): dict(dest="components",
+                                          help=("extra XPCOM component "
+                                                "dir(s), comma-separated"),
+                                          default=None),
+
+            }
+        ),
+    )
+
+def parse_args(arguments, parser_options, usage, parser_groups=None):
     parser = optparse.OptionParser(usage=usage.strip())
 
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
+
+    if parser_groups:
+        for group_info in parser_groups.values():
+            group = optparse.OptionGroup(parser, group_info.name,
+                                         group_info.get('description'))
+            for names, opts in group_info.options.items():
+                group.add_option(*names, **opts)
+            parser.add_option_group(group)
+
     (options, args) = parser.parse_args(args=arguments)
 
     if not args:
@@ -36,60 +115,9 @@ def parse_args(arguments, parser_options, usage):
     return (options, args)
 
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
-    # TODO: Separate these options into different sections; see
-    # optparse documentation for more info.
-    parser_options = {
-        ("-n", "--no-quit",): dict(dest="no_quit",
-                                   help="don't quit after running tests",
-                                   action="store_true",
-                                   default=False),
-        ("-d", "--dep-tests",): dict(dest="dep_tests",
-                                     help="include tests for all deps",
-                                     action="store_true",
-                                     default=False),
-        ("-x", "--times",): dict(dest="iterations",
-                                 type="int",
-                                 help="number of times to run tests",
-                                 default=1),
-        ("-c", "--components",): dict(dest="components",
-                                      help=("extra XPCOM component "
-                                            "dir(s), comma-separated"),
-                                      default=None),
-        ("-b", "--binary",): dict(dest="binary",
-                                  help="path to app binary", 
-                                  metavar=None,
-                                  default=None),
-        ("-v", "--verbose",): dict(dest="verbose",
-                                   help="enable lots of output",
-                                   action="store_true",
-                                   default=False),
-        ("-a", "--app",): dict(dest="app",
-                               help=("app to run: xulrunner (default), "
-                                     "firefox, or thunderbird"),
-                               metavar=None,
-                               default="xulrunner"),
-        ("-s", "--srcdir",): dict(dest="moz_srcdir",
-                                  help="Mozilla source dir",
-                                  metavar=None,
-                                  default=None),
-        ("-o", "--objdir",): dict(dest="moz_objdir",
-                                  help="Mozilla objdir",
-                                  metavar=None,
-                                  default=None),
-        ("-t", "--templatedir",): dict(dest="templatedir",
-                                       help="XULRunner app/ext. template",
-                                       metavar=None,
-                                       default=None),
-        ("-p", "--pkgdir",): dict(dest="pkgdir",
-                                  help=("package dir containing "
-                                        "package.json; default is "
-                                        "current directory"),
-                                  metavar=None,
-                                  default=os.getcwd()),
-        }
-
     (options, args) = parse_args(arguments=arguments,
                                  parser_options=parser_options,
+                                 parser_groups=parser_groups,
                                  usage=usage)
 
     if not target_cfg:
