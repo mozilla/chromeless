@@ -13,7 +13,7 @@ def get_xpts(component_dirs):
     return files
 
 usage = """
-%(progname)s [options] [command]
+%prog [options] [command]
 
 Commands:
   xpcom - build xpcom component
@@ -22,13 +22,8 @@ Commands:
   run   - run program
 """
 
-def parse_args(arguments, parser_options, usage, progname=None):
-    if not progname:
-        progname = os.path.basename(sys.argv[0])
-
-    parser = optparse.OptionParser(
-        usage=(usage.strip() % dict(progname=progname))
-        )
+def parse_args(arguments, parser_options, usage):
+    parser = optparse.OptionParser(usage=usage.strip())
 
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
