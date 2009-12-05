@@ -16,6 +16,18 @@ class DuplicatePackageError(Exception):
 class PackageNotFoundError(Exception):
     pass
 
+def find_packages_with_module(pkg_cfg, name):
+    # TODO: Make this support more than just top-level modules.
+    filename = "%s.js" % name
+    packages = []
+    for cfg in pkg_cfg.packages.itervalues():
+        if 'lib' in cfg:
+            matches = [dirname for dirname in resolve_dirs(cfg, cfg.lib)
+                       if os.path.exists(os.path.join(dirname, filename))]
+            if matches:
+                packages.append(cfg.name)
+    return packages
+
 def resolve_dirs(pkg_cfg, dirnames):
     for dirname in dirnames:
         yield resolve_dir(pkg_cfg, dirname)

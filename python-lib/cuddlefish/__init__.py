@@ -22,7 +22,7 @@ Commands:
   run   - run program
 """
 
-def run(arguments=sys.argv[1:], target_cfg=None):
+def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
     # TODO: Separate these options into different sections; see
     # optparse documentation for more info.
     parser_options = {
@@ -155,8 +155,10 @@ def run(arguments=sys.argv[1:], target_cfg=None):
     options.components = [os.path.abspath(path)
                           for path in options.components]
 
-    pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
-                                     target_cfg)
+    if not pkg_cfg:
+        pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
+                                         target_cfg)
+
     target = target_cfg.name
 
     if command == 'xpi':
