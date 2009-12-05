@@ -36,7 +36,7 @@ def run(arguments=sys.argv[1:]):
                                             parser_groups=parser_groups,
                                             usage=usage)
 
-    if args[0] != "run":
+    if args[0] not in ["run", "xpi"]:
         print "'%s' is either unrecognized or not yet implemented." % (
             args[0]
             )
@@ -76,7 +76,7 @@ def run(arguments=sys.argv[1:]):
         if pkg_name not in target_cfg.dependencies:
             target_cfg.dependencies.append(pkg_name)
 
-    cuddlefish.run(arguments=["run"],
+    cuddlefish.run(arguments=[args[0]],
                    target_cfg=target_cfg,
                    pkg_cfg=pkg_cfg,
                    defaults=options.__dict__)
