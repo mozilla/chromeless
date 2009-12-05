@@ -9,6 +9,13 @@ METADATA_PROPS = ['name', 'description', 'keywords', 'author',
 class MalformedJsonFileError(Exception):
     pass
 
+def resolve_dirs(pkg_cfg, dirnames):
+    for dirname in dirnames:
+        yield resolve_dir(pkg_cfg, dirname)
+
+def resolve_dir(pkg_cfg, dirname):
+    return os.path.join(pkg_cfg['root_dir'], dirname)
+
 def get_metadata(pkg_cfg, deps):
     metadata = {}
     for pkg_name in deps:
@@ -49,6 +56,8 @@ def get_config_in_dir(path):
     for key in ['lib', 'tests', 'dependencies', 'packages']:
         normalize_string_or_array(base_json, key)
 
+    base_json['root_dir'] = path
+
     return base_json
 
 def build_config(root_dir, extra_paths=None):
@@ -72,7 +81,6 @@ def build_config(root_dir, extra_paths=None):
 
     for path in paths:
         pkgconfig = get_config_in_dir(path)
-        pkgconfig['root_dir'] = path
 
         # TODO: Ensure there are no namespace collisions.
         packages[pkgconfig['name']] = pkgconfig
@@ -114,8 +122,7 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
             for dirname in dirnames:
                 name = "-".join([prefix + cfg['name'], dirname])
                 build['resourcePackages'][name] = cfg['name']
-                build['resources'][name] = os.path.join(cfg['root_dir'],
-                                                        dirname)
+                build['resources'][name] = resolve_dir(cfg, dirname)
                 resource_url = 'resource://%s/' % name
                 if is_code:
                     build['rootPaths'].insert(0, resource_url)
@@ -145,9 +152,7 @@ def call_plugins(pkg_cfg, deps):
     for dep in deps:
         dep_cfg = pkg_cfg['packages'][dep]
         dirnames = dep_cfg.get('python-lib', [])
-        dirnames = [os.path.join(dep_cfg['root_dir'], dirname)
-                    for dirname in dirnames]
-        for dirname in dirnames:
+        for dirname in resolve_dirs(dep_cfg, dirnames):
             sys.path.append(dirname)
         module_names = dep_cfg.get('python-plugins', [])
         for module_name in module_names:

@@ -109,15 +109,15 @@ def run(arguments=sys.argv[1:]):
         xpcom = target_cfg['xpcom']
         from cuddlefish.xpcom import build_xpcom_components
         if 'typelibs' in xpcom:
-            xpt_output_dir = os.path.join(options.pkgdir,
-                                          xpcom['typelibs'])
+            xpt_output_dir = packaging.resolve_dir(target_cfg,
+                                                   xpcom['typelibs'])
         else:
             xpt_output_dir = None
         build_xpcom_components(
-            comp_src_dir=os.path.join(options.pkgdir, xpcom['src']),
+            comp_src_dir=packaging.resolve_dir(target_cfg, xpcom['src']),
             moz_srcdir=options.moz_srcdir,
             moz_objdir=options.moz_objdir,
-            base_output_dir=os.path.join(options.pkgdir, xpcom['dest']),
+            base_output_dir=packaging.resolve_dir(target_cfg, xpcom['dest']),
             xpt_output_dir=xpt_output_dir,
             module_name=xpcom['module']
             )
@@ -189,8 +189,8 @@ def run(arguments=sys.argv[1:]):
     for dep in deps:
         dep_cfg = pkg_cfg['packages'][dep]
         if 'xpcom' in dep_cfg and 'typelibs' in dep_cfg['xpcom']:
-            abspath = os.path.join(dep_cfg['root_dir'],
-                                   dep_cfg['xpcom']['typelibs'])
+            abspath = packaging.resolve_dir(dep_cfg,
+                                            dep_cfg['xpcom']['typelibs'])
             dep_xpt_dirs.append(abspath)
     dep_xpt_dirs.extend(options.components)
     xpts = get_xpts(dep_xpt_dirs)
