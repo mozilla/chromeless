@@ -22,7 +22,7 @@ Commands:
   run   - run program
 """
 
-def run(arguments=sys.argv[1:]):
+def run(arguments=sys.argv[1:], target_cfg=None):
     # TODO: Separate these options into different sections; see
     # optparse documentation for more info.
     parser_options = {
@@ -88,12 +88,13 @@ def run(arguments=sys.argv[1:]):
         parser.print_help()
         parser.exit()
 
-    options.pkgdir = os.path.abspath(options.pkgdir)
-    if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
-        print "cannot find 'package.json' in %s." % options.pkgdir
-        sys.exit(1)
+    if not target_cfg:
+        options.pkgdir = os.path.abspath(options.pkgdir)
+        if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
+            print "cannot find 'package.json' in %s." % options.pkgdir
+            sys.exit(1)
 
-    target_cfg = packaging.get_config_in_dir(options.pkgdir)
+        target_cfg = packaging.get_config_in_dir(options.pkgdir)
 
     use_main = False
     command = args[0]
@@ -131,8 +132,7 @@ def run(arguments=sys.argv[1:]):
         use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
-            print "package.json does not have a 'tests' entry."
-            sys.exit(1)
+            target_cfg['tests'] = []
     elif command == "run":
         use_main = True
     else:
