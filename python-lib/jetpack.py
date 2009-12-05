@@ -54,9 +54,9 @@ def run(arguments=sys.argv[1:]):
         name = manifest.name,
         root_dir = "",
         data = jpdir,
-        main = "simple-jetpack-runner",
+        main = options.runner,
         keywords = ["contains-a-jetpack"],
-        dependencies = ["simple-jetpack-runner"]
+        dependencies = [options.runner]
         )
 
     pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
