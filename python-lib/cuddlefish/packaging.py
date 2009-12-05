@@ -131,6 +131,9 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
         if section in cfg:
             dirnames = cfg[section]
             if isinstance(dirnames, basestring):
+                # This is just for internal consistency within this
+                # function, it has nothing to do w/ a non-canonical
+                # configuration dict.
                 dirnames = [dirnames]
             for dirname in dirnames:
                 name = "-".join([prefix + cfg.name, dirname])
