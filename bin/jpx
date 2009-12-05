@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+import jetpack
+
+if __name__ == '__main__':
+    jetpack.run()
