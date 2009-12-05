@@ -10,6 +10,12 @@ METADATA_PROPS = ['name', 'description', 'keywords', 'author',
 class MalformedJsonFileError(Exception):
     pass
 
+class DuplicatePackageError(Exception):
+    pass
+
+class PackageNotFoundError(Exception):
+    pass
+
 def resolve_dirs(pkg_cfg, dirnames):
     for dirname in dirnames:
         yield resolve_dir(pkg_cfg, dirname)
@@ -64,34 +70,38 @@ def get_config_in_dir(path):
 
     return base_json
 
-def build_config(root_dir, extra_paths=None):
-    paths = []
+def build_config(root_dir, target_cfg):
+    paths = [target_cfg.root_dir]
+    dirs_to_scan = []
 
-    def scan_package_dir(package_dir):
-        package_paths = [os.path.join(package_dir, dirname)
-                         for dirname in os.listdir(package_dir)]
-        paths.extend(package_paths)
+    def add_packages_from_config(pkgconfig):
+        if 'packages' in pkgconfig:
+            for package_dir in resolve_dirs(pkgconfig, pkgconfig.packages):
+                dirs_to_scan.append(package_dir)
+
+    add_packages_from_config(target_cfg)
 
     packages_dir = os.path.join(root_dir, 'packages')
     if os.path.exists(packages_dir) and os.path.isdir(packages_dir):
-        scan_package_dir(packages_dir)
+        dirs_to_scan.append(packages_dir)
 
-    if not extra_paths:
-        extra_paths = []
-    paths.extend(extra_paths)
+    packages = Bunch({target_cfg.name: target_cfg})
 
-    paths = list(set([os.path.abspath(path) for path in paths]))
-    packages = Bunch()
+    while dirs_to_scan:
+        packages_dir = dirs_to_scan.pop()
+        package_paths = [os.path.join(packages_dir, dirname)
+                         for dirname in os.listdir(packages_dir)]
 
-    for path in paths:
-        pkgconfig = get_config_in_dir(path)
-
-        # TODO: Ensure there are no namespace collisions.
-        packages[pkgconfig.name] = pkgconfig
-
-        if 'packages' in pkgconfig:
-            for package_dir in pkgconfig.packages:
-                scan_package_dir(os.path.join(path, package_dir))
+        for path in package_paths:
+            pkgconfig = get_config_in_dir(path)
+            if pkgconfig.name in packages:
+                otherpkg = packages[pkgconfig.name]
+                if otherpkg.root_dir != path:
+                    raise DuplicatePackageError(path, otherpkg.root_dir)
+            else:
+                packages[pkgconfig.name] = pkgconfig
+                add_packages_from_config(pkgconfig)
+                paths.append(path)
 
     return Bunch(paths=paths, packages=packages)
 
@@ -103,7 +113,8 @@ def get_deps_for_targets(pkg_cfg, targets):
         dep = deps_left.pop()
         if dep not in visited:
             visited.append(dep)
-            # TODO: Raise a nicer error if dependency not found.
+            if dep not in pkg_cfg.packages:
+                raise PackageNotFoundError(dep)
             dep_cfg = pkg_cfg.packages[dep]
             deps_left.extend(dep_cfg.get('dependencies', []))
 

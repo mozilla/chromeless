@@ -156,7 +156,7 @@ def run(arguments=sys.argv[1:]):
                           for path in options.components]
 
     pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
-                                     [options.pkgdir])
+                                     target_cfg)
     target = target_cfg.name
 
     if command == 'xpi':
