@@ -85,7 +85,8 @@ parser_groups = Bunch(
         ),
     )
 
-def parse_args(arguments, parser_options, usage, parser_groups=None):
+def parse_args(arguments, parser_options, usage, parser_groups=None,
+               defaults=None):
     parser = optparse.OptionParser(usage=usage.strip())
 
     for names, opts in parser_options.items():
@@ -98,6 +99,9 @@ def parse_args(arguments, parser_options, usage, parser_groups=None):
             for names, opts in group_info.options.items():
                 group.add_option(*names, **opts)
             parser.add_option_group(group)
+
+    if defaults:
+        parser.set_defaults(**defaults)
 
     (options, args) = parser.parse_args(args=arguments)
 
@@ -114,11 +118,13 @@ def get_xpts(component_dirs):
         files.extend(xpts)
     return files
 
-def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
+def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
+        defaults=None):
     (options, args) = parse_args(arguments=arguments,
                                  parser_options=parser_options,
                                  parser_groups=parser_groups,
-                                 usage=usage)
+                                 usage=usage,
+                                 defaults=defaults)
 
     if not target_cfg:
         options.pkgdir = os.path.abspath(options.pkgdir)

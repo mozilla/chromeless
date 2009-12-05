@@ -78,4 +78,5 @@ def run(arguments=sys.argv[1:]):
 
     cuddlefish.run(arguments=["run"],
                    target_cfg=target_cfg,
-                   pkg_cfg=pkg_cfg)
+                   pkg_cfg=pkg_cfg,
+                   defaults=options.__dict__)
