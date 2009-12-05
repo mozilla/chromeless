@@ -46,13 +46,16 @@ def normalize_string_or_array(base_json, key):
         if isinstance(base_json[key], basestring):
             base_json[key] = [base_json[key]]
 
+def load_json_file(path):
+    data = open(path, 'r').read()
+    try:
+        return Bunch(json.loads(data))
+    except ValueError, e:
+        raise MalformedJsonFileError(path, str(e))
+
 def get_config_in_dir(path):
     package_json = os.path.join(path, 'package.json')
-    data = open(package_json, 'r').read()
-    try:
-        base_json = Bunch(json.loads(data))
-    except ValueError, e:
-        raise MalformedJsonFileError(package_json, str(e))
+    base_json = load_json_file(package_json)
 
     if 'name' not in base_json:
         base_json.name = os.path.basename(path)
