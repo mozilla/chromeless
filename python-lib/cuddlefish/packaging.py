@@ -71,7 +71,6 @@ def get_config_in_dir(path):
     return base_json
 
 def build_config(root_dir, target_cfg):
-    paths = [target_cfg.root_dir]
     dirs_to_scan = []
 
     def add_packages_from_config(pkgconfig):
@@ -101,9 +100,8 @@ def build_config(root_dir, target_cfg):
             else:
                 packages[pkgconfig.name] = pkgconfig
                 add_packages_from_config(pkgconfig)
-                paths.append(path)
 
-    return Bunch(paths=paths, packages=packages)
+    return Bunch(packages=packages)
 
 def get_deps_for_targets(pkg_cfg, targets):
     visited = []
