@@ -30,6 +30,10 @@ def run(arguments=sys.argv[1:]):
                                    help="don't quit after running tests",
                                    action="store_true",
                                    default=False),
+        ("-d", "--dep-tests",): dict(dest="dep_tests",
+                                     help="include tests for all deps",
+                                     action="store_true",
+                                     default=False),
         ("-x", "--times",): dict(dest="iterations",
                                  type="int",
                                  help="number of times to run tests",
@@ -170,8 +174,11 @@ def run(arguments=sys.argv[1:]):
         targets.append("test-harness")
 
     deps = packaging.get_deps_for_targets(pkg_cfg, targets)
-    build = packaging.generate_build_for_target(pkg_cfg, target, deps,
-                                                prefix=unique_prefix)
+    build = packaging.generate_build_for_target(
+        pkg_cfg, target, deps,
+        prefix=unique_prefix,
+        include_dep_tests=options.dep_tests
+        )
 
     if 'resources' in build:
         resources = build['resources']

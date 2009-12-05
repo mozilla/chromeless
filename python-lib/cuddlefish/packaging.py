@@ -97,7 +97,9 @@ def get_deps_for_targets(pkg_cfg, targets):
 
     return visited
 
-def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
+def generate_build_for_target(pkg_cfg, target, deps, prefix='',
+                              include_tests=True,
+                              include_dep_tests=False):
     build = {'resources': {},
              'resourcePackages': {},
              'packageData': {},
@@ -124,12 +126,15 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix=''):
         dep_cfg = pkg_cfg['packages'][dep]
         add_section_to_build(dep_cfg, "lib", is_code=True)
         add_section_to_build(dep_cfg, "data", is_data=True)
+        if include_tests and include_dep_tests:
+            add_section_to_build(dep_cfg, "tests", is_code=True)
         if "loader" in dep_cfg:
             build['loader'] = "resource://%s-%s" % (prefix + dep,
                                                     dep_cfg["loader"])
 
     target_cfg = pkg_cfg['packages'][target]
-    add_section_to_build(target_cfg, "tests", is_code=True)
+    if include_tests and not include_dep_tests:
+        add_section_to_build(target_cfg, "tests", is_code=True)
 
     for dep in deps:
         add_dep_to_build(dep)
