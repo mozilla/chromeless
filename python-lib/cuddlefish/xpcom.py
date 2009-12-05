@@ -5,7 +5,7 @@ import fnmatch
 import subprocess
 import distutils.dir_util
 
-from bunch import Bunch
+from cuddlefish.bunch import Bunch
 
 def clear_dir(dirname):
     if os.path.exists(dirname) and os.path.isdir(dirname):

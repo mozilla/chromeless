@@ -106,20 +106,20 @@ def run(arguments=sys.argv[1:]):
             sys.exit(1)
         options.moz_srcdir = os.path.expanduser(options.moz_srcdir)
         options.moz_objdir = os.path.expanduser(options.moz_objdir)
-        xpcom = target_cfg['xpcom']
+        xpcom = target_cfg.xpcom
         from cuddlefish.xpcom import build_xpcom_components
         if 'typelibs' in xpcom:
             xpt_output_dir = packaging.resolve_dir(target_cfg,
-                                                   xpcom['typelibs'])
+                                                   xpcom.typelibs)
         else:
             xpt_output_dir = None
         build_xpcom_components(
-            comp_src_dir=packaging.resolve_dir(target_cfg, xpcom['src']),
+            comp_src_dir=packaging.resolve_dir(target_cfg, xpcom.src),
             moz_srcdir=options.moz_srcdir,
             moz_objdir=options.moz_objdir,
-            base_output_dir=packaging.resolve_dir(target_cfg, xpcom['dest']),
+            base_output_dir=packaging.resolve_dir(target_cfg, xpcom.dest),
             xpt_output_dir=xpt_output_dir,
-            module_name=xpcom['module']
+            module_name=xpcom.module
             )
         sys.exit(0)
     elif command == "xpi":
@@ -127,7 +127,7 @@ def run(arguments=sys.argv[1:]):
             print ("The --components option may not be used when "
                    "building an xpi.")
             sys.exit(1)
-        xpi_name = "%s.xpi" % target_cfg['name']
+        xpi_name = "%s.xpi" % target_cfg.name
         use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
@@ -157,7 +157,7 @@ def run(arguments=sys.argv[1:]):
 
     pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
                                      [options.pkgdir])
-    target = target_cfg['name']
+    target = target_cfg.name
 
     if command == 'xpi':
         import uuid
@@ -181,16 +181,16 @@ def run(arguments=sys.argv[1:]):
         )
 
     if 'resources' in build:
-        resources = build['resources']
+        resources = build.resources
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
     dep_xpt_dirs = []
     for dep in deps:
-        dep_cfg = pkg_cfg['packages'][dep]
-        if 'xpcom' in dep_cfg and 'typelibs' in dep_cfg['xpcom']:
+        dep_cfg = pkg_cfg.packages[dep]
+        if 'xpcom' in dep_cfg and 'typelibs' in dep_cfg.xpcom:
             abspath = packaging.resolve_dir(dep_cfg,
-                                            dep_cfg['xpcom']['typelibs'])
+                                            dep_cfg.xpcom.typelibs)
             dep_xpt_dirs.append(abspath)
     dep_xpt_dirs.extend(options.components)
     xpts = get_xpts(dep_xpt_dirs)
