@@ -6,13 +6,6 @@ import glob
 from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 
-def get_xpts(component_dirs):
-    files = []
-    for dirname in component_dirs:
-        xpts = glob.glob(os.path.join(dirname, '*.xpt'))
-        files.extend(xpts)
-    return files
-
 usage = """
 %prog [options] [command]
 
@@ -113,6 +106,13 @@ def parse_args(arguments, parser_options, usage, parser_groups=None):
         parser.exit()
 
     return (options, args)
+
+def get_xpts(component_dirs):
+    files = []
+    for dirname in component_dirs:
+        xpts = glob.glob(os.path.join(dirname, '*.xpt'))
+        files.extend(xpts)
+    return files
 
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
     (options, args) = parse_args(arguments=arguments,
