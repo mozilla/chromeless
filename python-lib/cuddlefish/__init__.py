@@ -22,6 +22,24 @@ Commands:
   run   - run program
 """
 
+def parse_args(arguments, parser_options, usage, progname=None):
+    if not progname:
+        progname = os.path.basename(sys.argv[0])
+
+    parser = optparse.OptionParser(
+        usage=(usage.strip() % dict(progname=progname))
+        )
+
+    for names, opts in parser_options.items():
+        parser.add_option(*names, **opts)
+    (options, args) = parser.parse_args(args=arguments)
+
+    if not args:
+        parser.print_help()
+        parser.exit()
+
+    return (options, args)
+
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
     # TODO: Separate these options into different sections; see
     # optparse documentation for more info.
@@ -75,18 +93,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None):
                                   default=os.getcwd()),
         }
 
-    progname = os.path.basename(sys.argv[0])
-    parser = optparse.OptionParser(
-        usage=(usage.strip() % dict(progname=progname))
-        )
-
-    for names, opts in parser_options.items():
-        parser.add_option(*names, **opts)
-    (options, args) = parser.parse_args(args=arguments)
-
-    if not args:
-        parser.print_help()
-        parser.exit()
+    (options, args) = parse_args(arguments=arguments,
+                                 parser_options=parser_options,
+                                 usage=usage)
 
     if not target_cfg:
         options.pkgdir = os.path.abspath(options.pkgdir)
