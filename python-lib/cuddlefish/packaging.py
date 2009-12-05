@@ -135,10 +135,13 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                 # function, it has nothing to do w/ a non-canonical
                 # configuration dict.
                 dirnames = [dirnames]
-            for dirname in dirnames:
-                name = "-".join([prefix + cfg.name, dirname])
+            for dirname in resolve_dirs(cfg, dirnames):
+                name = "-".join([prefix + cfg.name,
+                                 os.path.basename(dirname)])
+                if name in build.resources:
+                    raise KeyError('resource already defined', name)
                 build.resourcePackages[name] = cfg.name
-                build.resources[name] = resolve_dir(cfg, dirname)
+                build.resources[name] = dirname
                 resource_url = 'resource://%s/' % name
                 if is_code:
                     build.rootPaths.insert(0, resource_url)
