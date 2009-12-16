@@ -65,10 +65,14 @@
 
      var loader = new SecurableModule.Loader({fs: beetFs,
                                               globals: {print: outPrint}});
+     var extraOutput = {};
      loader.runScript({contents: 'print("beets is " + ' +
-                       'require("beets").beets);'});
+                       'require("beets").beets);'}, extraOutput);
      assert.isEqual(output[0], 'hi from beets', 'module should load');
      assert.isEqual(output[1], 'beets is 5', 'module should export');
+     assert.isEqual(extraOutput.sandbox.getProperty('print'),
+                    outPrint,
+                    'extraOutput.sandbox should work');
 
      var neatFs = {
        resolveModule: function(root, path) {

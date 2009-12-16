@@ -221,11 +221,13 @@
        return (this._makeRequire(null))(module);
      },
 
-     runScript: function runScript(options) {
+     runScript: function runScript(options, extraOutput) {
        if (typeof(options) == 'string')
          options = {contents: options};
        options = {__proto__: options};
        var sandbox = this.sandboxFactory.createSandbox(options);
+       if (extraOutput)
+         extraOutput.sandbox = sandbox;
        for (name in this.globals)
          sandbox.defineProperty(name, this.globals[name]);
        sandbox.defineProperty('require', this._makeRequire(null));
