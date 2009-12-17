@@ -192,3 +192,15 @@ def call_plugins(pkg_cfg, deps):
         for module_name in module_names:
             module = __import__(module_name)
             module.init(root_dir=dep_cfg.root_dir)
+
+def call_cmdline_tool(env_root, pkg_name):
+    pkg_cfg = build_config(env_root, Bunch(name='dummy'))
+    if pkg_name not in pkg_cfg.packages:
+        print "This tool requires the '%s' package." % pkg_name
+        sys.exit(1)
+    cfg = pkg_cfg.packages[pkg_name]
+    for dirname in resolve_dirs(cfg, cfg['python-lib']):
+        sys.path.append(dirname)
+    module_name = cfg.get('python-cmdline-tool')
+    module = __import__(module_name)
+    module.run()

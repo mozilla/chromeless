@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
-import jetpack
+import os
+
+from cuddlefish import packaging
 
 if __name__ == '__main__':
-    jetpack.run()
+    packaging.call_cmdline_tool(os.environ['CUDDLEFISH_ROOT'], 'jetpack')
