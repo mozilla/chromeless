@@ -135,7 +135,7 @@ def update_all_packages(env_root):
         if retval:
             sys.exit(retval)
 
-def test_all_packages(env_root):
+def test_all_packages(env_root, defaults):
     deps = []
     target_cfg = Bunch(name = "testall", dependencies = deps)
     pkg_cfg = packaging.build_config(env_root, target_cfg)
@@ -144,7 +144,8 @@ def test_all_packages(env_root):
     print "Testing all available packages: %s." % (", ".join(deps))
     run(arguments=["test", "--dep-tests"],
         target_cfg=target_cfg,
-        pkg_cfg=pkg_cfg)
+        pkg_cfg=pkg_cfg,
+        defaults=defaults)
 
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         defaults=None):
@@ -158,7 +159,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     env_root = os.environ['CUDDLEFISH_ROOT']
 
     if command == "testall":
-        test_all_packages(env_root)
+        test_all_packages(env_root, defaults=options.__dict__)
         return
     elif command == "update":
         update_all_packages(env_root)
