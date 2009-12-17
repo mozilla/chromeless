@@ -9,7 +9,5 @@
     ],
     "lib": ["lib"],
     "tests": ["tests"],
-    "loader": "lib/cuddlefish.js",
-    "python-lib": ["python-lib"],
-    "python-plugins": ["download_interopjs"]
+    "loader": "lib/cuddlefish.js"
 }
