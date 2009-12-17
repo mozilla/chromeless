@@ -44,6 +44,8 @@ def install_xpts(harness_root_dir, xpts):
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, verbose=False,
             no_quit=False):
+    if binary:
+        binary = os.path.expanduser(binary)
     if app_type == "xulrunner":
         if not binary:
             binary = find_firefox_binary()

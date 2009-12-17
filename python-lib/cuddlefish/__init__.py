@@ -25,6 +25,10 @@ parser_options = {
                                help="enable lots of output",
                                action="store_true",
                                default=False),
+    ("-g", "--use-config",): dict(dest="config",
+                                  help="use config from local.json",
+                                  metavar=None,
+                                  default=None),
     ("-t", "--templatedir",): dict(dest="templatedir",
                                    help="XULRunner app/ext. template",
                                    metavar=None,
@@ -147,16 +151,41 @@ def test_all_packages(env_root, defaults):
         pkg_cfg=pkg_cfg,
         defaults=defaults)
 
+def get_config_args(name, env_root):
+    local_json = os.path.join(env_root, "local.json")
+    if not (os.path.exists(local_json) and
+            os.path.isfile(local_json)):
+        print "File does not exist: %s" % local_json
+        sys.exit(1)
+    local_json = packaging.load_json_file(local_json)
+    if 'configs' not in local_json:
+        print "'configs' key not found in local.json."
+        sys.exit(1)
+    if name not in local_json.configs:
+        print "No config found for '%s'." % name
+        sys.exit(1)
+    config = local_json.configs[name]
+    if type(config) != list:
+        print "Config for '%s' must be a list of strings." % name
+        sys.exit(1)
+    return config
+
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
-        defaults=None):
-    (options, args) = parse_args(arguments=arguments,
-                                 parser_options=parser_options,
-                                 parser_groups=parser_groups,
-                                 usage=usage,
-                                 defaults=defaults)
+        defaults=None, env_root = os.environ['CUDDLEFISH_ROOT']):
+    parser_kwargs = dict(arguments=arguments,
+                         parser_options=parser_options,
+                         parser_groups=parser_groups,
+                         usage=usage,
+                         defaults=defaults)
+
+    (options, args) = parse_args(**parser_kwargs)
+
+    if options.config:
+        parser_kwargs['arguments'] += get_config_args(options.config,
+                                                      env_root)
+        (options, args) = parse_args(**parser_kwargs)
 
     command = args[0]
-    env_root = os.environ['CUDDLEFISH_ROOT']
 
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
