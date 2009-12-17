@@ -144,7 +144,8 @@ def test_all_packages(env_root, defaults):
     target_cfg = Bunch(name = "testall", dependencies = deps)
     pkg_cfg = packaging.build_config(env_root, target_cfg)
     for name in pkg_cfg.packages:
-        deps.append(name)
+        if name != "testall":
+            deps.append(name)
     print "Testing all available packages: %s." % (", ".join(deps))
     run(arguments=["test", "--dep-tests"],
         target_cfg=target_cfg,
