@@ -9,11 +9,15 @@ from cuddlefish.bunch import Bunch
 usage = """
 %prog [options] [command]
 
-Commands:
-  xpcom - build xpcom component
-  xpi   - generate an xpi
-  test  - run tests
-  run   - run program
+Package-Specific Commands:
+  xpcom      - build xpcom component
+  xpi        - generate an xpi
+  test       - run tests
+  run        - run program
+
+Global Commands:
+  testall    - test all packages
+  update     - update all packages
 """
 
 parser_options = {
@@ -118,6 +122,30 @@ def get_xpts(component_dirs):
         files.extend(xpts)
     return files
 
+def update_all_packages(env_root):
+    import subprocess
+
+    repos = []
+    for dirpath, dirnames, filenames in os.walk(env_root):
+        if '.hg' in dirnames:
+            repos.append(dirpath)
+    print "Updating HG repositories: %s." % (", ".join(repos))
+    for path in repos:
+        retval = subprocess.call(['hg', 'pull', '-u', '-R', path])
+        if retval:
+            sys.exit(retval)
+
+def test_all_packages(env_root):
+    deps = []
+    target_cfg = Bunch(name = "testall", dependencies = deps)
+    pkg_cfg = packaging.build_config(env_root, target_cfg)
+    for name in pkg_cfg.packages:
+        deps.append(name)
+    print "Testing all available packages: %s." % (", ".join(deps))
+    run(arguments=["test", "--dep-tests"],
+        target_cfg=target_cfg,
+        pkg_cfg=pkg_cfg)
+
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         defaults=None):
     (options, args) = parse_args(arguments=arguments,
@@ -125,6 +153,16 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                  parser_groups=parser_groups,
                                  usage=usage,
                                  defaults=defaults)
+
+    command = args[0]
+    env_root = os.environ['CUDDLEFISH_ROOT']
+
+    if command == "testall":
+        test_all_packages(env_root)
+        return
+    elif command == "update":
+        update_all_packages(env_root)
+        return
 
     if not target_cfg:
         options.pkgdir = os.path.abspath(options.pkgdir)
@@ -135,7 +173,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         target_cfg = packaging.get_config_in_dir(options.pkgdir)
 
     use_main = False
-    command = args[0]
     if command == "xpcom":
         if 'xpcom' not in target_cfg:
             print "package.json does not have a 'xpcom' entry."
@@ -174,9 +211,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     elif command == "run":
         use_main = True
     else:
-        print "Unknown command: %s\n" % command
-        parser.print_help()
-        parser.exit()
+        print "Unknown command: %s" % command
+        print "Try using '--help' for assistance."
+        sys.exit(1)
 
     if use_main and 'main' not in target_cfg:
         # If the user supplies a template dir, then the main
@@ -194,8 +231,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                           for path in options.components]
 
     if not pkg_cfg:
-        pkg_cfg = packaging.build_config(os.environ['CUDDLEFISH_ROOT'],
-                                         target_cfg)
+        pkg_cfg = packaging.build_config(env_root, target_cfg)
 
     target = target_cfg.name
 
