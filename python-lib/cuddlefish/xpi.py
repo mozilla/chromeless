@@ -14,7 +14,7 @@ def build_xpi(template_root_dir, target_cfg, xpi_name,
     manifest.set("em:version",
                  target_cfg.get('version', '1.0'))
     manifest.set("em:name",
-                 target_cfg['name'])
+                 target_cfg.get('fullName', target_cfg['name']))
     manifest.set("em:description",
                  target_cfg.get("description", ""))
     manifest.set("em:creator",
