@@ -1,0 +1,31 @@
+body {
+    font-family: Helvetica Neue, Arial, sans-serif;
+    font-size: 9pt;
+    background: #f0f0f0;
+}
+
+#container {
+    width: 60em;
+    margin: 0 auto;
+}
+
+.entry {
+    color: gray;
+    padding-bottom: 1em;
+}
+
+.entry .name {
+    font-weight: bold;
+    color: black;
+}
+
+.entry .description {
+}
+
+pre {
+    font-family: Monaco, Lucida Console, monospace;
+}
+
+#templates {
+    display: none;
+}
