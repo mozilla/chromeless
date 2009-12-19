@@ -70,6 +70,9 @@ class Server(object):
                 self.start_response('200 OK',
                                     [('Content-type', 'text/plain')])
                 for pkg in pkg_cfg.packages:
+                    root_dir = pkg_cfg.packages[pkg].root_dir
+                    files = self._get_files_in_dir(root_dir)
+                    pkg_cfg.packages[pkg].files = files
                     del pkg_cfg.packages[pkg].root_dir
                 return [json.dumps(pkg_cfg.packages)]
             else:
