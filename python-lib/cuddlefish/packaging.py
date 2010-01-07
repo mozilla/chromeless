@@ -104,7 +104,8 @@ def build_config(root_dir, target_cfg):
     while dirs_to_scan:
         packages_dir = dirs_to_scan.pop()
         package_paths = [os.path.join(packages_dir, dirname)
-                         for dirname in os.listdir(packages_dir)]
+                         for dirname in os.listdir(packages_dir)
+                         if not dirname.startswith('.')]
 
         for path in package_paths:
             pkgconfig = get_config_in_dir(path)
