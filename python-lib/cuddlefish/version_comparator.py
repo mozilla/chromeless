@@ -176,6 +176,9 @@ def compare(a, b):
 
       >>> compare('1.1pre10a', '1.1pre10')
       -1
+
+      >>> compare('1.1pre10a', '1.*')
+      -1
     '''
 
     a_parts = a.split('.')
