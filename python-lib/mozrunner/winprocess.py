@@ -37,12 +37,7 @@
 from ctypes import c_void_p, POINTER, sizeof, Structure, windll, WinError, WINFUNCTYPE
 from ctypes.wintypes import BOOL, BYTE, DWORD, HANDLE, LPCWSTR, LPWSTR, UINT, WORD
 from subprocess import SW_HIDE
-try:
-    from win32job import QueryInformationJobObject
-except: 
-    def QueryInformationJobObject(*args, **kwargs):
-        raise Exception("wait() has triggered a condition that requires pywin32. please install.") 
-    print "pywin32 is not installed. Some wait() features in killableprocess may not function properly."
+from qijo import QueryInformationJobObject
 
 LPVOID = c_void_p
 LPBYTE = POINTER(BYTE)
