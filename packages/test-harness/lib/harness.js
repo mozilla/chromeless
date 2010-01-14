@@ -107,11 +107,16 @@ function analyzeRawProfilingData(data) {
 
 function reportMemoryUsage() {
   memory.gc();
+  sandbox.memory.gc();
 
   if (profiler) {
     var namedObjects = {};
     for (url in sandbox.sandboxes)
       namedObjects[url] = sandbox.sandboxes[url].globalScope;
+
+    var parentSandbox = require("cuddlefish").parentLoader;
+    for (url in parentSandbox.sandboxes)
+      namedObjects["(harness) " + url] = parentSandbox.sandboxes[url].globalScope;
 
     var result = profiler.binary.profileMemory(profiler.script,
                                                profiler.scriptUrl,
