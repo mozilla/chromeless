@@ -34,6 +34,10 @@ parser_options = {
                                    help="XULRunner app/ext. template",
                                    metavar=None,
                                    default=None),
+    ("-k", "--extra-packages",): dict(dest="extra_packages",
+                                      help="extra packages to include, comma-separated",
+                                      metavar=None,
+                                      default=None),
     ("-p", "--pkgdir",): dict(dest="pkgdir",
                               help=("package dir containing "
                                     "package.json; default is "
@@ -284,6 +288,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     targets = [target]
     if not use_main:
         targets.append("test-harness")
+
+    if options.extra_packages:
+        targets.extend(options.extra_packages.split(","))
 
     deps = packaging.get_deps_for_targets(pkg_cfg, targets)
     build = packaging.generate_build_for_target(
