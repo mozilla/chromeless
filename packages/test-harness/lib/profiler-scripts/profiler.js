@@ -19,6 +19,7 @@ function doProfiling() {
   var shapes = {};
   var maxShapeId = 0;
   var windows = {};
+  var totalObjectCount = 0;
 
   for (name in namedObjects) {
     var id = namedObjects[name];
@@ -35,6 +36,7 @@ function doProfiling() {
 
   var table = getObjectTable();
   for (id in table) {
+    totalObjectCount++;
     var nativeClass = table[id];
     if ((nativeClass in interestingTypes) ||
       (nativeClass.indexOf('HTML') == 0) ||
@@ -84,6 +86,7 @@ function doProfiling() {
   for (name in rejectedTypes)
     rejectedList.push(name);
   return {namedObjects: namedObjects,
+          totalObjectCount: totalObjectCount,
           graph: graph,
           shapes: shapesArray,
           rejectedTypes: rejectedList};

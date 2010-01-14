@@ -99,7 +99,8 @@ function analyzeRawProfilingData(data) {
     count++;
   }
 
-  print("\nobject count is " + count + " in " + modules + " modules\n");
+  print("\nobject count is " + count + " in " + modules + " modules" +
+        " (" + data.totalObjectCount + " across entire JS runtime)\n");
   for (name in moduleObjs)
     print("  " + moduleObjs[name] + " in " + name + "\n");
 }
