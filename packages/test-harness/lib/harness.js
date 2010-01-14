@@ -237,16 +237,14 @@ var runTests = exports.runTests = function runTests(options) {
     var url = require("url");
 
     try {
-      var klass = Cc["@labs.mozilla.com/jetpackdi;1"];
-      if (klass) {
-        profiler = {
-          binary: klass.createInstance().get(),
-          scriptUrl: url.resolve(__url__, "profiler-scripts/profiler.js")
-        };
+      var nsjetpack = require("nsjetpack");
+      profiler = {
+        binary: nsjetpack.get(),
+        scriptUrl: url.resolve(__url__, "profiler-scripts/profiler.js")
+      };
 
-        profiler.scriptPath = url.toFilename(profiler.scriptUrl);
-        profiler.script = require("file").read(profiler.scriptPath);
-      }
+      profiler.scriptPath = url.toFilename(profiler.scriptUrl);
+      profiler.script = require("file").read(profiler.scriptPath);
     } catch (e) {}
 
     dirs = [url.toFilename(path)
