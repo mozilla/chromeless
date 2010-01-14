@@ -20,6 +20,7 @@ function doProfiling() {
   var maxShapeId = 0;
   var windows = {};
   var totalObjectCount = 0;
+  var totalObjectClasses = {};
 
   for (name in namedObjects) {
     var id = namedObjects[name];
@@ -38,6 +39,19 @@ function doProfiling() {
   for (id in table) {
     totalObjectCount++;
     var nativeClass = table[id];
+
+    var classBin = nativeClass;
+    if (nativeClass == "Function") {
+      var funcInfo = getObjectInfo(parseInt(id));
+      if (funcInfo.name)
+        classBin += ":" + funcInfo.name + "@" + funcInfo.filename;
+    }
+
+    if (classBin in totalObjectClasses)
+      totalObjectClasses[classBin]++;
+    else
+      totalObjectClasses[classBin] = 1;
+
     if ((nativeClass in interestingTypes) ||
       (nativeClass.indexOf('HTML') == 0) ||
         (nativeClass.indexOf('DOM') == 0) ||
@@ -87,6 +101,7 @@ function doProfiling() {
     rejectedList.push(name);
   return {namedObjects: namedObjects,
           totalObjectCount: totalObjectCount,
+          totalObjectClasses: totalObjectClasses,
           graph: graph,
           shapes: shapesArray,
           rejectedTypes: rejectedList};

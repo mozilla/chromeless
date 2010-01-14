@@ -60,6 +60,11 @@ var profiler;
 var results = {passed: 0,
                failed: 0};
 
+// JSON serialization of last memory usage stats; we keep it stringified
+// so we don't actually change the memory usage stats (in terms of objects)
+// of the JSRuntime we're profiling.
+var lastMemoryUsage;
+
 function analyzeRawProfilingData(data) {
   var graph = data.graph;
   var shapes = {};
@@ -101,8 +106,40 @@ function analyzeRawProfilingData(data) {
 
   print("\nobject count is " + count + " in " + modules + " modules" +
         " (" + data.totalObjectCount + " across entire JS runtime)\n");
-  for (name in moduleObjs)
-    print("  " + moduleObjs[name] + " in " + name + "\n");
+  if (lastMemoryUsage) {
+    var last = JSON.parse(lastMemoryUsage);
+    var diff = {
+      moduleObjs: dictDiff(last.moduleObjs, moduleObjs),
+      totalObjectClasses: dictDiff(last.totalObjectClasses,
+                                   data.totalObjectClasses)
+    };
+
+    for (name in diff.moduleObjs)
+      print("  " + diff.moduleObjs[name] + " in " + name + "\n");
+    for (name in diff.totalObjectClasses)
+      print("  " + diff.totalObjectClasses[name] + " instances of " +
+            name + "\n");
+  }
+  lastMemoryUsage = JSON.stringify(
+    {moduleObjs: moduleObjs,
+     totalObjectClasses: data.totalObjectClasses}
+  );
+}
+
+function dictDiff(last, curr) {
+  var diff = {};
+
+  for (name in last) {
+    var result = (curr[name] || 0) - last[name];
+    if (result)
+      diff[name] = (result > 0 ? "+" : "") + result;
+  }
+  for (name in curr) {
+    var result = curr[name] - (last[name] || 0);
+    if (result)
+      diff[name] = (result > 0 ? "+" : "") + result;
+  }
+  return diff;
 }
 
 function reportMemoryUsage() {
