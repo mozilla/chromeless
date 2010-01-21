@@ -17,7 +17,6 @@ Package-Specific Commands:
 
 Global Commands:
   testall    - test all packages
-  update     - update all packages
   serve      - start local documentation server
 """
 
@@ -131,19 +130,6 @@ def get_xpts(component_dirs):
         files.extend(xpts)
     return files
 
-def update_all_packages(env_root):
-    import subprocess
-
-    repos = []
-    for dirpath, dirnames, filenames in os.walk(env_root):
-        if '.hg' in dirnames:
-            repos.append(dirpath)
-    print "Updating HG repositories: %s." % (", ".join(repos))
-    for path in repos:
-        retval = subprocess.call(['hg', 'pull', '-u', '-R', path])
-        if retval:
-            sys.exit(retval)
-
 def test_all_packages(env_root, defaults):
     deps = []
     target_cfg = Bunch(name = "testall", dependencies = deps)
@@ -195,9 +181,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
-        return
-    elif command == "update":
-        update_all_packages(env_root)
         return
     elif command == "serve":
         import cuddlefish.server
