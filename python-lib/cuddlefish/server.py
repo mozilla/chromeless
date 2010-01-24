@@ -1,6 +1,7 @@
 import os
 import urllib
 import mimetypes
+import SocketServer
 from wsgiref import simple_server
 
 from cuddlefish import packaging
@@ -8,6 +9,10 @@ from cuddlefish import Bunch
 import simplejson as json
 
 DEFAULT_PORT = 8888
+
+class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
+                         simple_server.WSGIServer):
+    pass
 
 def guess_mime_type(url):
     if url.endswith(".json"):
@@ -112,9 +117,16 @@ class Server(object):
             else:
                 return self._respond_with_file(fullpath)
 
+def make_wsgi_app(env_root):
+    def app(environ, start_response):
+        server = Server(env_root)
+        return server.app(environ, start_response)
+    return app
+
 def start(env_root, host='127.0.0.1', port=DEFAULT_PORT):
     print "Starting server on %s:%d." % (host, port)
     print "Press Ctrl-C to exit."
-    server = Server(env_root)
-    httpd = simple_server.make_server(host, port, server.app)
+    httpd = simple_server.make_server(host, port,
+                                      make_wsgi_app(env_root),
+                                      ThreadedWSGIServer)
     httpd.serve_forever()
