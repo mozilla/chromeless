@@ -2,9 +2,10 @@
 
 Jetpack's clipboard support API provides a standardized way for features to access the clipboard. Features can get and set the clipboard in various flavors of data type.
 
-The namespace associated with this API is jetpack.clipboard which provides both read and write access to the clipboard. The API is fairly straightforward; examples can be found here.
+The namespace associated with this API is `jetpack.clipboard` which provides both read and write access to the clipboard. The API is fairly straightforward; examples can be found here.
 
-This API currently lives in the [future][] and must be imported for use.
+The API lives in the [future][] and must be imported for use.
+
 [future]: (https://wiki.mozilla.org/Labs/Jetpack/JEP/13)
 
 `jetpack.future.import("clipboard");`

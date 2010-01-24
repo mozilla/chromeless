@@ -7,6 +7,8 @@ import re
 import markdown
 import mdc
 
+# Move to the base directory
+os.chdir(os.environ['CUDDLEFISH_ROOT'])
 DOCS_DIR = os.path.join("static-files", "docs")
 STYLES_PATH = os.path.join("static-files", "docs", "css", "style.css")
 
@@ -47,13 +49,22 @@ def commitAllDocs():
         commitDoc( root, file )
 
 def convertDocToUploadFormat(root, file):
+  
+  newRoot = os.path.split(root)[1]
   path = os.path.join(root, file)
-  id = "en/Jetpack/" + "/".join(path.split("/")[1:])[:-5]
+  
+  # Strip static-dir/docs/ from the path
+  wikiPath = path.split( os.path.sep )[2:]
+  wikiPath = os.path.join( *wikiPath )
+  wikiPath = os.path.splitext( wikiPath )[0]
+  id = "en/Jetpack/" + wikiPath
+  id = id.replace(" ", "_")
 
   html = open(path).read()
   match = re.match("<h1>(.*)</h1>", html)
   title = match.groups()[0]
   html = re.sub("<h1>.*?</h1>", "", html)
+  #print html[:300]
   
   return dict(
     title = title,
@@ -64,7 +75,7 @@ def convertDocToUploadFormat(root, file):
 def commitDoc(root, file):
   doc = convertDocToUploadFormat( root, file ) 
   print "Uploading ", doc["id"]
-  mdc.commit(doc)
+  print mdc.commit(doc)
   
 
 def removeHtmlFiles():
@@ -131,7 +142,7 @@ def main(argv):
     if opt in ("-h", "--help"):
       print usage
       sys.exit()
-    elif opt in ("-b", "--build"):    
+    elif opt in ("-b", "--build"):
       processAllDocs()
     elif opt in ("-p", "--publish"):
       processAllDocs()

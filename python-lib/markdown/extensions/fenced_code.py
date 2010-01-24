@@ -67,8 +67,9 @@ FENCED_BLOCK_RE = re.compile( \
     r'(?P<fence>^~{3,})[ ]*(\{?\.(?P<lang>[a-zA-Z0-9_-]*)\}?)?[ ]*\n(?P<code>.*?)(?P=fence)[ ]*$', 
     re.MULTILINE|re.DOTALL
     )
-CODE_WRAP = '<pre><code%s>%s</code></pre>'
+CODE_WRAP = '<pre%s><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
+FUNCTION_TAG = ' function="syntax.%s"'
 
 
 class FencedCodeExtension(markdown.Extension):
@@ -90,9 +91,11 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             m = FENCED_BLOCK_RE.search(text)
             if m:
                 lang = ''
+                func = ''
                 if m.group('lang'):
                     lang = LANG_TAG % m.group('lang')
-                code = CODE_WRAP % (lang, self._escape(m.group('code')))
+                    func = FUNCTION_TAG % m.group('lang')
+                code = CODE_WRAP % (func, lang, self._escape(m.group('code')))
                 placeholder = self.markdown.htmlStash.store(code, safe=True)
                 text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
             else:
