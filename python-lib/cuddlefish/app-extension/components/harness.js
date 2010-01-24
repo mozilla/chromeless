@@ -41,246 +41,257 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-// Whether to quit the application when we're done.
-var quitOnFinish = true;
+// Parameters:
+//
+//   rootFileSpec - nsILocalFile corresponding to root of extension
+//                  (required).
+//
+//   dump - function to output string to console (required).
+//
+//   options - JSON configuration information passed in from the
+//             environment (optional).
 
-// JSON configuration information passed in from the environment.
-var options;
+function buildHarnessService(rootFileSpec, dump, options) {
+  // Whether to quit the application when we're done.
+  var quitOnFinish = false;
 
-// The loader for securable modules, typically a Cuddlefish loader.
-var loader;
+  // The loader for securable modules, typically a Cuddlefish loader.
+  var loader;
 
-// Whether we've initialized or not yet.
-var isStarted;
+  // Whether we've initialized or not yet.
+  var isStarted;
 
-// Whether we've been asked to quit or not yet.
-var isQuitting;
+  // Whether we've been asked to quit or not yet.
+  var isQuitting;
 
-// nsILocalFile corresponding to this file.
-var myFile;
+  // Absolute path to a file that we put our result code in. Ordinarily
+  // we'd just exit the process with a zero or nonzero return code, but
+  // there doesn't appear to be a way to do this in XULRunner.
+  var resultFile;
 
-// Absolute path to a file that we put our result code in. Ordinarily
-// we'd just exit the process with a zero or nonzero return code, but
-// there doesn't appear to be a way to do this in XULRunner.
-var resultFile;
+  function quit(result) {
+    if (isQuitting)
+      return;
 
-function quit(result) {
-  if (isQuitting)
-    return;
+    isQuitting = true;
 
-  isQuitting = true;
+    dump(result + "\n");
 
-  dump(result + "\n");
+    if (resultFile) {
+      try {
+        var file = Cc["@mozilla.org/file/local;1"]
+                   .createInstance(Ci.nsILocalFile);
+        file.initWithPath(resultFile);
 
-  if (resultFile) {
-    try {
-      var file = Cc["@mozilla.org/file/local;1"]
-                 .createInstance(Ci.nsILocalFile);
-      file.initWithPath(resultFile);
-
-      var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                     .createInstance(Ci.nsIFileOutputStream);
-      foStream.init(file, -1, -1, 0);
-      foStream.write(result, result.length);
-      foStream.close();
-    } catch (e) {
-      dump(e + "\n");
-    }
-  }
-
-  if (quitOnFinish) {
-    var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
-                     getService(Ci.nsIAppStartup);
-    appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
-  }
-}
-
-function logErrorAndBail(e) {
-  // This is an error logger of last resort; if we're here, then
-  // we weren't able to initialize Cuddlefish and display a nice
-  // traceback through it.
-  dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
-  if (e.stack)
-    dump("stack:\n" + e.stack + "\n");
-  quit("FAIL");
-}
-
-function ensureIsDir(dir) {
-  if (!(dir.exists() && dir.isDirectory))
-    throw new Error("directory not found: " + dir.path);
-}
-
-function getDir(path) {
-  var dir = Cc['@mozilla.org/file/local;1']
-            .createInstance(Ci.nsILocalFile);
-  dir.initWithPath(path);
-  ensureIsDir(dir);
-  return dir;
-}
-
-function buildLoader() {
-  var ioService = Cc["@mozilla.org/network/io-service;1"]
-                  .getService(Ci.nsIIOService);
-  var resProt = ioService.getProtocolHandler("resource")
-                .QueryInterface(Ci.nsIResProtocolHandler);
-
-  var compMgr = Components.manager;
-  compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-
-  for each (dirName in options.components) {
-    var dir = getDir(dirName);
-    compMgr.autoRegister(dir);
-  }
-
-  for (name in options.resources) {
-    var path = options.resources[name];
-    var dir;
-    if (typeof(path) == "string")
-      dir = getDir(path);
-    else {
-      dir = myFile.parent.parent;
-      path.forEach(function(part) { dir.append(part); });
-      ensureIsDir(dir);
-    }
-    var dirUri = ioService.newFileURI(dir);
-    resProt.setSubstitution(name, dirUri);
-  }
-
-  var jsm = {};
-  Cu.import(options.loader, jsm);
-  var packaging = new Packaging();
-  var loader = new jsm.Loader({rootPaths: options.rootPaths.slice(),
-                               globals: { packaging: packaging }
-                              });
-  packaging.__setLoader(loader);
-  return loader;
-}
-
-function Packaging() {
-}
-
-Packaging.prototype = {
-  __setLoader: function setLoader(loader) {
-    this.__loader = loader;
-  },
-
-  get options() {
-    return options;
-  },
-
-  getURLForData: function getURLForData(path) {
-    var traceback = this.__loader.require("traceback");
-    var callerInfo = traceback.get().slice(-2)[0];
-    var url = this.__loader.require("url");
-    var info = url.parse(callerInfo.filename);
-    var pkgName = options.resourcePackages[info.host];
-    if (pkgName in options.packageData)
-      return url.resolve(options.packageData[pkgName], path);
-    else
-      throw new Error("No data for package " + pkgName);
-  },
-
-  createLoader: function createLoader() {
-    return buildLoader();
-  }
-};
-
-function HarnessService() {
-  this.wrappedJSObject = this;
-}
-
-HarnessService.prototype = {
-  classDescription: "Harness Service",
-
-  get contractID() { return options.bootstrap.contractID; },
-
-  get classID() { return Components.ID(options.bootstrap.classID); },
-
-  _xpcom_categories: [{ category: "app-startup", service: true }],
-
-  QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
-                                         Ci.nsISupportsWeakReference]),
-
-  get loader() {
-    if (!loader)
-      loader = buildLoader();
-    return loader;
-  },
-
-  get options() {
-    return options;
-  },
-
-  observe: function Harness_observe(subject, topic, data) {
-    try {
-      let obSvc = Cc["@mozilla.org/observer-service;1"]
-                  .getService(Ci.nsIObserverService);
-
-      if (topic == "app-startup") {
-        if (isStarted)
-          return;
-
-        isStarted = true;
-        obSvc.addObserver(this, "quit-application-granted", true);
-	if (options.main) {
-          let loader = this.loader;
-          var program = loader.require(options.main);
-          program.main(options);
-	}
-      } else if (topic == "quit-application-granted") {
-        obSvc.removeObserver(this, "quit-application-granted", true);
-        if (loader) {
-          loader.unload();
-          loader = null;
-        }
-        quit("OK");
+        var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                       .createInstance(Ci.nsIFileOutputStream);
+        foStream.init(file, -1, -1, 0);
+        foStream.write(result, result.length);
+        foStream.close();
+      } catch (e) {
+        dump(e + "\n");
       }
+    }
+
+    if (quitOnFinish) {
+      var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
+                       getService(Ci.nsIAppStartup);
+      appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+    }
+  }
+
+  function logErrorAndBail(e) {
+    // This is an error logger of last resort; if we're here, then
+    // we weren't able to initialize Cuddlefish and display a nice
+    // traceback through it.
+    dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
+    if (e.stack)
+      dump("stack:\n" + e.stack + "\n");
+    quit("FAIL");
+  }
+
+  function ensureIsDir(dir) {
+    if (!(dir.exists() && dir.isDirectory))
+      throw new Error("directory not found: " + dir.path);
+  }
+
+  function getDir(path) {
+    var dir = Cc['@mozilla.org/file/local;1']
+              .createInstance(Ci.nsILocalFile);
+    dir.initWithPath(path);
+    ensureIsDir(dir);
+    return dir;
+  }
+
+  function buildLoader() {
+    var ioService = Cc["@mozilla.org/network/io-service;1"]
+                    .getService(Ci.nsIIOService);
+    var resProt = ioService.getProtocolHandler("resource")
+                  .QueryInterface(Ci.nsIResProtocolHandler);
+
+    var compMgr = Components.manager;
+    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+
+    for each (dirName in options.components) {
+      var dir = getDir(dirName);
+      compMgr.autoRegister(dir);
+    }
+
+    for (name in options.resources) {
+      var path = options.resources[name];
+      var dir;
+      if (typeof(path) == "string")
+        dir = getDir(path);
+      else {
+        dir = rootFileSpec.clone();
+        path.forEach(function(part) { dir.append(part); });
+        ensureIsDir(dir);
+      }
+      var dirUri = ioService.newFileURI(dir);
+      resProt.setSubstitution(name, dirUri);
+    }
+
+    var jsm = {};
+    Cu.import(options.loader, jsm);
+    var packaging = new Packaging();
+    var loader = new jsm.Loader({rootPaths: options.rootPaths.slice(),
+                                 globals: { packaging: packaging }
+                                });
+    packaging.__setLoader(loader);
+    return loader;
+  }
+
+  function Packaging() {
+  }
+
+  Packaging.prototype = {
+    __setLoader: function setLoader(loader) {
+      this.__loader = loader;
+    },
+
+    get options() {
+      return options;
+    },
+
+    getURLForData: function getURLForData(path) {
+      var traceback = this.__loader.require("traceback");
+      var callerInfo = traceback.get().slice(-2)[0];
+      var url = this.__loader.require("url");
+      var info = url.parse(callerInfo.filename);
+      var pkgName = options.resourcePackages[info.host];
+      if (pkgName in options.packageData)
+        return url.resolve(options.packageData[pkgName], path);
+      else
+        throw new Error("No data for package " + pkgName);
+    },
+
+    createLoader: function createLoader() {
+      return buildLoader();
+    }
+  };
+
+  function HarnessService() {
+    this.wrappedJSObject = this;
+  }
+
+  HarnessService.prototype = {
+    classDescription: "Harness Service",
+
+    get contractID() { return options.bootstrap.contractID; },
+
+    get classID() { return Components.ID(options.bootstrap.classID); },
+
+    _xpcom_categories: [{ category: "app-startup", service: true }],
+
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
+                                           Ci.nsISupportsWeakReference]),
+
+    get loader() {
+      if (!loader)
+        loader = buildLoader();
+      return loader;
+    },
+
+    get options() {
+      return options;
+    },
+
+    observe: function Harness_observe(subject, topic, data) {
+      try {
+        let obSvc = Cc["@mozilla.org/observer-service;1"]
+                    .getService(Ci.nsIObserverService);
+
+        if (topic == "app-startup") {
+          if (isStarted)
+            return;
+
+          isStarted = true;
+          obSvc.addObserver(this, "quit-application-granted", true);
+	  if (options.main) {
+            let loader = this.loader;
+            var program = loader.require(options.main);
+            program.main(options);
+	  }
+        } else if (topic == "quit-application-granted") {
+          obSvc.removeObserver(this, "quit-application-granted", true);
+          if (loader) {
+            loader.unload();
+            loader = null;
+          }
+          quit("OK");
+        }
+      } catch (e) {
+        logErrorAndBail(e);
+      }
+    }
+  };
+
+  // Initialization.
+
+  if (!options) {
+    try {
+      var environ = Cc["@mozilla.org/process/environment;1"]
+                    .getService(Ci.nsIEnvironment);
+
+      var jsonData;
+      if (environ.exists("HARNESS_OPTIONS")) {
+        quitOnFinish = true;
+        jsonData = environ.get("HARNESS_OPTIONS");
+      } else {
+        var optionsFile = rootFileSpec.clone();
+        optionsFile.append('harness-options.json');
+        if (optionsFile.exists()) {
+          var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
+                         .createInstance(Ci.nsIFileInputStream);
+          var siStream = Cc['@mozilla.org/scriptableinputstream;1']
+                         .createInstance(Ci.nsIScriptableInputStream);
+          fiStream.init(optionsFile, 1, 0, false);
+          siStream.init(fiStream);
+          var data = new String();
+          data += siStream.read(-1);
+          siStream.close();
+          fiStream.close();
+          jsonData = data;
+        } else
+          throw new Error("HARNESS_OPTIONS env var must exist.");
+      }
+
+      options = JSON.parse(jsonData);
     } catch (e) {
       logErrorAndBail(e);
     }
   }
-};
+
+  if ('noQuit' in options)
+    quitOnFinish = !options.noQuit;
+
+  options.quit = quit;
+  resultFile = options.resultFile;
+
+  return HarnessService;
+}
 
 function NSGetModule(compMgr, fileSpec) {
-  myFile = fileSpec;
-
-  try {
-    var environ = Cc["@mozilla.org/process/environment;1"]
-                  .getService(Ci.nsIEnvironment);
-
-    var jsonData;
-    if (environ.exists("HARNESS_OPTIONS")) {
-      jsonData = environ.get("HARNESS_OPTIONS");
-    } else {
-      quitOnFinish = false;
-      var optionsFile = myFile.parent.parent;
-      optionsFile.append('harness-options.json');
-      if (optionsFile.exists()) {
-        var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
-                       .createInstance(Ci.nsIFileInputStream);
-        var siStream = Cc['@mozilla.org/scriptableinputstream;1']
-                       .createInstance(Ci.nsIScriptableInputStream);
-        fiStream.init(optionsFile, 1, 0, false);
-        siStream.init(fiStream);
-        var data = new String();
-        data += siStream.read(-1);
-        siStream.close();
-        fiStream.close();
-        jsonData = data;
-      } else
-        throw new Error("HARNESS_OPTIONS env var must exist.");
-    }
-
-    options = JSON.parse(jsonData);
-
-    if ('noQuit' in options)
-      quitOnFinish = !options.noQuit;
-
-    options.quit = quit;
-    resultFile = options.resultFile;
-  } catch (e) {
-    logErrorAndBail(e);
-  }
-
+  var HarnessService = buildHarnessService(fileSpec.parent.parent, dump);
   return XPCOMUtils.generateModule([HarnessService]);
 }
