@@ -92,11 +92,6 @@ parser_groups = Bunch(
                                      type="int",
                                      help="number of times to run tests",
                                      default=1),
-            ("-c", "--components",): dict(dest="components",
-                                          help=("extra XPCOM component "
-                                                "dir(s), comma-separated"),
-                                          default=None),
-
             }
         ),
     )
@@ -226,10 +221,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             )
         sys.exit(0)
     elif command == "xpi":
-        if options.components:
-            print ("The --components option may not be used when "
-                   "building an xpi.")
-            sys.exit(1)
         xpi_name = "%s.xpi" % target_cfg.name
         use_main = True
     elif command == "test":
@@ -248,14 +239,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if not options.templatedir:
             print "package.json does not have a 'main' entry."
             sys.exit(1)
-
-    if not options.components:
-        options.components = []
-    else:
-        options.components = options.components.split(",")
-
-    options.components = [os.path.abspath(path)
-                          for path in options.components]
 
     if not pkg_cfg:
         pkg_cfg = packaging.build_config(env_root, target_cfg)
@@ -298,7 +281,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             abspath = packaging.resolve_dir(dep_cfg,
                                             dep_cfg.xpcom.typelibs)
             dep_xpt_dirs.append(abspath)
-    dep_xpt_dirs.extend(options.components)
     xpts = get_xpts(dep_xpt_dirs)
 
     harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' %
@@ -318,7 +300,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         harness_options['main'] = target_cfg.get('main')
     else:
         harness_options['main'] = "run-tests"
-        inherited_options.extend(['iterations', 'components'])
+        inherited_options.extend(['iterations'])
 
     for option in inherited_options:
         harness_options[option] = getattr(options, option)

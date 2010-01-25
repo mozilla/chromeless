@@ -146,11 +146,6 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
     var compMgr = Components.manager;
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
 
-    for each (dirName in options.components) {
-      var dir = getDir(dirName);
-      compMgr.autoRegister(dir);
-    }
-
     for (name in options.resources) {
       var path = options.resources[name];
       var dir;
