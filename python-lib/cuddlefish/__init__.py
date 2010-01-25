@@ -58,6 +58,10 @@ parser_groups = Bunch(
                                          "firefox, or thunderbird"),
                                    metavar=None,
                                    default="xulrunner"),
+            ("-r", "--use-server",): dict(dest="use_server",
+                                          help="use task queue server",
+                                          action="store_true",
+                                          default=False),
             }
         ),
     xpcom=Bunch(
@@ -341,7 +345,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                   xpts=xpts,
                   default_id=identifier)
     else:
-        from cuddlefish.runner import run_app
+        if options.use_server:
+            from cuddlefish.server import run_app
+        else:
+            from cuddlefish.runner import run_app
         retval = run_app(harness_root_dir=app_extension_dir,
                          harness_options=harness_options,
                          xpts=xpts,

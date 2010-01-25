@@ -1,6 +1,8 @@
 import os
 import urllib
+import urllib2
 import mimetypes
+import Queue
 import SocketServer
 from wsgiref import simple_server
 
@@ -9,6 +11,11 @@ from cuddlefish import Bunch
 import simplejson as json
 
 DEFAULT_PORT = 8888
+API_PATH = 'api'
+TASK_QUEUE_PATH = 'task-queue'
+TASK_QUEUE_SET = 'set'
+TASK_QUEUE_GET = 'get'
+TASK_QUEUE_GET_TIMEOUT = 1
 
 class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
                          simple_server.WSGIServer):
@@ -24,10 +31,11 @@ def guess_mime_type(url):
     return mimetype
 
 class Server(object):
-    def __init__(self, env_root):
+    def __init__(self, env_root, task_queue):
         self.env_root = env_root
         self.root = os.path.join(self.env_root, 'static-files')
         self.index = os.path.join(self.root, 'html', 'index.html')
+        self.task_queue = task_queue
 
     def _respond(self, message):
         self.start_response(message,
@@ -67,7 +75,38 @@ class Server(object):
         parts = [part for part in parts
                  if part]
 
-        if parts[0] == 'packages':
+        if parts[0] == TASK_QUEUE_PATH:
+            if len(parts) == 2:
+                if parts[1] == TASK_QUEUE_SET:
+                    if self.environ['REQUEST_METHOD'] != 'POST':
+                        return self._respond('400 Bad Request')
+                    input = self.environ['wsgi.input']
+                    try:
+                        clength = int(self.environ['CONTENT_LENGTH'])
+                        content = input.read(clength)
+                        content = json.loads(content)
+                    except ValueError:
+                        return self._respond('400 Bad Request')
+                    self.task_queue.put(content)
+                    self.start_response('200 OK',
+                                        [('Content-type', 'text/plain')])
+                    return ['Task queued.']
+                elif parts[1] == TASK_QUEUE_GET:
+                    self.start_response('200 OK',
+                                        [('Content-type', 'text/plain')])
+                    try:
+                        task = self.task_queue.get(
+                            block=True,
+                            timeout=TASK_QUEUE_GET_TIMEOUT
+                            )
+                    except Queue.Empty:
+                        return ['']
+                    return [json.dumps(task)]
+                else:
+                    return self._respond('404 Not Found')
+            else:
+                return self._respond('404 Not Found')
+        elif parts[0] == 'packages':
             if len(parts) == 1:
                 # TODO: This should really be of JSON's mime type,
                 # but Firefox doesn't let us browse this way so
@@ -105,7 +144,7 @@ class Server(object):
         parts = environ['PATH_INFO'].split('/')[1:]
         if not parts[0]:
             parts = ['html', 'index.html']
-        if parts[0] == 'api':
+        if parts[0] == API_PATH:
             return self._respond_with_api(parts[1:])
         else:
             fullpath = os.path.join(self.root, *parts)
@@ -117,16 +156,29 @@ class Server(object):
             else:
                 return self._respond_with_file(fullpath)
 
-def make_wsgi_app(env_root):
+def make_wsgi_app(env_root, task_queue):
     def app(environ, start_response):
-        server = Server(env_root)
+        server = Server(env_root, task_queue)
         return server.app(environ, start_response)
     return app
 
 def start(env_root, host='127.0.0.1', port=DEFAULT_PORT):
     print "Starting server on %s:%d." % (host, port)
     print "Press Ctrl-C to exit."
+    tq = Queue.Queue()
     httpd = simple_server.make_server(host, port,
-                                      make_wsgi_app(env_root),
+                                      make_wsgi_app(env_root, tq),
                                       ThreadedWSGIServer)
     httpd.serve_forever()
+
+def run_app(harness_root_dir, harness_options, xpts,
+            app_type, binary=None, verbose=False,
+            no_quit=False, port=DEFAULT_PORT):
+    payload = json.dumps(harness_options)
+    url = 'http://127.0.0.1:%d/%s/%s/%s' % (port,
+                                            API_PATH,
+                                            TASK_QUEUE_PATH,
+                                            TASK_QUEUE_SET)
+    response = urllib2.urlopen(url, payload)
+    print response.read()
+    return 0
