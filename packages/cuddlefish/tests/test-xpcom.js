@@ -43,6 +43,11 @@ exports.testRegister = function(test, text) {
   // so it can't accept updated versions of a contractID during the
   // same application session.
   var aboutFactory = xpcom.getClass(contractID, Ci.nsIFactory);
+
+  test.assertNotEqual(aboutFactory.wrappedJSObject,
+                      undefined,
+                      "Factory wrappedJSObject should exist.");
+
   var about = aboutFactory.createInstance(null, Ci.nsIAboutModule);
   var ios = Cc["@mozilla.org/network/io-service;1"].
             getService(Ci.nsIIOService);

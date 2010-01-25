@@ -49,6 +49,7 @@ var factories = [];
 function Factory(options) {
   memory.track(this);
 
+  this.wrappedJSObject = this;
   this.create = options.create;
   this.uuid = options.uuid;
   this.name = options.name;
