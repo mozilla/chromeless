@@ -48,10 +48,12 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 //
 //   dump - function to output string to console (required).
 //
+//   quit - function to be called when app quits (optional).
+//
 //   options - JSON configuration information passed in from the
 //             environment (optional).
 
-function buildHarnessService(rootFileSpec, dump, options) {
+function buildHarnessService(rootFileSpec, dump, quit, options) {
   // Whether to quit the application when we're done.
   var quitOnFinish = false;
 
@@ -69,11 +71,20 @@ function buildHarnessService(rootFileSpec, dump, options) {
   // there doesn't appear to be a way to do this in XULRunner.
   var resultFile;
 
-  function quit(result) {
+  // Singleton Harness Service.
+  var harnessService;
+
+  var obSvc = Cc["@mozilla.org/observer-service;1"]
+              .getService(Ci.nsIObserverService);
+
+  function defaultQuit(result) {
     if (isQuitting)
       return;
 
     isQuitting = true;
+
+    if (harnessService)
+      harnessService.unload();
 
     dump(result + "\n");
 
@@ -99,6 +110,9 @@ function buildHarnessService(rootFileSpec, dump, options) {
       appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
     }
   }
+
+  if (!quit)
+    quit = defaultQuit;
 
   function logErrorAndBail(e) {
     // This is an error logger of last resort; if we're here, then
@@ -148,6 +162,7 @@ function buildHarnessService(rootFileSpec, dump, options) {
         ensureIsDir(dir);
       }
       var dirUri = ioService.newFileURI(dir);
+      // TODO: We should be undoing this when we unload.
       resProt.setSubstitution(name, dirUri);
     }
 
@@ -161,12 +176,27 @@ function buildHarnessService(rootFileSpec, dump, options) {
     return loader;
   }
 
+  // This will be exposed as the 'packaging' global to all
+  // modules loaded within our loader.
+
   function Packaging() {
   }
 
   Packaging.prototype = {
     __setLoader: function setLoader(loader) {
       this.__loader = loader;
+    },
+
+    get root() {
+      return rootFileSpec.clone();
+    },
+
+    get harnessService() {
+      return harnessService;
+    },
+
+    get buildHarnessService() {
+      return buildHarnessService;
     },
 
     get options() {
@@ -190,7 +220,13 @@ function buildHarnessService(rootFileSpec, dump, options) {
     }
   };
 
+  // Singleton XPCOM component that is responsible for instantiating
+  // a Cuddlefish loader and running the main program, if any.
+
   function HarnessService() {
+    if (harnessService)
+      throw new Error("Harness Service singleton already exists");
+    harnessService = this;
     this.wrappedJSObject = this;
   }
 
@@ -216,29 +252,46 @@ function buildHarnessService(rootFileSpec, dump, options) {
       return options;
     },
 
+    load: function Harness_load() {
+      if (isStarted)
+        return;
+
+      isStarted = true;
+      obSvc.addObserver(this, "quit-application-granted", true);
+      if (options.main) {
+        var program = this.loader.require(options.main);
+        program.main(options);
+      }
+    },
+
+    unload: function Harness_unload() {
+      if (!isStarted)
+        return;
+
+      isStarted = false;
+      harnessService = null;
+
+      if (options && options.quit)
+        options.quit = null;
+
+      obSvc.removeObserver(this, "quit-application-granted", true);
+      if (loader) {
+        loader.unload();
+        loader = null;
+      }
+      // TODO: Remove resource URI mappings.
+    },
+
     observe: function Harness_observe(subject, topic, data) {
       try {
-        let obSvc = Cc["@mozilla.org/observer-service;1"]
-                    .getService(Ci.nsIObserverService);
-
-        if (topic == "app-startup") {
-          if (isStarted)
-            return;
-
-          isStarted = true;
-          obSvc.addObserver(this, "quit-application-granted", true);
-	  if (options.main) {
-            let loader = this.loader;
-            var program = loader.require(options.main);
-            program.main(options);
-	  }
-        } else if (topic == "quit-application-granted") {
-          obSvc.removeObserver(this, "quit-application-granted", true);
-          if (loader) {
-            loader.unload();
-            loader = null;
-          }
+        switch (topic) {
+        case "app-startup":
+          this.load();
+          break;
+        case "quit-application-granted":
+          this.unload();
           quit("OK");
+          break;
         }
       } catch (e) {
         logErrorAndBail(e);
