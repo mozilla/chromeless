@@ -35,6 +35,15 @@ function runTests() {
 exports.main = function main(options) {
   gOptions = options;
 
+  // TODO: This is optional code that might be put in by
+  // something running this code to force it to just
+  // run tests immediately, rather than wait. We need
+  // to actually standardize on this, though.
+  if (options.runImmediately) {
+    runTests();
+    return;
+  }
+
   var appInfo = Cc["@mozilla.org/xre/app-info;1"]
                 .getService(Ci.nsIXULAppInfo);
   let obSvc = Cc["@mozilla.org/observer-service;1"]
