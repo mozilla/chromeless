@@ -48,17 +48,20 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 //
 //   dump - function to output string to console (required).
 //
-//   quit - function to be called when app quits (optional).
+//   logError - function to log an exception (required).
+//
+//   onQuit - function called when the app quits (required).
 //
 //   options - JSON configuration information passed in from the
-//             environment (optional).
+//             environment (required).
 
-function buildHarnessService(rootFileSpec, dump, quit, options) {
-  // Whether to quit the application when we're done.
-  var quitOnFinish = false;
-
+function buildHarnessService(rootFileSpec, dump, logError,
+                             onQuit, options) {
   // The loader for securable modules, typically a Cuddlefish loader.
   var loader;
+
+  // Singleton Harness Service.
+  var harnessService;
 
   // Whether we've initialized or not yet.
   var isStarted;
@@ -66,18 +69,10 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
   // Whether we've been asked to quit or not yet.
   var isQuitting;
 
-  // Absolute path to a file that we put our result code in. Ordinarily
-  // we'd just exit the process with a zero or nonzero return code, but
-  // there doesn't appear to be a way to do this in XULRunner.
-  var resultFile;
-
-  // Singleton Harness Service.
-  var harnessService;
-
   var obSvc = Cc["@mozilla.org/observer-service;1"]
               .getService(Ci.nsIObserverService);
 
-  function defaultQuit(result) {
+  function quit(status) {
     if (isQuitting)
       return;
 
@@ -86,41 +81,11 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
     if (harnessService)
       harnessService.unload();
 
-    dump(result + "\n");
-
-    if (resultFile) {
-      try {
-        var file = Cc["@mozilla.org/file/local;1"]
-                   .createInstance(Ci.nsILocalFile);
-        file.initWithPath(resultFile);
-
-        var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                       .createInstance(Ci.nsIFileOutputStream);
-        foStream.init(file, -1, -1, 0);
-        foStream.write(result, result.length);
-        foStream.close();
-      } catch (e) {
-        dump(e + "\n");
-      }
-    }
-
-    if (quitOnFinish) {
-      var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
-                       getService(Ci.nsIAppStartup);
-      appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
-    }
+    onQuit(status);
   }
 
-  if (!quit)
-    quit = defaultQuit;
-
   function logErrorAndBail(e) {
-    // This is an error logger of last resort; if we're here, then
-    // we weren't able to initialize Cuddlefish and display a nice
-    // traceback through it.
-    dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
-    if (e.stack)
-      dump("stack:\n" + e.stack + "\n");
+    logError(e);
     quit("FAIL");
   }
 
@@ -255,7 +220,7 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
       obSvc.addObserver(this, "quit-application-granted", true);
       if (options.main) {
         var program = this.loader.require(options.main);
-        program.main(options);
+        program.main(options, {quit: quit});
       }
     },
 
@@ -265,9 +230,6 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
 
       isStarted = false;
       harnessService = null;
-
-      if (options && options.quit)
-        options.quit = null;
 
       obSvc.removeObserver(this, "quit-application-granted", true);
       if (loader) {
@@ -294,52 +256,106 @@ function buildHarnessService(rootFileSpec, dump, quit, options) {
     }
   };
 
-  // Initialization.
+  return HarnessService;
+}
 
-  if (!options) {
-    try {
-      var environ = Cc["@mozilla.org/process/environment;1"]
-                    .getService(Ci.nsIEnvironment);
+// This is an error logger of last resort; if we're here, then
+// we weren't able to initialize Cuddlefish and display a nice
+// traceback through it.
 
-      var jsonData;
-      if (environ.exists("HARNESS_OPTIONS")) {
-        quitOnFinish = true;
-        jsonData = environ.get("HARNESS_OPTIONS");
-      } else {
-        var optionsFile = rootFileSpec.clone();
-        optionsFile.append('harness-options.json');
-        if (optionsFile.exists()) {
-          var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
-                         .createInstance(Ci.nsIFileInputStream);
-          var siStream = Cc['@mozilla.org/scriptableinputstream;1']
-                         .createInstance(Ci.nsIScriptableInputStream);
-          fiStream.init(optionsFile, 1, 0, false);
-          siStream.init(fiStream);
-          var data = new String();
-          data += siStream.read(-1);
-          siStream.close();
-          fiStream.close();
-          jsonData = data;
-        } else
-          throw new Error("HARNESS_OPTIONS env var must exist.");
+function defaultLogError(e) {
+  dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
+  if (e.stack)
+    dump("stack:\n" + e.stack + "\n");
+}
+
+function getDefaults(rootFileSpec) {
+  // Default options to pass back.
+  var options;
+
+  // Whether to quit the application when we're done.
+  var quitOnFinish = false;
+
+  // Absolute path to a file that we put our result code in. Ordinarily
+  // we'd just exit the process with a zero or nonzero return code, but
+  // there doesn't appear to be a way to do this in XULRunner.
+  var resultFile;
+
+  function onQuit(result) {
+    dump(result + "\n");
+
+    if (resultFile) {
+      try {
+        var file = Cc["@mozilla.org/file/local;1"]
+                   .createInstance(Ci.nsILocalFile);
+        file.initWithPath(resultFile);
+
+        var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                       .createInstance(Ci.nsIFileOutputStream);
+        foStream.init(file, -1, -1, 0);
+        foStream.write(result, result.length);
+        foStream.close();
+      } catch (e) {
+        dump(e + "\n");
       }
-
-      options = JSON.parse(jsonData);
-    } catch (e) {
-      logErrorAndBail(e);
     }
+
+    if (quitOnFinish) {
+      var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
+                       getService(Ci.nsIAppStartup);
+      appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+    }
+  }
+
+  try {
+    var environ = Cc["@mozilla.org/process/environment;1"]
+                  .getService(Ci.nsIEnvironment);
+
+    var jsonData;
+    if (environ.exists("HARNESS_OPTIONS")) {
+      quitOnFinish = true;
+      jsonData = environ.get("HARNESS_OPTIONS");
+    } else {
+      var optionsFile = rootFileSpec.clone();
+      optionsFile.append('harness-options.json');
+      if (optionsFile.exists()) {
+        var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
+                       .createInstance(Ci.nsIFileInputStream);
+        var siStream = Cc['@mozilla.org/scriptableinputstream;1']
+                       .createInstance(Ci.nsIScriptableInputStream);
+        fiStream.init(optionsFile, 1, 0, false);
+        siStream.init(fiStream);
+        var data = new String();
+        data += siStream.read(-1);
+        siStream.close();
+        fiStream.close();
+        jsonData = data;
+      } else
+        throw new Error("HARNESS_OPTIONS env var must exist.");
+    }
+
+    options = JSON.parse(jsonData);
+  } catch (e) {
+    defaultLogError(e);
+    onQuit("FAIL");
+    throw e;
   }
 
   if ('noQuit' in options)
     quitOnFinish = !options.noQuit;
+  if ('resultFile' in options)
+    resultFile = options.resultFile;
 
-  options.quit = quit;
-  resultFile = options.resultFile;
-
-  return HarnessService;
+  return {onQuit: onQuit, options: options};
 }
 
 function NSGetModule(compMgr, fileSpec) {
-  var HarnessService = buildHarnessService(fileSpec.parent.parent, dump);
+  var rootFileSpec = fileSpec.parent.parent;
+  var defaults = getDefaults(rootFileSpec);
+  var HarnessService = buildHarnessService(rootFileSpec,
+                                           dump,
+                                           defaultLogError,
+                                           defaults.onQuit,
+                                           defaults.options);
   return XPCOMUtils.generateModule([HarnessService]);
 }

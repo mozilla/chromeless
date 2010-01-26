@@ -3,44 +3,46 @@ const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
 
 var obsvc = require("observer-service");
 
-var gOptions;
-
-function runTests() {
-  if (!gOptions)
-    // Tests are already running, abort.
-    return;
-
+function runTests(iterations, verbose, rootPaths, quit) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
+
+  // TODO: Close this window on unload.
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
                              "harness", "centerscreen", null);
 
   var harness = require("harness");
 
-  gOptions.print = function() { dump.apply(undefined, arguments); };
+  function print() {
+    dump.apply(undefined, arguments);
+  };
 
-  var quit = gOptions.quit;
-
-  gOptions.onDone = function onDone(tests) {
+  function onDone(tests) {
     if (tests.passed > 0 && tests.failed == 0)
       quit("OK");
     else
       quit("FAIL");
   };
 
-  harness.runTests(gOptions);
-  gOptions = null;
+  harness.runTests({iterations: iterations,
+                    verbose: verbose,
+                    rootPaths: rootPaths,
+                    print: print,
+                    onDone: onDone});
 }
 
-exports.main = function main(options) {
-  gOptions = options;
+exports.main = function main(options, callbacks) {
+  function doRunTests() {
+    runTests(options.iterations, options.verbose,
+             options.rootPaths, callbacks.quit);
+  }
 
   // TODO: This is optional code that might be put in by
   // something running this code to force it to just
   // run tests immediately, rather than wait. We need
   // to actually standardize on this, though.
   if (options.runImmediately) {
-    runTests();
+    doRunTests();
     return;
   }
 
@@ -51,13 +53,13 @@ exports.main = function main(options) {
 
   switch (appInfo.ID) {
   case THUNDERBIRD_ID:
-    obsvc.add("xul-window-visible", runTests);
+    obsvc.add("xul-window-visible", doRunTests);
     break;
   case FIREFOX_ID:
-    obsvc.add("sessionstore-windows-restored", runTests);
+    obsvc.add("sessionstore-windows-restored", doRunTests);
     break;
   default:
-    obsvc.add("final-ui-startup", runTests);
+    obsvc.add("final-ui-startup", doRunTests);
     break;
   }
 };
