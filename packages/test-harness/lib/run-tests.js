@@ -9,7 +9,6 @@ function runTests(iterations, verbose, rootPaths, quit) {
 
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
                              "harness", "centerscreen", null);
-  require("unload").when(function() { window.close(); });
 
   var harness = require("harness");
 
@@ -18,6 +17,7 @@ function runTests(iterations, verbose, rootPaths, quit) {
   };
 
   function onDone(tests) {
+    window.close();
     if (tests.passed > 0 && tests.failed == 0)
       quit("OK");
     else
