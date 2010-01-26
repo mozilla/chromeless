@@ -7,9 +7,9 @@ function runTests(iterations, verbose, rootPaths, quit) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
-  // TODO: Close this window on unload.
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
                              "harness", "centerscreen", null);
+  require("unload").when(function() { window.close(); });
 
   var harness = require("harness");
 
