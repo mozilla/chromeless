@@ -96,6 +96,9 @@ parser_groups = Bunch(
         ),
     )
 
+# Maximum time we'll wait for tests to finish, in seconds.
+TEST_RUN_TIMEOUT = 5 * 60
+
 def parse_args(arguments, parser_options, usage, parser_groups=None,
                defaults=None):
     parser = optparse.OptionParser(usage=usage.strip())
@@ -255,8 +258,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     identifier = target_cfg.get('id', '{%s}' % harness_guid)
 
+    timeout = None
     targets = [target]
     if not use_main:
+        timeout = TEST_RUN_TIMEOUT
         targets.append("test-harness")
 
     if options.extra_packages:
@@ -337,6 +342,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                          app_type=options.app,
                          binary=options.binary,
                          verbose=options.verbose,
-                         no_quit=options.no_quit)
+                         no_quit=options.no_quit,
+                         timeout=timeout)
 
     sys.exit(retval)

@@ -11,9 +11,6 @@ import mozrunner
 from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
 from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
 
-# Maximum time we'll wait for tests to finish, in seconds.
-MAX_WAIT_TIMEOUT = 5 * 60
-
 def find_firefox_binary():
     dummy_profile = {}
     runner = mozrunner.FirefoxRunner(profile=dummy_profile)
@@ -43,7 +40,7 @@ def install_xpts(harness_root_dir, xpts):
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, verbose=False,
-            no_quit=False):
+            no_quit=False, timeout=None):
     if binary:
         binary = os.path.expanduser(binary)
     if app_type == "xulrunner":
@@ -135,10 +132,10 @@ def run_app(harness_root_dir, harness_options, xpts,
                 output = open(resultfile).read()
                 if output in ['OK', 'FAIL']:
                     done = True
-        if time.time() - starttime > MAX_WAIT_TIMEOUT:
+        if timeout and (time.time() - starttime > timeout):
             # TODO: Kill the child process.
             raise Exception("Wait timeout exceeded (%ds)" %
-                            MAX_WAIT_TIMEOUT)
+                            timeout)
 
     print "Total time: %f seconds" % (time.time() - starttime)
 

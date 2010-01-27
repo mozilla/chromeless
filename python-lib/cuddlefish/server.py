@@ -173,7 +173,8 @@ def start(env_root, host='127.0.0.1', port=DEFAULT_PORT):
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, verbose=False,
-            no_quit=False, port=DEFAULT_PORT):
+            no_quit=False, timeout=None,
+            port=DEFAULT_PORT):
     payload = json.dumps(harness_options)
     url = 'http://127.0.0.1:%d/%s/%s/%s' % (port,
                                             API_PATH,
