@@ -71,6 +71,10 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
   var obSvc = Cc["@mozilla.org/observer-service;1"]
               .getService(Ci.nsIObserverService);
+  var ioService = Cc["@mozilla.org/network/io-service;1"]
+                  .getService(Ci.nsIIOService);
+  var resProt = ioService.getProtocolHandler("resource")
+                .QueryInterface(Ci.nsIResProtocolHandler);
 
   function quit(status) {
     if (isQuitting)
@@ -103,11 +107,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
   }
 
   function buildLoader() {
-    var ioService = Cc["@mozilla.org/network/io-service;1"]
-                    .getService(Ci.nsIIOService);
-    var resProt = ioService.getProtocolHandler("resource")
-                  .QueryInterface(Ci.nsIResProtocolHandler);
-
     var compMgr = Components.manager;
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
 
@@ -122,7 +121,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
         ensureIsDir(dir);
       }
       var dirUri = ioService.newFileURI(dir);
-      // TODO: We should be undoing this when we unload.
       resProt.setSubstitution(name, dirUri);
     }
 
@@ -247,7 +245,9 @@ function buildHarnessService(rootFileSpec, dump, logError,
         loader.unload();
         loader = null;
       }
-      // TODO: Remove resource URI mappings.
+
+      for (name in options.resources)
+        resProt.setSubstitution(name, null);
     },
 
     observe: function Harness_observe(subject, topic, data) {
