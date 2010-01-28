@@ -184,9 +184,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
   // a Cuddlefish loader and running the main program, if any.
 
   function HarnessService() {
-    if (harnessService)
-      throw new Error("Harness Service singleton already exists");
-    harnessService = this;
     this.wrappedJSObject = this;
   }
 
@@ -198,6 +195,20 @@ function buildHarnessService(rootFileSpec, dump, logError,
     get classID() { return Components.ID(options.bootstrap.classID); },
 
     _xpcom_categories: [{ category: "app-startup", service: true }],
+
+    _xpcom_factory: {
+      get singleton() {
+        return harnessService;
+      },
+
+      createInstance: function(outer, iid) {
+        if (outer)
+          throw Cr.NS_ERROR_NO_AGGREGATION;
+        if (!harnessService)
+          harnessService = new HarnessService();
+        return harnessService.QueryInterface(iid);
+      }
+    },
 
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
                                            Ci.nsISupportsWeakReference]),
@@ -231,7 +242,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
       isStarted = false;
       harnessService = null;
 
-      obSvc.removeObserver(this, "quit-application-granted", true);
+      obSvc.removeObserver(this, "quit-application-granted");
       if (loader) {
         loader.unload();
         loader = null;
@@ -255,6 +266,10 @@ function buildHarnessService(rootFileSpec, dump, logError,
       }
     }
   };
+
+  var factory = HarnessService.prototype._xpcom_factory;
+  if (!factory.wrappedJSObject)
+    factory.wrappedJSObject = factory;
 
   return HarnessService;
 }

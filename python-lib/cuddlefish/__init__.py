@@ -248,12 +248,18 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     target = target_cfg.name
 
+    # TODO: Consider keeping a cache of dynamic UUIDs, based
+    # on absolute filesystem pathname, in the root directory
+    # or something.
     if command == 'xpi':
         import uuid
         harness_guid = str(uuid.uuid4())
         unique_prefix = '%s-' % harness_guid
     else:
-        harness_guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
+        if options.use_server:
+            harness_guid = '2974c5b5-b671-46f8-a4bb-63c6eca6261b'
+        else:
+            harness_guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
         unique_prefix = '%s-' % target
 
     identifier = target_cfg.get('id', '{%s}' % harness_guid)

@@ -6,8 +6,14 @@ exports.testPackaging = function(test) {
                    'run-tests',
                    "main program should be the test harness");
 
-  var harness = Cc[packaging.options.bootstrap.contractID]
-                .getService().wrappedJSObject;
+  var factory = Components.manager.getClassObjectByContractID(
+    packaging.options.bootstrap.contractID,
+    Ci.nsIFactory
+  );
+
+  var harness = factory.wrappedJSObject.singleton;
+
+  test.assertEqual(packaging.harnessService, harness);
 
   test.assertNotEqual(harness.loader, undefined,
                       "bootstrap component should be available");
