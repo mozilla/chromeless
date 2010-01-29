@@ -133,7 +133,10 @@ class APIProcessor(markdown.blockprocessors.BlockProcessor):
       parent.text += "("
       
       for param in method["params"]:
-        self._createParam( parent, param )
+        try:
+          self._createParam( parent, param )
+        except:
+          "It appears you left something out in param:", param
 
       children = parent.getchildren()
       if children:
