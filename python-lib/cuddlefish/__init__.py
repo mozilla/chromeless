@@ -58,10 +58,10 @@ parser_groups = Bunch(
                                          "firefox, or thunderbird"),
                                    metavar=None,
                                    default="xulrunner"),
-            ("-r", "--use-server",): dict(dest="use_server",
-                                          help="use task queue server",
-                                          action="store_true",
-                                          default=False),
+            ("", "--use-server",): dict(dest="use_server",
+                                        help="use task queue server",
+                                        action="store_true",
+                                        default=False),
             }
         ),
     xpcom=Bunch(
