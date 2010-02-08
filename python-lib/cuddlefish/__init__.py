@@ -340,13 +340,16 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
+        from cuddlefish.rdf import gen_manifest
+        manifest = gen_manifest(template_root_dir=app_extension_dir,
+                                target_cfg=target_cfg,
+                                default_id=identifier,
+                                update_url=options.update_url)
         build_xpi(template_root_dir=app_extension_dir,
-                  target_cfg=target_cfg,
+                  manifest=manifest,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
-                  xpts=xpts,
-                  default_id=identifier,
-                  update_url=options.update_url)
+                  xpts=xpts)
     else:
         if options.use_server:
             from cuddlefish.server import run_app

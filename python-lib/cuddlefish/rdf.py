@@ -1,3 +1,4 @@
+import os
 import xml.dom.minidom
 import cStringIO as StringIO
 
@@ -82,13 +83,31 @@ class RDFManifest(RDF):
             return default
         return elements[0].firstChild.nodeValue
 
-if __name__ == "__main__":
-    import os
-
-    print "Running smoke test."
-    install_rdf = os.path.join(os.path.dirname(__file__), 'app-extension',
-                               'install.rdf')
+def gen_manifest(template_root_dir, target_cfg, default_id,
+                 update_url=None):
+    install_rdf = os.path.join(template_root_dir, "install.rdf")
     manifest = RDFManifest(install_rdf)
+
+    manifest.set("em:id",
+                 target_cfg.get('id', default_id))
+    manifest.set("em:version",
+                 target_cfg.get('version', '1.0'))
+    manifest.set("em:name",
+                 target_cfg.get('fullName', target_cfg['name']))
+    manifest.set("em:description",
+                 target_cfg.get("description", ""))
+    manifest.set("em:creator",
+                 target_cfg.get("author", ""))
+    if update_url:
+        manifest.set("em:updateURL", update_url)
+
+    return manifest
+
+if __name__ == "__main__":
+    print "Running smoke test."
+    root = os.path.join(os.path.dirname(__file__), 'app-extension')
+    manifest = gen_manifest(root, {'name': 'test extension'},
+                            'fakeid', 'http://foo.com/update.rdf')
     update = RDFUpdate()
     update.add(manifest, "https://foo.com/foo.xpi")
     exercise_str = str(manifest) + str(update)

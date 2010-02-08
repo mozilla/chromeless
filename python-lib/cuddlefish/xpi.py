@@ -2,27 +2,9 @@ import os
 import zipfile
 
 import simplejson as json
-import cuddlefish.rdf
 
-def build_xpi(template_root_dir, target_cfg, xpi_name,
-              harness_options, xpts, default_id,
-              update_url=None):
-    install_rdf = os.path.join(template_root_dir, "install.rdf")
-    manifest = cuddlefish.rdf.RDFManifest(install_rdf)
-
-    manifest.set("em:id",
-                 target_cfg.get('id', default_id))
-    manifest.set("em:version",
-                 target_cfg.get('version', '1.0'))
-    manifest.set("em:name",
-                 target_cfg.get('fullName', target_cfg['name']))
-    manifest.set("em:description",
-                 target_cfg.get("description", ""))
-    manifest.set("em:creator",
-                 target_cfg.get("author", ""))
-    if update_url:
-        manifest.set("em:updateURL", update_url)
-
+def build_xpi(template_root_dir, manifest, xpi_name,
+              harness_options, xpts):
     print "Exporting extension to %s." % xpi_name
 
     zf = zipfile.ZipFile(xpi_name, "w", zipfile.ZIP_DEFLATED)
