@@ -46,6 +46,15 @@ parser_options = {
     }
 
 parser_groups = Bunch(
+    xpi=Bunch(
+        name="XPI Options",
+        options={
+            ("-u", "--update-url",): dict(dest="update_url",
+                                          help="update URL",
+                                          metavar=None,
+                                          default=None),
+            }
+        ),
     app=Bunch(
         name="Application Options",
         options={
@@ -336,7 +345,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
                   xpts=xpts,
-                  default_id=identifier)
+                  default_id=identifier,
+                  update_url=options.update_url)
     else:
         if options.use_server:
             from cuddlefish.server import run_app

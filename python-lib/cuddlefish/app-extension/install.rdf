@@ -32,5 +32,9 @@
     <em:name>Test App</em:name>
     <em:description>Harness for tests.</em:description>
     <em:creator>Mozilla Corporation</em:creator>
+    <em:iconURL></em:iconURL>
+    <em:homepageURL></em:homepageURL>
+    <em:optionsURL></em:optionsURL>
+    <em:updateURL></em:updateURL>
   </Description>
 </RDF>

@@ -5,7 +5,8 @@ import simplejson as json
 import cuddlefish.rdf
 
 def build_xpi(template_root_dir, target_cfg, xpi_name,
-              harness_options, xpts, default_id):
+              harness_options, xpts, default_id,
+              update_url=None):
     install_rdf = os.path.join(template_root_dir, "install.rdf")
     manifest = cuddlefish.rdf.RDFManifest(install_rdf)
 
@@ -19,6 +20,8 @@ def build_xpi(template_root_dir, target_cfg, xpi_name,
                  target_cfg.get("description", ""))
     manifest.set("em:creator",
                  target_cfg.get("author", ""))
+    if update_url:
+        manifest.set("em:updateURL", update_url)
 
     print "Exporting extension to %s." % xpi_name
 

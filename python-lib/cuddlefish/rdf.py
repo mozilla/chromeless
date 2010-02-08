@@ -14,7 +14,10 @@ class RDFManifest(object):
         elements = self.dom.documentElement.getElementsByTagName(property)
         if not elements:
             raise ValueError("Element with value not found: %s" % property)
-        elements[0].firstChild.nodeValue = value
+        if not elements[0].firstChild:
+            elements[0].appendChild(self.dom.createTextNode(value))
+        else:
+            elements[0].firstChild.nodeValue = value
 
     def get(self, property, default=None):
         elements = self.dom.documentElement.getElementsByTagName(property)
