@@ -351,7 +351,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                 update_url=options.update_url)
 
         if options.update_link:
-            rdf_name = "%s-update.rdf" % target_cfg.name
+            rdf_name = "%s.update.rdf" % target_cfg.name
             print "Exporting update description to %s." % rdf_name
             update = RDFUpdate()
             update.add(manifest, options.update_link)
