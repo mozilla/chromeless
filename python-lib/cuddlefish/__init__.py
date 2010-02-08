@@ -50,9 +50,13 @@ parser_groups = Bunch(
         name="XPI Options",
         options={
             ("-u", "--update-url",): dict(dest="update_url",
-                                          help="update URL",
+                                          help="update URL in install.rdf",
                                           metavar=None,
                                           default=None),
+            ("-l", "--update-link",): dict(dest="update_link",
+                                           help="generate update.rdf",
+                                           metavar=None,
+                                           default=None),
             }
         ),
     app=Bunch(
@@ -233,7 +237,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             )
         sys.exit(0)
     elif command == "xpi":
-        xpi_name = "%s.xpi" % target_cfg.name
         use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
@@ -340,11 +343,22 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
-        from cuddlefish.rdf import gen_manifest
+        from cuddlefish.rdf import gen_manifest, RDFUpdate
+
         manifest = gen_manifest(template_root_dir=app_extension_dir,
                                 target_cfg=target_cfg,
                                 default_id=identifier,
                                 update_url=options.update_url)
+
+        if options.update_link:
+            rdf_name = "%s-update.rdf" % target_cfg.name
+            print "Exporting update description to %s." % rdf_name
+            update = RDFUpdate()
+            update.add(manifest, options.update_link)
+            open(rdf_name, "w").write(str(update))
+
+        xpi_name = "%s.xpi" % target_cfg.name
+        print "Exporting extension to %s." % xpi_name
         build_xpi(template_root_dir=app_extension_dir,
                   manifest=manifest,
                   xpi_name=xpi_name,
@@ -355,6 +369,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             from cuddlefish.server import run_app
         else:
             from cuddlefish.runner import run_app
+
         retval = run_app(harness_root_dir=app_extension_dir,
                          harness_options=harness_options,
                          xpts=xpts,

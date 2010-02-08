@@ -5,8 +5,6 @@ import simplejson as json
 
 def build_xpi(template_root_dir, manifest, xpi_name,
               harness_options, xpts):
-    print "Exporting extension to %s." % xpi_name
-
     zf = zipfile.ZipFile(xpi_name, "w", zipfile.ZIP_DEFLATED)
 
     open('.install.rdf', 'w').write(str(manifest))
