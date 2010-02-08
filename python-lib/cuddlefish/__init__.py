@@ -6,6 +6,9 @@ import glob
 from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 
+UPDATE_RDF_FILENAME = "%s.update.rdf"
+XPI_FILENAME = "%s.xpi"
+
 usage = """
 %prog [options] [command]
 
@@ -351,13 +354,13 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                 update_url=options.update_url)
 
         if options.update_link:
-            rdf_name = "%s.update.rdf" % target_cfg.name
+            rdf_name = UPDATE_RDF_FILENAME % target_cfg.name
             print "Exporting update description to %s." % rdf_name
             update = RDFUpdate()
             update.add(manifest, options.update_link)
             open(rdf_name, "w").write(str(update))
 
-        xpi_name = "%s.xpi" % target_cfg.name
+        xpi_name = XPI_FILENAME % target_cfg.name
         print "Exporting extension to %s." % xpi_name
         build_xpi(template_root_dir=app_extension_dir,
                   manifest=manifest,
