@@ -50,14 +50,21 @@ function startApp(jQuery, window) {
   }
 
   function getReadmeHtml(pkg, cb) {
-    if ('README.md' in pkg.files)
-      jQuery.ajax({url: "/api/packages/" + pkg.name + "/README.md",
-                   dataType: "text",
-                   success: function(text) {
-                     var converter = new Showdown.converter();
-                     cb(converter.makeHtml(text));
-                   }
-                  });
+    if ('README.md' in pkg.files) {
+      var options = {
+        url: "/api/packages/" + pkg.name + "/README.md",
+        dataType: "text",
+        success: function(text) {
+          var converter = new Showdown.converter();
+          cb(converter.makeHtml(text));
+        },
+        error: function() {
+          cb(null);
+        }
+      };
+      jQuery.ajax(options);
+    } else
+      cb(null);
   }
 
   function makeDirTree(fileStruct) {
@@ -85,8 +92,11 @@ function startApp(jQuery, window) {
     entry.find(".name").text(pkg.name);
     entry.find(".files").append(makeDirTree(pkg.files));
     $("#middle-column").empty().append(entry);
+    entry.hide();
     getReadmeHtml(pkg, function(html) {
-                    entry.find(".docs").html(html);
+                    if (html)
+                      entry.find(".docs").html(html);
+                    entry.fadeIn();
                   });
   }
 
