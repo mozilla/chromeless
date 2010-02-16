@@ -180,7 +180,7 @@ def get_config_args(name, env_root):
     return config
 
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
-        defaults=None, env_root = os.environ.get('CUDDLEFISH_ROOT')):
+        defaults=None, env_root=os.environ.get('CUDDLEFISH_ROOT')):
     parser_kwargs = dict(arguments=arguments,
                          parser_options=parser_options,
                          parser_groups=parser_groups,
