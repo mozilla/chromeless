@@ -5,11 +5,10 @@ function getModules(fileStruct) {
       modules.push(name.slice(0, -3));
     else if (!('size' in fileStruct[name])) {
       var subModules = getModules(fileStruct[name]);
-      if (subModules.length) {
-        subModules = [name + "/" + subModule
-                      for each (subModule in subModules)];
-        modules = modules.concat(subModules);
-      }
+      subModules.forEach(
+        function(subModule) {
+          modules.push(name + "/" + subModule);
+        });
     }
   }
   return modules;
@@ -28,7 +27,9 @@ $(window).ready(
     jQuery.getJSON(
       "/api/packages",
       function(packages) {
-        var sortedPackages = [name for (name in packages)];
+        var sortedPackages = [];
+        for (name in packages)
+          sortedPackages.push(name);
         sortedPackages.sort();
         sortedPackages.forEach(
           function(name) {
