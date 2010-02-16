@@ -5,6 +5,12 @@ import os
 import webbrowser
 import threading
 
+if 'CUDDLEFISH_ROOT' in os.environ:
+    env_root = os.environ['CUDDLEFISH_ROOT']
+else:
+    env_root = os.getcwd()
+    sys.path.append(os.path.join(env_root, 'python-lib'))
+
 import cuddlefish
 from cuddlefish import server
 
@@ -12,7 +18,7 @@ TASK_RUNNER_PATH = ['packages', 'task-runner']
 
 if __name__ == '__main__':
     args = sys.argv[1:]
-    env_root = os.environ['CUDDLEFISH_ROOT']
+
 
     thread = threading.Thread(target=server.start,
                               kwargs={'env_root': env_root,
@@ -25,4 +31,5 @@ if __name__ == '__main__':
     pkgdir = os.path.join(env_root, *TASK_RUNNER_PATH)
     cuddlefish.run(arguments=args+['run'],
                    defaults={'app': 'firefox',
-                             'pkgdir': pkgdir})
+                             'pkgdir': pkgdir},
+                   env_root=env_root)
