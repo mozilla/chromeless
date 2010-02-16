@@ -1,12 +1,28 @@
 body {
     font-family: Helvetica Neue, Arial, sans-serif;
     font-size: 9pt;
-    background: #f0f0f0;
+    background: white;
+    margin: 0;
 }
 
-#container {
-    width: 40em;
-    margin: 0 auto;
+h1 {
+    margin: 0;
+    padding-bottom: 1em;
+}
+
+#left-column {
+    width: 30em;
+    height: 100%;
+    background: #f0f0f0;
+    padding: 1em;
+    float: left;
+}
+
+#middle-column {
+    width: 30em;
+    height: 100%;
+    padding: 1em;
+    float: left;
 }
 
 .entry {
@@ -15,6 +31,7 @@ body {
 }
 
 .entry .name {
+    cursor: pointer;
     font-weight: bold;
     color: black;
 }
@@ -40,4 +57,13 @@ pre {
 
 #templates {
     display: none;
+}
+
+.file {
+}
+
+.directory {
+    font-family: Monaco, Lucida Console, monospace;
+    white-space: pre;
+    padding-left: 1em;
 }
