@@ -11,6 +11,8 @@ from cuddlefish import Bunch
 import simplejson as json
 
 DEFAULT_PORT = 8888
+DEFAULT_HOST = '127.0.0.1'
+
 API_PATH = 'api'
 TASK_QUEUE_PATH = 'task-queue'
 TASK_QUEUE_SET = 'set'
@@ -162,14 +164,31 @@ def make_wsgi_app(env_root, task_queue):
         return server.app(environ, start_response)
     return app
 
-def start(env_root, host='127.0.0.1', port=DEFAULT_PORT):
-    print "Starting server on %s:%d." % (host, port)
-    print "Press Ctrl-C to exit."
+def get_url(host=DEFAULT_HOST, port=DEFAULT_PORT):
+    return "http://%s:%d" % (host, port)
+
+class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
+    def log_message(self, *args, **kwargs):
+        pass
+
+def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
+          quiet=False):
+    if not quiet:
+        print "Starting server at %s." % get_url(host, port)
+        print "Press Ctrl-C to exit."
+        handler_class = simple_server.WSGIRequestHandler
+    else:
+        handler_class = QuietWSGIRequestHandler
+
     tq = Queue.Queue()
     httpd = simple_server.make_server(host, port,
                                       make_wsgi_app(env_root, tq),
-                                      ThreadedWSGIServer)
-    httpd.serve_forever()
+                                      ThreadedWSGIServer,
+                                      handler_class)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print "Ctrl-C received, exiting."
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, verbose=False,
@@ -183,3 +202,6 @@ def run_app(harness_root_dir, harness_options, xpts,
     response = urllib2.urlopen(url, payload)
     print response.read()
     return 0
+
+if __name__ == '__main__':
+    start(env_root=os.environ['CUDDLEFISH_ROOT'])

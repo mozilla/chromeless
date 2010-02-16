@@ -20,7 +20,6 @@ Package-Specific Commands:
 
 Global Commands:
   testall    - test all packages
-  serve      - start local documentation server
 """
 
 parser_options = {
@@ -199,10 +198,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
-        return
-    elif command == "serve":
-        import cuddlefish.server
-        cuddlefish.server.start(env_root)
         return
 
     if not target_cfg:
