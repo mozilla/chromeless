@@ -1,4 +1,6 @@
 import os
+import time
+import threading
 import urllib
 import urllib2
 import mimetypes
@@ -14,14 +16,22 @@ DEFAULT_PORT = 8888
 DEFAULT_HOST = '127.0.0.1'
 
 API_PATH = 'api'
+IDLE_PATH = 'idle'
+IDLE_TIMEOUT = 5
 TASK_QUEUE_PATH = 'task-queue'
 TASK_QUEUE_SET = 'set'
 TASK_QUEUE_GET = 'get'
 TASK_QUEUE_GET_TIMEOUT = 1
 
+first_idle_received = threading.Event()
+
 class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
                          simple_server.WSGIServer):
-    pass
+    daemon_threads = True
+
+class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
+    def log_message(self, *args, **kwargs):
+        pass
 
 def guess_mime_type(url):
     if url.endswith(".json"):
@@ -108,6 +118,13 @@ class Server(object):
                     return self._respond('404 Not Found')
             else:
                 return self._respond('404 Not Found')
+        elif parts[0] == IDLE_PATH:
+            if not first_idle_received.isSet():
+                first_idle_received.set()
+            self.start_response('200 OK',
+                                [('Content-type', 'text/plain')])
+            time.sleep(IDLE_TIMEOUT)
+            return ['Idle complete (%s seconds)' % IDLE_TIMEOUT]
         elif parts[0] == 'packages':
             if len(parts) == 1:
                 # TODO: This should really be of JSON's mime type,
@@ -166,10 +183,6 @@ def make_wsgi_app(env_root, task_queue):
 
 def get_url(host=DEFAULT_HOST, port=DEFAULT_PORT):
     return "http://%s:%d" % (host, port)
-
-class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
-    def log_message(self, *args, **kwargs):
-        pass
 
 def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
           quiet=False):

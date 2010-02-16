@@ -15,8 +15,16 @@ function getModules(fileStruct) {
   return modules;
 }
 
+function scheduleNextIdlePing() {
+  window.setTimeout(jQuery.ajax({url:"/api/idle",
+                                 success: scheduleNextIdlePing,
+                                 error: scheduleNextIdlePing}),
+                    500);
+}
+
 $(window).ready(
   function() {
+    scheduleNextIdlePing();
     jQuery.getJSON(
       "/api/packages",
       function(packages) {

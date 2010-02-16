@@ -16,9 +16,17 @@ from cuddlefish import server
 
 TASK_RUNNER_PATH = ['packages', 'task-runner']
 
+def maybe_open_webpage():
+    server.first_idle_received.wait(1.5)
+    url = server.get_url()
+    if server.first_idle_received.isSet():
+        print "Web browser appears to be viewing %s." % url
+    else:
+        print "Opening web browser to %s." % url
+        webbrowser.open(url)
+
 if __name__ == '__main__':
     args = sys.argv[1:]
-
 
     thread = threading.Thread(target=server.start,
                               kwargs={'env_root': env_root,
@@ -26,7 +34,9 @@ if __name__ == '__main__':
     thread.setDaemon(True)
     thread.start()
 
-    webbrowser.open(server.get_url())
+    webpage_thread = threading.Thread(target=maybe_open_webpage)
+    webpage_thread.setDaemon(True)
+    webpage_thread.start()
 
     pkgdir = os.path.join(env_root, *TASK_RUNNER_PATH)
     cuddlefish.run(arguments=args+['run'],
