@@ -17,7 +17,7 @@ DEFAULT_HOST = '127.0.0.1'
 
 API_PATH = 'api'
 IDLE_PATH = 'idle'
-IDLE_TIMEOUT = 5
+IDLE_TIMEOUT = 60
 TASK_QUEUE_PATH = 'task-queue'
 TASK_QUEUE_SET = 'set'
 TASK_QUEUE_GET = 'get'
