@@ -30,6 +30,18 @@ class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
     daemon_threads = True
 
 class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
+    class NullFile(object):
+        def write(self, data):
+            pass
+
+        def flush(self):
+            pass
+
+    null_file = NullFile()
+
+    def get_stderr(self):
+        return self.null_file
+
     def log_message(self, *args, **kwargs):
         pass
 
