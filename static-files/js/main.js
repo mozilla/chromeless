@@ -1,9 +1,37 @@
 function startApp(jQuery, window) {
   var $ = jQuery;
   var document = window.document;
+  var packages = null;
+  var currentHash = "";
 
   const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
+  const CHECK_HASH_DELAY = 100;
+
+  function checkHash() {
+    if (window.location.hash != currentHash) {
+      currentHash = window.location.hash;
+      if (currentHash.length > 1)
+        onHash(currentHash.slice(1));
+      else
+        onHash(null);
+    }
+  }
+
+  function setHash(hash) {
+    if (hash && hash.length)
+      window.location.hash = "#" + hash;
+    else
+      window.location.hash = "";
+    checkHash();
+  }
+
+  function onHash(hash) {
+    if (hash)
+      showPackageDetail(hash);
+    else
+      $("#middle-column").empty();
+  }
 
   function getModules(fileStruct) {
     var modules = [];
@@ -19,6 +47,17 @@ function startApp(jQuery, window) {
       }
     }
     return modules;
+  }
+
+  function getReadmeHtml(pkg, cb) {
+    if ('README.md' in pkg.files)
+      jQuery.ajax({url: "/api/packages/" + pkg.name + "/README.md",
+                   dataType: "text",
+                   success: function(text) {
+                     var converter = new Showdown.converter();
+                     cb(converter.makeHtml(text));
+                   }
+                  });
   }
 
   function makeDirTree(fileStruct) {
@@ -38,14 +77,22 @@ function startApp(jQuery, window) {
     return info;
   }
 
-  function showPackageInfo(pkg) {
+  function showPackageDetail(name) {
+    var pkg = packages[name];
     var entry = $("#templates .package-detail").clone();
+
+    // TODO: Add author info.
     entry.find(".name").text(pkg.name);
     entry.find(".files").append(makeDirTree(pkg.files));
     $("#middle-column").empty().append(entry);
+    getReadmeHtml(pkg, function(html) {
+                    entry.find(".docs").html(html);
+                  });
   }
 
-  function processPackages(packages) {
+  function processPackages(packagesJSON) {
+    packages = packagesJSON;
+
     var sortedPackages = [];
     for (name in packages)
       sortedPackages.push(name);
@@ -55,7 +102,7 @@ function startApp(jQuery, window) {
         var pkg = packages[name];
         var entry = $("#templates .entry").clone();
         entry.find(".name").text(pkg.name);
-        entry.find(".name").click(function() { showPackageInfo(pkg); });
+        entry.find(".name").click(function() { setHash(pkg.name); });
         entry.find(".description").text(pkg.description);
         var libs = [];
         if (pkg.lib) {
@@ -76,6 +123,7 @@ function startApp(jQuery, window) {
           });
         $("#left-column").append(entry);
       });
+    checkHash();
   }
 
   function sendIdlePing() {
@@ -89,6 +137,7 @@ function startApp(jQuery, window) {
   }
 
   scheduleNextIdlePing();
+  window.setInterval(checkHash, CHECK_HASH_DELAY);
   jQuery.getJSON("/api/packages", processPackages);
 }
 

@@ -5,6 +5,10 @@ body {
     margin: 0;
 }
 
+a {
+    color: black;
+}
+
 h1 {
     margin: 0;
     padding-bottom: 1em;
@@ -23,6 +27,10 @@ h1 {
     height: 100%;
     padding: 1em;
     float: left;
+}
+
+.meta-header {
+    font-weight: bold;
 }
 
 .entry {
