@@ -1,9 +1,11 @@
 import os
 import time
 import threading
+import socket
 import urllib
 import urllib2
 import mimetypes
+import webbrowser
 import Queue
 import SocketServer
 from wsgiref import simple_server
@@ -23,7 +25,7 @@ TASK_QUEUE_SET = 'set'
 TASK_QUEUE_GET = 'get'
 TASK_QUEUE_GET_TIMEOUT = 1
 
-first_idle_received = threading.Event()
+_idle_event = threading.Event()
 
 class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
                          simple_server.WSGIServer):
@@ -131,11 +133,19 @@ class Server(object):
             else:
                 return self._respond('404 Not Found')
         elif parts[0] == IDLE_PATH:
-            if not first_idle_received.isSet():
-                first_idle_received.set()
+            # TODO: Yuck, we're accessing a protected property; any
+            # way to wait for a second w/o doing this?
+            sock = self.environ['wsgi.input']._sock
+            sock.settimeout(1.0)
+            for i in range(IDLE_TIMEOUT):
+                try:
+                    sock.recv(1)
+                except socket.timeout:
+                    pass
+                if not _idle_event.isSet():
+                    _idle_event.set()
             self.start_response('200 OK',
                                 [('Content-type', 'text/plain')])
-            time.sleep(IDLE_TIMEOUT)
             return ['Idle complete (%s seconds)' % IDLE_TIMEOUT]
         elif parts[0] == 'packages':
             if len(parts) == 1:
@@ -196,11 +206,9 @@ def make_wsgi_app(env_root, task_queue):
 def get_url(host=DEFAULT_HOST, port=DEFAULT_PORT):
     return "http://%s:%d" % (host, port)
 
-def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
-          quiet=False):
+def make_httpd(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
+               quiet=True):
     if not quiet:
-        print "Starting server at %s." % get_url(host, port)
-        print "Press Ctrl-C to exit."
         handler_class = simple_server.WSGIRequestHandler
     else:
         handler_class = QuietWSGIRequestHandler
@@ -210,6 +218,57 @@ def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
                                       make_wsgi_app(env_root, tq),
                                       ThreadedWSGIServer,
                                       handler_class)
+    return httpd
+
+def fault_tolerant_make_httpd(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT):
+    listening = False
+    attempts_left = 10
+    while not listening:
+        try:
+            httpd = make_httpd(env_root, host, port, quiet=True)
+            listening = True
+        except socket.error, e:
+            print "Couldn't create server at %s:%d (%s)." % (host, port, e)
+            attempts_left -= 1
+            if attempts_left:
+                port += 1
+                print "Trying %s:%d." % (host, port)
+            else:
+                raise
+
+    return (httpd, port)
+
+def maybe_open_webpage(host=DEFAULT_HOST, port=DEFAULT_PORT):
+    _idle_event.wait(1.5)
+    url = get_url(host, port)
+    if _idle_event.isSet():
+        print "Web browser appears to be viewing %s." % url
+    else:
+        print "Opening web browser to %s." % url
+        webbrowser.open(url)
+
+def start_daemonic(httpd, host=DEFAULT_HOST, port=DEFAULT_PORT):
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.setDaemon(True)
+    thread.start()
+
+    maybe_open_webpage(host, port)
+
+    while True:
+        _idle_event.wait(3.0)
+        if _idle_event.isSet():
+            _idle_event.clear()
+        else:
+            print ("Web browser is no longer viewing %s, "
+                   "shutting down server." % get_url(host, port))
+            break
+
+def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
+          quiet=False):
+    httpd = make_httpd(env_root, host, port, quiet)
+    if not quiet:
+        print "Starting server at %s." % get_url(host, port)
+        print "Press Ctrl-C to exit."
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -230,4 +289,12 @@ def run_app(harness_root_dir, harness_options, xpts,
     return 0
 
 if __name__ == '__main__':
-    start(env_root=os.environ['CUDDLEFISH_ROOT'])
+    import sys
+
+    env_root=os.environ['CUDDLEFISH_ROOT']
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'daemonic':
+        httpd, port = fault_tolerant_make_httpd(env_root)
+        start_daemonic(httpd=httpd, port=port)
+    else:
+        start(env_root)

@@ -19,6 +19,7 @@ Package-Specific Commands:
   run        - run program
 
 Global Commands:
+  docs       - view web-based documentation
   testall    - test all packages
 """
 
@@ -198,6 +199,15 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
+        return
+    elif command == "docs":
+        import subprocess
+        import cuddlefish.server
+
+        print "One moment."
+        popen = subprocess.Popen([sys.executable,
+                                  cuddlefish.server.__file__,
+                                  'daemonic'])
         return
 
     if not target_cfg:

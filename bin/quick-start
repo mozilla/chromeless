@@ -2,7 +2,6 @@
 
 import sys
 import os
-import webbrowser
 import threading
 
 if 'CUDDLEFISH_ROOT' in os.environ:
@@ -16,15 +15,6 @@ from cuddlefish import server
 
 TASK_RUNNER_PATH = ['packages', 'task-runner']
 
-def maybe_open_webpage():
-    server.first_idle_received.wait(1.5)
-    url = server.get_url()
-    if server.first_idle_received.isSet():
-        print "Web browser appears to be viewing %s." % url
-    else:
-        print "Opening web browser to %s." % url
-        webbrowser.open(url)
-
 if __name__ == '__main__':
     args = sys.argv[1:]
 
@@ -34,7 +24,7 @@ if __name__ == '__main__':
     thread.setDaemon(True)
     thread.start()
 
-    webpage_thread = threading.Thread(target=maybe_open_webpage)
+    webpage_thread = threading.Thread(target=server.maybe_open_webpage)
     webpage_thread.setDaemon(True)
     webpage_thread.start()
 
