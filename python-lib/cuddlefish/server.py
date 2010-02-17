@@ -218,12 +218,13 @@ def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, verbose=False,
             no_quit=False, timeout=None,
+            host=DEFAULT_HOST,
             port=DEFAULT_PORT):
     payload = json.dumps(harness_options)
-    url = 'http://127.0.0.1:%d/%s/%s/%s' % (port,
-                                            API_PATH,
-                                            TASK_QUEUE_PATH,
-                                            TASK_QUEUE_SET)
+    url = 'http://%s:%d/%s/%s/%s' % (host, port,
+                                     API_PATH,
+                                     TASK_QUEUE_PATH,
+                                     TASK_QUEUE_SET)
     response = urllib2.urlopen(url, payload)
     print response.read()
     return 0
