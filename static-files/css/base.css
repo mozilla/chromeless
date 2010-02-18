@@ -33,28 +33,29 @@ h1 {
     font-weight: bold;
 }
 
-.entry {
+.package-entry {
     color: gray;
     padding-bottom: 1em;
 }
 
-.entry .name {
+.package-entry .name {
     cursor: pointer;
     font-weight: bold;
     color: black;
 }
 
-.entry .description {
+.package-entry .description {
 }
 
-.entry .modules {
+.package-entry .modules {
+    cursor: pointer;
     font-size: 8pt;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     padding-left: 2em;
 }
 
-.entry .module {
+.package-entry .module {
     display: inline;
     padding-right: 1em;
 }
@@ -74,4 +75,8 @@ pre {
     font-family: Monaco, Lucida Console, monospace;
     white-space: pre;
     padding-left: 1em;
+}
+
+.module-detail .docs p:first-child {
+    margin-top: 0;
 }

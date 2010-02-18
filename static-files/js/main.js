@@ -27,9 +27,19 @@ function startApp(jQuery, window) {
   }
 
   function onHash(hash) {
-    if (hash)
-      showPackageDetail(hash);
-    else
+    if (hash) {
+      var parts = hash.split("/");
+      switch (parts[0]) {
+      case "package":
+        showPackageDetail(parts[1]);
+        break;
+      case "module":
+        var pkgName = parts[1];
+        var moduleName = parts.slice(2).join("/");
+        showModuleDetail(pkgName, moduleName);
+        break;
+      }
+    } else
       $("#middle-column").empty();
   }
 
@@ -49,14 +59,38 @@ function startApp(jQuery, window) {
     return modules;
   }
 
-  function getReadmeHtml(pkg, cb) {
-    if ('README.md' in pkg.files) {
+  function pkgHasFile(pkg, filename) {
+    var parts = filename.split("/");
+    var dirNames = parts.slice(0, -1);
+    var filePart = parts.slice(-1)[0];
+    var dir = pkg.files;
+    for (var i = 0; i < dirNames.length; i++) {
+      if (dirNames[i] in dir && !('size' in dir[dirNames[i]]))
+        dir = dir[dirNames[i]];
+      else
+        return false;
+    }
+    return (filePart in dir);
+  }
+
+  function markdownToHtml(text) {
+    var converter = new Showdown.converter();
+    return converter.makeHtml(text);
+  }
+
+  function getPkgFile(pkg, filename, filter, cb) {
+    if (pkgHasFile(pkg, filename)) {
       var options = {
-        url: "/api/packages/" + pkg.name + "/README.md",
+        url: "/api/packages/" + pkg.name + "/" + filename,
         dataType: "text",
         success: function(text) {
-          var converter = new Showdown.converter();
-          cb(converter.makeHtml(text));
+          if (filter)
+            try {
+              text = filter(text);
+            } catch (e) {
+              text = null;
+            }
+          cb(text);
         },
         error: function() {
           cb(null);
@@ -84,6 +118,23 @@ function startApp(jQuery, window) {
     return info;
   }
 
+  function showModuleDetail(pkgName, moduleName) {
+    var pkg = packages[pkgName];
+    var entry = $("#templates .module-detail").clone();
+    var filename = "docs/" + moduleName + ".md";
+
+    entry.find(".name").text(moduleName);
+    $("#middle-column").empty().append(entry);
+    entry.hide();
+
+    getPkgFile(pkg, filename, markdownToHtml,
+               function(html) {
+                 if (html)
+                   entry.find(".docs").html(html);
+                 entry.fadeIn();
+               });
+  }
+
   function showPackageDetail(name) {
     var pkg = packages[name];
     var entry = $("#templates .package-detail").clone();
@@ -93,11 +144,12 @@ function startApp(jQuery, window) {
     entry.find(".files").append(makeDirTree(pkg.files));
     $("#middle-column").empty().append(entry);
     entry.hide();
-    getReadmeHtml(pkg, function(html) {
-                    if (html)
-                      entry.find(".docs").html(html);
-                    entry.fadeIn();
-                  });
+    getPkgFile(pkg, "README.md", markdownToHtml,
+               function(html) {
+                 if (html)
+                   entry.find(".docs").html(html);
+                 entry.fadeIn();
+               });
   }
 
   function processPackages(packagesJSON) {
@@ -110,9 +162,10 @@ function startApp(jQuery, window) {
     sortedPackages.forEach(
       function(name) {
         var pkg = packages[name];
-        var entry = $("#templates .entry").clone();
+        var entry = $("#templates .package-entry").clone();
+        var hash = "package/" + pkg.name;
         entry.find(".name").text(pkg.name);
-        entry.find(".name").click(function() { setHash(pkg.name); });
+        entry.find(".name").click(function() { setHash(hash); });
         entry.find(".description").text(pkg.description);
         var libs = [];
         if (pkg.lib) {
@@ -127,7 +180,9 @@ function startApp(jQuery, window) {
         libs.forEach(
           function(moduleName) {
             var module = $('<li class="module"></li>');
+            var hash = "module/" + pkg.name + "/" + moduleName;
             module.text(moduleName);
+            module.click(function() { setHash(hash); });
             modules.append(module);
             modules.append(document.createTextNode(' '));
           });
