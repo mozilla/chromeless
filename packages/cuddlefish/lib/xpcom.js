@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Atul Varma <atul@mozilla.com>
+ *   Drew Willcoxon <adw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -167,6 +168,46 @@ var getCategory = exports.getCategory = function getCategory(name) {
     objects.push(enumerator.getNext());
   return objects;
 };
+
+/**
+ * Throws an exception that is a more descriptive version of the raw XPCOM
+ * errOrResult.  opts is used by some exceptions to include helpful info in
+ * their messages such as a filename, and as such its properties depend on the
+ * type of exception being thrown.  opts need not be defined for errors that
+ * don't use it.
+ *
+ * If there is no friendly version of errOrResult, then it must be an exception
+ * of some sort -- either an nsIException or JavaScript Error -- and it itself
+ * is thrown.
+ *
+ * @param errOrResult
+ *        An nsIException, Error, or one of the Components.results.
+ * @param opts
+ *        An optional options object.  If opts.msg is a string, a new Error is
+ *        thrown with message opts.msg.
+ */
+var throwFriendlyError = exports.throwFriendlyError =
+  function throwFriendlyError(errOrResult, opts) {
+    opts = opts || {};
+    if (typeof(opts.msg) === "string")
+      throw new Error(msg);
+
+    var result = errOrResult instanceof Ci.nsIException ?
+                 errOrResult.result :
+                 errOrResult;
+
+    switch (result) {
+    case Cr.NS_BASE_STREAM_CLOSED:
+      throw new Error("The stream is closed and cannot be read or written.");
+    case Cr.NS_ERROR_FILE_IS_DIRECTORY:
+      throw new Error("The stream was opened on a directory, which cannot be " +
+                      "read or written.");
+    case Cr.NS_ERROR_FILE_NOT_FOUND:
+      throw new Error("path does not exist: " + opts.filename);
+    }
+
+    throw errOrResult;
+  };
 
 require("unload").when(
   function() {

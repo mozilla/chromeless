@@ -21,6 +21,7 @@
  * Contributor(s):
  *   Irakli Gozalishvili <rfobic@gmail.com>
  *   Atul Varma <atul@mozilla.com>
+ *   Drew Willcoxon <adw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,107 +37,126 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-(function(global) {
-   const Cc = Components.classes;
-   const Ci = Components.interfaces;
-   const Cu = Components.utils;
-   const Cr = Components.results;
+const byteStreams = require("byte-streams");
+const xpcom = require("xpcom");
 
-   var exports = {};
+// Flags passed when opening a file.  See nsprpub/pr/include/prio.h.
+const OPEN_FLAGS = {
+  RDONLY: 0x01,
+  WRONLY: 0x02,
+  CREATE_FILE: 0x08,
+  APPEND: 0x10,
+  TRUNCATE: 0x20,
+  EXCL: 0x80
+};
 
-   var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
-                .getService(Ci.nsIProperties);
+var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
+             .getService(Ci.nsIProperties);
 
-   function MozFile(path) {
-     var file = Cc['@mozilla.org/file/local;1']
-                .createInstance(Ci.nsILocalFile);
-     file.initWithPath(path);
-     return file;
-   }
+function MozFile(path) {
+  var file = Cc['@mozilla.org/file/local;1']
+             .createInstance(Ci.nsILocalFile);
+  file.initWithPath(path);
+  return file;
+}
 
-   function ensureReadable(file) {
-     if (!file.isReadable())
-       throw new Error("path is not readable: " + file.path);
-   }
+function ensureReadable(file) {
+  if (!file.isReadable())
+    throw new Error("path is not readable: " + file.path);
+}
 
-   function ensureDir(file) {
-     ensureExists(file);
-     if (!file.isDirectory())
-       throw new Error("path is not a directory: " + file.path);
-   }
+function ensureDir(file) {
+  ensureExists(file);
+  if (!file.isDirectory())
+    throw new Error("path is not a directory: " + file.path);
+}
 
-   function ensureFile(file) {
-     ensureExists(file);
-     if (!file.isFile())
-       throw new Error("path is not a file: " + file.path);
-   }
+function ensureFile(file) {
+  ensureExists(file);
+  if (!file.isFile())
+    throw new Error("path is not a file: " + file.path);
+}
 
-   function ensureExists(file) {
-     if (!file.exists())
-       throw new Error("path does not exist: " + file.path);
-   }
+function ensureExists(file) {
+  if (!file.exists())
+    xpcom.throwFriendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, file.path);
+}
 
-   exports.read = function read(filename) {
-     var file = MozFile(filename);
-     ensureFile(file);
-     ensureReadable(file);
+exports.exists = function exists(filename) {
+  return MozFile(filename).exists();
+};
 
-     var fiStream = Cc['@mozilla.org/network/file-input-stream;1']
-                    .createInstance(Ci.nsIFileInputStream);
-     var siStream = Cc['@mozilla.org/scriptableinputstream;1']
-                    .createInstance(Ci.nsIScriptableInputStream);
-     fiStream.init(file, 1, 0, false);
-     siStream.init(fiStream);
-     var data = new String();
-     data += siStream.read(-1);
-     siStream.close();
-     fiStream.close();
-     return data;
-   };
+exports.read = function read(filename) {
+  var stream = exports.open(filename);
+  var str = stream.read();
+  stream.close();
+  return str;
+};
 
-   exports.join = function join(base) {
-     if (arguments.length < 2)
-       throw new Error("need at least 2 args");
-     base = MozFile(base);
-     for (var i = 1; i < arguments.length; i++)
-       base.append(arguments[i]);
-     return base.path;
-   };
+exports.join = function join(base) {
+  if (arguments.length < 2)
+    throw new Error("need at least 2 args");
+  base = MozFile(base);
+  for (var i = 1; i < arguments.length; i++)
+    base.append(arguments[i]);
+  return base.path;
+};
 
-   exports.dirname = function dirname(path) {
-     return MozFile(path).parent.path;
-   };
+exports.dirname = function dirname(path) {
+  return MozFile(path).parent.path;
+};
 
-   exports.list = function list(path) {
-     var file = MozFile(path);
-     ensureDir(file);
-     ensureReadable(file);
+exports.list = function list(path) {
+  var file = MozFile(path);
+  ensureDir(file);
+  ensureReadable(file);
 
-     var entries = file.directoryEntries;
-     var entryNames = [];
-     while(entries.hasMoreElements()) {
-       var entry = entries.getNext();
-       entry.QueryInterface(Ci.nsIFile);
-       entryNames.push(entry.leafName);
-     }
-     return entryNames;
-   };
+  var entries = file.directoryEntries;
+  var entryNames = [];
+  while(entries.hasMoreElements()) {
+    var entry = entries.getNext();
+    entry.QueryInterface(Ci.nsIFile);
+    entryNames.push(entry.leafName);
+  }
+  return entryNames;
+};
 
-   if (global.window) {
-     // We're being loaded in a chrome window, or a web page with
-     // UniversalXPConnect privileges.
-     global.File = exports;
-   } else if (global.exports) {
-     // We're being loaded in a SecurableModule.
-     for (name in exports) {
-       global.exports[name] = exports[name];
-     }
-   } else {
-     // We're being loaded in a JS module.
-     global.EXPORTED_SYMBOLS = [];
-     for (name in exports) {
-       global.EXPORTED_SYMBOLS.push(name);
-       global[name] = exports[name];
-     }
-   }
- })(this);
+exports.open = function open(filename, mode) {
+  var file = MozFile(filename);
+  if (typeof(mode) !== "string")
+    mode = "";
+
+  // File opened for write only.
+  if (/w/.test(mode)) {
+    var stream = Cc['@mozilla.org/network/file-output-stream;1'].
+                 createInstance(Ci.nsIFileOutputStream);
+    var openFlags = OPEN_FLAGS.WRONLY |
+                    OPEN_FLAGS.CREATE_FILE |
+                    OPEN_FLAGS.TRUNCATE;
+    var permFlags = 0644; // u+rw go+r
+    try {
+      stream.init(file, openFlags, permFlags, 0);
+    }
+    catch (err) {
+      xpcom.throwFriendlyError(err, filename);
+    }
+    return new byteStreams.ByteWriter(stream);
+  }
+
+  // File opened for read only, the default.
+  stream = Cc['@mozilla.org/network/file-input-stream;1'].
+           createInstance(Ci.nsIFileInputStream);
+  try {
+    stream.init(file, OPEN_FLAGS.RDONLY, 0, 0);
+  }
+  catch (err) {
+    xpcom.throwFriendlyError(err, filename);
+  }
+  return new byteStreams.ByteReader(stream);
+};
+
+exports.remove = function remove(path) {
+  var file = MozFile(path);
+  ensureFile(file);
+  file.remove(false);
+};
