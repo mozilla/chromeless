@@ -1,31 +1,23 @@
-JEP 28 Reference Implementation README
-======================================
+Jetpack README
+==============
 
-This a work-in-progress reference implementation of JEP-28, aka the
-Cuddlefish Minilib:
+This a work-in-progress implementation of Jetpack. It should not
+be confused with the Jetpack prototype, which is an entirely
+different project.
 
-  https://wiki.mozilla.org/Labs/Jetpack/JEP/28
-
-This is a lightweight XULRunner application, so as to make the
-implementation application-agnostic and not inadvertently cause us to
-use technologies particular to Firefox, Thunderbird, or any other
-XULRunner application.
-
-Running The Test Suite
-----------------------
-
-The test suite can automatically be run by executing the following
-commands from the root directory of the repository:
+To get started, first enter the same directory that this file is
+in using a shell program. On Unix systems, you can execute
+the following command:
 
   source bin/activate
-  cfx testall
 
-The runner will automatically find a Firefox installation to use as
-the XULRunner host, though you can also specify a different binary
-through the command-line.  Run 'cfx --help' for more information on
-this.
+Windows users should instead run:
 
-If you have any questions, feel free to send them to the Jetpack
-mailing list:
+  bin/activate
 
-  http://groups.google.com/group/mozilla-labs-jetpack/
+Then run:
+
+  cfx docs
+
+This should start a documentation server and open a web browser
+with further instructions.

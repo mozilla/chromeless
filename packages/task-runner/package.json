@@ -3,5 +3,5 @@
     "description": "Farms tasks out from a task queue server.",
     "author": "Atul Varma (http://toolness.com/)",
     "main": "main",
-    "dependencies": ["cuddlefish", "test-harness"]
+    "dependencies": ["jetpack-core", "test-harness"]
 }

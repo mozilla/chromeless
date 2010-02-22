@@ -1,13 +1,11 @@
 {
-    "name": "cuddlefish",
-    "description": "A portable CommonJS implementation for XULRunner.",
+    "name": "jetpack-core",
+    "description": "The core Jetpack library.",
     "keywords": ["javascript", "engine", "platform", "xulrunner"],
     "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>",
     "contributors": [
         "Myk Melez (http://melez.com/) <myk@mozilla.org>",
         "Daniel Aquino <mr.danielaquino@gmail.com>"
     ],
-    "lib": ["lib"],
-    "tests": ["tests"],
     "loader": "lib/cuddlefish.js"
 }

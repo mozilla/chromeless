@@ -2,7 +2,5 @@
     "name": "test-harness",
     "description": "A harness for running Jetpack tests.",
     "author": "Atul Varma (http://toolness.com/)",
-    "dependencies": ["cuddlefish"],
-    "lib": ["lib"],
-    "tests": ["tests"]
+    "dependencies": ["jetpack-core"]
 }
