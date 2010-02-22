@@ -29,6 +29,11 @@ h1 {
     float: left;
 }
 
+#dev-guide-header {
+    /* TODO: This is a dumb place to put a margin-top. */
+    margin-top: 0;
+}
+
 #middle-column {
     width: 30em;
     height: 100%;
@@ -73,6 +78,12 @@ pre {
 
 #templates {
     display: none;
+}
+
+#dev-guide-toc {
+    list-style: upper-roman;
+    padding-left: 2em;
+    cursor: pointer;
 }
 
 .files {

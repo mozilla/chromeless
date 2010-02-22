@@ -4,17 +4,17 @@ function startApp(jQuery, window) {
   var packages = null;
   var currentHash = "";
 
+  const DEFAULT_HASH = "guide/getting-started";
   const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
 
   function checkHash() {
+    if (window.location.hash.length <= 1)
+      window.location.hash = "#" + DEFAULT_HASH;
     if (window.location.hash != currentHash) {
       currentHash = window.location.hash;
-      if (currentHash.length > 1)
-        onHash(currentHash.slice(1));
-      else
-        onHash(null);
+      onHash(currentHash.slice(1));
     }
   }
 
@@ -22,25 +22,25 @@ function startApp(jQuery, window) {
     if (hash && hash.length)
       window.location.hash = "#" + hash;
     else
-      window.location.hash = "";
+      window.location.hash = "#" + DEFAULT_HASH;
     checkHash();
   }
 
   function onHash(hash) {
-    if (hash) {
-      var parts = hash.split("/");
-      switch (parts[0]) {
-      case "package":
-        showPackageDetail(parts[1]);
-        break;
-      case "module":
-        var pkgName = parts[1];
-        var moduleName = parts.slice(2).join("/");
-        showModuleDetail(pkgName, moduleName);
-        break;
-      }
-    } else
-      $("#middle-column").empty();
+    var parts = hash.split("/");
+    switch (parts[0]) {
+    case "package":
+      showPackageDetail(parts[1]);
+      break;
+    case "module":
+      var pkgName = parts[1];
+      var moduleName = parts.slice(2).join("/");
+      showModuleDetail(pkgName, moduleName);
+      break;
+    case "guide":
+      showGuideDetail(parts[1]);
+      break;
+    }
   }
 
   function getModules(fileStruct) {
@@ -191,6 +191,34 @@ function startApp(jQuery, window) {
     checkHash();
   }
 
+  function showGuideDetail(name) {
+    var entry = $("#templates .guide-section").clone();
+
+    entry.find(".name").text($("#dev-guide-toc #" + name).text());
+    $("#middle-column").empty().append(entry);
+    entry.hide();
+    var options = {
+      url: "/md/dev-guide/" + name + ".md",
+      dataType: "text",
+      success: function(text) {
+        entry.find(".docs").html(markdownToHtml(text));
+        entry.fadeIn();
+      },
+      error: function(text) {
+        entry.fadeIn();
+      }
+    };
+    jQuery.ajax(options);
+  }
+
+  function linkDeveloperGuide() {
+    $("#dev-guide-toc li").each(
+      function() {
+        var hash = "guide/" + $(this).attr("id");
+        $(this).click(function() { setHash(hash); });
+      });
+  }
+
   var isPingWorking = true;
 
   function sendIdlePing() {
@@ -231,6 +259,7 @@ function startApp(jQuery, window) {
 
   scheduleNextIdlePing();
   window.setInterval(checkHash, CHECK_HASH_DELAY);
+  linkDeveloperGuide();
   jQuery.getJSON("/api/packages", processPackages);
 }
 
