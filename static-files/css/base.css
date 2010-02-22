@@ -29,11 +29,6 @@ h1 {
     float: left;
 }
 
-#dev-guide-header {
-    /* TODO: This is a dumb place to put a margin-top. */
-    margin-top: 0;
-}
-
 #middle-column {
     width: 30em;
     height: 100%;
@@ -86,6 +81,15 @@ pre {
     cursor: pointer;
 }
 
-.docs p:first-child {
+#dev-guide-header {
+    /* TODO: This is a dumb place to put a margin-top. */
+    margin-top: 0;
+}
+
+.guide-section .docs p:first-child {
+    margin-top: 0;
+}
+
+.module-detail .docs p:first-child {
     margin-top: 0;
 }
