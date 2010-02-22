@@ -101,23 +101,6 @@ function startApp(jQuery, window) {
       cb(null);
   }
 
-  function makeDirTree(fileStruct) {
-    var info = $('<div class="directory"></div>');
-    for (name in fileStruct) {
-      if ('size' in fileStruct[name]) {
-        var entry = $('<div class="file"></div>');
-        entry.text(name);
-        info.append(entry);
-      } else {
-        var entry = $('<div class="file"></div>');
-        entry.text(name + "/");
-        info.append(entry);
-        info.append(makeDirTree(fileStruct[name]));
-      }
-    }
-    return info;
-  }
-
   function showModuleDetail(pkgName, moduleName) {
     var pkg = packages[pkgName];
     var entry = $("#templates .module-detail").clone();
@@ -141,7 +124,6 @@ function startApp(jQuery, window) {
 
     // TODO: Add author info.
     entry.find(".name").text(pkg.name);
-    entry.find(".files").append(makeDirTree(pkg.files));
     $("#middle-column").empty().append(entry);
     entry.hide();
     getPkgFile(pkg, "README.md", markdownToHtml,

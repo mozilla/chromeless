@@ -86,20 +86,6 @@ pre {
     cursor: pointer;
 }
 
-.files {
-    /* We're not displaying file lists for now. */
-    display: none;
-}
-
-.file {
-}
-
-.directory {
-    font-family: Monaco, Lucida Console, monospace;
-    white-space: pre;
-    padding-left: 1em;
-}
-
 .module-detail .docs p:first-child {
     margin-top: 0;
 }
