@@ -75,6 +75,11 @@ pre {
     display: none;
 }
 
+.files {
+    /* We're not displaying file lists for now. */
+    display: none;
+}
+
 .file {
 }
 
