@@ -69,3 +69,5 @@ export PS1
 if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
     hash -r
 fi
+
+echo "Welcome to the Jetpack SDK. Run 'cfx docs' for assistance."

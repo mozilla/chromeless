@@ -31,4 +31,6 @@ set _OLD_VIRTUAL_PATH=%PATH%
 :SKIPPATH
 set PATH=%VIRTUAL_ENV%\bin;%PATH%
 
+echo Welcome to the Jetpack SDK. Run 'cfx docs' for assistance.
+
 :END
