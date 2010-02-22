@@ -22,7 +22,7 @@ h1 {
 }
 
 #left-column {
-    width: 30em;
+    width: 25em;
     height: 100%;
     background: #f0f0f0;
     padding: 1em;
@@ -30,7 +30,7 @@ h1 {
 }
 
 #middle-column {
-    width: 30em;
+    width: 40em;
     height: 100%;
     padding: 1em;
     float: left;
