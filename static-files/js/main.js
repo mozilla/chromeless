@@ -191,10 +191,38 @@ function startApp(jQuery, window) {
     checkHash();
   }
 
+  var isPingWorking = true;
+
   function sendIdlePing() {
     jQuery.ajax({url:"/api/idle",
+                 // This success function won't actually get called
+                 // for a really long time because it's a long poll.
                  success: scheduleNextIdlePing,
-                 error: scheduleNextIdlePing});
+                 error: function() {
+                   if (id) {
+                     window.clearTimeout(id);
+                     id = null;
+                     if (isPingWorking) {
+                       isPingWorking = false;
+                       $("#cannot-ping").slideDown();
+                     }
+                   }
+                   scheduleNextIdlePing();
+                 }});
+    var id = window.setTimeout(
+      function() {
+        // This is our "real" success function: basically, if we
+        // haven't received an error in IDLE_PING_DELAY ms, then
+        // we should assume success and hide the #cannot-ping
+        // element.
+        if (id) {
+          id = null;
+          if (!isPingWorking) {
+            isPingWorking = true;
+            $("#cannot-ping").slideUp();
+          }
+        }
+      }, IDLE_PING_DELAY);
   }
 
   function scheduleNextIdlePing() {

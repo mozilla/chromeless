@@ -14,6 +14,13 @@ h1 {
     padding-bottom: 1em;
 }
 
+#cannot-ping {
+    padding: 0.5em;
+    background: #aa0000;
+    color: white;
+    display: none;
+}
+
 #left-column {
     width: 30em;
     height: 100%;
