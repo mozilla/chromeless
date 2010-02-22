@@ -86,6 +86,6 @@ pre {
     cursor: pointer;
 }
 
-.module-detail .docs p:first-child {
+.docs p:first-child {
     margin-top: 0;
 }
