@@ -8,11 +8,18 @@ import mimetypes
 import webbrowser
 import Queue
 import SocketServer
-from wsgiref import simple_server
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
 import simplejson as json
+
+try:
+    from wsgiref import simple_server
+    wsgiref_available = True
+except ImportError:
+    wsgiref_available = False
+    print ("Warning, wsgiref module not available. httpd operations "
+           "will fail.")
 
 DEFAULT_PORT = 8888
 DEFAULT_HOST = '127.0.0.1'
@@ -27,25 +34,26 @@ TASK_QUEUE_GET_TIMEOUT = 1
 
 _idle_event = threading.Event()
 
-class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
-                         simple_server.WSGIServer):
-    daemon_threads = True
+if wsgiref_available:
+    class ThreadedWSGIServer(SocketServer.ThreadingMixIn,
+                             simple_server.WSGIServer):
+        daemon_threads = True
 
-class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
-    class NullFile(object):
-        def write(self, data):
+    class QuietWSGIRequestHandler(simple_server.WSGIRequestHandler):
+        class NullFile(object):
+            def write(self, data):
+                pass
+
+            def flush(self):
+                pass
+
+        null_file = NullFile()
+
+        def get_stderr(self):
+            return self.null_file
+
+        def log_message(self, *args, **kwargs):
             pass
-
-        def flush(self):
-            pass
-
-    null_file = NullFile()
-
-    def get_stderr(self):
-        return self.null_file
-
-    def log_message(self, *args, **kwargs):
-        pass
 
 def guess_mime_type(url):
     if url.endswith(".json"):
