@@ -143,6 +143,7 @@ function startApp(jQuery, window) {
     var filename = "README.md";
 
     // TODO: Add author info.
+    // TODO: Add dependency info.
     entry.find(".name").text(pkg.name);
     $("#right-column").empty().append(entry);
     entry.hide();
