@@ -1,5 +1,7 @@
+<span class="aside">
 Terminology is important.  Here's a glossary of terms used for the SDK
 so all developers speak the same language.
+</span>
 
 __CommonJS__: A specification for a cross-platform JavaScript module
 system and standard library.  [Web site](http://commonjs.org/).

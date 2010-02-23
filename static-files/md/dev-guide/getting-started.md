@@ -20,6 +20,17 @@ To develop with the new Jetpack SDK, you'll need:
 Sanity Check
 ------------
 
+<span class="aside">
+Unit and behavioral [testing] is something that
+we're trying to make as easy and fast as possible in the Jetpack SDK,
+because it's imperative that we know when breakages occur between the
+Mozilla platform and Jetpack. We also need to make sure that creating
+new functionality or modifying existing code doesn't break other
+things.
+
+  [testing]: http://www.mindview.net/WebLog/log-0025
+</span>
+
 Run this at your shell prompt:
 
     cfx testall
@@ -46,9 +57,3 @@ This should produce output that looks something like this:
 **Note**: If you're on Windows, you may need to add the `--no-quit`
 option to `cfx` to prevent the above output from disappearing
 instantly.
-
-Unit and behavioral testing is something that we're trying to make as
-easy and fast as possible in the Jetpack reboot, because it's
-imperative that we know when breakages occur between the Mozilla
-platform and Jetpack, and we also need to make sure that creating new
-functionality or modifying existing code doesn't break other things.

@@ -112,12 +112,50 @@ function startApp(jQuery, window) {
       cb(null);
   }
 
+  function showSidenotes(query) {
+    var width = $("#sidenotes").innerWidth();
+    var asides = query.find(".aside");
+    var newAsides = $("<div></div>");
+    $("#sidenotes").empty();
+    asides.each(
+      function() {
+        var pos = $(this).position();
+        $(this).remove();
+        newAsides.append(this);
+        $(this).css({top: pos.top});
+      });
+    $("#sidenotes").append(newAsides);
+    newAsides.hide();
+    newAsides.fadeIn();
+    newAsides.children().each(
+      function() {
+        $(this).width(width);
+        var margin = $(this).outerWidth() - width;
+        $(this).width(width - margin);
+      });
+    //console.log($(this).outerWidth());
+  }
+
+  var queuedContent = null;
+
+  function queueMainContent(query) {
+    queuedContent = query;
+    $("#sidenotes").empty();
+    $("#right-column").empty().append(query);
+    query.hide();
+  }
+
   function showMainContent(query, url) {
+    if (queuedContent != query)
+      return;
     if (url)
       $("#view-source").attr("href", url);
     else
+      // TODO: This actually just results in a 404.
       $("#view-source").attr("href", "");
     query.fadeIn();
+    showSidenotes(query);
+    queuedContent = null;
   }
 
   function showModuleDetail(pkgName, moduleName) {
@@ -126,9 +164,7 @@ function startApp(jQuery, window) {
     var filename = "docs/" + moduleName + ".md";
 
     entry.find(".name").text(moduleName);
-    $("#right-column").empty().append(entry);
-    entry.hide();
-
+    queueMainContent(entry);
     getPkgFile(pkg, filename, markdownToHtml,
                function(html) {
                  if (html)
@@ -145,8 +181,7 @@ function startApp(jQuery, window) {
     // TODO: Add author info.
     // TODO: Add dependency info.
     entry.find(".name").text(pkg.name);
-    $("#right-column").empty().append(entry);
-    entry.hide();
+    queueMainContent(entry);
     getPkgFile(pkg, filename, markdownToHtml,
                function(html) {
                  if (html)
@@ -203,8 +238,7 @@ function startApp(jQuery, window) {
     var url = "md/dev-guide/" + name + ".md";
 
     entry.find(".name").text($("#dev-guide-toc #" + name).text());
-    $("#right-column").empty().append(entry);
-    entry.hide();
+    queueMainContent(entry);
     var options = {
       url: url,
       dataType: "text",

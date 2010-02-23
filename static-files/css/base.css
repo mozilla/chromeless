@@ -43,6 +43,11 @@ h1 {
     display: table-cell;
 }
 
+#sidenotes {
+    width: 15em;
+    display: table-cell;
+}
+
 #footer {
     background: #555555;
     color: white;
@@ -125,4 +130,13 @@ pre {
 
 .module-detail .docs p:first-child {
     margin-top: 0;
+}
+
+.aside {
+    color: gray;
+    border-left: gray 1px solid;
+    padding-left: 1em;
+    padding-right: 1em;
+    position: absolute;
+    display: block;
 }
