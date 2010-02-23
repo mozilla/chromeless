@@ -88,7 +88,7 @@ function startApp(jQuery, window) {
   function getPkgFile(pkg, filename, filter, cb) {
     if (pkgHasFile(pkg, filename)) {
       var options = {
-        url: "/api/packages/" + pkg.name + "/" + filename,
+        url: "api/packages/" + pkg.name + "/" + filename,
         dataType: "text",
         success: function(text) {
           if (filter)
@@ -195,7 +195,7 @@ function startApp(jQuery, window) {
     $("#right-column").empty().append(entry);
     entry.hide();
     var options = {
-      url: "/md/dev-guide/" + name + ".md",
+      url: "md/dev-guide/" + name + ".md",
       dataType: "text",
       success: function(text) {
         entry.find(".docs").html(markdownToHtml(text));
@@ -219,7 +219,7 @@ function startApp(jQuery, window) {
   var isPingWorking = true;
 
   function sendIdlePing() {
-    jQuery.ajax({url:"/api/idle",
+    jQuery.ajax({url:"api/idle",
                  // This success function won't actually get called
                  // for a really long time because it's a long poll.
                  success: scheduleNextIdlePing,
@@ -257,7 +257,7 @@ function startApp(jQuery, window) {
   scheduleNextIdlePing();
   window.setInterval(checkHash, CHECK_HASH_DELAY);
   linkDeveloperGuide();
-  jQuery.getJSON("/api/packages", processPackages);
+  jQuery.getJSON("api/packages", processPackages);
 }
 
 $(window).ready(function() { startApp(jQuery, window); });
