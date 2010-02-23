@@ -18,8 +18,11 @@ try:
     wsgiref_available = True
 except ImportError:
     wsgiref_available = False
-    print ("Warning, wsgiref module not available. httpd operations "
-           "will fail.")
+    try:
+        print ("Warning, wsgiref module not available. httpd operations "
+               "will fail.")
+    except IOError:
+        pass
 
 DEFAULT_PORT = 8888
 DEFAULT_HOST = '127.0.0.1'
