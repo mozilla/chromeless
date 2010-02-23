@@ -18,6 +18,10 @@ h1 {
     padding-bottom: 1em;
 }
 
+.docs ul {
+    padding-left: 2em;
+}
+
 #cannot-ping {
     padding: 0.5em;
     background: #aa0000;
@@ -107,6 +111,10 @@ span.clickable:hover, li.clickable:hover {
 }
 
 pre {
+    padding-left: 1em;
+}
+
+pre, code, tt {
     font-family: Monaco, Lucida Console, monospace;
 }
 
