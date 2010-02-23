@@ -9,6 +9,10 @@ a {
     color: black;
 }
 
+a:hover {
+    background: yellow;
+}
+
 h1 {
     margin: 0;
     padding-bottom: 1em;
@@ -36,6 +40,15 @@ h1 {
     float: left;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+span.clickable:hover, li.clickable:hover {
+    color: black;
+    background: yellow;
+}
+
 .meta-header {
     font-weight: bold;
 }
@@ -46,7 +59,6 @@ h1 {
 }
 
 .package-entry .name {
-    cursor: pointer;
     font-weight: bold;
     color: black;
 }
@@ -55,7 +67,6 @@ h1 {
 }
 
 .package-entry .modules {
-    cursor: pointer;
     font-size: 8pt;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
@@ -64,7 +75,7 @@ h1 {
 
 .package-entry .module {
     display: inline;
-    padding-right: 1em;
+    margin-right: 1em;
 }
 
 pre {
@@ -78,7 +89,6 @@ pre {
 #dev-guide-toc {
     list-style: upper-roman;
     padding-left: 2em;
-    cursor: pointer;
 }
 
 #dev-guide-header {

@@ -168,7 +168,7 @@ function startApp(jQuery, window) {
         libs.sort();
         libs.forEach(
           function(moduleName) {
-            var module = $('<li class="module"></li>');
+            var module = $('<li class="module clickable"></li>');
             var hash = "module/" + pkg.name + "/" + moduleName;
             module.text(moduleName);
             module.click(function() { setHash(hash); });
