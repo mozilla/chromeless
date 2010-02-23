@@ -14,10 +14,12 @@ without reboot, as well as a robust security model.
 
 __Extension__: Synonym for Addon.
 
-__Jetpack__: A CommonJS-based framework and toolchain used to develop
-secure Mozilla applications and extensions with Web technologies. Not
-to be confused with the Jetpack Prototype, which is a completely
-different animal.
+__Jetpack__: A CommonJS-based framework used to power secure Mozilla
+applications and extensions with Web technologies. Not to be confused
+with the Jetpack Prototype, which is a completely different animal.
+
+__Jetpack SDK__: A toolchain and associated applications used to develop
+Jetpack Packages.
 
 __Jetpack Prototype__: A Firefox extension released in May 2009 which
 explored using Web technologies to enhance the browser (e.g., HTML,
@@ -69,13 +71,17 @@ __CFX__: A command-line build, testing, and packaging tool for
 Jetpack-based code.
 
 __Jetpack Package__: A directory structure containing Jetpack modules,
-documentation, tests, and related metadata.
+documentation, tests, and related metadata. If a Jetpack Package contains
+a Jetpack Program and includes proper metadata, it can be built into
+a Mozilla application or extension.
 
 __Jetpack XPI__: A build target of the CFX tool that, when loaded as
 an extension by a supported Mozilla application, bootstraps a Jetpack
 Loader and executes a Jetpack Program.
 
 __Jetpack Program__: A Jetpack Module that exports a `main()` function.
+This function is intended either to start a program for an end-user
+or add features to an existing program.
 
 __Jetpack Platform Library__: A set of Awesome Jetpack Chrome Modules
 that expose the functionality of the Mozilla Platform (Gecko).
