@@ -5,6 +5,8 @@ function startApp(jQuery, window) {
   var currentHash = "";
 
   const DEFAULT_HASH = "guide/getting-started";
+  const BUGZILLA_SHOW = "https://bugzilla.mozilla.org/show_bug.cgi?id=";
+  const BUGZILLA_REGEXP = /bug\s+([0-9]+)/;
   const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
@@ -73,9 +75,14 @@ function startApp(jQuery, window) {
     return (filePart in dir);
   }
 
+  function insertBugzillaLinks(text) {
+    return text.replace(BUGZILLA_REGEXP,
+                        "bug [$1](" + BUGZILLA_SHOW + "$1)");
+  }
+
   function markdownToHtml(text) {
     var converter = new Showdown.converter();
-    return converter.makeHtml(text);
+    return converter.makeHtml(insertBugzillaLinks(text));
   }
 
   function getPkgFile(pkg, filename, filter, cb) {
