@@ -49,7 +49,7 @@ function startApp(jQuery, window) {
     var modules = [];
     for (var name in fileStruct) {
       if (name.match(/.*\.js$/))
-        modules.push(name.slice(0, -3).replace(/-/g, NON_BREAKING_HYPHEN));
+        modules.push(name.slice(0, -3));
       else if (!('size' in fileStruct[name])) {
         var subModules = getModules(fileStruct[name]);
         subModules.forEach(
@@ -222,7 +222,7 @@ function startApp(jQuery, window) {
           function(moduleName) {
             var module = $('<li class="module clickable"></li>');
             var hash = "module/" + pkg.name + "/" + moduleName;
-            module.text(moduleName);
+            module.text(moduleName.replace(/-/g, NON_BREAKING_HYPHEN));
             module.click(function() { setHash(hash); });
             modules.append(module);
             modules.append(document.createTextNode(' '));
