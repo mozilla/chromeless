@@ -1,8 +1,8 @@
-Jetpack README
-==============
+Jetpack SDK README
+==================
 
-This a work-in-progress implementation of Jetpack. It should not
-be confused with the Jetpack prototype, which is an entirely
+This a work-in-progress implementation of the Jetpack SDK. It should
+not be confused with the Jetpack Prototype, which is an entirely
 different project.
 
 To get started, first enter the same directory that this file is
