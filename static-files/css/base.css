@@ -49,6 +49,20 @@ h1 {
     padding: 0.5em;
 }
 
+#footer .actions {
+    display: block;
+    float: right;
+}
+
+#view-source {
+    color: white;
+    text-decoration: none;
+}
+
+#view-source:hover {
+    color: black;
+}
+
 .clickable {
     cursor: pointer;
 }

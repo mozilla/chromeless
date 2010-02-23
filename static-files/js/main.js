@@ -61,6 +61,10 @@ function startApp(jQuery, window) {
     return modules;
   }
 
+  function pkgFileUrl(pkg, filename) {
+    return "api/packages/" + pkg.name + "/" + filename;
+  }
+
   function pkgHasFile(pkg, filename) {
     var parts = filename.split("/");
     var dirNames = parts.slice(0, -1);
@@ -88,7 +92,7 @@ function startApp(jQuery, window) {
   function getPkgFile(pkg, filename, filter, cb) {
     if (pkgHasFile(pkg, filename)) {
       var options = {
-        url: "api/packages/" + pkg.name + "/" + filename,
+        url: pkgFileUrl(pkg, filename),
         dataType: "text",
         success: function(text) {
           if (filter)
@@ -108,7 +112,11 @@ function startApp(jQuery, window) {
       cb(null);
   }
 
-  function transitionInMainContent(query) {
+  function showMainContent(query, url) {
+    if (url)
+      $("#view-source").attr("href", url);
+    else
+      $("#view-source").attr("href", "");
     query.fadeIn();
   }
 
@@ -125,23 +133,24 @@ function startApp(jQuery, window) {
                function(html) {
                  if (html)
                    entry.find(".docs").html(html);
-                 transitionInMainContent(entry);
+                 showMainContent(entry, pkgFileUrl(pkg, filename));
                });
   }
 
   function showPackageDetail(name) {
     var pkg = packages[name];
     var entry = $("#templates .package-detail").clone();
+    var filename = "README.md";
 
     // TODO: Add author info.
     entry.find(".name").text(pkg.name);
     $("#right-column").empty().append(entry);
     entry.hide();
-    getPkgFile(pkg, "README.md", markdownToHtml,
+    getPkgFile(pkg, filename, markdownToHtml,
                function(html) {
                  if (html)
                    entry.find(".docs").html(html);
-                 transitionInMainContent(entry);
+                 showMainContent(entry, pkgFileUrl(pkg, filename));
                });
   }
 
@@ -190,19 +199,20 @@ function startApp(jQuery, window) {
 
   function showGuideDetail(name) {
     var entry = $("#templates .guide-section").clone();
+    var url = "md/dev-guide/" + name + ".md";
 
     entry.find(".name").text($("#dev-guide-toc #" + name).text());
     $("#right-column").empty().append(entry);
     entry.hide();
     var options = {
-      url: "md/dev-guide/" + name + ".md",
+      url: url,
       dataType: "text",
       success: function(text) {
         entry.find(".docs").html(markdownToHtml(text));
-        transitionInMainContent(entry);
+        showMainContent(entry, url);
       },
       error: function(text) {
-        transitionInMainContent(entry);
+        showMainContent(entry);
       }
     };
     jQuery.ajax(options);
