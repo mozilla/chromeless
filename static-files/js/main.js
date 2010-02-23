@@ -108,20 +108,24 @@ function startApp(jQuery, window) {
       cb(null);
   }
 
+  function transitionInMainContent(query) {
+    query.fadeIn();
+  }
+
   function showModuleDetail(pkgName, moduleName) {
     var pkg = packages[pkgName];
     var entry = $("#templates .module-detail").clone();
     var filename = "docs/" + moduleName + ".md";
 
     entry.find(".name").text(moduleName);
-    $("#middle-column").empty().append(entry);
+    $("#right-column").empty().append(entry);
     entry.hide();
 
     getPkgFile(pkg, filename, markdownToHtml,
                function(html) {
                  if (html)
                    entry.find(".docs").html(html);
-                 entry.fadeIn();
+                 transitionInMainContent(entry);
                });
   }
 
@@ -131,13 +135,13 @@ function startApp(jQuery, window) {
 
     // TODO: Add author info.
     entry.find(".name").text(pkg.name);
-    $("#middle-column").empty().append(entry);
+    $("#right-column").empty().append(entry);
     entry.hide();
     getPkgFile(pkg, "README.md", markdownToHtml,
                function(html) {
                  if (html)
                    entry.find(".docs").html(html);
-                 entry.fadeIn();
+                 transitionInMainContent(entry);
                });
   }
 
@@ -148,6 +152,9 @@ function startApp(jQuery, window) {
     for (name in packages)
       sortedPackages.push(name);
     sortedPackages.sort();
+    var entries = $("<div></div>");
+    $("#left-column").append(entries);
+    entries.hide();
     sortedPackages.forEach(
       function(name) {
         var pkg = packages[name];
@@ -175,8 +182,9 @@ function startApp(jQuery, window) {
             modules.append(module);
             modules.append(document.createTextNode(' '));
           });
-        $("#left-column").append(entry);
+        entries.append(entry);
       });
+    entries.fadeIn();
     checkHash();
   }
 
@@ -184,17 +192,17 @@ function startApp(jQuery, window) {
     var entry = $("#templates .guide-section").clone();
 
     entry.find(".name").text($("#dev-guide-toc #" + name).text());
-    $("#middle-column").empty().append(entry);
+    $("#right-column").empty().append(entry);
     entry.hide();
     var options = {
       url: "/md/dev-guide/" + name + ".md",
       dataType: "text",
       success: function(text) {
         entry.find(".docs").html(markdownToHtml(text));
-        entry.fadeIn();
+        transitionInMainContent(entry);
       },
       error: function(text) {
-        entry.fadeIn();
+        transitionInMainContent(entry);
       }
     };
     jQuery.ajax(options);

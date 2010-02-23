@@ -25,19 +25,28 @@ h1 {
     display: none;
 }
 
-#left-column {
-    width: 25em;
+#columns {
+    display: table;
     height: 100%;
-    background: #f0f0f0;
-    padding: 1em;
-    float: left;
 }
 
-#middle-column {
-    width: 40em;
-    height: 100%;
+#left-column {
+    width: 25em;
+    background: #f0f0f0;
     padding: 1em;
-    float: left;
+    display: table-cell;
+}
+
+#right-column {
+    width: 40em;
+    padding: 1em;
+    display: table-cell;
+}
+
+#footer {
+    background: black;
+    color: white;
+    padding: 0.5em;
 }
 
 .clickable {
