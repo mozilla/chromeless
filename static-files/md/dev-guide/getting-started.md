@@ -7,15 +7,45 @@ To develop with the new Jetpack SDK, you'll need:
 
 * [Python] 2.5 or greater.
 
-* A working version of Firefox, Thunderbird, or the XULRunner SDK that
+* A working version of Firefox, Thunderbird, or the [XULRunner SDK] that
   uses Gecko 1.9.2 or later (e.g., Firefox 3.6).
 
 * If you're on Windows, you'll also need [Python for Windows
   extensions] [pywin32], though we'll be removing this dependency soon
-  (see bug 534371).
+  (see bug 542000).
 
   [Python]: http://www.python.org/
+  [XULRunner SDK]: https://developer.mozilla.org/en/Gecko_SDK
   [pywin32]: http://python.net/crew/skippy/win32/Downloads.html
+
+Installation
+------------
+
+Currently, the Jetpack SDK is available at this Mercurial repository:
+
+  <http://hg.mozilla.org/users/avarma_mozilla.com/jep-28/>
+
+You can either check this out with [Mercurial], or retrieve the latest
+[snapshot] in ZIP format.
+
+Regardless of which option you choose, simply enter the root directory
+of your checkout or snapshot with a shell/command prompt.
+
+If you're on Linux, OS X, or another Unix-based system, run:
+
+    source bin/activate
+
+Otherwise, if you're on Windows, run:
+
+    bin/activate
+
+Now the beginning of your command prompt should contain the text
+`(jep-28)`, which means that your shell has entered a special
+virtual environment that gives you access to the Jetpack SDK's
+command-line tools.
+
+  [Mercurial]: http://mercurial.selenic.com/
+  [snapshot]: http://hg.mozilla.org/users/avarma_mozilla.com/jep-28/archive/tip.zip
 
 Sanity Check
 ------------
@@ -57,3 +87,12 @@ This should produce output that looks something like this:
 **Note**: If you're on Windows, you may need to add the `--no-quit`
 option to `cfx` to prevent the above output from disappearing
 instantly.
+
+**Note**: By default, running `cfx` with no special options will
+attempt to find Firefox in its most common location on your system and
+use it to perform the action you requested.  If you have multiple
+versions of Firefox on your system, however, or if you want to use
+Thunderbird or the XULRunner SDK, then you may have to use `cfx`'s
+`--app` and/or `--binary` command-line options. Run `cfx --help` for
+more information on this.
+
