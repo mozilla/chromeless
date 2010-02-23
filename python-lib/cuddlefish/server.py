@@ -60,7 +60,7 @@ class Server(object):
     def __init__(self, env_root, task_queue):
         self.env_root = env_root
         self.root = os.path.join(self.env_root, 'static-files')
-        self.index = os.path.join(self.root, 'html', 'index.html')
+        self.index = os.path.join(self.root, 'index.html')
         self.task_queue = task_queue
 
     def _respond(self, message):
@@ -184,7 +184,7 @@ class Server(object):
 
         parts = environ['PATH_INFO'].split('/')[1:]
         if not parts[0]:
-            parts = ['html', 'index.html']
+            parts = ['index.html']
         if parts[0] == API_PATH:
             return self._respond_with_api(parts[1:])
         else:
