@@ -223,7 +223,11 @@ function startApp(jQuery, window) {
                  // This success function won't actually get called
                  // for a really long time because it's a long poll.
                  success: scheduleNextIdlePing,
-                 error: function() {
+                 error: function(req) {
+                   if (req.status == 501)
+                     // The server isn't implementing idle, just bail
+                     // and stop pinging this API endpoint.
+                     return;
                    if (id) {
                      window.clearTimeout(id);
                      id = null;

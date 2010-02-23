@@ -57,8 +57,9 @@ def guess_mime_type(url):
     return mimetype
 
 class Server(object):
-    def __init__(self, env_root, task_queue):
+    def __init__(self, env_root, task_queue, expose_privileged_api=True):
         self.env_root = env_root
+        self.expose_privileged_api = expose_privileged_api
         self.root = os.path.join(self.env_root, 'static-files')
         self.index = os.path.join(self.root, 'index.html')
         self.task_queue = task_queue
@@ -102,6 +103,8 @@ class Server(object):
                  if part]
 
         if parts[0] == TASK_QUEUE_PATH:
+            if not self.expose_privileged_api:
+                return self._respond('501 Not Implemented')
             if len(parts) == 2:
                 if parts[1] == TASK_QUEUE_SET:
                     if self.environ['REQUEST_METHOD'] != 'POST':
@@ -133,6 +136,8 @@ class Server(object):
             else:
                 return self._respond('404 Not Found')
         elif parts[0] == IDLE_PATH:
+            if not self.expose_privileged_api:
+                return self._respond('501 Not Implemented')
             # TODO: Yuck, we're accessing a protected property; any
             # way to wait for a second w/o doing this?
             sock = self.environ['wsgi.input']._sock
@@ -170,7 +175,9 @@ class Server(object):
                         return self._respond_with_package(root_dir)
                     else:
                         dir_path = os.path.join(root_dir, *parts[2:])
-                        if not (os.path.exists(dir_path) and
+                        dir_path = os.path.normpath(dir_path)
+                        if not (dir_path.startswith(root_dir) and
+                                os.path.exists(dir_path) and
                                 os.path.isfile(dir_path)):
                             return self._respond('404 Not Found')
                         else:
@@ -197,9 +204,9 @@ class Server(object):
             else:
                 return self._respond_with_file(fullpath)
 
-def make_wsgi_app(env_root, task_queue):
+def make_wsgi_app(env_root, task_queue, expose_privileged_api=True):
     def app(environ, start_response):
-        server = Server(env_root, task_queue)
+        server = Server(env_root, task_queue, expose_privileged_api)
         return server.app(environ, start_response)
     return app
 
@@ -263,9 +270,10 @@ def start_daemonic(httpd, host=DEFAULT_HOST, port=DEFAULT_PORT):
                    "shutting down server." % get_url(host, port))
             break
 
-def start(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
-          quiet=False):
-    httpd = make_httpd(env_root, host, port, quiet)
+def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
+          quiet=False, httpd=None):
+    if not httpd:
+        httpd = make_httpd(env_root, host, port, quiet)
     if not quiet:
         print "Starting server at %s." % get_url(host, port)
         print "Press Ctrl-C to exit."
@@ -293,8 +301,15 @@ if __name__ == '__main__':
 
     env_root=os.environ['CUDDLEFISH_ROOT']
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'daemonic':
-        httpd, port = fault_tolerant_make_httpd(env_root)
-        start_daemonic(httpd=httpd, port=port)
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'daemonic':
+            httpd, port = fault_tolerant_make_httpd(env_root)
+            start_daemonic(httpd=httpd, port=port)
+        elif sys.argv[1] == 'safe':
+            app = make_wsgi_app(env_root, task_queue=None,
+                                expose_privileged_api=False)
+            httpd = simple_server.make_server(DEFAULT_HOST,
+                                              DEFAULT_PORT, app)
+            start(httpd=httpd)
     else:
         start(env_root)
