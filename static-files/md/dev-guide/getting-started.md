@@ -105,3 +105,7 @@ versions of Firefox on your system, however, or if you want to use
 Thunderbird or the XULRunner SDK, then you may have to use `cfx`'s
 `--app` and/or `--binary` command-line options. Run `cfx --help` for
 more information on this.
+
+Once you're ready, move on to the next section: [Packaging].
+
+  [Packaging]: #guide/packaging

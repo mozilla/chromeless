@@ -79,6 +79,15 @@ function startApp(jQuery, window) {
     return (filePart in dir);
   }
 
+  function fixInternalLinkTargets(query) {
+    query.find("a").each(
+      function() {
+        var href = $(this).attr("href");
+        if (href && href.length && href[0] == "#")
+          $(this).attr("target", "_self");
+      });
+  }
+
   function insertBugzillaLinks(text) {
     return text.replace(BUGZILLA_REGEXP,
                         "bug [$1](" + BUGZILLA_SHOW + "$1)");
@@ -154,6 +163,7 @@ function startApp(jQuery, window) {
       // TODO: This actually just results in a 404.
       $("#view-source").attr("href", "");
     query.fadeIn();
+    fixInternalLinkTargets(query);
     showSidenotes(query);
     queuedContent = null;
   }
