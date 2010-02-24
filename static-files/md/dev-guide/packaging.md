@@ -65,6 +65,11 @@ following contents:
       return a + b;
     };
 
+<span class="aside">
+For information on more globals available to Jetpack code, see
+the [Jetpack Globals] appendix.
+</span>
+
 In the code above, `exports` is a global object--part of the CommonJS
 module standard--provided to all modules by the Jetpack framework. To
 make data or code visible to other modules for reuse, a module simply
@@ -173,3 +178,4 @@ Once you're ready, move on to the next section: [Programs].
   [syntax guide]: http://daringfireball.net/projects/markdown/syntax
   [Markdown]: http://daringfireball.net/projects/markdown/
   [Programs]: #guide/programs
+  [Jetpack Globals]: #guide/globals

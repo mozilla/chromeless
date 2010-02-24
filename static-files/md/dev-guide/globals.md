@@ -4,9 +4,17 @@ Jetpack module has its own set of these objects; this means that if, for
 instance, the `String` prototype is changed in one module, the changes
 will not be reflected in another module.
 
-Jetpack code does *not*, by default, have access to any globals
-defined by the [HTML5] specification, such as `window`, `document`, or
-`localStorage`.
+<span class="aside">
+For an introduction to CommonJS modules, see the
+[Packaging](#guide/packaging) tutorial.
+</span>
+
+Jetpack code also has access to the `require` and `exports` globals
+as specified by version 1.0 of the [CommonJS Module Specification].
+
+At the time of this writing, Jetpack code does *not* have access to
+any globals defined by the [HTML5] specification, such as `window`,
+`document`, or `localStorage`.
 
 ## Privileged Globals ##
 
@@ -142,3 +150,4 @@ currently empty.
   [Security Roadmap]: #guide/security-roadmap
   [HTML5]: http://dev.w3.org/html5/spec/Overview.html
   [JavaScript 1.8.1]: https://developer.mozilla.org/En/New_in_JavaScript_1.8.1
+  [CommonJS Module Specification]: http://wiki.commonjs.org/wiki/Modules/1.0
