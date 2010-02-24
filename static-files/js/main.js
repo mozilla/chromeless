@@ -11,18 +11,6 @@ function startApp(jQuery, window) {
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
 
-  function managePageHeight() {
-    // TODO: This is a nasty non-css way of ensuring that the footer
-    // appears at the bottom of the page when there isn't enough content
-    // to fill the page. Without a doctype in index.html, it's good
-    // enough to set the height of #columns to 100%, but with a doctype,
-    // it's much harder for some reason.
-    var windowHeight = $(window).height();
-    var columnHeight = $("#columns").height();
-    if (columnHeight < windowHeight)
-      $("#columns").css({height: windowHeight});
-  }
-
   function checkHash() {
     if (window.location.hash.length <= 1)
       window.location.hash = "#" + DEFAULT_HASH;
@@ -323,9 +311,6 @@ function startApp(jQuery, window) {
   function scheduleNextIdlePing() {
     window.setTimeout(sendIdlePing, IDLE_PING_DELAY);
   }
-
-  managePageHeight();
-  $(window).resize(managePageHeight);
 
   scheduleNextIdlePing();
   window.setInterval(checkHash, CHECK_HASH_DELAY);

@@ -31,6 +31,7 @@ h1 {
 
 #columns {
     display: table;
+    height: 100%;
 }
 
 #left-column {
@@ -179,4 +180,12 @@ table, td, tr {
 
 td {
     padding: 0.5em;
+}
+
+/* Rule to fix quirks-mode inheritance behavior */
+table, caption {
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  font-variant: inherit;
 }
