@@ -1,5 +1,5 @@
 The <tt>securable-module</tt> module allows for the recursive loading
-and sandboxing of CommonJS modules (formerly called
+and sandboxing of [CommonJS Modules] (formerly called
 SecurableModules). This allows, for instance, the creation of "mini
 platforms" that manage the sandboxed evaluation of code.
 
@@ -89,3 +89,5 @@ the following keys:
     by the Loader.</td>
   </tr>
 </table>
+
+  [CommonJS Modules]: http://wiki.commonjs.org/wiki/Modules/1.0
