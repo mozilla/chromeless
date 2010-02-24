@@ -127,19 +127,6 @@ pre, code, tt {
     padding-left: 2em;
 }
 
-#dev-guide-header {
-    /* TODO: This is a dumb place to put a margin-top. */
-    margin-top: 0;
-}
-
-.guide-section .docs p:first-child {
-    margin-top: 0;
-}
-
-.module-detail .docs p:first-child {
-    margin-top: 0;
-}
-
 .aside {
     color: gray;
     border-left: gray 1px solid;
