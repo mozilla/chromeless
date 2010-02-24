@@ -24,6 +24,11 @@ much easier.
 
 ### A Tiny Manifest ###
 
+<span class="aside">
+For more information on other `package.json` options, see
+the [Package Specification](#guide/package-spec).
+</span>
+
 The simplest possible package is just a directory that contains a
 JSON file called `package.json`. Go ahead and create a directory
 called `my-first-package` under your SDK's `packages` directory,
@@ -142,7 +147,11 @@ the root of your package's directory. For starters, fill it with this:
 Save that file and reload the detail page for your package. The
 documentation should be there now, with nice formatting to boot.
 
-This formatting syntax is called Markdown, and is a simple, lightweight
+<span class="aside">
+For more information on writing in Markdown, see its [syntax guide].
+</span>
+
+This formatting syntax is called [Markdown], and is a simple, lightweight
 way to write documentation whose source is human-readable, while
 "gracefully upgrading" when presented in richer media like HTML.
 
@@ -156,4 +165,6 @@ on the left-hand side of this page.
 
 Once you're ready, move on to the next section: [Programs].
 
+  [syntax guide]: http://daringfireball.net/projects/markdown/syntax
+  [Markdown]: http://daringfireball.net/projects/markdown/
   [Programs]: #guide/programs

@@ -1,3 +1,8 @@
+<span class="aside">
+For a gentle introduction to packaging, see the [Packaging](#guide/packaging)
+tutorial.
+</span>
+
 A *package* is simply a directory that contains a JSON file called `package.json`. 
 
 `package.json` may contain the following keys: 
