@@ -31,7 +31,6 @@ h1 {
 
 #columns {
     display: table;
-    height: 100%;
 }
 
 #left-column {
@@ -116,7 +115,25 @@ pre {
 
 pre, code, tt {
     font-family: Monaco, Lucida Console, monospace;
+    font-size: 8pt;
 }
+
+/* This is done to make API documentation look less
+   wonky, but doesn't really stay true to the semantics 
+   of the underlying HTML. */
+tt em {
+    font-family: Helvetica Neue, Arial, sans-serif;
+    font-size: 9pt;
+}
+
+/* This is done to make API documentation look less
+   wonky, but doesn't really stay true to the semantics 
+   of the underlying HTML. */
+tt strong {
+    font-family: Helvetica Neue, Arial, sans-serif;
+    font-size: 9pt;
+}
+
 
 #templates {
     display: none;
@@ -150,4 +167,16 @@ pre, code, tt {
 #dev-guide-header {
     /* TODO: This is a dumb place to put a margin-top. */
     margin-top: 0.25em;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, td, tr {
+    border: 1px black solid;
+}
+
+td {
+    padding: 0.5em;
 }
