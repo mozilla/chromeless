@@ -46,6 +46,14 @@ yourself.
 
 ### Logging ###
 
+<span class="aside">
+If you've used [Firebug], the `console` object may seem familiar.
+This is completely intentional; we'll eventually be plugging
+this object into a much richer implementation.
+
+  [Firebug]: http://getfirebug.com/
+</span>
+
 You'll note that the code above also uses a global object called `console`.
 This is a global accessible by any Jetpack module and is very useful
 for debugging.
