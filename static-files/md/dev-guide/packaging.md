@@ -93,12 +93,17 @@ In the code above, `require` is another global object that is
 part of the CommonJS module standard. It essentially finds a module
 with the given name and returns its `exports` object.
 
+<span class="aside">
+For more information on the Test Runner Object API, see the
+documentation for the [unit-test] module.
+</span>
+
 As you can probably guess, the above code also happens to be a
 CommonJS module. Its single export is a *test function*, named
 according to the type of behavior it's testing, and it takes a single
 parameter, `test`, which should ultimately be passed to it by the test
-framework that executes it. This `test` object is called a *test runner*,
-and has an API that makes it really easy to run tests.
+framework that executes it. This `test` object is called a *Test
+Runner Object*, and has an API that makes it really easy to run tests.
 
 #### Running The Tests ####
 
@@ -110,7 +115,7 @@ possible in the Jetpack SDK.
 Now go to the root directory of your new package and run `cfx test
 --verbose`. This command automatically looks in the `tests` directory
 if one exists, loads any modules that start with the word `test`, and
-calls all their exported functions, passing them a test runner
+calls all their exported functions, passing them a Test Runner Object
 implementation as their only argument.
 
 The output should look something like this:
@@ -179,3 +184,4 @@ Once you're ready, move on to the next section: [Programs].
   [Markdown]: http://daringfireball.net/projects/markdown/
   [Programs]: #guide/programs
   [Jetpack Globals]: #guide/globals
+  [unit-test]: #module/jetpack-core/unit-test

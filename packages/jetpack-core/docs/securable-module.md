@@ -52,7 +52,7 @@ semantics and returns the loaded module.
 
 ## Functions ##
 
-<tt>SecurableModule.**Loader**(*options*)</tt>
+<tt>securable-module.**Loader**(*options*)</tt>
 
 Creates a new SecurableModule Loader. *options* is an object with
 the following keys:
