@@ -153,3 +153,7 @@ modules, replacing the `.js` extension with `.md`. For instance,
 you could add documentation for `my-module` at `docs/my-module.md`.
 This will automatically be displayed when you click your module
 on the left-hand side of this page.
+
+Once you're ready, move on to the next section: [Programs].
+
+  [Programs]: #guide/programs

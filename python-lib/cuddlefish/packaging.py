@@ -4,6 +4,8 @@ import sys
 import simplejson as json
 from cuddlefish.bunch import Bunch
 
+DEFAULT_LOADER = 'jetpack-core'
+
 METADATA_PROPS = ['name', 'description', 'keywords', 'author',
                   'contributors', 'license', 'url']
 
@@ -136,7 +138,8 @@ def get_deps_for_targets(pkg_cfg, targets):
 
 def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                               include_tests=True,
-                              include_dep_tests=False):
+                              include_dep_tests=False,
+                              default_loader=DEFAULT_LOADER):
     build = Bunch(resources=Bunch(),
                   resourcePackages=Bunch(),
                   packageData=Bunch(),
@@ -180,6 +183,9 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
 
     for dep in deps:
         add_dep_to_build(dep)
+
+    if 'loader' not in build:
+        add_dep_to_build(DEFAULT_LOADER)
 
     return build
 
