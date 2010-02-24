@@ -31,7 +31,8 @@ and populate it with a file called `package.json` that contains
 the following:
 
     {
-      "description": "This is my first package, it's tiny."
+      "description": "This is my first package, it's tiny.",
+      "author": "Me (http://me.org)"
     }
 
 Now reload this page. You should see `my-first-package` listed under
@@ -85,7 +86,12 @@ parameter, `test`, which should ultimately be passed to it by the test
 framework that executes it. This `test` object is called a *test runner*,
 and has an API that makes it really easy to run tests.
 
-### Running The Tests ###
+#### Running The Tests ####
+
+<span class="aside">
+Writing and running tests has been designed to be as easy and fast as
+possible in the Jetpack SDK.
+</span>
 
 Now go to the root directory of your new package and run `cfx test
 --verbose`. This command automatically looks in the `tests` directory
@@ -112,3 +118,38 @@ The output should look something like this:
 Obviously, you don't have to pass the `--verbose` option to `cfx`
 if you don't want to; doing so just makes the output easier
 to read.
+
+### Some Meager Documentation ###
+
+<span class="aside">
+If you ever want to know how to achieve the same kind of effect
+that's used in another page of documentation you've seen, try
+clicking the *view source* link at the bottom-right corner of every
+page.
+</span>
+
+If you click on your package's name on the left-hand side of this page,
+you'll notice that it says "This package has no documentation."  To
+make some, all you need to do is create a file called `README.md` in
+the root of your package's directory. For starters, fill it with this:
+
+    This is my *first* package. It contains:
+
+    * A tiny module.
+    * A tiny test suite.
+    * Some meager documentation.
+
+Save that file and reload the detail page for your package. The
+documentation should be there now, with nice formatting to boot.
+
+This formatting syntax is called Markdown, and is a simple, lightweight
+way to write documentation whose source is human-readable, while
+"gracefully upgrading" when presented in richer media like HTML.
+
+You can also document individual modules in your package by creating
+a directory called `docs` in the root of your package directory and
+populating it with Markdown files that have the same name as your
+modules, replacing the `.js` extension with `.md`. For instance,
+you could add documentation for `my-module` at `docs/my-module.md`.
+This will automatically be displayed when you click your module
+on the left-hand side of this page.
