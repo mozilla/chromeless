@@ -2,6 +2,8 @@ If Jetpack packages are constructed in a certain way, they can function as
 Firefox or Thunderbird extensions, full-fledged native platform applications,
 and more.
 
+## Your First Program ##
+
 Let's create a new package. In its `package.json`, add the following:
 
     {
@@ -22,6 +24,28 @@ function called `main`; this function will be called as soon as your
 program is activated. By `activated`, we mean that either a containing
 application such as Firefox or Thunderbird has enabled your program as
 an extension, or that your program is itself a standalone application.
+
+### Quitting ###
+
+Your `main` function is passed two arguments, one of which contains
+callbacks that can be used to communicate with the embedding application.
+One of these is `quit`, which can be used at any point to inform the
+embedding application that your program is finished, and can immediately
+be unloaded.
+
+Some programs--usually ones intended to be extensions--are never
+actually "finished" and just permanently augment their embedding
+applications until the end-user disables them or the application shuts
+down. In these kinds of programs, you never need to call `quit`
+yourself.
+
+### Logging ###
+
+You'll note that the code above also uses a global object called `console`.
+This is a global accessible by any Jetpack module and is very useful
+for debugging.
+
+### Running It ###
 
 To try running your application, just navigate to the root of your
 package directory in your shell and run `cfx run`.  You should
