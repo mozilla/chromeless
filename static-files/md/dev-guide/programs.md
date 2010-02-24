@@ -1,3 +1,8 @@
+<span class="aside">
+The procedures described in this section are tentative and likely to
+change in the near future.
+</span>
+
 If Jetpack packages are constructed in a certain way, they can function as
 Firefox or Thunderbird extensions, full-fledged native platform applications,
 and more.
