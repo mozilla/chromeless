@@ -122,9 +122,20 @@ pre, code, tt {
     display: none;
 }
 
-#dev-guide-toc {
-    list-style: upper-roman;
+#dev-guide-toc ol {
     padding-left: 2em;
+}
+
+#dev-guide-toc #tutorials {
+    list-style: decimal;
+}
+
+#dev-guide-toc #appendices {
+    list-style: upper-alpha;
+}
+
+#dev-guide-toc .section {
+    font-weight: bold;
 }
 
 .aside {
