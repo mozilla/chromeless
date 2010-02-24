@@ -48,6 +48,10 @@ it!
 
 ### A Tiny Module ###
 
+<span class="aside">
+Learn more about how modules work at the [CommonJS Specification].
+</span>
+
 Reusable pieces of code are called *modules*. The Jetpack SDK uses a
 module standard called CommonJS, which means that it's possible to
 share code between Jetpack and other JavaScript-based frameworks like
@@ -165,6 +169,7 @@ on the left-hand side of this page.
 
 Once you're ready, move on to the next section: [Programs].
 
+  [CommonJS Specification]: http://wiki.commonjs.org/wiki/Modules/1.0
   [syntax guide]: http://daringfireball.net/projects/markdown/syntax
   [Markdown]: http://daringfireball.net/projects/markdown/
   [Programs]: #guide/programs
