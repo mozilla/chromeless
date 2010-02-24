@@ -31,6 +31,13 @@ You can either check this out with [Mercurial], or retrieve the latest
 Regardless of which option you choose, simply enter the root directory
 of your checkout or snapshot with a shell/command prompt.
 
+<span class="aside">
+Unlike many SDKs, there isn't a system-wide location for the Jetpack
+SDK. Instead, developers can have as many installations of the SDK as
+they want, each configured separately from one another. Each
+installation is called a *virtual environment*.
+</span>
+
 If you're on Linux, OS X, or another Unix-based system, run:
 
     source bin/activate
@@ -43,6 +50,9 @@ Now the beginning of your command prompt should contain the text
 `(jep-28)`, which means that your shell has entered a special
 virtual environment that gives you access to the Jetpack SDK's
 command-line tools.
+
+At any time, you can leave a virtual environment by running
+`deactivate`.
 
   [Mercurial]: http://mercurial.selenic.com/
   [snapshot]: http://hg.mozilla.org/users/avarma_mozilla.com/jep-28/archive/tip.zip
@@ -95,4 +105,3 @@ versions of Firefox on your system, however, or if you want to use
 Thunderbird or the XULRunner SDK, then you may have to use `cfx`'s
 `--app` and/or `--binary` command-line options. Run `cfx --help` for
 more information on this.
-
