@@ -34,13 +34,52 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// ## Implementation Notes ##
+// 
+// Making `XMLHttpRequest` objects available to Jetpack code involves a
+// few key principles universal to all low-level Jetpack API
+// implementations:
+//
+// * **Unloadability**. A Jetpack-based extension can be asked to unload
+//   itself at any time, e.g. because the user decides to
+//   uninstall or disable the extension. In order to do this, we need
+//   to keep track of the resources currently being used by
+//   the extension's code, and be ready to free them at a moment's
+//   notice. In the case of XHR, this means we need to keep track of
+//   all in-progress reqests and abort them on unload.
+//
+// * **Developer-Ergonomic Tracebacks**. Whenever an exception is raised
+//   by a Jetpack-based extension, we want it to be logged in a
+//   place that is specific to that extension--so that a developer
+//   can distinguish it from an error on a web page or in another
+//   extension, for instance. We also want it to be logged with a
+//   full stack traceback, which the Mozilla platform doesn't usually
+//   do.
+//
+//   Because of this, we don't actually want to give the Mozilla
+//   platform's "real" XHR implementation to clients, but instead provide
+//   a simple wrapper that trivially delegates to the implementation in
+//   all cases except where callbacks are involved: whenever Mozilla
+//   platform code calls into the extension, such as during the XHR's
+//   `onreadystatechange` callback, we want to wrap the client's callback
+//   in a try-catch clause that traps any exceptions raised by the
+//   callback and logs them via console.exception() instead of allowing
+//   them to propagate back into Mozilla platform code.
+
+// This is a private list of all active requests, so we know what to
+// abort if we're asked to unload.
 var requests = [];
 
+// Events on XHRs that we should listen for, so we know when to remove
+// a request from our private list.
 const TERMINATE_EVENTS = ["load", "error", "abort"];
 
+// Read-only properties of XMLHttpRequest objects that we want to
+// directly delegate to.
 const READ_ONLY_PROPS = ["readyState", "responseText", "responseXML",
                          "status", "statusText"];
 
+// Methods of XMLHttpRequest that we want to directly delegate to.
 const DELEGATED_METHODS = ["abort", "getAllResponseHeaders",
                            "getResponseHeader", "overrideMimeType",
                            "send", "sendAsBinary", "setRequestHeader",
@@ -53,6 +92,7 @@ var getRequestCount = exports.getRequestCount = function getRequestCount() {
 var XMLHttpRequest = exports.XMLHttpRequest = function XMLHttpRequest() {
   var req = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
             .createInstance(Ci.nsIXMLHttpRequest);
+  // For the sake of simplicity, don't tie this request to any UI.
   req.mozBackgroundRequest = true;
 
   memory.track(req, "XMLHttpRequest");
