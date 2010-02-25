@@ -27,10 +27,10 @@ CSS and JavaScript), with the goal of allowing anyone who can build a
 Web site to participate in making the Web a better place to work,
 communicate and play. Not to be confused with Jetpack.
 
-__Jetpack Core__: A small, self-contained set of Awesome Jetpack
-Chrome Modules that form the base functionality for Jetpack. The Core
-can actually be "bootstrapped" into any Mozilla application or
-extension.
+__Jetpack Core__: A small, self-contained set of Jetpack Chrome
+Modules and Low-Level Jetpack API Modules that form the base
+functionality for Jetpack. The Core can actually be "bootstrapped"
+into any Mozilla application or extension.
 
 __Jetpack Globals__: The set of global variables and objects provided
 to all Cuddlefish Modules, such as `console` and `memory`. Includes
@@ -41,30 +41,37 @@ __Jetpack Chrome Module__: A CommonJS module which requires full
 access to the Mozilla platform (e.g., `Components.classes`) to
 function properly. It also has access to all Jetpack Globals.
 
-__Awesome Jetpack Chrome Module__: A Jetpack Chrome Module with the
+__Privileged Jetpack Module__: Synonym for Jetpack Chrome Module.
+
+<span class="aside">
+For more information on Low-Level Jetpack API Modules, see the
+[LLJAPI Best Practices] appendix.
+</span>
+
+__Low-Level Jetpack API Module__: A Jetpack Chrome Module with the
 following properties:
 
-  * Unloadable with no memory leaks.
-  * Logs full exception tracebacks on callbacks originating from Mozilla
-    platform code.
-  * Exports functionality whose interfaces are fully decoupled from XPCOM.
-  * Has a full suite of functional and unit tests.
+  * Contains Chrome Object Wrapper metadata allowing it to be
+    exposed securely into unprivileged code, and does not grant it
+    more authority than it claims to provide.
+  * Is reloadable without leaking memory.
+  * Logs full exception tracebacks originating from client-provided
+    callbacks (i.e., does not allow the exceptions to propagate into
+    Mozilla platform code).
+  * Can exist side-by-side with multiple instances and versions of
+    itself.
 
-__Jetpack Securable Module__: A CommonJS module that may be run
+__Unprivileged Jetpack Module__: A CommonJS module that may be run
 without unrestricted access to the Mozilla platform, and which may use
 all applicable Jetpack Globals that don't require chrome privileges.
 
-__Jetpack Module__: A CommonJS module that is either a Jetpack Chrome
-Module or a Jetpack Securable Module.
-
-__Jetpack Capability__: A Jetpack Chrome Module exposing a standard
-interface that allows Mozilla platform functionality to be safely
-exposed to Jetpack Securable Modules.
+__Jetpack Module__: A CommonJS module that is either a Privileged
+Jetpack Module or an Unprivileged Jetpack Module.
 
 __Jetpack Loader__: An object capable of finding, evaluating, and
 exposing CommonJS modules to each other in a given security context,
 while providing each module with necessary Jetpack Globals and
-exposing Jetpack Capabilities to the modules as necessary. It's
+enforcing security boundaries between the modules as necessary. It's
 entirely possible for Loaders to create new Loaders.
 
 __CFX__: A command-line build, testing, and packaging tool for
@@ -83,5 +90,7 @@ __Jetpack Program__: A Jetpack Module that exports a `main()` function.
 This function is intended either to start a program for an end-user
 or add features to an existing program.
 
-__Jetpack Platform Library__: A set of Awesome Jetpack Chrome Modules
+__Jetpack Platform Library__: A set of Low-Level Jetpack API Modules
 that expose the functionality of the Mozilla Platform (Gecko).
+
+  [LLJAPI Best Practices]: #guide/best-practices

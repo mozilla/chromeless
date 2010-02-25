@@ -37,15 +37,11 @@
 // ## Implementation Notes ##
 // 
 // Making `XMLHttpRequest` objects available to Jetpack code involves a
-// few key principles universal to all low-level Jetpack API
-// implementations:
+// few key principles universal to all LLJAPI module implementations:
 //
-// * **Unloadability**. A Jetpack-based extension can be asked to unload
-//   itself at any time, e.g. because the user decides to
-//   uninstall or disable the extension. In order to do this, we need
-//   to keep track of the resources currently being used by
-//   the extension's code, and be ready to free them at a moment's
-//   notice. In the case of XHR, this means we need to keep track of
+// * **Unloadability**. A Jetpack-based extension using this module can be 
+//   asked to unload itself at any time, e.g. because the user decides to
+//   uninstall or disable the extension. This means we need to keep track of
 //   all in-progress reqests and abort them on unload.
 //
 // * **Developer-Ergonomic Tracebacks**. Whenever an exception is raised
