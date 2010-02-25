@@ -39,6 +39,13 @@ wrapper for `XMLHttpRequest` that filters calls to `open()` based on a
 white-list of domains provided in an extension's `package.json`
 manifest, for instance.
 
+<span class="aside">
+Note that this approach does *not* mean we can simply forget about
+security. The act of distinguishing between low and high-level modules
+still needs to be made during the design phase, through threat
+modeling and similar techniques.
+</span>
+
 This approach has a number of advantages:
 
   * It effectively "flattens" Mozilla's complex security system of
@@ -60,11 +67,6 @@ This approach has a number of advantages:
     kinds of high-level APIs and actually use them in real extensions
     without blocking on a complete, bug-free implementation of a
     secure platform.
-
-It should be noted, however, that this approach does *not* mean we can
-simply forget about security. The act of distinguishing between low
-and high-level modules still needs to be made during the design phase,
-presumably through threat modeling and similar techniques.
 
   [Object Capability Model]: http://en.wikipedia.org/wiki/Object-capability_model
   [jQuery.get()]: http://docs.jquery.com/Ajax/jQuery.get

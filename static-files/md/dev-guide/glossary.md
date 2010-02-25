@@ -51,15 +51,13 @@ For more information on Low-Level Jetpack API Modules, see the
 __Low-Level Jetpack API Module__: A Jetpack Chrome Module with the
 following properties:
 
-  * Contains Chrome Object Wrapper metadata allowing it to be
-    exposed securely into unprivileged code, and does not grant it
-    more authority than it claims to provide.
   * Is reloadable without leaking memory.
   * Logs full exception tracebacks originating from client-provided
     callbacks (i.e., does not allow the exceptions to propagate into
     Mozilla platform code).
   * Can exist side-by-side with multiple instances and versions of
     itself.
+  * Contains documentation on security concerns and threat modeling.
 
 __Unprivileged Jetpack Module__: A CommonJS module that may be run
 without unrestricted access to the Mozilla platform, and which may use
