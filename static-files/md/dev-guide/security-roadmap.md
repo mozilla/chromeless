@@ -68,6 +68,12 @@ This approach has a number of advantages:
     without blocking on a complete, bug-free implementation of a
     secure platform.
 
+The following video by Aza Raskin provides a high-level overview of
+what our security approach ultimately means for end-users and AMO
+reviewers.
+
+<center><object width="400" height="296"><param name="allowfullscreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="movie" value="http://vimeo.com/moogaloop.swf?clip_id=7660200&amp;server=vimeo.com&amp;show_title=0&amp;show_byline=0&amp;show_portrait=0&amp;color=ffffff&amp;fullscreen=1" /><embed src="http://vimeo.com/moogaloop.swf?clip_id=7660200&amp;server=vimeo.com&amp;show_title=0&amp;show_byline=0&amp;show_portrait=0&amp;color=ffffff&amp;fullscreen=1" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="400" height="296"></embed></object></center>
+
   [Object Capability Model]: http://en.wikipedia.org/wiki/Object-capability_model
   [jQuery.get()]: http://docs.jquery.com/Ajax/jQuery.get
   [Chrome Object Wrappers]: https://wiki.mozilla.org/XPConnect_Chrome_Object_Wrapper
