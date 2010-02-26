@@ -91,6 +91,33 @@ about the exception's stack traceback if one is available.
 
 Inserts a stack trace into the console at the point this function is called.
 
+<span class="aside">
+For more information on packaging, see the [Package Specification] appendix.
+</span>
+
+<tt>**packaging**</tt>
+
+The <tt>packaging</tt> global contains methods and metadata related to
+the packages available in the current environment.
+
+<tt>packaging.**getURLForData**(*path*)</tt>
+
+Given a unix-style path relative to the calling package's `data`
+directory, returns an absolute URL to the file or directory.
+
+By "calling package", we mean the package in which the caller's source
+code resides.
+
+Thus, for example, if a package contains a resource at
+`data/mydata.dat` and a module at `lib/foo.js`, the module at
+`lib/foo.js` may make the following call to retrieve an absolute url
+to `data/mydata.dat`:
+
+    var mydata = packaging.getURLForData("/mydata.dat");
+
+If the calling package has no `data` directory, an exception is
+thrown.
+
 <tt>**memory**</tt>
 
 <tt>memory</tt> is an object that exposes functionality to track
@@ -151,3 +178,4 @@ currently empty.
   [HTML5]: http://dev.w3.org/html5/spec/Overview.html
   [JavaScript 1.8.1]: https://developer.mozilla.org/En/New_in_JavaScript_1.8.1
   [CommonJS Module Specification]: http://wiki.commonjs.org/wiki/Modules/1.0
+  [Package Specification]: #guide/package-spec

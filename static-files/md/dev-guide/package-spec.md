@@ -3,7 +3,11 @@ For a gentle introduction to packaging, see the [Packaging](#guide/packaging)
 tutorial.
 </span>
 
-A *package* is simply a directory that contains a JSON file called `package.json`. 
+A *package* is a directory that, at minimum, contains a JSON file
+called `package.json`. This file is also referred to as the
+*package manifest*.
+
+## The Package Manifest ##
 
 `package.json` may contain the following keys: 
 
@@ -60,3 +64,27 @@ A *package* is simply a directory that contains a JSON file called `package.json
 * `main` - a String representing the name of a program module that is
   located in one of the top-level module directories specified by
   `lib`.
+
+## Documentation ##
+
+A package may optionally contain a [Markdown]-formatted file called
+`README.md` in its root directory. Package-browsing tools may display
+this file to developers.
+
+Additionally, Markdown files can be placed in an optional `docs`
+directory. When package-browsing tools are asked to show the
+documentation for a module, they will look in this directory for a
+`.md` file with the module's name. Thus, for instance, if a user
+browses to a module at `lib/foo/bar.js`, the package-browsing tool
+will look for a file at `docs/foo/bar.js` to represent the module's
+API documentation.
+
+## Data Resources ##
+
+Packages may optionally contain a directory called `data` into which
+arbitrary files may be placed, such as images or text files. The
+URL for these resources may be reached via the `packaging` global
+defined in the [Jetpack Globals] appendix.
+
+  [Markdown]: http://daringfireball.net/projects/markdown/
+  [Jetpack Globals]: #guide/globals
