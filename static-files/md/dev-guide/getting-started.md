@@ -32,10 +32,10 @@ Regardless of which option you choose, simply enter the root directory
 of your checkout or snapshot with a shell/command prompt.
 
 <span class="aside">
-Unlike many SDKs, there isn't a system-wide location for the Jetpack
-SDK. Instead, developers can have as many installations of the SDK as
-they want, each configured separately from one another. Each
-installation is called a *virtual environment*.
+Unlike many development tools, there isn't a system-wide location for
+the Jetpack SDK. Instead, developers can have as many installations of
+the SDK as they want, each configured separately from one
+another. Each installation is called a *virtual environment*.
 </span>
 
 If you're on Linux, OS X, or another Unix-based system, run:
