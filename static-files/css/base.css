@@ -206,7 +206,8 @@ table.meta-table {
     border-bottom: 1px dotted gray;
 }
 
-.package-detail .authors, .package-detail .dependencies {
+.package-detail .authors, .package-detail .dependencies,
+.package-detail .version, .package-detail .license {
     font-family: Monaco, Lucida Console, monospace;
     font-size: 8pt;
     white-space: pre;

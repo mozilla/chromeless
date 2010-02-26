@@ -198,6 +198,10 @@ function startApp(jQuery, window) {
     entry.find(".name").text(pkg.name);
     if (authors.length)
       entry.find(".authors").text(authors.join("\n"));
+    if (pkg.license)
+      entry.find(".license").text(pkg.license);
+    if (pkg.version)
+      entry.find(".version").text(pkg.version);
     if (dependencies && dependencies.length)
       entry.find(".dependencies").text(dependencies.join("\n"));
     else
