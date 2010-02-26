@@ -187,9 +187,22 @@ function startApp(jQuery, window) {
     var entry = $("#templates .package-detail").clone();
     var filename = "README.md";
 
-    // TODO: Add author info.
-    // TODO: Add dependency info.
+    var authors = [];
+    if (pkg.author)
+      authors.push(pkg.author);
+    if (pkg.contributors)
+      authors = authors.concat(pkg.contributors);
+
+    var dependencies = pkg.dependencies;
+
     entry.find(".name").text(pkg.name);
+    if (authors.length)
+      entry.find(".authors").text(authors.join("\n"));
+    if (dependencies && dependencies.length)
+      entry.find(".dependencies").text(dependencies.join("\n"));
+    else
+      entry.find(".dependencies").parent().parent().remove();
+
     queueMainContent(entry);
     getPkgFile(pkg, filename, markdownToHtml,
                function(html) {
@@ -240,6 +253,7 @@ function startApp(jQuery, window) {
       });
     entries.fadeIn();
     checkHash();
+    window.setInterval(checkHash, CHECK_HASH_DELAY);
   }
 
   function showGuideDetail(name) {
@@ -313,7 +327,6 @@ function startApp(jQuery, window) {
   }
 
   scheduleNextIdlePing();
-  window.setInterval(checkHash, CHECK_HASH_DELAY);
   linkDeveloperGuide();
   jQuery.getJSON("api/packages", processPackages);
 }

@@ -171,6 +171,7 @@ tt strong {
 }
 
 table {
+    width: 100%;
     border-collapse: collapse;
 }
 
@@ -188,4 +189,25 @@ table, caption {
   font-weight: inherit;
   font-style: inherit;
   font-variant: inherit;
+}
+
+table.meta-table, .meta-table td, .meta-table tr {
+    vertical-align: top;
+    border: none;
+    padding: 0;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    padding-right: 5em;
+}
+
+table.meta-table {
+    margin-top: 0.5em;
+    border-top: 1px dotted gray;
+    border-bottom: 1px dotted gray;
+}
+
+.package-detail .authors, .package-detail .dependencies {
+    font-family: Monaco, Lucida Console, monospace;
+    font-size: 8pt;
+    white-space: pre;
 }
