@@ -1,7 +1,0 @@
-{
-    "name": "task-runner",
-    "description": "Farms tasks out from a task queue server.",
-    "author": "Atul Varma (http://toolness.com/)",
-    "main": "main",
-    "dependencies": ["jetpack-core", "test-harness"]
-}
