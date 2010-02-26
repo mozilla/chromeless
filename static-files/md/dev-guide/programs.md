@@ -68,3 +68,11 @@ get something like the following:
     OK
     Total time: 0.510817 seconds
     Program terminated successfully.
+
+## To Be Continued... ##
+
+Right now, the Jetpack SDK is at an early stage of
+development. There's not too much to show. But be on the lookout for
+version 0.2 of the SDK, which will continue this tutorial and show you
+how to build a useful Jetpack-based Firefox or Thunderbird extension
+that you can distribute to your friends, foes, and family!
