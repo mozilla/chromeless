@@ -283,7 +283,7 @@ var runTests = exports.runTests = function runTests(options) {
       var nsjetpack = require("nsjetpack");
       profiler = {
         binary: nsjetpack.get(),
-        scriptUrl: url.resolve(__url__, "profiler-scripts/profiler.js")
+        scriptUrl: packaging.getURLForData("profiler.js")
       };
 
       profiler.scriptPath = url.toFilename(profiler.scriptUrl);
