@@ -212,3 +212,10 @@ table.meta-table {
     font-size: 8pt;
     white-space: pre;
 }
+
+.technical-error {
+    font-family: Monaco, Lucida Console, monospace;
+    font-size: 8pt;
+    white-space: pre-wrap;
+    color: red;
+}

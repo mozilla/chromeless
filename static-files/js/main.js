@@ -216,6 +216,17 @@ function startApp(jQuery, window) {
                });
   }
 
+  function onPackageError(req) {
+    if (req.status == 500) {
+      var errorDisplay = $('<div class="technical-error"></div>');
+      errorDisplay.text(req.responseText);
+      $("#left-column").append(errorDisplay);
+      errorDisplay.hide();
+      errorDisplay.fadeIn();
+    }
+    finalizeSetup();
+  }
+
   function processPackages(packagesJSON) {
     packages = packagesJSON;
 
@@ -256,6 +267,10 @@ function startApp(jQuery, window) {
         entries.append(entry);
       });
     entries.fadeIn();
+    finalizeSetup();
+  }
+
+  function finalizeSetup() {
     checkHash();
     window.setInterval(checkHash, CHECK_HASH_DELAY);
   }
@@ -332,7 +347,10 @@ function startApp(jQuery, window) {
 
   scheduleNextIdlePing();
   linkDeveloperGuide();
-  jQuery.getJSON("api/packages", processPackages);
+  jQuery.ajax({url: "api/packages",
+               dataType: "json",
+               success: processPackages,
+               error: onPackageError});
 }
 
 $(window).ready(function() { startApp(jQuery, window); });

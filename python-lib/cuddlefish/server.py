@@ -106,10 +106,6 @@ class Server(object):
         yield json.dumps(files)
 
     def _respond_with_api(self, parts):
-        pkg_cfg = packaging.build_config(self.env_root,
-                                         Bunch(name='dummy'))
-        del pkg_cfg.packages['dummy']
-
         parts = [part for part in parts
                  if part]
 
@@ -164,6 +160,15 @@ class Server(object):
                                 [('Content-type', 'text/plain')])
             return ['Idle complete (%s seconds)' % IDLE_TIMEOUT]
         elif parts[0] == 'packages':
+            try:
+                pkg_cfg = packaging.build_config(self.env_root,
+                                                 Bunch(name='dummy'))
+                del pkg_cfg.packages['dummy']
+            except packaging.Error, e:
+                self.start_response('500 Internal Server Error',
+                                    [('Content-type', 'text/plain')])
+                return [str(e)]
+
             if len(parts) == 1:
                 # TODO: This should really be of JSON's mime type,
                 # but Firefox doesn't let us browse this way so

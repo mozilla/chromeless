@@ -4,18 +4,26 @@ import sys
 import simplejson as json
 from cuddlefish.bunch import Bunch
 
+MANIFEST_NAME = 'package.json'
+
 DEFAULT_LOADER = 'jetpack-core'
 
 METADATA_PROPS = ['name', 'description', 'keywords', 'author',
                   'contributors', 'license', 'url']
 
-class MalformedJsonFileError(Exception):
+class Error(Exception):
     pass
 
-class DuplicatePackageError(Exception):
+class MalformedPackageError(Error):
     pass
 
-class PackageNotFoundError(Exception):
+class MalformedJsonFileError(Error):
+    pass
+
+class DuplicatePackageError(Error):
+    pass
+
+class PackageNotFoundError(Error):
     pass
 
 def find_packages_with_module(pkg_cfg, name):
@@ -65,10 +73,15 @@ def load_json_file(path):
     try:
         return Bunch(json.loads(data))
     except ValueError, e:
-        raise MalformedJsonFileError(path, str(e))
+        raise MalformedJsonFileError('%s when reading "%s"' % (str(e),
+                                                               path))
 
 def get_config_in_dir(path):
-    package_json = os.path.join(path, 'package.json')
+    package_json = os.path.join(path, MANIFEST_NAME)
+    if not (os.path.exists(package_json) and
+            os.path.isfile(package_json)):
+        raise MalformedPackageError('%s not found in "%s"' % (MANIFEST_NAME,
+                                                              path))
     base_json = load_json_file(package_json)
 
     if 'name' not in base_json:
