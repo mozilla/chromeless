@@ -201,7 +201,7 @@ class Server(object):
         self.start_response = start_response
 
         parts = environ['PATH_INFO'].split('/')[1:]
-        if not parts[0]:
+        if (not parts) or (not parts[0]):
             parts = ['index.html']
         if parts[0] == API_PATH:
             return self._respond_with_api(parts[1:])
