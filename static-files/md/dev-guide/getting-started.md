@@ -23,7 +23,7 @@ Installation
 
 Currently, the Jetpack SDK is available at this Mercurial repository:
 
-  <http://hg.mozilla.org/users/avarma_mozilla.com/jep-28/>
+  <http://hg.mozilla.org/labs/jetpack-sdk/>
 
 You can either check this out with [Mercurial], or retrieve the latest
 [snapshot] in ZIP format.
@@ -47,7 +47,7 @@ Otherwise, if you're on Windows, run:
     bin/activate
 
 Now the beginning of your command prompt should contain the text
-`(jep-28)`, which means that your shell has entered a special
+`(jetpack-sdk)`, which means that your shell has entered a special
 virtual environment that gives you access to the Jetpack SDK's
 command-line tools.
 
@@ -55,7 +55,7 @@ At any time, you can leave a virtual environment by running
 `deactivate`.
 
   [Mercurial]: http://mercurial.selenic.com/
-  [snapshot]: http://hg.mozilla.org/users/avarma_mozilla.com/jep-28/archive/tip.zip
+  [snapshot]: http://hg.mozilla.org/labs/jetpack-sdk/archive/tip.zip
 
 Sanity Check
 ------------
