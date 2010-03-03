@@ -9,26 +9,23 @@ and more.
 
 ## Your First Program ##
 
-Let's create a new package. In its `package.json`, add the following:
+We're going to continue building upon our package from the [Packaging]
+section.
 
-    {
-      "description": "My first program",
-      "main": "my-first-program"
-    }
+If a module called `main` exists in your package and it exports a
+function called `main`, the function will be called as soon as your
+program is activated. By "activated", we mean that either a containing
+application such as Firefox or Thunderbird has enabled your program as
+an extension, or that your program is itself a standalone application.
 
-Now, create a file at `lib/my-first-program.js` with the following content:
+With this in mind, let's create a file at `lib/main.js` with the
+following content:
 
     exports.main = function(options, callbacks) {
       console.log("Hello World!");
       callbacks.quit("OK");
     }
 
-As you can probably guess, the `main` key in your `package.json`
-points to a module in the package's `lib` directory that exports a
-function called `main`; this function will be called as soon as your
-program is activated. By `activated`, we mean that either a containing
-application such as Firefox or Thunderbird has enabled your program as
-an extension, or that your program is itself a standalone application.
 
 ### Quitting ###
 
@@ -76,3 +73,5 @@ development. There's not too much to show. But be on the lookout for
 version 0.2 of the SDK, which will continue this tutorial and show you
 how to build a useful Jetpack-based Firefox or Thunderbird extension
 that you can distribute to your friends, foes, and family!
+
+  [Packaging]: #guide/packaging

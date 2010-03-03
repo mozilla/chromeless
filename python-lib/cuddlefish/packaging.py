@@ -8,6 +8,8 @@ MANIFEST_NAME = 'package.json'
 
 DEFAULT_LOADER = 'jetpack-core'
 
+DEFAULT_PROGRAM_MODULE = 'main'
+
 METADATA_PROPS = ['name', 'description', 'keywords', 'author',
                   'contributors', 'license', 'url']
 
@@ -95,6 +97,14 @@ def get_config_in_dir(path):
 
     if 'xpcom' in base_json:
         base_json.xpcom = Bunch(base_json.xpcom)
+
+    if 'main' not in base_json and 'lib' in base_json:
+        for dirname in base_json['lib']:
+            program = os.path.join(path, dirname,
+                                   '%s.js' % DEFAULT_PROGRAM_MODULE)
+            if os.path.exists(program):
+                base_json['main'] = DEFAULT_PROGRAM_MODULE
+                break
 
     base_json.root_dir = path
 
