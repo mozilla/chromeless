@@ -34,6 +34,8 @@ TASK_QUEUE_PATH = 'task-queue'
 TASK_QUEUE_SET = 'set'
 TASK_QUEUE_GET = 'get'
 TASK_QUEUE_GET_TIMEOUT = 1
+DAEMONIC_IDLE_TIMEOUT = 8.0
+IDLE_WEBPAGE_TIMEOUT = 1.5
 
 _idle_event = threading.Event()
 
@@ -262,7 +264,7 @@ def fault_tolerant_make_httpd(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT):
     return (httpd, port)
 
 def maybe_open_webpage(host=DEFAULT_HOST, port=DEFAULT_PORT):
-    _idle_event.wait(1.5)
+    _idle_event.wait(IDLE_WEBPAGE_TIMEOUT)
     url = get_url(host, port)
     if _idle_event.isSet():
         print "Web browser appears to be viewing %s." % url
@@ -278,12 +280,12 @@ def start_daemonic(httpd, host=DEFAULT_HOST, port=DEFAULT_PORT):
     maybe_open_webpage(host, port)
 
     while True:
-        _idle_event.wait(3.0)
+        _idle_event.wait(DAEMONIC_IDLE_TIMEOUT)
         if _idle_event.isSet():
             _idle_event.clear()
         else:
-            print ("Web browser is no longer viewing %s, "
-                   "shutting down server." % get_url(host, port))
+            #print ("Web browser is no longer viewing %s, "
+            #       "shutting down server." % get_url(host, port))
             break
 
 def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
