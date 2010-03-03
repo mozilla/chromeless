@@ -44,7 +44,7 @@ _OLD_VIRTUAL_PATH="$PATH"
 
 VIRTUAL_ENV="`pwd`"
 
-if [ "$OSTYPE" == "msys" ] ; then
+if [ "x$OSTYPE" = "xmsys" ] ; then
   CUDDLEFISH_ROOT="`pwd -W | sed s,/,\\\\\\\\,g`"
   PATH="`pwd`/bin:$PATH"
   # msys will convert any env vars with PATH in it to use msys
