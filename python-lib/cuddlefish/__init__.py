@@ -45,7 +45,7 @@ parser_options = {
                                     "package.json; default is "
                                     "current directory"),
                               metavar=None,
-                              default=os.getcwd()),
+                              default=None),
     }
 
 parser_groups = Bunch(
@@ -114,6 +114,14 @@ parser_groups = Bunch(
 
 # Maximum time we'll wait for tests to finish, in seconds.
 TEST_RUN_TIMEOUT = 5 * 60
+
+def find_parent_package(cur_dir):
+    tail = True
+    while tail:
+        if os.path.exists(os.path.join(cur_dir, 'package.json')):
+            return cur_dir
+        cur_dir, tail = os.path.split(cur_dir)
+    return None
 
 def parse_args(arguments, parser_options, usage, parser_groups=None,
                defaults=None):
@@ -216,7 +224,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         return
 
     if not target_cfg:
-        options.pkgdir = os.path.abspath(options.pkgdir)
+        if not options.pkgdir:
+            options.pkgdir = find_parent_package(os.getcwd())
+            if not options.pkgdir:
+                print ("cannot find 'package.json' in the current "
+                       "directory or any parent.")
+                sys.exit(1)
+        else:
+            options.pkgdir = os.path.abspath(options.pkgdir)
         if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
             print "cannot find 'package.json' in %s." % options.pkgdir
             sys.exit(1)
