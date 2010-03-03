@@ -63,7 +63,7 @@ called `package.json`. This file is also referred to as the
 
 * `main` - a String representing the name of a program module that is
   located in one of the top-level module directories specified by
-  `lib`.
+  `lib`. Defaults to `"main"`.
 
 ## Documentation ##
 
