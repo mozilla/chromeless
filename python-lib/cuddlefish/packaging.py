@@ -126,7 +126,7 @@ def build_config(root_dir, target_cfg):
             pkgconfig = get_config_in_dir(path)
             if pkgconfig.name in packages:
                 otherpkg = packages[pkgconfig.name]
-                if otherpkg.root_dir != path:
+                if not os.path.samefile(otherpkg.root_dir, path):
                     raise DuplicatePackageError(path, otherpkg.root_dir)
             else:
                 packages[pkgconfig.name] = pkgconfig
