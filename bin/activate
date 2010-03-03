@@ -39,18 +39,27 @@ deactivate () {
 # unset irrelavent variables
 deactivate nondestructive
 
-VIRTUAL_ENV=`pwd`
-export VIRTUAL_ENV
-
-CUDDLEFISH_ROOT="$VIRTUAL_ENV"
-export CUDDLEFISH_ROOT
-
 _OLD_PYTHONPATH="$PYTHONPATH"
-PYTHONPATH="$VIRTUAL_ENV/python-lib:$PYTHONPATH"
-export PYTHONPATH
-
 _OLD_VIRTUAL_PATH="$PATH"
-PATH="$VIRTUAL_ENV/bin:$PATH"
+
+VIRTUAL_ENV="`pwd`"
+
+if [ "$OSTYPE" == "msys" ] ; then
+  CUDDLEFISH_ROOT="`pwd -W | sed s,/,\\\\\\\\,g`"
+  PATH="`pwd`/bin:$PATH"
+  # msys will convert any env vars with PATH in it to use msys
+  # form and will unconvert before launching
+  PYTHONPATH="`pwd -W`/python-lib;$PYTHONPATH"
+else
+  CUDDLEFISH_ROOT="$VIRTUAL_ENV"
+  PYTHONPATH="$VIRTUAL_ENV/python-lib:$PYTHONPATH"
+  PATH="$VIRTUAL_ENV/bin:$PATH"
+fi
+
+VIRTUAL_ENV="`pwd`"
+
+export CUDDLEFISH_ROOT
+export PYTHONPATH
 export PATH
 
 _OLD_VIRTUAL_PS1="$PS1"

@@ -11,14 +11,14 @@ or later if it's not already on your system:
   http://python.org/download/
 
 To get started, first enter the same directory that this file is
-in using a shell program. On Unix systems, you can execute
-the following command:
+in using a shell program. On Unix systems or on Windows with MSYS,
+you can execute the following command:
 
   source bin/activate
 
-Windows users should instead run:
+Windows users using cmd.exe should instead run:
 
-  bin/activate
+  bin/activate.bat
 
 Then run:
 
