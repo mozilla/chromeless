@@ -23,9 +23,8 @@ following content:
 
     exports.main = function(options, callbacks) {
       console.log("Hello World!");
-      callbacks.quit("OK");
+      callbacks.quit();
     }
-
 
 ### Quitting ###
 

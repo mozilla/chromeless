@@ -77,6 +77,14 @@ function buildHarnessService(rootFileSpec, dump, logError,
                 .QueryInterface(Ci.nsIResProtocolHandler);
 
   function quit(status) {
+    if (status === undefined)
+      status = "OK";
+    if (status != "OK" && status != "FAIL") {
+      dump("Warning: quit() expected 'OK' or 'FAIL' as an " +
+           "argument, but got '" + status + "' instead.");
+      status = "FAIL";
+    }
+
     if (isQuitting)
       return;
 
