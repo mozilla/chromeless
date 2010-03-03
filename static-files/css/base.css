@@ -140,6 +140,10 @@ tt strong {
     display: none;
 }
 
+#dev-guide-toc a {
+    text-decoration: none;
+}
+
 #dev-guide-toc ol {
     padding-left: 2em;
 }
