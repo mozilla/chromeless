@@ -72,9 +72,6 @@ def run_app(harness_root_dir, harness_options, xpts,
     env['MOZ_NO_REMOTE'] = '1'
     env['HARNESS_OPTIONS'] = json.dumps(harness_options)
 
-    if verbose:
-        print "Configuration: %s" % json.dumps(harness_options)
-
     starttime = time.time()
 
     popen_kwargs = {}
