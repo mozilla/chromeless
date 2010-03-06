@@ -39,7 +39,7 @@ def install_xpts(harness_root_dir, xpts):
             os.remove(path)
 
 def run_app(harness_root_dir, harness_options, xpts,
-            app_type, binary=None, verbose=False,
+            app_type, binary=None, profiledir=None, verbose=False,
             no_quit=False, timeout=None):
     if binary:
         binary = os.path.expanduser(binary)
@@ -76,12 +76,24 @@ def run_app(harness_root_dir, harness_options, xpts,
 
     popen_kwargs = {}
 
+    profile = None
+
     if app_type == "xulrunner":
         # TODO: We're reduplicating a lot of mozrunner logic here,
         # we should probably just get mozrunner to support this
         # use case.
 
-        xulrunner_profile = tempfile.mkdtemp(suffix='.harness')
+        if profiledir:
+            xulrunner_profile = profiledir
+        else:
+            xulrunner_profile = tempfile.mkdtemp(suffix='.harness')
+            @atexit.register
+            def remove_xulrunner_profile():
+                try:
+                    shutil.rmtree(xulrunner_profile)
+                except OSError:
+                    pass
+
         cmdline = [binary,
                    '-app',
                    os.path.join(harness_root_dir, 'application.ini'),
@@ -89,13 +101,6 @@ def run_app(harness_root_dir, harness_options, xpts,
                    # This ensures that dump() calls are visible
                    # in Windows.
                    '-console']
-
-        @atexit.register
-        def remove_xulrunner_profile():
-            try:
-                shutil.rmtree(xulrunner_profile)
-            except OSError:
-                pass
 
         if "xulrunner-bin" in binary:
             cmdline.remove("-app")
@@ -106,7 +111,10 @@ def run_app(harness_root_dir, harness_options, xpts,
         popen = subprocess.Popen(cmdline, env=env, **popen_kwargs)
     else:
         plugins = [harness_root_dir]
+        create_new = profiledir is None
         profile = profile_class(plugins=plugins,
+                                profile=profiledir,
+                                create_new=create_new,
                                 preferences=preferences)
         runner = runner_class(profile=profile,
                               binary=binary,
@@ -135,6 +143,9 @@ def run_app(harness_root_dir, harness_options, xpts,
                             timeout)
 
     print "Total time: %f seconds" % (time.time() - starttime)
+
+    if profile:
+        profile.cleanup()
 
     if popen.returncode == 0 and output == 'OK':
         print "Program terminated successfully."

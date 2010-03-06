@@ -65,6 +65,11 @@ parser_groups = Bunch(
     app=Bunch(
         name="Application Options",
         options={
+            ("-P", "--profiledir",): dict(dest="profiledir",
+                                          help=("profile directory to "
+                                                "pass to app"),
+                                          metavar=None,
+                                          default=None),
             ("-b", "--binary",): dict(dest="binary",
                                       help="path to app binary", 
                                       metavar=None,
@@ -398,11 +403,15 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         else:
             from cuddlefish.runner import run_app
 
+        if options.profiledir:
+            options.profiledir = os.path.expanduser(options.profiledir)
+
         retval = run_app(harness_root_dir=app_extension_dir,
                          harness_options=harness_options,
                          xpts=xpts,
                          app_type=options.app,
                          binary=options.binary,
+                         profiledir=options.profiledir,
                          verbose=options.verbose,
                          no_quit=options.no_quit,
                          timeout=timeout)

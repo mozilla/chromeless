@@ -301,7 +301,7 @@ def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
         print "Ctrl-C received, exiting."
 
 def run_app(harness_root_dir, harness_options, xpts,
-            app_type, binary=None, verbose=False,
+            app_type, binary=None, profiledir=None, verbose=False,
             no_quit=False, timeout=None,
             host=DEFAULT_HOST,
             port=DEFAULT_PORT):
