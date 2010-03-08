@@ -21,15 +21,15 @@ To develop with the new Jetpack SDK, you'll need:
 Installation
 ------------
 
-Currently, the Jetpack SDK is available at this Mercurial repository:
+At the time of this writing, the latest stable version of the Jetpack
+SDK is 0.1. You can obtain it as a [tarball] or a [zip file].
 
-  <http://hg.mozilla.org/labs/jetpack-sdk/>
-
-You can either check this out with [Mercurial], or retrieve the latest
-[snapshot] in ZIP format.
+Alternatively, you can get the latest development version of the
+Jetpack SDK from its [HG repository].
 
 Regardless of which option you choose, simply enter the root directory
-of your checkout or snapshot with a shell/command prompt.
+of your checkout with a shell/command prompt. This directory should
+be called `jetpack-sdk`.
 
 <span class="aside">
 Unlike many development tools, there isn't a system-wide location for
@@ -38,7 +38,7 @@ the SDK as they want, each configured separately from one
 another. Each installation is called a *virtual environment*.
 </span>
 
-If you're on Linux, OS X, or another Unix-based system, run:
+Then, if you're on Linux, OS X, or another Unix-based system, run:
 
     source bin/activate
 
@@ -54,8 +54,9 @@ command-line tools.
 At any time, you can leave a virtual environment by running
 `deactivate`.
 
-  [Mercurial]: http://mercurial.selenic.com/
-  [snapshot]: http://hg.mozilla.org/labs/jetpack-sdk/archive/tip.zip
+  [tarball]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.1.tar.gz
+  [zip file]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.1.zip
+  [HG repository]: http://hg.mozilla.org/labs/jetpack-sdk/
 
 Sanity Check
 ------------
