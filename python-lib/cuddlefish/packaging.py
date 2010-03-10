@@ -110,6 +110,11 @@ def get_config_in_dir(path):
 
     return base_json
 
+def _is_same_file(a, b):
+    if hasattr(os.path, 'samefile'):
+        return os.path.samefile(a, b)
+    return a == b
+
 def build_config(root_dir, target_cfg):
     dirs_to_scan = []
 
@@ -136,7 +141,7 @@ def build_config(root_dir, target_cfg):
             pkgconfig = get_config_in_dir(path)
             if pkgconfig.name in packages:
                 otherpkg = packages[pkgconfig.name]
-                if not os.path.samefile(otherpkg.root_dir, path):
+                if not _is_same_file(otherpkg.root_dir, path):
                     raise DuplicatePackageError(path, otherpkg.root_dir)
             else:
                 packages[pkgconfig.name] = pkgconfig
