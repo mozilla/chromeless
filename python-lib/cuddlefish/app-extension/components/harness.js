@@ -41,6 +41,9 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
+var obSvc = Cc["@mozilla.org/observer-service;1"]
+            .getService(Ci.nsIObserverService);
+
 // Parameters:
 //
 //   rootFileSpec - nsILocalFile corresponding to root of extension
@@ -69,8 +72,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
   // Whether we've been asked to quit or not yet.
   var isQuitting;
 
-  var obSvc = Cc["@mozilla.org/observer-service;1"]
-              .getService(Ci.nsIObserverService);
   var ioService = Cc["@mozilla.org/network/io-service;1"]
                   .getService(Ci.nsIIOService);
   var resProt = ioService.getProtocolHandler("resource")
@@ -292,53 +293,105 @@ function defaultLogError(e) {
     dump("stack:\n" + e.stack + "\n");
 }
 
-function getDefaults(rootFileSpec) {
-  // Default options to pass back.
-  var options;
+// Builds an onQuit() function that writes a result file if necessary
+// and does some other extra things to enhance developer ergonomics.
 
-  // Whether to quit the application when we're done.
-  var quitOnFinish = false;
-
+function buildDevQuit(options) {
   // Absolute path to a file that we put our result code in. Ordinarily
   // we'd just exit the process with a zero or nonzero return code, but
   // there doesn't appear to be a way to do this in XULRunner.
-  var resultFile;
+  var resultFile = options.resultFile;
 
-  function onQuit(result) {
+  // Whether we've written resultFile or not.
+  var fileWritten = false;
+
+  // Whether to quit the application when we're done. We need to support
+  // not quitting the app when done on Windows, so users have time to
+  // look at the console log before it disappears on exit.
+  var quitOnFinish = false;
+
+  if ('noQuit' in options)
+    quitOnFinish = !options.noQuit;
+
+  function attemptQuit() {
+    var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
+                     getService(Ci.nsIAppStartup);
+    appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
+  }
+
+  return function onQuit(result) {
     dump(result + "\n");
 
-    if (resultFile) {
-      try {
-        var file = Cc["@mozilla.org/file/local;1"]
-                   .createInstance(Ci.nsILocalFile);
-        file.initWithPath(resultFile);
+    function writeResult() {
+      if (!fileWritten)
+        try {
+          var file = Cc["@mozilla.org/file/local;1"]
+                     .createInstance(Ci.nsILocalFile);
+          file.initWithPath(resultFile);
 
-        var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                       .createInstance(Ci.nsIFileOutputStream);
-        foStream.init(file, -1, -1, 0);
-        foStream.write(result, result.length);
-        foStream.close();
+          var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                         .createInstance(Ci.nsIFileOutputStream);
+          foStream.init(file, -1, -1, 0);
+          foStream.write(result, result.length);
+          foStream.close();
+          fileWritten = true;
+        } catch (e) {
+          dump(e + "\n");
+        }
+    }
+
+    function writeResultAndQuit() {
+      writeResult();
+      attemptQuit();
+    }
+
+    if (quitOnFinish)
+      writeResultAndQuit();
+    else {
+      try {
+        // If there aren't any windows active, then we'll be quitting
+        // regardless, so make a trivial new one that keeps our app
+        // alive.
+        try {
+          var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
+                   .getService(Ci.nsIWindowWatcher);
+          var text = "Close this window to quit.";
+          var window = ww.openWindow(null, "data:text/plain," + text,
+                                     "harness", "centerscreen", null);
+        } catch (e) {
+          // We're already in the process of quitting, so write the
+          // result file and return.
+          writeResult();
+          return;
+        }
+
+        var interfaces = [Ci.nsIObserver, Ci.nsISupportsWeakReference];
+        var quitObserver = {
+          observe: function observe() { writeResult(); },
+          QueryInterface: XPCOMUtils.generateQI(interfaces)
+        };
+
+        obSvc.addObserver(quitObserver, "quit-application-granted", true);
+        window.addEventListener("close", writeResultAndQuit, false);
       } catch (e) {
         dump(e + "\n");
       }
     }
+  };
+}
 
-    if (quitOnFinish) {
-      var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
-                       getService(Ci.nsIAppStartup);
-      appStartup.quit(Ci.nsIAppStartup.eAttemptQuit);
-    }
-  }
+function getDefaults(rootFileSpec) {
+  // Default options to pass back.
+  var options;
 
   try {
     var environ = Cc["@mozilla.org/process/environment;1"]
                   .getService(Ci.nsIEnvironment);
 
     var jsonData;
-    if (environ.exists("HARNESS_OPTIONS")) {
-      quitOnFinish = true;
+    if (environ.exists("HARNESS_OPTIONS"))
       jsonData = environ.get("HARNESS_OPTIONS");
-    } else {
+    else {
       var optionsFile = rootFileSpec.clone();
       optionsFile.append('harness-options.json');
       if (optionsFile.exists()) {
@@ -360,16 +413,15 @@ function getDefaults(rootFileSpec) {
     options = JSON.parse(jsonData);
   } catch (e) {
     defaultLogError(e);
-    onQuit("FAIL");
     throw e;
   }
 
-  if ('noQuit' in options)
-    quitOnFinish = !options.noQuit;
-  if ('resultFile' in options)
-    resultFile = options.resultFile;
+  var onQuit = function() {};
 
-  return {onQuit: onQuit, options: options};
+  if ('resultFile' in options)
+    onQuit = buildDevQuit(options);
+
+  return {options: options, onQuit: onQuit};
 }
 
 function NSGetModule(compMgr, fileSpec) {
