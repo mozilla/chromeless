@@ -237,8 +237,13 @@ function buildHarnessService(rootFileSpec, dump, logError,
       isStarted = true;
       obSvc.addObserver(this, "quit-application-granted", true);
       if (options.main) {
-        var program = this.loader.require(options.main);
-        program.main(options, {quit: quit});
+        try {
+          var program = this.loader.require(options.main);
+          program.main(options, {quit: quit});
+        } catch (e) {
+          this.loader.console.exception(e);
+          quit("FAIL");
+        }
       }
     },
 
