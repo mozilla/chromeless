@@ -106,8 +106,12 @@ function nsIStackFramesToJSON(frame) {
 var fromException = exports.fromException = function fromException(e) {
   if (e instanceof Ci.nsIException)
     return nsIStackFramesToJSON(e.location);
-  if (e.stack)
+  if (e.stack && e.stack.length)
     return errorStackToJSON(e.stack);
+  if (e.fileName && typeof(e.lineNumber == "number"))
+    return [{filename: deParentifyURL(e.fileName),
+             lineNo: e.lineNumber,
+             funcName: null}];
   return [];
 };
 

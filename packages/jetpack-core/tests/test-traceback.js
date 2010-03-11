@@ -94,3 +94,22 @@ exports.testFormat = function(test) {
                    "return traceback.format();",
                    "formatted traceback should include source code");
 };
+
+exports.testExceptionsWithEmptyStacksAreLogged = function(test) {
+  // Ensures that our fix to bug 550368 works.
+  var sandbox = Cu.Sandbox("http://www.foo.com");
+  var excRaised = false;
+  try {
+    Cu.evalInSandbox("returns 1 + 2;", sandbox, "1.8",
+                     "blah.js", 25);
+  } catch (e) {
+    excRaised = true;
+    var stack = traceback.fromException(e);
+    test.assertEqual(stack.length, 1, "stack should have one frame");
+    test.assert(stack[0].filename, "blah.js", "frame should have filename");
+    test.assert(stack[0].lineNo, 25, "frame should have line no");
+    test.assertEqual(stack[0].funcName, null, "frame should have null function name");
+  }
+  if (!excRaised)
+    test.fail("Exception should have been raised.");
+};
