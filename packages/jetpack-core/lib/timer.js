@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Atul Varma <atul@mozilla.com>
+ *   Drew Willcoxon <adw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -40,17 +41,19 @@ var timerClass = Cc["@mozilla.org/timer;1"];
 var nextID = 1;
 var timers = {};
 
-function TimerCallback(callback, timerID) {
+function TimerCallback(callback, timerID, repeating) {
   memory.track(this);
   this._callback = callback;
   this._timerID = timerID;
+  this._repeating = repeating;
   this.QueryInterface = xpcom.utils.generateQI([Ci.nsITimerCallback]);
 };
 
 TimerCallback.prototype = {
   notify : function notify(timer) {
     try {
-      delete timers[this._timerID];
+      if (!this._repeating)
+        delete timers[this._timerID];
       this._callback.apply(null, []);
     } catch (e) {
       console.exception(e);
@@ -59,6 +62,22 @@ TimerCallback.prototype = {
 };
 
 var setTimeout = exports.setTimeout = function setTimeout(callback, delay) {
+  return makeTimer(callback, delay, false);
+};
+
+var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
+  cancelTimer(timerID);
+};
+
+var setInterval = exports.setInterval = function setInterval(callback, delay) {
+  return makeTimer(callback, delay, true);
+};
+
+var clearInterval = exports.clearInterval = function clearInterval(timerID) {
+  cancelTimer(timerID);
+};
+
+function makeTimer(callback, delay, repeating) {
   var timer = timerClass.createInstance(Ci.nsITimer);
 
   memory.track(timer, "nsITimer");
@@ -66,22 +85,23 @@ var setTimeout = exports.setTimeout = function setTimeout(callback, delay) {
   var timerID = nextID++;
   timers[timerID] = timer;
 
-  timer.initWithCallback(new TimerCallback(callback, timerID),
+  timer.initWithCallback(new TimerCallback(callback, timerID, repeating),
                          delay,
-                         timer.TYPE_ONE_SHOT);
+                         repeating ? timer.TYPE_REPEATING_SLACK :
+                                     timer.TYPE_ONE_SHOT);
   return timerID;
-};
+}
 
-var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
+function cancelTimer(timerID) {
   var timer = timers[timerID];
   if (timer) {
     timer.cancel();
     delete timers[timerID];
   }
-};
+}
 
 require("unload").when(
   function cancelAllPendingTimers() {
     var timerIDs = [timerID for (timerID in timers)];
-    timerIDs.forEach(function(timerID) { clearTimeout(timerID); });
+    timerIDs.forEach(function(timerID) { cancelTimer(timerID); });
   });
