@@ -93,7 +93,7 @@ function ByteReader(backingStream) {
       }
     }
     catch (err) {
-      xpcom.throwFriendlyError(err);
+      throw xpcom.friendlyError(err);
     }
 
     return data;
@@ -149,7 +149,7 @@ function ByteWriter(backingStream) {
       stream.writeBytes(str, str.length);
     }
     catch (err) {
-      xpcom.throwFriendlyError(err);
+      throw xpcom.friendlyError(err);
     }
   };
 }

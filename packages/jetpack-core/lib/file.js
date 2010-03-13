@@ -78,8 +78,11 @@ function ensureFile(file) {
 }
 
 function ensureExists(file) {
-  if (!file.exists())
-    xpcom.throwFriendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, file.path);
+  if (!file.exists()) {
+    throw xpcom.friendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, {
+      filename: file.path
+    });
+  }
 }
 
 exports.exists = function exists(filename) {
@@ -138,7 +141,7 @@ exports.open = function open(filename, mode) {
       stream.init(file, openFlags, permFlags, 0);
     }
     catch (err) {
-      xpcom.throwFriendlyError(err, filename);
+      throw xpcom.friendlyError(err, { filename: filename });
     }
     return new byteStreams.ByteWriter(stream);
   }
@@ -150,7 +153,7 @@ exports.open = function open(filename, mode) {
     stream.init(file, OPEN_FLAGS.RDONLY, 0, 0);
   }
   catch (err) {
-    xpcom.throwFriendlyError(err, filename);
+    throw xpcom.friendlyError(err, { filename: filename });
   }
   return new byteStreams.ByteReader(stream);
 };

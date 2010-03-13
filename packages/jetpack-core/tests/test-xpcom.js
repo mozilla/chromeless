@@ -1,3 +1,4 @@
+var traceback = require("traceback");
 var xpcom = require("xpcom");
 
 exports.testRegister = function(test, text) {
@@ -84,6 +85,72 @@ exports.testMakeUuid = function(test) {
   test.assertMatches(first, /{[0-9a-f\-]+}/);
   test.assertMatches(second, /{[0-9a-f\-]+}/);
   test.assertNotEqual(first, second);
+};
+
+exports.testFriendlyError = function (test) {
+  // First test that Error objects are returned for all inputs and those Errors
+  // have tracebacks.
+  var err = xpcom.friendlyError(Cr.NS_ERROR_UNEXPECTED);
+  test.assertEqual(err.constructor.name, "Error",
+                   "Friendly error on Components.results input should be an " +
+                   "Error object");
+  var tb = traceback.fromException(err);
+  test.assert(tb.length > 1,
+              "Friendly error on Components.results input should have " +
+              "traceback");
+
+  err = xpcom.friendlyError(new Error());
+  test.assertEqual(err.constructor.name, "Error",
+                   "Friendly error on Error input should be an Error object");
+  tb = traceback.fromException(err);
+  test.assert(tb.length > 1,
+              "Friendly error on Error input should have traceback");
+
+  try {
+    // Is there a better way to generate an nsIException?  Anyway, this works.
+    Cc["@mozilla.org/network/io-service;1"].getService(null);
+    test.fail("Tried to generate an nsIException but failed!");
+  }
+  catch (nsIErr) {
+    err = xpcom.friendlyError(nsIErr);
+    test.assertEqual(err.constructor.name, "Error",
+                     "Friendly error on nsIException input should be an " +
+                     "Error object");
+    tb = traceback.fromException(err);
+    test.assert(tb.length > 1,
+                "Friendly error on nsIException input should have traceback");
+  }
+
+  // Test the messages of all the errors that friendlyError supports.
+  var unknownFilename = "(filename unknown)";
+
+  test.assertEqual(xpcom.friendlyError(Cr.NS_BASE_STREAM_CLOSED).message,
+                   "The stream is closed and cannot be read or written.",
+                   "Cr.NS_BASE_STREAM_CLOSED message expected");
+
+  test.assertEqual(xpcom.friendlyError(Cr.NS_ERROR_FILE_IS_DIRECTORY).message,
+                   "The stream was opened on a directory, which cannot " +
+                     "be read or written: " + unknownFilename,
+                   "Cr.NS_ERROR_FILE_IS_DIRECTORY message expected");
+  test.assertEqual(
+    xpcom.friendlyError(Cr.NS_ERROR_FILE_IS_DIRECTORY, {
+      filename: "some/filename"
+    }).message,
+    "The stream was opened on a directory, which cannot be read or written: " +
+      "some/filename",
+    "Cr.NS_ERROR_FILE_IS_DIRECTORY message with filename expected"
+  );
+
+  test.assertEqual(xpcom.friendlyError(Cr.NS_ERROR_FILE_NOT_FOUND).message,
+                   "path does not exist: " + unknownFilename,
+                   "Cr.NS_ERROR_FILE_NOT_FOUND message expected");
+  test.assertEqual(
+    xpcom.friendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, {
+      filename: "some/filename"
+    }).message,
+    "path does not exist: some/filename",
+    "Cr.NS_ERROR_FILE_NOT_FOUND message with filename expected"
+  );
 };
 
 exports.testUnload = function(test) {

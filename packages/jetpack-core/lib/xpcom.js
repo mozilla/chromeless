@@ -170,43 +170,70 @@ var getCategory = exports.getCategory = function getCategory(name) {
 };
 
 /**
- * Throws an exception that is a more descriptive version of the raw XPCOM
+ * Returns an Error instance that is a more descriptive version of the raw XPCOM
  * errOrResult.  opts is used by some exceptions to include helpful info in
  * their messages such as a filename, and as such its properties depend on the
  * type of exception being thrown.  opts need not be defined for errors that
- * don't use it.
+ * don't use it.  See below for a list of supported options.
  *
- * If there is no friendly version of errOrResult, then it must be an exception
- * of some sort -- either an nsIException or JavaScript Error -- and it itself
- * is thrown.
+ * If there is no friendly version of errOrResult, then if it's an nsIException,
+ * an Error whose message is errOrResult's message is returned; if it's a
+ * result, an Error with a simple numeric message is returned; and if it's an
+ * Error, it itself is returned.
  *
- * @param errOrResult
- *        An nsIException, Error, or one of the Components.results.
- * @param opts
- *        An optional options object.  If opts.msg is a string, a new Error is
- *        thrown with message opts.msg.
+ * @param  errOrResult
+ *         An nsIException, Error, or one of the Components.results.
+ * @param  opts
+ *         An optional options object.  The following properies are supported:
+ *         @prop filename
+ *               The name of the file being accessed when the exception was
+ *               thrown, if any.
+ * @return An Error instance.
  */
-var throwFriendlyError = exports.throwFriendlyError =
-  function throwFriendlyError(errOrResult, opts) {
+var friendlyError = exports.friendlyError =
+  function friendlyError(errOrResult, opts) {
     opts = opts || {};
-    if (typeof(opts.msg) === "string")
-      throw new Error(msg);
-
     var result = errOrResult instanceof Ci.nsIException ?
                  errOrResult.result :
                  errOrResult;
 
+    // Common options to be used below.
+    var filename = opts.filename || "(filename unknown)";
+
+    // If you add an error message, update testFriendlyError in test-xpcom.js.
+    // If the message includes options, also update this method's comment.
     switch (result) {
     case Cr.NS_BASE_STREAM_CLOSED:
-      throw new Error("The stream is closed and cannot be read or written.");
+      return new Error("The stream is closed and cannot be read or written.");
     case Cr.NS_ERROR_FILE_IS_DIRECTORY:
-      throw new Error("The stream was opened on a directory, which cannot be " +
-                      "read or written.");
+      return new Error("The stream was opened on a directory, which cannot " +
+                       "be read or written: " + filename);
     case Cr.NS_ERROR_FILE_NOT_FOUND:
-      throw new Error("path does not exist: " + opts.filename);
+      return new Error("path does not exist: " + filename);
     }
 
-    throw errOrResult;
+    // errOrResult should be an nsIException, ...
+    if (errOrResult instanceof Ci.nsIException)
+      return new Error("XPCOM error: " + errOrResult.message);
+
+    // ... one of Components.results, a number, ...
+    if (typeof(errOrResult) === "number") {
+
+      // Look up the result's name to make the message a little nicer.
+      for (let [name, val] in Iterator(Cr)) {
+        if (val === errOrResult) {
+          return new Error("XPCOM error " + name +
+                           " (0x" + errOrResult.toString(16) + ")");
+        }
+      }
+    }
+
+    // ... or an Error.
+    if (errOrResult.constructor.name === "Error")
+      return errOrResult;
+
+    // We've been called wrong if we get here.
+    return new Error("Unknown error: " + errOrResult);
   };
 
 require("unload").when(
