@@ -4,6 +4,7 @@ import threading
 import socket
 import urllib
 import urllib2
+import copy
 import mimetypes
 import webbrowser
 import Queue
@@ -101,11 +102,56 @@ class Server(object):
                 data[filename] = dict(size=info.st_size)
         return data
 
-    def _respond_with_package(self, root_dir):
-        self.start_response('200 OK',
-                            [('Content-type', 'text/plain')])
-        files = self._get_files_in_dir(root_dir)
-        yield json.dumps(files)
+    def build_pkg_index(self, pkg_cfg):
+        pkg_cfg = copy.deepcopy(pkg_cfg)
+        for pkg in pkg_cfg.packages:
+            root_dir = pkg_cfg.packages[pkg].root_dir
+            files = self._get_files_in_dir(root_dir)
+            pkg_cfg.packages[pkg].files = files
+            del pkg_cfg.packages[pkg].root_dir
+        return pkg_cfg.packages
+
+    def build_pkg_cfg(self):
+        pkg_cfg = packaging.build_config(self.env_root,
+                                         Bunch(name='dummy'))
+        del pkg_cfg.packages['dummy']
+        return pkg_cfg
+
+    def _respond_with_pkg_file(self, parts):
+        if not parts:
+            return self._respond('404 Not Found')
+
+        try:
+            pkg_cfg = self.build_pkg_cfg()
+        except packaging.Error, e:
+            self.start_response('500 Internal Server Error',
+                                [('Content-type', 'text/plain')])
+            return [str(e)]
+
+        if parts[0] == 'index.json':
+            # TODO: This should really be of JSON's mime type,
+            # but Firefox doesn't let us browse this way so
+            # we'll just return text/plain for now.
+            self.start_response('200 OK',
+                                [('Content-type', 'text/plain')])
+            return [json.dumps(self.build_pkg_index(pkg_cfg))]
+
+        pkg_name = parts[0]
+        if pkg_name not in pkg_cfg.packages:
+            return self._respond('404 Not Found')
+        else:
+            root_dir = pkg_cfg.packages[pkg_name].root_dir
+            if len(parts) == 1:
+                return self._respond('404 Not Found')
+            else:
+                dir_path = os.path.join(root_dir, *parts[1:])
+                dir_path = os.path.normpath(dir_path)
+                if not (dir_path.startswith(root_dir) and
+                        os.path.exists(dir_path) and
+                        os.path.isfile(dir_path)):
+                    return self._respond('404 Not Found')
+                else:
+                    return self._respond_with_file(dir_path)
 
     def _respond_with_api(self, parts):
         parts = [part for part in parts
@@ -161,45 +207,6 @@ class Server(object):
             self.start_response('200 OK',
                                 [('Content-type', 'text/plain')])
             return ['Idle complete (%s seconds)' % IDLE_TIMEOUT]
-        elif parts[0] == 'packages':
-            try:
-                pkg_cfg = packaging.build_config(self.env_root,
-                                                 Bunch(name='dummy'))
-                del pkg_cfg.packages['dummy']
-            except packaging.Error, e:
-                self.start_response('500 Internal Server Error',
-                                    [('Content-type', 'text/plain')])
-                return [str(e)]
-
-            if len(parts) == 1:
-                # TODO: This should really be of JSON's mime type,
-                # but Firefox doesn't let us browse this way so
-                # we'll just return text/plain for now.
-                self.start_response('200 OK',
-                                    [('Content-type', 'text/plain')])
-                for pkg in pkg_cfg.packages:
-                    root_dir = pkg_cfg.packages[pkg].root_dir
-                    files = self._get_files_in_dir(root_dir)
-                    pkg_cfg.packages[pkg].files = files
-                    del pkg_cfg.packages[pkg].root_dir
-                return [json.dumps(pkg_cfg.packages)]
-            else:
-                pkg_name = parts[1]
-                if pkg_name not in pkg_cfg.packages:
-                    return self._respond('404 Not Found')
-                else:
-                    root_dir = pkg_cfg.packages[pkg_name].root_dir
-                    if len(parts) == 2:
-                        return self._respond_with_package(root_dir)
-                    else:
-                        dir_path = os.path.join(root_dir, *parts[2:])
-                        dir_path = os.path.normpath(dir_path)
-                        if not (dir_path.startswith(root_dir) and
-                                os.path.exists(dir_path) and
-                                os.path.isfile(dir_path)):
-                            return self._respond('404 Not Found')
-                        else:
-                            return self._respond_with_file(dir_path)
         else:
             return self._respond('404 Not Found')
 
@@ -208,10 +215,16 @@ class Server(object):
         self.start_response = start_response
 
         parts = environ['PATH_INFO'].split('/')[1:]
-        if (not parts) or (not parts[0]):
+        if not parts:
+            # Expect some sort of rewrite rule, etc. to always ensure
+            # that we have at least a '/' as our path.
+            return self._respond('404 Not Found')
+        if not parts[0]:
             parts = ['index.html']
         if parts[0] == API_PATH:
             return self._respond_with_api(parts[1:])
+        elif parts[0] == 'packages':
+            return self._respond_with_pkg_file(parts[1:])
         else:
             fullpath = os.path.join(self.root, *parts)
             fullpath = os.path.normpath(fullpath)
@@ -300,6 +313,55 @@ def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
     except KeyboardInterrupt:
         print "Ctrl-C received, exiting."
 
+def generate_static_docs(env_root, tgz_filename='jetpack-sdk-docs.tgz'):
+    import shutil
+    import tarfile
+
+    server = Server(env_root=env_root,
+                    task_queue=None,
+                    expose_privileged_api=False)
+    root_dir = os.path.join(server.root, 'packages')
+
+    if os.path.exists(root_dir):
+        shutil.rmtree(root_dir)
+
+    pkg_cfg = server.build_pkg_cfg()
+
+    os.mkdir(root_dir)
+
+    index = json.dumps(server.build_pkg_index(pkg_cfg))
+    index_path = os.path.join(root_dir, 'index.json')
+    open(index_path, 'w').write(index)
+
+    for pkg_name, pkg in pkg_cfg['packages'].items():
+        dir_made = False
+        src_dir = pkg.root_dir
+        dest_dir = os.path.join(root_dir, pkg_name)
+
+        # TODO: This is a DRY violation from main.js. We should
+        # really move the common logic/names to cuddlefish.packaging.
+        default_items = ['README.md', 'docs']
+
+        for item in default_items:
+            item_src = os.path.join(src_dir, item)
+            item_dest = os.path.join(dest_dir, item)
+            if os.path.exists(item_src):
+                if not dir_made:
+                    os.mkdir(dest_dir)
+                    dir_made = True
+                if os.path.isdir(item_src):
+                    shutil.copytree(item_src, item_dest)
+                else:
+                    shutil.copyfile(item_src, item_dest)
+
+    tgz = tarfile.open(tgz_filename, 'w:gz')
+    tgz.add(server.root, 'jetpack-sdk-docs')
+    tgz.close()
+
+    shutil.rmtree(root_dir)
+
+    print "Wrote %s." % tgz_filename
+
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
             no_quit=False, timeout=None,
@@ -329,5 +391,7 @@ if __name__ == '__main__':
             httpd = simple_server.make_server(DEFAULT_HOST,
                                               DEFAULT_PORT, app)
             start(httpd=httpd)
+        else:
+            raise Exception('unrecognized command "%s"' % sys.argv[1])
     else:
         start(env_root)

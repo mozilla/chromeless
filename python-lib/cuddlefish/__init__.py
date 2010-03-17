@@ -20,6 +20,7 @@ Package-Specific Commands:
 
 Global Commands:
   docs       - view web-based documentation
+  sdocs      - export static documentation
   testall    - test all packages
 """
 
@@ -226,6 +227,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         # a particular event occurring, rather than this
         # relatively arbitrary/generous amount.
         time.sleep(cuddlefish.server.IDLE_WEBPAGE_TIMEOUT * 2)
+        return
+    elif command == "sdocs":
+        import cuddlefish.server
+
+        cuddlefish.server.generate_static_docs(env_root)
         return
 
     if not target_cfg:

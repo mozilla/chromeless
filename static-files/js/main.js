@@ -62,7 +62,7 @@ function startApp(jQuery, window) {
   }
 
   function pkgFileUrl(pkg, filename) {
-    return "api/packages/" + pkg.name + "/" + filename;
+    return "packages/" + pkg.name + "/" + filename;
   }
 
   function pkgHasFile(pkg, filename) {
@@ -316,8 +316,9 @@ function startApp(jQuery, window) {
                  // for a really long time because it's a long poll.
                  success: scheduleNextIdlePing,
                  error: function(req) {
-                   if (req.status == 501)
-                     // The server isn't implementing idle, just bail
+                   if (req.status == 501 || req.status == 404)
+                     // The server either isn't implementing idle, or
+                     // we're being served from static files; just bail
                      // and stop pinging this API endpoint.
                      return;
                    if (id) {
@@ -350,9 +351,10 @@ function startApp(jQuery, window) {
     window.setTimeout(sendIdlePing, IDLE_PING_DELAY);
   }
 
-  scheduleNextIdlePing();
+  if (window.location.protocol != "file:")
+    scheduleNextIdlePing();
   linkDeveloperGuide();
-  jQuery.ajax({url: "api/packages",
+  jQuery.ajax({url: "packages/index.json",
                dataType: "json",
                success: processPackages,
                error: onPackageError});
