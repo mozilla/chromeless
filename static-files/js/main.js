@@ -62,12 +62,7 @@ function startApp(jQuery, window) {
   }
 
   function pkgFileUrl(pkg, filename) {
-    var url = "api/packages/file/" + pkg.name + "/" + filename;
-    return url;
-  }
-
-  function pkgAPIUrl(pkg, filename) {
-    return "api/packages/docs/" + pkg.name + "/" + filename;
+    return "api/packages/" + pkg.name + "/" + filename;
   }
 
   function pkgHasFile(pkg, filename) {
@@ -103,23 +98,6 @@ function startApp(jQuery, window) {
     return converter.makeHtml(insertBugzillaLinks(text));
   }
 
-  function renderInterleavedAPIDocs(where, hunks) {
-    var i, hunk;
-    $(where).empty();
-    for([i,hunk] in Iterator(hunks)) {
-      if (hunk[0] == "markdown") {
-        var nh = $("<span>" + markdownToHtml(hunk[1]) + "</span>");
-        nh.appendTo(where);
-      } else if (hunk[0] == "api-json") {
-        //var id = "apidoc-hunk-%s".replace(/%s/, i);
-        //$("<span id='%s'/>\n".replace(/%s/, id)).appendTo(where);
-        //var el = $("<span/>").attr({id: id}).appendTo(where);
-        var $el = $("<div class='api'/>").appendTo(where);
-        renderDocumentationJSON(hunk[1], $el);
-      }
-    }
-  }
-
   function getPkgFile(pkg, filename, filter, cb) {
     if (pkgHasFile(pkg, filename)) {
       var options = {
@@ -136,29 +114,6 @@ function startApp(jQuery, window) {
         },
         error: function() {
           cb(null);
-        }
-      };
-      jQuery.ajax(options);
-    } else
-      cb(null);
-  }
-
-  function renderPkgAPI(pkg, filename, where, donecb) {
-    if (pkgHasFile(pkg, filename)) {
-      var options = {
-        url: pkgAPIUrl(pkg, filename),
-        dataType: "json",
-        success: function(json) {
-          try {
-            renderInterleavedAPIDocs(where, json);
-          } catch (e) {
-            $(where).html("Oops, API docs renderer failed: " + e);
-          }
-          donecb("success");
-        },
-        error: function() {
-          alert("getPkgAPI failure: " + filename);
-          donecb(null);
         }
       };
       jQuery.ajax(options);
@@ -219,11 +174,12 @@ function startApp(jQuery, window) {
 
     entry.find(".name").text(moduleName);
     queueMainContent(entry);
-    renderPkgAPI(pkg, filename, entry.find(".docs"),
-                 function(success) {
-                   if (success)
-                     showMainContent(entry, pkgFileUrl(pkg, filename));
-                 });
+    getPkgFile(pkg, filename, markdownToHtml,
+               function(html) {
+                 if (html)
+                   entry.find(".docs").html(html);
+                 showMainContent(entry, pkgFileUrl(pkg, filename));
+               });
   }
 
   function showPackageDetail(name) {

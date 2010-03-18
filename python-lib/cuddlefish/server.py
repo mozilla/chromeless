@@ -1,4 +1,5 @@
 import os
+import time
 import threading
 import socket
 import urllib
@@ -10,7 +11,6 @@ import SocketServer
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
-from cuddlefish import apiparser
 import simplejson as json
 
 try:
@@ -89,12 +89,6 @@ class Server(object):
                             [('Content-type', mimetype)])
         yield open(path, 'r').read()
 
-    def _respond_with_apidoc(self, path):
-        # e.g. http://127.0.0.1:8888/api/packages/docs/jetpack-core/docs/url.md
-        self.start_response('200 OK', [('Content-type', 'text/plain')])
-        parsed = list(apiparser.parse_hunks(open(path, 'r').read()))
-        yield json.dumps(parsed)
-
     def _get_files_in_dir(self, path):
         data = {}
         files = os.listdir(path)
@@ -117,7 +111,7 @@ class Server(object):
         parts = [part for part in parts
                  if part]
 
-        if parts[0] == TASK_QUEUE_PATH: # /api/task-queue
+        if parts[0] == TASK_QUEUE_PATH:
             if not self.expose_privileged_api:
                 return self._respond('501 Not Implemented')
             if len(parts) == 2:
@@ -150,7 +144,7 @@ class Server(object):
                     return self._respond('404 Not Found')
             else:
                 return self._respond('404 Not Found')
-        elif parts[0] == IDLE_PATH: # /api/idle
+        elif parts[0] == IDLE_PATH:
             if not self.expose_privileged_api:
                 return self._respond('501 Not Implemented')
             # TODO: Yuck, we're accessing a protected property; any
@@ -167,8 +161,7 @@ class Server(object):
             self.start_response('200 OK',
                                 [('Content-type', 'text/plain')])
             return ['Idle complete (%s seconds)' % IDLE_TIMEOUT]
-        elif parts[0] == "packages":
-            # /api/packages or /api/packages/docs or /api/packages/file
+        elif parts[0] == 'packages':
             try:
                 pkg_cfg = packaging.build_config(self.env_root,
                                                  Bunch(name='dummy'))
@@ -178,7 +171,7 @@ class Server(object):
                                     [('Content-type', 'text/plain')])
                 return [str(e)]
 
-            if len(parts) == 1: # /api/packages (no suffix)
+            if len(parts) == 1:
                 # TODO: This should really be of JSON's mime type,
                 # but Firefox doesn't let us browse this way so
                 # we'll just return text/plain for now.
@@ -191,30 +184,22 @@ class Server(object):
                     del pkg_cfg.packages[pkg].root_dir
                 return [json.dumps(pkg_cfg.packages)]
             else:
-                mode = parts[1] # file or docs
-                pkg_name = parts[2]
+                pkg_name = parts[1]
                 if pkg_name not in pkg_cfg.packages:
                     return self._respond('404 Not Found')
                 else:
                     root_dir = pkg_cfg.packages[pkg_name].root_dir
-                    if len(parts) == 3:
-                        # /api/packages/file/jetpack-core or
-                        # /api/packages/docs/jetpack-core
+                    if len(parts) == 2:
                         return self._respond_with_package(root_dir)
                     else:
-                        dir_path = os.path.join(root_dir, *parts[3:])
+                        dir_path = os.path.join(root_dir, *parts[2:])
                         dir_path = os.path.normpath(dir_path)
                         if not (dir_path.startswith(root_dir) and
                                 os.path.exists(dir_path) and
                                 os.path.isfile(dir_path)):
                             return self._respond('404 Not Found')
                         else:
-                            if parts[1] == "file":
-                                # /api/packages/file/jetpack-core/lib/file.js
-                                return self._respond_with_file(dir_path)
-                            else:
-                                # /api/packages/docs/jetpack-core/docs/file.md
-                                return self._respond_with_apidoc(dir_path)
+                            return self._respond_with_file(dir_path)
         else:
             return self._respond('404 Not Found')
 
@@ -225,10 +210,9 @@ class Server(object):
         parts = environ['PATH_INFO'].split('/')[1:]
         if (not parts) or (not parts[0]):
             parts = ['index.html']
-        if parts[0] == API_PATH: # /api
+        if parts[0] == API_PATH:
             return self._respond_with_api(parts[1:])
         else:
-            # serves from ./static-files/ + PATH
             fullpath = os.path.join(self.root, *parts)
             fullpath = os.path.normpath(fullpath)
             if not (fullpath.startswith(self.root) and
