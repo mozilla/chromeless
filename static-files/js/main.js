@@ -12,10 +12,11 @@ function startApp(jQuery, window) {
   const CHECK_HASH_DELAY = 100;
 
   function checkHash() {
-    if (window.location.hash.length <= 1)
-      window.location.hash = "#" + DEFAULT_HASH;
-    if (window.location.hash != currentHash) {
-      currentHash = window.location.hash;
+    var hash = window.location.hash;
+    if (hash.length <= 1)
+      hash = "#" + DEFAULT_HASH;
+    if (hash != currentHash) {
+      currentHash = hash;
       onHash(currentHash.slice(1));
     }
   }
