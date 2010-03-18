@@ -212,18 +212,25 @@ class APIParser:
     if hasProp:
       self._parseProps(paramLines)
 
-class Parser:
-  def __init__(self):
-    pass
-    
-  def feed(self, text):
-    blocks = self._getAPIBlocks(text)
-    for block in blocks:
-      parsed = self._parseBlock(block)
-      compiled = self._compileParsedBlock(parsed)
-      text = text.replace(block, compiled)
-    return text
-    
+def parse_hunks(text):
+  # return a list of tuples. Each is one of:
+  #  ("raw", string)     : non-API blocks
+  #  ("api-json", dict)  : API blocks
+  processed = 0 # we've handled all bytes up-to-but-not-including this
+                # offset
+  for m in re.finditer("<api[\w\W]*?</api>", text, re.M):
+    start = m.start()
+    if start > processed+1:
+      yield ("markdown", text[processed:start])
+      processed = start
+    p = APIParser()
+    d = p.feed(m.group(0))
+    yield ("api-json", d)
+    processed = m.end()
+  if processed < len(text):
+    yield ("markdown", text[processed:])
+
+class _OLD:
   def _getAPIBlocks(self, text):
     blocks = re.findall("<api[\w\W]*?</api>", text, re.M)
     return blocks
@@ -241,5 +248,6 @@ class Parser:
 if __name__ == "__main__":
   import sys
 
-  p = Parser()
-  print p.feed(open(sys.argv[1]).read())
+  for (t,data) in parse_hunks(open(sys.argv[1]).read()):
+    print t.upper(), ":", data
+
