@@ -21,6 +21,7 @@ Package-Specific Commands:
 Global Commands:
   docs       - view web-based documentation
   sdocs      - export static documentation
+  selftest   - test cfx itself
   testall    - test all packages
 """
 
@@ -213,6 +214,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
+        return
+    elif command == "selftest":
+        import cuddlefish.tests
+
+        cuddlefish.tests.run(options.verbose)
         return
     elif command == "docs":
         import subprocess
