@@ -1,0 +1,4 @@
+{
+  "description": "Fake Jetpack core library, for testing cfx only.",
+  "loader": "lib/loader.js"
+}

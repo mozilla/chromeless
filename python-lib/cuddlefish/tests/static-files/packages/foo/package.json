@@ -1,0 +1,4 @@
+{
+  "description": "A fake package that can be built into an extension.",
+  "dependencies": ["jetpack-core", "bar"]
+}
