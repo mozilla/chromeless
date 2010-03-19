@@ -3,10 +3,19 @@ import unittest
 
 from cuddlefish import server
 
+env_root=os.environ['CUDDLEFISH_ROOT']
+
+class ServerTests(unittest.TestCase):
+    def test_sdocs_does_not_smoke(self):
+        filename = 'testdocs.tgz'
+        if os.path.exists(filename):
+            os.remove(filename)
+        server.generate_static_docs(env_root, tgz_filename=filename)
+        self.assertTrue(os.path.exists(filename))
+        os.remove(filename)
+
 class UnprivilegedServerTests(unittest.TestCase):
     def request(self, path, method='GET'):
-        env_root=os.environ['CUDDLEFISH_ROOT']
-
         app = server.make_wsgi_app(env_root, task_queue=None,
                                    expose_privileged_api=False)
 

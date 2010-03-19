@@ -237,7 +237,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     elif command == "sdocs":
         import cuddlefish.server
 
-        cuddlefish.server.generate_static_docs(env_root)
+        # TODO: Allow user to change this filename via cmd line.
+        filename = 'jetpack-sdk-docs.tgz'
+        cuddlefish.server.generate_static_docs(env_root, filename)
+        print "Wrote %s." % filename
         return
 
     if not target_cfg:

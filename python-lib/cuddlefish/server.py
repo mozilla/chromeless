@@ -313,7 +313,7 @@ def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
     except KeyboardInterrupt:
         print "Ctrl-C received, exiting."
 
-def generate_static_docs(env_root, tgz_filename='jetpack-sdk-docs.tgz'):
+def generate_static_docs(env_root, tgz_filename):
     import shutil
     import tarfile
 
@@ -359,8 +359,6 @@ def generate_static_docs(env_root, tgz_filename='jetpack-sdk-docs.tgz'):
     tgz.close()
 
     shutil.rmtree(root_dir)
-
-    print "Wrote %s." % tgz_filename
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
