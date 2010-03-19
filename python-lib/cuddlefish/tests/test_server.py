@@ -6,7 +6,7 @@ from cuddlefish import server
 env_root=os.environ['CUDDLEFISH_ROOT']
 
 class ServerTests(unittest.TestCase):
-    def test_sdocs_does_not_smoke(self):
+    def test_generate_static_docs_does_not_smoke(self):
         filename = 'testdocs.tgz'
         if os.path.exists(filename):
             os.remove(filename)
