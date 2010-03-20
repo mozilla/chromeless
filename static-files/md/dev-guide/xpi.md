@@ -1,19 +1,20 @@
-This document describes how a subset of a Jetpack SDK's package
-repository is encapsulated into a standalone XPI with no dependencies.
+<span class="aside">
+Note that some parts of the following text have been simplified to
+allow you get a better idea of what's going on when an XPI is created.
+</span>
 
-Note that the following text is actually an oversimplification of
-what's actually done when creating an XPI; some parts of the pipeline
-have been "faked" to reduce complexity and allow the reader to get the
-"big picture" of what's going on when an XPI is created.
+Running `cfx xpi` in the directory of any package that contains a
+Jetpack Program will bundle the package and all its dependencies
+into a standalone XPI. This document explains how this process
+works under the hood.
 
-Please ignore any lines that start with the text `>>>`, such as the
-following:
-
-    >>> from cuddlefish.tests.test_xpi import document_dir
+Source Packages
+---------------
 
 We start out with a simplified `packages` directory with three
 packages, structured like so:
 
+    >>> from cuddlefish.tests.test_xpi import document_dir
     >>> document_dir('packages')
     bar/package.json:
       {
@@ -25,7 +26,8 @@ packages, structured like so:
       };
     foo/package.json:
       {
-        "description": "A package w/ a main module; can be built into an extension.",
+        "description": "A package w/ a main module; can be built into
+                        an extension.",
         "dependencies": ["jetpack-core", "bar"]
       }
     foo/lib/main.js:
@@ -35,7 +37,8 @@ packages, structured like so:
       };
     jetpack-core/package.json:
       {
-        "description": "A foundational package that provides a CommonJS module loader implementation.",
+        "description": "A foundational package that provides a CommonJS
+                        module loader implementation.",
         "loader": "lib/loader.js"
       }
     jetpack-core/lib/loader.js:
@@ -48,6 +51,9 @@ packages, too: this doesn't affect the generated XPI, however, because
 only packages cited as dependencies by `foo`'s `package.json` will
 ultimately be included in the XPI.
 
+The XPI Template
+----------------
+
 The Jetpack SDK also contains a directory that contains a template for
 an XPI file:
 
@@ -58,9 +64,15 @@ an XPI file:
       // registering all its resource directories, executing its loader,
       // and then executing its main module's main() function.
 
-When we choose to build the `foo` package into an extension, `foo`'s
-dependencies are calculated and an XPI file is generated that combines
-all required packages, the XPI template, and a few other
+A template different than the default can be specified via the
+`cfx` tool's `--templatedir` option.
+
+The Generated XPI
+-----------------
+
+When we run `cfx xpi` to build the `foo` package into an extension,
+`foo`'s dependencies are calculated and an XPI file is generated that
+combines all required packages, the XPI template, and a few other
 auto-generated files:
 
     >>> document_dir('xpi-output')

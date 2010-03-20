@@ -6,7 +6,8 @@ function startApp(jQuery, window) {
 
   const DEFAULT_HASH = "guide/getting-started";
   const BUGZILLA_SHOW = "https://bugzilla.mozilla.org/show_bug.cgi?id=";
-  const BUGZILLA_REGEXP = /bug\s+([0-9]+)/;
+  const BUGZILLA_REGEXP = /bug\s+([0-9]+)/g;
+  const DOCTEST_REGEXP = />>>.+/g;
   const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
@@ -94,9 +95,14 @@ function startApp(jQuery, window) {
                         "bug [$1](" + BUGZILLA_SHOW + "$1)");
   }
 
+  function removePyDoctestCode(text) {
+    return text.replace(DOCTEST_REGEXP, "");
+  }
+
   function markdownToHtml(text) {
     var converter = new Showdown.converter();
-    return converter.makeHtml(insertBugzillaLinks(text));
+    text = removePyDoctestCode(insertBugzillaLinks(text));
+    return converter.makeHtml(text);
   }
 
   function getPkgFile(pkg, filename, filter, cb) {

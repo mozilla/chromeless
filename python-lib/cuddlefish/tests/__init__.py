@@ -3,6 +3,8 @@ import unittest
 import doctest
 import glob
 
+env_root = os.environ['CUDDLEFISH_ROOT']
+
 def get_tests():
     import cuddlefish
     import cuddlefish.tests
@@ -11,11 +13,6 @@ def get_tests():
     packages = [cuddlefish, cuddlefish.tests]
     for package in packages:
         path = os.path.abspath(package.__path__[0])
-
-        txtnames = glob.glob(os.path.join(path, '*.txt'))
-        for filename in txtnames:
-            tests.append(doctest.DocFileTest(filename, module_relative=False))
-
         pynames = glob.glob(os.path.join(path, '*.py'))
         for filename in pynames:
             basename = os.path.basename(filename)
@@ -33,6 +30,19 @@ def get_tests():
             for test in doctests:
                 if len(test.examples) > 0:
                     tests.append(doctest.DocTestCase(test))
+
+    md_dir = os.path.join(env_root, 'static-files', 'md')
+    doctest_opts = (doctest.NORMALIZE_WHITESPACE |
+                    doctest.REPORT_UDIFF)
+    for dirpath, dirnames, filenames in os.walk(md_dir):
+        for filename in filenames:
+            if filename.endswith('.md'):
+                absname = os.path.join(dirpath, filename)
+                tests.append(doctest.DocFileTest(
+                        absname,
+                        module_relative=False,
+                        optionflags=doctest_opts
+                        ))
 
     return tests
 

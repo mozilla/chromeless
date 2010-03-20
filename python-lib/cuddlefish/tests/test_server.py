@@ -2,8 +2,7 @@ import os
 import unittest
 
 from cuddlefish import server
-
-env_root=os.environ['CUDDLEFISH_ROOT']
+from cuddlefish.tests import env_root
 
 class ServerTests(unittest.TestCase):
     def test_generate_static_docs_does_not_smoke(self):
