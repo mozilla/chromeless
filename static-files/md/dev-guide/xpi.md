@@ -77,7 +77,7 @@ auto-generated files:
 
     >>> document_dir('xpi-output')
     install.rdf:
-      <RDF><!-- This is a fake install.rdf. --></RDF>
+      <RDF><!-- Extension metadata is here. --></RDF>
     components/harness.js:
       // This file contains XPCOM code that bootstraps a
       // Jetpack-based extension by loading its harness-options.json,
@@ -97,21 +97,21 @@ auto-generated files:
       // via Components.utils.import() and is responsible for creating a
       // CommonJS module loader.
     harness-options.json:
-      {u'loader': u'resource://testing-jetpack-core-lib/loader.js',
-       u'main': u'main',
-       u'packageData': {},
-       u'resourcePackages': {u'testing-bar-lib': u'bar',
-                             u'testing-foo-lib': u'foo',
-                             u'testing-jetpack-core-lib': u'jetpack-core'},
-       u'resources': {u'testing-bar-lib': [u'resources',
-                                           u'testing-bar-lib'],
-                      u'testing-foo-lib': [u'resources',
-                                           u'testing-foo-lib'],
-                      u'testing-jetpack-core-lib': [u'resources',
-                                                    u'testing-jetpack-core-lib']},
-       u'rootPaths': [u'resource://testing-jetpack-core-lib/',
-                      u'resource://testing-bar-lib/',
-                      u'resource://testing-foo-lib/']}
+      {'loader': 'resource://testing-jetpack-core-lib/loader.js',
+       'main': 'main',
+       'packageData': {},
+       'resourcePackages': {'testing-bar-lib': 'bar',
+                            'testing-foo-lib': 'foo',
+                            'testing-jetpack-core-lib': 'jetpack-core'},
+       'resources': {'testing-bar-lib': ['resources',
+                                         'testing-bar-lib'],
+                     'testing-foo-lib': ['resources',
+                                         'testing-foo-lib'],
+                     'testing-jetpack-core-lib': ['resources',
+                                                  'testing-jetpack-core-lib']},
+       'rootPaths': ['resource://testing-jetpack-core-lib/',
+                     'resource://testing-bar-lib/',
+                     'resource://testing-foo-lib/']}
 
 It can be observed from the listing above that the `bar` package's `lib`
 directory will be mapped to `resource://testing-bar-lib/` when the XPI is
