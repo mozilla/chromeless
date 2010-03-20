@@ -118,6 +118,7 @@ def run_app(harness_root_dir, harness_options, xpts,
                                 preferences=preferences)
         runner = runner_class(profile=profile,
                               binary=binary,
+                              cmdargs=['-console'],
                               env=env,
                               kp_kwargs=popen_kwargs)
         runner.start()
