@@ -1,2 +1,3 @@
-// This module would ordinarily be loaded by an XPCOM harness/boostrapper,
-// and would be responsible for creating a CommonJS module loader.
+// This module will be imported by the XPCOM harness/boostrapper
+// via Components.utils.import() and is responsible for creating a
+// CommonJS module loader.

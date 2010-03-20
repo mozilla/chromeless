@@ -38,7 +38,7 @@ expected_options = {
     u"loader": u"resource://testing-jetpack-core-lib/loader.js"
 }
 
-fake_manifest = '<RDF>This is a fake install.rdf.</RDF>'
+fake_manifest = '<RDF><!-- This is a fake install.rdf. --></RDF>'
 
 def document_dir(name):
     if name in ['packages', 'xpi-template']:
