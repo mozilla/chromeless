@@ -1,0 +1,95 @@
+This document describes how a subset of a Jetpack SDK's package
+repository is encapsulated into a standalone XPI with no dependencies.
+
+Note that the following text is actually an oversimplification of
+what's actually done when creating an XPI; some parts of the pipeline
+have been "faked" to reduce complexity and allow the reader to get the
+"big picture" of what's going on when an XPI is created.
+
+Please ignore any lines that start with the text `>>>`, such as the
+following:
+
+    >>> from cuddlefish.tests.test_xpi import document_dir
+
+We start out with a simplified `packages` directory structured like
+so:
+
+    >>> document_dir('packages')
+    bar/package.json:
+      {
+        "description": "Bar, a test package."
+      }
+    bar/lib/bar-module.js:
+      exports.add = function add(a, b) {
+        return a + b;
+      };
+    foo/package.json:
+      {
+        "description": "A fake package that can be built into an extension.",
+        "dependencies": ["jetpack-core", "bar"]
+      }
+    foo/lib/main.js:
+      exports.main() = function(options, callbacks) {
+        console.log("1 + 1 =", require("bar-module").add(1, 1));
+        callbacks.quit();
+      };
+    jetpack-core/package.json:
+      {
+        "description": "Fake Jetpack core library, for testing cfx only.",
+        "loader": "lib/loader.js"
+      }
+    jetpack-core/lib/loader.js:
+      // This module would ordinarily be loaded by an XPCOM harness/boostrapper,
+      // and would be responsible for creating a CommonJS module loader.
+
+We also have a directory that contains a template for an XPI file:
+
+    >>> document_dir('xpi-template')
+    components/harness.js:
+      // This file would ordinarily contain XPCOM code that bootstraps a
+      // Jetpack-based extension by loading its harness-options.json,
+      // registering all its resource directories, executing its loader,
+      // and then executing its main module's main() function.
+
+When we choose to build the `foo` package into an extension, `foo`'s
+dependencies are calculated and an XPI file is generated that combines
+all required packages, the XPI template, and a few other
+auto-generated files:
+
+    >>> document_dir('xpi-output')
+    install.rdf:
+      <RDF>This is a fake install.rdf.</RDF>
+    components/harness.js:
+      // This file would ordinarily contain XPCOM code that bootstraps a
+      // Jetpack-based extension by loading its harness-options.json,
+      // registering all its resource directories, executing its loader,
+      // and then executing its main module's main() function.
+    resources/testing-bar-lib/bar-module.js:
+      exports.add = function add(a, b) {
+        return a + b;
+      };
+    resources/testing-foo-lib/main.js:
+      exports.main() = function(options, callbacks) {
+        console.log("1 + 1 =", require("bar-module").add(1, 1));
+        callbacks.quit();
+      };
+    resources/testing-jetpack-core-lib/loader.js:
+      // This module would ordinarily be loaded by an XPCOM harness/boostrapper,
+      // and would be responsible for creating a CommonJS module loader.
+    harness-options.json:
+      {u'loader': u'resource://testing-jetpack-core-lib/loader.js',
+       u'main': u'main',
+       u'packageData': {},
+       u'resourcePackages': {u'testing-bar-lib': u'bar',
+                             u'testing-foo-lib': u'foo',
+                             u'testing-jetpack-core-lib': u'jetpack-core'},
+       u'resources': {u'testing-bar-lib': [u'resources',
+                                           u'testing-bar-lib'],
+                      u'testing-foo-lib': [u'resources',
+                                           u'testing-foo-lib'],
+                      u'testing-jetpack-core-lib': [u'resources',
+                                                    u'testing-jetpack-core-lib']},
+       u'rootPaths': [u'resource://testing-jetpack-core-lib/',
+                      u'resource://testing-bar-lib/',
+                      u'resource://testing-foo-lib/']}
+

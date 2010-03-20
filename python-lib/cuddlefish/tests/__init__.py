@@ -11,6 +11,11 @@ def get_tests():
     packages = [cuddlefish, cuddlefish.tests]
     for package in packages:
         path = os.path.abspath(package.__path__[0])
+
+        txtnames = glob.glob(os.path.join(path, '*.txt'))
+        for filename in txtnames:
+            tests.append(doctest.DocFileTest(filename, module_relative=False))
+
         pynames = glob.glob(os.path.join(path, '*.py'))
         for filename in pynames:
             basename = os.path.basename(filename)
