@@ -39,7 +39,7 @@ const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
 
 var obsvc = require("observer-service");
 
-function runTests(iterations, verbose, rootPaths, quit) {
+function runTests(iterations, verbose, rootPaths, quit, print) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
@@ -47,10 +47,6 @@ function runTests(iterations, verbose, rootPaths, quit) {
                              "harness", "centerscreen", null);
 
   var harness = require("harness");
-
-  function print() {
-    dump.apply(undefined, arguments);
-  };
 
   function onDone(tests) {
     window.close();
@@ -70,7 +66,8 @@ function runTests(iterations, verbose, rootPaths, quit) {
 exports.main = function main(options, callbacks) {
   function doRunTests() {
     runTests(options.iterations, options.verbose,
-             options.rootPaths, callbacks.quit);
+             options.rootPaths, callbacks.quit,
+             callbacks.print);
   }
 
   // TODO: This is optional code that might be put in by

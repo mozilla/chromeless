@@ -137,6 +137,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
     Cu.import(options.loader, jsm);
     var packaging = new Packaging();
     var loader = new jsm.Loader({rootPaths: options.rootPaths.slice(),
+                                 print: dump,
                                  globals: { packaging: packaging }
                                 });
     packaging.__setLoader(loader);
@@ -239,7 +240,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
       if (options.main) {
         try {
           var program = this.loader.require(options.main);
-          program.main(options, {quit: quit});
+          program.main(options, {quit: quit, print: dump});
         } catch (e) {
           this.loader.console.exception(e);
           quit("FAIL");
@@ -426,14 +427,35 @@ function getDefaults(rootFileSpec) {
   if ('resultFile' in options)
     onQuit = buildDevQuit(options);
 
-  return {options: options, onQuit: onQuit};
+  var logFile;
+  var logStream;
+
+  if ('logFile' in options) {
+    logFile = Cc["@mozilla.org/file/local;1"]
+              .createInstance(Ci.nsILocalFile);
+    logFile.initWithPath(options.logFile);
+
+    logStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                .createInstance(Ci.nsIFileOutputStream);
+    logStream.init(logFile, -1, -1, 0);
+  }
+
+  function print(msg) {
+    dump(msg);
+    if (logStream && typeof(msg) == "string") {
+      logStream.write(msg, msg.length);
+      logStream.flush();
+    }
+  }
+
+  return {options: options, onQuit: onQuit, dump: print};
 }
 
 function NSGetModule(compMgr, fileSpec) {
   var rootFileSpec = fileSpec.parent.parent;
   var defaults = getDefaults(rootFileSpec);
   var HarnessService = buildHarnessService(rootFileSpec,
-                                           dump,
+                                           defaults.dump,
                                            defaultLogError,
                                            defaults.onQuit,
                                            defaults.options);

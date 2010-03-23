@@ -2,12 +2,12 @@ import os
 import sys
 import time
 import tempfile
-import subprocess
 import atexit
 import shutil
 
 import simplejson as json
 import mozrunner
+from mozrunner import killableprocess
 from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
 from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
 
@@ -38,9 +38,47 @@ def install_xpts(harness_root_dir, xpts):
         for path in installed_xpts:
             os.remove(path)
 
+def follow_file(filename):
+    """
+    Generator that yields the latest unread content from the given
+    file, or None if no new content is available.
+
+    For example:
+
+      >>> f = open('temp.txt', 'w')
+      >>> f.write('hello')
+      >>> f.flush()
+      >>> tail = follow_file('temp.txt')
+      >>> tail.next()
+      'hello'
+      >>> tail.next() is None
+      True
+      >>> f.write('there')
+      >>> f.flush()
+      >>> tail.next()
+      'there'
+      >>> f.close()
+      >>> os.remove('temp.txt')
+    """
+
+    last_pos = 0
+    last_size = 0
+    while True:
+        newstuff = None
+        if os.path.exists(filename):
+            size = os.stat(filename).st_size
+            if size > last_size:
+                last_size = size
+                f = open(filename, 'r')
+                f.seek(last_pos)
+                newstuff = f.read()
+                last_pos = f.tell()
+                f.close()
+        yield newstuff
+
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
-            no_quit=False, timeout=None):
+            no_quit=False, timeout=None, logfile=None):
     if binary:
         binary = os.path.expanduser(binary)
     if app_type == "xulrunner":
@@ -64,6 +102,25 @@ def run_app(harness_root_dir, harness_options, xpts,
     if os.path.exists(resultfile):
         os.remove(resultfile)
     harness_options['resultFile'] = resultfile
+
+    def maybe_remove_logfile():
+        if os.path.exists(logfile):
+            os.remove(logfile)
+
+    logfile_tail = None
+
+    if sys.platform in ['win32', 'cygwin']:
+        if not logfile:
+            # If we're on Windows, we need to keep a logfile simply
+            # to print console output to stdout.
+            logfile = os.path.join(tempfile.gettempdir(), 'harness_log')
+        logfile_tail = follow_file(logfile)
+        atexit.register(maybe_remove_logfile)
+
+    if logfile:
+        logfile = os.path.abspath(os.path.expanduser(logfile))
+        maybe_remove_logfile()
+        harness_options['logFile'] = logfile
 
     install_xpts(harness_root_dir, xpts)
 
@@ -97,10 +154,7 @@ def run_app(harness_root_dir, harness_options, xpts,
         cmdline = [binary,
                    '-app',
                    os.path.join(harness_root_dir, 'application.ini'),
-                   '-profile', xulrunner_profile,
-                   # This ensures that dump() calls are visible
-                   # in Windows.
-                   '-console']
+                   '-profile', xulrunner_profile]
 
         if "xulrunner-bin" in binary:
             cmdline.remove("-app")
@@ -108,7 +162,7 @@ def run_app(harness_root_dir, harness_options, xpts,
         if sys.platform == 'linux2' and not env.get('LD_LIBRARY_PATH'):
             env['LD_LIBRARY_PATH'] = os.path.dirname(binary)
 
-        popen = subprocess.Popen(cmdline, env=env, **popen_kwargs)
+        popen = killableprocess.Popen(cmdline, env=env, **popen_kwargs)
     else:
         plugins = [harness_root_dir]
         create_new = profiledir is None
@@ -118,7 +172,6 @@ def run_app(harness_root_dir, harness_options, xpts,
                                 preferences=preferences)
         runner = runner_class(profile=profile,
                               binary=binary,
-                              cmdargs=['-console'],
                               env=env,
                               kp_kwargs=popen_kwargs)
         runner.start()
@@ -128,20 +181,21 @@ def run_app(harness_root_dir, harness_options, xpts,
     output = None
     while not done:
         time.sleep(0.05)
-        if popen.poll() is not None:
-            # Sometimes the child process will spawn yet another
-            # child and terminate the parent, so look for the
-            # result file.
-            if popen.returncode != 0:
+        if logfile_tail:
+            new_chars = logfile_tail.next()
+            if new_chars:
+                sys.stdout.write(new_chars)
+                sys.stdout.flush()
+        if os.path.exists(resultfile):
+            output = open(resultfile).read()
+            if output in ['OK', 'FAIL']:
                 done = True
-            elif os.path.exists(resultfile):
-                output = open(resultfile).read()
-                if output in ['OK', 'FAIL']:
-                    done = True
         if timeout and (time.time() - starttime > timeout):
             # TODO: Kill the child process.
             raise Exception("Wait timeout exceeded (%ds)" %
                             timeout)
+
+    popen.wait(10)
 
     print "Total time: %f seconds" % (time.time() - starttime)
 

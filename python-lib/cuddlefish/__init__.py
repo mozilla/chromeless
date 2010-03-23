@@ -81,6 +81,10 @@ parser_groups = Bunch(
                                          "firefox, or thunderbird"),
                                    metavar=None,
                                    default="xulrunner"),
+            ("-f", "--logfile",): dict(dest="logfile",
+                                       help="log console output to file",
+                                       metavar=None,
+                                       default=None),
             ("", "--use-server",): dict(dest="use_server",
                                         help="use task queue server",
                                         action="store_true",
@@ -429,6 +433,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                          profiledir=options.profiledir,
                          verbose=options.verbose,
                          no_quit=options.no_quit,
-                         timeout=timeout)
+                         timeout=timeout,
+                         logfile=options.logfile)
 
     sys.exit(retval)
