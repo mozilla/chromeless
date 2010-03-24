@@ -95,10 +95,6 @@ This should produce output that looks something like this:
     Total time: 1.511243 seconds
     Program terminated successfully.
 
-**Note**: If you're on Windows, you may need to add the `--no-quit`
-option to `cfx` to prevent the above output from disappearing
-instantly.
-
 **Note**: By default, running `cfx` with no special options will
 attempt to find Firefox in its most common location on your system and
 use it to perform the action you requested.  If you have multiple

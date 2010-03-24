@@ -107,10 +107,6 @@ parser_groups = Bunch(
     tests=Bunch(
         name="Testing Options",
         options={
-            ("-n", "--no-quit",): dict(dest="no_quit",
-                                       help="don't quit after running tests",
-                                       action="store_true",
-                                       default=False),
             ("-d", "--dep-tests",): dict(dest="dep_tests",
                                          help="include tests for all deps",
                                          action="store_true",
@@ -432,7 +428,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                          binary=options.binary,
                          profiledir=options.profiledir,
                          verbose=options.verbose,
-                         no_quit=options.no_quit,
                          timeout=timeout,
                          logfile=options.logfile)
 

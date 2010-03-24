@@ -78,7 +78,7 @@ def follow_file(filename):
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
-            no_quit=False, timeout=None, logfile=None):
+            timeout=None, logfile=None):
     if binary:
         binary = os.path.expanduser(binary)
     if app_type == "xulrunner":
@@ -95,8 +95,6 @@ def run_app(harness_root_dir, harness_options, xpts,
             runner_class = mozrunner.ThunderbirdRunner
         else:
             raise ValueError("Unknown app: %s" % app_type)
-
-    harness_options['noQuit'] = no_quit
 
     resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
     if os.path.exists(resultfile):

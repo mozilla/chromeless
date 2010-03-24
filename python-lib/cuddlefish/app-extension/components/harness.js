@@ -293,16 +293,19 @@ function buildHarnessService(rootFileSpec, dump, logError,
 // we weren't able to initialize Cuddlefish and display a nice
 // traceback through it.
 
-function defaultLogError(e) {
-  dump(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
+function defaultLogError(e, print) {
+  if (!print)
+    print = dump;
+
+  print(e + " (" + e.fileName + ":" + e.lineNumber + ")\n");
   if (e.stack)
-    dump("stack:\n" + e.stack + "\n");
+    print("stack:\n" + e.stack + "\n");
 }
 
 // Builds an onQuit() function that writes a result file if necessary
 // and does some other extra things to enhance developer ergonomics.
 
-function buildDevQuit(options) {
+function buildDevQuit(options, dump) {
   // Absolute path to a file that we put our result code in. Ordinarily
   // we'd just exit the process with a zero or nonzero return code, but
   // there doesn't appear to be a way to do this in XULRunner.
@@ -310,14 +313,6 @@ function buildDevQuit(options) {
 
   // Whether we've written resultFile or not.
   var fileWritten = false;
-
-  // Whether to quit the application when we're done. We need to support
-  // not quitting the app when done on Windows, so users have time to
-  // look at the console log before it disappears on exit.
-  var quitOnFinish = false;
-
-  if ('noQuit' in options)
-    quitOnFinish = !options.noQuit;
 
   function attemptQuit() {
     var appStartup = Cc['@mozilla.org/toolkit/app-startup;1'].
@@ -346,43 +341,8 @@ function buildDevQuit(options) {
         }
     }
 
-    function writeResultAndQuit() {
-      writeResult();
-      attemptQuit();
-    }
-
-    if (quitOnFinish)
-      writeResultAndQuit();
-    else {
-      try {
-        // If there aren't any windows active, then we'll be quitting
-        // regardless, so make a trivial new one that keeps our app
-        // alive.
-        try {
-          var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-                   .getService(Ci.nsIWindowWatcher);
-          var text = "Close this window to quit.";
-          var window = ww.openWindow(null, "data:text/plain," + text,
-                                     "harness", "centerscreen", null);
-        } catch (e) {
-          // We're already in the process of quitting, so write the
-          // result file and return.
-          writeResult();
-          return;
-        }
-
-        var interfaces = [Ci.nsIObserver, Ci.nsISupportsWeakReference];
-        var quitObserver = {
-          observe: function observe() { writeResult(); },
-          QueryInterface: XPCOMUtils.generateQI(interfaces)
-        };
-
-        obSvc.addObserver(quitObserver, "quit-application-granted", true);
-        window.addEventListener("close", writeResultAndQuit, false);
-      } catch (e) {
-        dump(e + "\n");
-      }
-    }
+    writeResult();
+    attemptQuit();
   };
 }
 
@@ -425,7 +385,7 @@ function getDefaults(rootFileSpec) {
   var onQuit = function() {};
 
   if ('resultFile' in options)
-    onQuit = buildDevQuit(options);
+    onQuit = buildDevQuit(options, print);
 
   var logFile;
   var logStream;
@@ -448,7 +408,12 @@ function getDefaults(rootFileSpec) {
     }
   }
 
-  return {options: options, onQuit: onQuit, dump: print};
+  function logError(e) {
+    defaultLogError(e, print);
+  }
+
+  return {options: options, onQuit: onQuit, dump: print,
+          logError: logError};
 }
 
 function NSGetModule(compMgr, fileSpec) {
@@ -456,7 +421,7 @@ function NSGetModule(compMgr, fileSpec) {
   var defaults = getDefaults(rootFileSpec);
   var HarnessService = buildHarnessService(rootFileSpec,
                                            defaults.dump,
-                                           defaultLogError,
+                                           defaults.logError,
                                            defaults.onQuit,
                                            defaults.options);
   return XPCOMUtils.generateModule([HarnessService]);
