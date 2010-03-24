@@ -202,7 +202,7 @@ def run_app(harness_root_dir, harness_options, xpts,
     if profile:
         profile.cleanup()
 
-    if popen.returncode == 0 and output == 'OK':
+    if popen.poll() == 0 and output == 'OK':
         print "Program terminated successfully."
         return 0
     else:
