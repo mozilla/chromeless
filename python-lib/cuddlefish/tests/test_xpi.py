@@ -22,6 +22,13 @@ def document_dir(name):
     else:
         raise Exception('unknown dir: %s' % name)
 
+def normpath(path):
+    """
+    Make a platform-specific relative path use '/' as a separator.
+    """
+
+    return path.replace(os.path.sep, '/')
+
 def document_zip_file(path):
     zip = zipfile.ZipFile(path, 'r')
     for name in zip.namelist():
@@ -35,7 +42,7 @@ def document_zip_file(path):
             contents = pprint.pformat(contents)
             lines = contents.splitlines()
         contents = "\n  ".join(lines)
-        print "%s:\n  %s" % (name, contents)
+        print "%s:\n  %s" % (normpath(name), contents)
     zip.close()
 
 def document_dir_files(path):
@@ -46,7 +53,7 @@ def document_dir_files(path):
             contents = open(abspath, 'r').read()
             contents = "\n  ".join(contents.splitlines())
             relfilename = os.path.join(relpath, filename)
-            print "%s:" % relfilename
+            print "%s:" % normpath(relfilename)
             print "  %s" % contents
 
 def create_xpi(xpiname):
