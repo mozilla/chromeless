@@ -1,6 +1,6 @@
 <span class="aside">
 Note that some parts of the following text have been simplified to
-allow you get a better idea of what's going on when an XPI is created.
+allow you get a better idea of what's going on when a XPI is created.
 </span>
 
 Running `cfx xpi` in the directory of any package that contains a
@@ -47,7 +47,7 @@ packages, structured like so:
       // CommonJS module loader.
 
 Note that our `packages` directory could actually contain more
-packages, too: this doesn't affect the generated XPI, however, because
+packages, too. This doesn't affect the generated XPI, however, because
 only packages cited as dependencies by `foo`'s `package.json` will
 ultimately be included in the XPI.
 
@@ -55,7 +55,7 @@ The XPI Template
 ----------------
 
 The Jetpack SDK also contains a directory that contains a template for
-an XPI file:
+a XPI file:
 
     >>> document_dir('xpi-template')
     components/harness.js:
@@ -71,7 +71,7 @@ The Generated XPI
 -----------------
 
 When we run `cfx xpi` to build the `foo` package into an extension,
-`foo`'s dependencies are calculated and an XPI file is generated that
+`foo`'s dependencies are calculated, and a XPI file is generated that
 combines all required packages, the XPI template, and a few other
 auto-generated files:
 
