@@ -22,7 +22,7 @@ Installation
 ------------
 
 At the time of this writing, the latest stable version of the Jetpack
-SDK is 0.1. You can obtain it as a [tarball] or a [zip file].
+SDK is 0.2. You can obtain it as a [tarball] or a [zip file].
 
 Alternatively, you can get the latest development version of the
 Jetpack SDK from its [HG repository].
@@ -54,8 +54,8 @@ command-line tools.
 At any time, you can leave a virtual environment by running
 `deactivate`.
 
-  [tarball]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.1.tar.gz
-  [zip file]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.1.zip
+  [tarball]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.2.tar.gz
+  [zip file]: https://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-0.2.zip
   [HG repository]: http://hg.mozilla.org/labs/jetpack-sdk/
 
 Sanity Check
