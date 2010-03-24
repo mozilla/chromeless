@@ -20,27 +20,32 @@ packages, structured like so:
       {
         "description": "A package used by 'foo' as a library."
       }
+    <BLANKLINE>
     bar/lib/bar-module.js:
       exports.add = function add(a, b) {
         return a + b;
       };
+    <BLANKLINE>
     foo/package.json:
       {
         "description": "A package w/ a main module; can be built into
                         an extension.",
         "dependencies": ["jetpack-core", "bar"]
       }
+    <BLANKLINE>
     foo/lib/main.js:
       exports.main = function(options, callbacks) {
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
       };
+    <BLANKLINE>
     jetpack-core/package.json:
       {
         "description": "A foundational package that provides a CommonJS
                         module loader implementation.",
         "loader": "lib/loader.js"
       }
+    <BLANKLINE>
     jetpack-core/lib/loader.js:
       // This module will be imported by the XPCOM harness/boostrapper
       // via Components.utils.import() and is responsible for creating a
@@ -78,24 +83,29 @@ auto-generated files:
     >>> document_dir('xpi-output')
     install.rdf:
       <RDF><!-- Extension metadata is here. --></RDF>
+    <BLANKLINE>
     components/harness.js:
       // This file contains XPCOM code that bootstraps a
       // Jetpack-based extension by loading its harness-options.json,
       // registering all its resource directories, executing its loader,
       // and then executing its main module's main() function.
+    <BLANKLINE>
     resources/testing-bar-lib/bar-module.js:
       exports.add = function add(a, b) {
         return a + b;
       };
+    <BLANKLINE>
     resources/testing-foo-lib/main.js:
       exports.main = function(options, callbacks) {
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
       };
+    <BLANKLINE>
     resources/testing-jetpack-core-lib/loader.js:
       // This module will be imported by the XPCOM harness/boostrapper
       // via Components.utils.import() and is responsible for creating a
       // CommonJS module loader.
+    <BLANKLINE>
     harness-options.json:
       {'loader': 'resource://testing-jetpack-core-lib/loader.js',
        'main': 'main',

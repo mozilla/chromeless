@@ -8,6 +8,7 @@ function startApp(jQuery, window) {
   const BUGZILLA_SHOW = "https://bugzilla.mozilla.org/show_bug.cgi?id=";
   const BUGZILLA_REGEXP = /bug\s+([0-9]+)/g;
   const DOCTEST_REGEXP = />>>.+/g;
+  const DOCTEST_BLANKLINE_REGEXP = /<BLANKLINE>/g;
   const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
@@ -96,7 +97,8 @@ function startApp(jQuery, window) {
   }
 
   function removePyDoctestCode(text) {
-    return text.replace(DOCTEST_REGEXP, "");
+    return text.replace(DOCTEST_REGEXP, "")
+               .replace(DOCTEST_BLANKLINE_REGEXP, "");
   }
 
   function markdownToHtml(text) {
