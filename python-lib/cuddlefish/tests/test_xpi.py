@@ -57,7 +57,7 @@ def document_dir_files(path):
             print "  %s" % contents
 
 def create_xpi(xpiname):
-    configs = test_packaging.get_configs('foo')
+    configs = test_packaging.get_configs('aardvark')
     options = {'main': configs.target_cfg.main}
     options.update(configs.build)
     xpi.build_xpi(template_root_dir=xpi_template_path,

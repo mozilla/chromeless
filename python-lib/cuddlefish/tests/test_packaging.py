@@ -18,17 +18,17 @@ def get_configs(pkg_name):
         pkg_cfg=pkg_cfg,
         target=pkg_name,
         deps=deps,
-        prefix='testing-'
+        prefix='GUID-'
         )
     return Bunch(target_cfg=target_cfg, pkg_cfg=pkg_cfg, build=build)
 
 class PackagingTests(unittest.TestCase):
     def test_basic(self):
-        configs = get_configs('foo')
+        configs = get_configs('aardvark')
         packages = configs.pkg_cfg.packages
 
         self.assertTrue('jetpack-core' in packages)
-        self.assertTrue('foo' in packages)
-        self.assertTrue('jetpack-core' in packages.foo.dependencies)
+        self.assertTrue('aardvark' in packages)
+        self.assertTrue('jetpack-core' in packages.aardvark.dependencies)
         self.assertEqual(packages['jetpack-core'].loader, 'lib/loader.js')
-        self.assertTrue(packages.foo.main == 'main')
+        self.assertTrue(packages.aardvark.main == 'main')

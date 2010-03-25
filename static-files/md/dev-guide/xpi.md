@@ -16,27 +16,27 @@ packages, structured like so:
 
     >>> from cuddlefish.tests.test_xpi import document_dir
     >>> document_dir('packages')
-    bar/package.json:
-      {
-        "description": "A package used by 'foo' as a library."
-      }
-    <BLANKLINE>
-    bar/lib/bar-module.js:
-      exports.add = function add(a, b) {
-        return a + b;
-      };
-    <BLANKLINE>
-    foo/package.json:
+    aardvark/package.json:
       {
         "description": "A package w/ a main module; can be built into
                         an extension.",
-        "dependencies": ["jetpack-core", "bar"]
+        "dependencies": ["jetpack-core", "barbeque"]
       }
     <BLANKLINE>
-    foo/lib/main.js:
+    aardvark/lib/main.js:
       exports.main = function(options, callbacks) {
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
+      };
+    <BLANKLINE>
+    barbeque/package.json:
+      {
+        "description": "A package used by 'aardvark' as a library."
+      }
+    <BLANKLINE>
+    barbeque/lib/bar-module.js:
+      exports.add = function add(a, b) {
+        return a + b;
       };
     <BLANKLINE>
     jetpack-core/package.json:
@@ -53,7 +53,7 @@ packages, structured like so:
 
 Note that our `packages` directory could actually contain more
 packages, too. This doesn't affect the generated XPI, however, because
-only packages cited as dependencies by `foo`'s `package.json` will
+only packages cited as dependencies by `aardvark`'s `package.json` will
 ultimately be included in the XPI.
 
 The XPI Template
@@ -75,8 +75,8 @@ A template different than the default can be specified via the
 The Generated XPI
 -----------------
 
-When we run `cfx xpi` to build the `foo` package into an extension,
-`foo`'s dependencies are calculated, and a XPI file is generated that
+When we run `cfx xpi` to build the `aardvark` package into an extension,
+`aardvark`'s dependencies are calculated, and a XPI file is generated that
 combines all required packages, the XPI template, and a few other
 auto-generated files:
 
@@ -90,50 +90,49 @@ auto-generated files:
       // registering all its resource directories, executing its loader,
       // and then executing its main module's main() function.
     <BLANKLINE>
-    resources/testing-bar-lib/bar-module.js:
-      exports.add = function add(a, b) {
-        return a + b;
-      };
-    <BLANKLINE>
-    resources/testing-foo-lib/main.js:
+    resources/GUID-aardvark-lib/main.js:
       exports.main = function(options, callbacks) {
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
       };
     <BLANKLINE>
-    resources/testing-jetpack-core-lib/loader.js:
+    resources/GUID-barbeque-lib/bar-module.js:
+      exports.add = function add(a, b) {
+        return a + b;
+      };
+    <BLANKLINE>
+    resources/GUID-jetpack-core-lib/loader.js:
       // This module will be imported by the XPCOM harness/boostrapper
       // via Components.utils.import() and is responsible for creating a
       // CommonJS module loader.
     <BLANKLINE>
     harness-options.json:
-      {'loader': 'resource://testing-jetpack-core-lib/loader.js',
+      {'loader': 'resource://GUID-jetpack-core-lib/loader.js',
        'main': 'main',
        'packageData': {},
-       'resourcePackages': {'testing-bar-lib': 'bar',
-                            'testing-foo-lib': 'foo',
-                            'testing-jetpack-core-lib': 'jetpack-core'},
-       'resources': {'testing-bar-lib': ['resources',
-                                         'testing-bar-lib'],
-                     'testing-foo-lib': ['resources',
-                                         'testing-foo-lib'],
-                     'testing-jetpack-core-lib': ['resources',
-                                                  'testing-jetpack-core-lib']},
-       'rootPaths': ['resource://testing-jetpack-core-lib/',
-                     'resource://testing-bar-lib/',
-                     'resource://testing-foo-lib/']}
+       'resourcePackages': {'GUID-aardvark-lib': 'aardvark',
+                            'GUID-barbeque-lib': 'barbeque',
+                            'GUID-jetpack-core-lib': 'jetpack-core'},
+       'resources': {'GUID-aardvark-lib': ['resources',
+                                           'GUID-aardvark-lib'],
+                     'GUID-barbeque-lib': ['resources',
+                                           'GUID-barbeque-lib'],
+                     'GUID-jetpack-core-lib': ['resources',
+                                               'GUID-jetpack-core-lib']},
+       'rootPaths': ['resource://GUID-jetpack-core-lib/',
+                     'resource://GUID-barbeque-lib/',
+                     'resource://GUID-aardvark-lib/']}
 
-It can be observed from the listing above that the `bar` package's `lib`
-directory will be mapped to `resource://testing-bar-lib/` when the XPI is
+It can be observed from the listing above that the `barbeque` package's `lib`
+directory will be mapped to `resource://GUID-barbeque-lib/` when the XPI is
 loaded.
 
-Similarly, the `lib` directories of `jetpack-core` and `foo` will be
-mapped to `resource://testing-jetpack-core-lib/` and
-`resource://testing-foo-lib/`, respectively.
+Similarly, the `lib` directories of `jetpack-core` and `aardvark` will be
+mapped to `resource://GUID-jetpack-core-lib/` and
+`resource://GUID-aardvark-lib/`, respectively.
 
-The prefix `testing-` has been prepended to all `resource:` URIs to
-effectively namespace the XPI's resources, ensuring that they don't
-collide with anything else--including other extensions built by the
-SDK and containing some of the same packages. In actual use, the
-prefix will actually contain a unique ID instead of the word
-`testing`.
+In an actual XPI built by the SDK, the string `"GUID"` in these
+examples is a unique identifier that the SDK prepends to all
+`resource:` URIs to namespace the XPI's resources so they don't
+collide with anything else, including other extensions built by the
+SDK and containing the same packages.
