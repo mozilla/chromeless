@@ -7,14 +7,8 @@ import shutil
 
 import simplejson as json
 import mozrunner
-from mozrunner import killableprocess
 from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
 from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
-
-def find_firefox_binary():
-    dummy_profile = {}
-    runner = mozrunner.FirefoxRunner(profile=dummy_profile)
-    return runner.find_binary()
 
 def install_xpts(harness_root_dir, xpts):
     """
@@ -76,15 +70,100 @@ def follow_file(filename):
                 f.close()
         yield newstuff
 
+class XulrunnerAppProfile(mozrunner.Profile):
+    preferences = {'browser.dom.window.dump.enabled': True,
+                   'javascript.options.strict': True}
+
+    names = []
+
+class XulrunnerAppRunner(mozrunner.Runner):
+    """
+    Runner for any XULRunner app. Can use a Firefox binary in XULRunner
+    mode to execute the app, or can use XULRunner itself. Expects the
+    app's application.ini to be passed in as one of the items in
+    'cmdargs' in the constructor.
+
+    This class relies a lot on the particulars of mozrunner.Runner's
+    implementation, and does some unfortunate acrobatics to get around
+    some of the class' limitations/assumptions.
+    """
+
+    profile_class = XulrunnerAppProfile
+
+    # This is a default, and will be overridden in the instance if
+    # Firefox is used in XULRunner mode.
+    names = ['xulrunner']
+
+    def __init__(self, binary=None, **kwargs):
+        if sys.platform == 'darwin' and binary and binary.endswith('.app'):
+            # Assume it's a Firefox app dir.
+            binary = os.path.join(binary, 'Contents/MacOS/firefox-bin')
+
+        self.__app_ini = None
+        self.__real_binary = binary
+
+        mozrunner.Runner.__init__(self, **kwargs)
+
+        # See if we're using a genuine xulrunner-bin from the XULRunner SDK,
+        # or if we're being asked to use Firefox in XULRunner mode.
+        self.__is_xulrunner_sdk = 'xulrunner' in self.binary
+
+        if sys.platform == 'linux2' and not self.env.get('LD_LIBRARY_PATH'):
+            self.env['LD_LIBRARY_PATH'] = os.path.dirname(self.binary)
+
+        newargs = []
+        for item in self.cmdargs:
+            if 'application.ini' in item:
+                self.__app_ini = item
+            else:
+                newargs.append(item)
+        self.cmdargs = newargs
+
+        if not self.__app_ini:
+            raise ValueError('application.ini not found in cmdargs')
+        if not os.path.exists(self.__app_ini):
+            raise ValueError("file does not exist: '%s'" % self.__app_ini)
+
+    @property
+    def command(self):
+        """Returns the command list to run."""
+
+        if self.__is_xulrunner_sdk:
+            return [self.binary, self.__app_ini, '-profile',
+                    self.profile.profile]
+        else:
+            return [self.binary, '-app', self.__app_ini, '-profile',
+                    self.profile.profile]
+
+    def find_binary(self):
+        # This gets called by the superclass constructor. It will
+        # always get called, even if a binary was passed into the
+        # constructor, because we want to have full control over
+        # what the exact setting of self.binary is.
+
+        if not self.__real_binary:
+            dummy_profile = {}
+            runner = mozrunner.FirefoxRunner(profile=dummy_profile)
+            self.__real_binary = runner.find_binary()
+            self.names = runner.names
+        return self.__real_binary
+
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
             timeout=None, logfile=None):
     if binary:
         binary = os.path.expanduser(binary)
+
+    addons = []
+    cmdargs = []
+
     if app_type == "xulrunner":
-        if not binary:
-            binary = find_firefox_binary()
+        profile_class = XulrunnerAppProfile
+        preferences = {}
+        runner_class = XulrunnerAppRunner
+        cmdargs.append(os.path.join(harness_root_dir, 'application.ini'))
     else:
+        addons.append(harness_root_dir)
         if app_type == "firefox":
             profile_class = mozrunner.FirefoxProfile
             preferences = DEFAULT_FIREFOX_PREFS
@@ -130,77 +209,49 @@ def run_app(harness_root_dir, harness_options, xpts,
     starttime = time.time()
 
     popen_kwargs = {}
-
     profile = None
+    create_new = profiledir is None
 
-    if app_type == "xulrunner":
-        # TODO: We're reduplicating a lot of mozrunner logic here,
-        # we should probably just get mozrunner to support this
-        # use case.
-
-        if profiledir:
-            xulrunner_profile = profiledir
-        else:
-            xulrunner_profile = tempfile.mkdtemp(suffix='.harness')
-            @atexit.register
-            def remove_xulrunner_profile():
-                try:
-                    shutil.rmtree(xulrunner_profile)
-                except OSError:
-                    pass
-
-        cmdline = [binary,
-                   '-app',
-                   os.path.join(harness_root_dir, 'application.ini'),
-                   '-profile', xulrunner_profile]
-
-        if "xulrunner-bin" in binary:
-            cmdline.remove("-app")
-
-        if sys.platform == 'linux2' and not env.get('LD_LIBRARY_PATH'):
-            env['LD_LIBRARY_PATH'] = os.path.dirname(binary)
-
-        popen = killableprocess.Popen(cmdline, env=env, **popen_kwargs)
-    else:
-        addons = [harness_root_dir]
-        create_new = profiledir is None
-        profile = profile_class(addons=addons,
-                                profile=profiledir,
-                                create_new=create_new,
-                                preferences=preferences)
-        runner = runner_class(profile=profile,
-                              binary=binary,
-                              env=env,
-                              kp_kwargs=popen_kwargs)
-        runner.start()
-        popen = runner.process_handler
+    profile = profile_class(addons=addons,
+                            profile=profiledir,
+                            create_new=create_new,
+                            preferences=preferences)
+    runner = runner_class(profile=profile,
+                          binary=binary,
+                          env=env,
+                          cmdargs=cmdargs,
+                          kp_kwargs=popen_kwargs)
+    runner.start()
 
     done = False
     output = None
-    while not done:
-        time.sleep(0.05)
-        if logfile_tail:
-            new_chars = logfile_tail.next()
-            if new_chars:
-                sys.stdout.write(new_chars)
-                sys.stdout.flush()
-        if os.path.exists(resultfile):
-            output = open(resultfile).read()
-            if output in ['OK', 'FAIL']:
-                done = True
-        if timeout and (time.time() - starttime > timeout):
-            # TODO: Kill the child process.
-            raise Exception("Wait timeout exceeded (%ds)" %
-                            timeout)
-
-    popen.wait(10)
+    try:
+        while not done:
+            time.sleep(0.05)
+            if logfile_tail:
+                new_chars = logfile_tail.next()
+                if new_chars:
+                    sys.stdout.write(new_chars)
+                    sys.stdout.flush()
+            if os.path.exists(resultfile):
+                output = open(resultfile).read()
+                if output in ['OK', 'FAIL']:
+                    done = True
+            if timeout and (time.time() - starttime > timeout):
+                raise Exception("Wait timeout exceeded (%ds)" %
+                                timeout)
+    except:
+        runner.stop()
+        raise
+    else:
+        runner.wait(10)
+    finally:
+        if profile:
+            profile.cleanup()
 
     print "Total time: %f seconds" % (time.time() - starttime)
 
-    if profile:
-        profile.cleanup()
-
-    if popen.poll() == 0 and output == 'OK':
+    if output == 'OK':
         print "Program terminated successfully."
         return 0
     else:
