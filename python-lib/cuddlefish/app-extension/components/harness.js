@@ -196,7 +196,10 @@ function buildHarnessService(rootFileSpec, dump, logError,
   }
 
   HarnessService.prototype = {
-    classDescription: "Harness Service",
+    get classDescription() {
+      // This needs to be unique, lest we regress bug 554489.
+      return "Harness Service for " + options.bootstrap.contractID;
+    },
 
     get contractID() { return options.bootstrap.contractID; },
 
