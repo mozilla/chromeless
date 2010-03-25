@@ -103,8 +103,9 @@ def getoutput(l):
 def get_pids(name, minimun_pid=0):
     """Get all the pids matching name, exclude any pids below minimum_pid."""
     if os.name == 'nt' or sys.platform == 'cygwin':
-        #win32pdhutil.ShowAllProcesses()  #uncomment for testing
-        pids = win32pdhutil.FindPerformanceAttributesByName(name)
+        import wpk
+
+        pids = wpk.get_pids(name)
 
     else:
         # get_pids_cmd = ['ps', 'ax']
@@ -124,9 +125,9 @@ def kill_process_by_name(name):
 
     if os.name == 'nt' or sys.platform == 'cygwin':
         for p in pids:
-            handle = win32api.OpenProcess(win32con.PROCESS_TERMINATE, 0, p) #get process handle
-            win32api.TerminateProcess(handle,0) #kill by handle
-            win32api.CloseHandle(handle) #close api
+            import wpk
+
+            wpk.kill_pid(p)
 
     else:
         for pid in pids:
@@ -166,12 +167,12 @@ def makedirs(name):
 class Profile(object):
     """Handles all operations regarding profile. Created new profiles, installs extensions,
     sets preferences and handles cleanup."""
-    def __init__(self, binary=None, profile=None, create_new=True, plugins=[], preferences={}):
-        self.plugins_installed = []
+    def __init__(self, binary=None, profile=None, create_new=True, addons=[], preferences={}):
+        self.addons_installed = []
         self.profile = profile
         self.binary = binary
         self.create_new = create_new
-        self.plugins = plugins
+        self.addons = addons
         if not hasattr(self, 'preferences'):
             self.preferences = preferences
         else:
@@ -184,8 +185,8 @@ class Profile(object):
             raise Exception('If you set create_new to False you must provide the location of the profile you would like to run')
         if create_new is True:
             self.profile = self.create_new_profile(self.binary)
-        for plugin in plugins:
-            self.install_plugin(plugin)
+        for addon in addons:
+            self.install_addon(addon)
 
         self.set_preferences(self.preferences)
 
@@ -198,12 +199,12 @@ class Profile(object):
 
         return profile
 
-    def install_plugin(self, plugin):
-        """Installs the given plugin path in the profile."""
+    def install_addon(self, addon):
+        """Installs the given addon in the profile."""
         tmpdir = None
-        if plugin.endswith('.xpi'):
-            tmpdir = tempfile.mkdtemp(suffix="."+os.path.split(plugin)[-1])
-            compressed_file = zipfile.ZipFile(plugin, "r")
+        if addon.endswith('.xpi'):
+            tmpdir = tempfile.mkdtemp(suffix = "." + os.path.split(addon)[-1])
+            compressed_file = zipfile.ZipFile(addon, "r")
             for name in compressed_file.namelist():
                 if name.endswith('/'):
                     makedirs(os.path.join(tmpdir, name))
@@ -213,15 +214,20 @@ class Profile(object):
                     data = compressed_file.read(name)
                     f = open(os.path.join(tmpdir, name), 'w')
                     f.write(data) ; f.close()
-            plugin = tmpdir
+            addon = tmpdir
 
-        tree = ElementTree.ElementTree(file=os.path.join(plugin, 'install.rdf'))
+        tree = ElementTree.ElementTree(file=os.path.join(addon, 'install.rdf'))
         # description_element =
         # tree.find('.//{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description/')
 
         desc = tree.find('.//{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description')
+        apps = desc.findall('.//{http://www.mozilla.org/2004/em-rdf#}targetApplication')
+        for app in apps:
+          desc.remove(app)
         if desc and desc.attrib.has_key('{http://www.mozilla.org/2004/em-rdf#}id'):
-            plugin_id = desc.attrib['{http://www.mozilla.org/2004/em-rdf#}id']
+            addon_id = desc.attrib['{http://www.mozilla.org/2004/em-rdf#}id']
+        elif desc and desc.find('.//{http://www.mozilla.org/2004/em-rdf#}id') is not None:
+            addon_id = desc.find('.//{http://www.mozilla.org/2004/em-rdf#}id').text
         else:
             about = [e for e in tree.findall(
                         './/{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description') if
@@ -232,14 +238,14 @@ class Profile(object):
             x = e.find('.//{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description')
 
             if len(about) is 0:
-                plugin_element = tree.find('.//{http://www.mozilla.org/2004/em-rdf#}id')
-                plugin_id = plugin_element.text
+                addon_element = tree.find('.//{http://www.mozilla.org/2004/em-rdf#}id')
+                addon_id = addon_element.text
             else:
-                plugin_id = about[0].get('{http://www.mozilla.org/2004/em-rdf#}id')
+                addon_id = about[0].get('{http://www.mozilla.org/2004/em-rdf#}id')
 
-        plugin_path = os.path.join(self.profile, 'extensions', plugin_id)
-        copytree(plugin, plugin_path, preserve_symlinks=1)
-        self.plugins_installed.append(plugin_path)
+        addon_path = os.path.join(self.profile, 'extensions', addon_id)
+        copytree(addon, addon_path, preserve_symlinks=1)
+        self.addons_installed.append(addon_path)
 
     def set_preferences(self, preferences):
         """Adds preferences dict to profile preferences"""
@@ -268,11 +274,11 @@ class Profile(object):
         f = open(os.path.join(self.profile, 'user.js'), 'w')
         f.write(cleaned_prefs) ; f.flush() ; f.close()
 
-    def clean_plugins(self):
-        """Cleans up plugins in the profile."""
-        for plugin in self.plugins_installed:
-            if os.path.isdir(plugin):
-                rmtree(plugin)
+    def clean_addons(self):
+        """Cleans up addons in the profile."""
+        for addon in self.addons_installed:
+            if os.path.isdir(addon):
+                rmtree(addon)
 
     def cleanup(self):
         """Cleanup operations on the profile."""
@@ -280,12 +286,12 @@ class Profile(object):
             rmtree(self.profile)
         else:
             self.clean_preferences()
-            self.clean_plugins()
-
+            self.clean_addons()
 
 class FirefoxProfile(Profile):
     """Specialized Profile subclass for Firefox"""
-    preferences = {'extensions.update.enabled'    : False,
+    preferences = {'app.update.enabled' : False,
+                   'extensions.update.enabled'    : False,
                    'extensions.update.notifyUser' : False,
                    'browser.shell.checkDefaultBrowser' : False,
                    'browser.tabs.warnOnClose' : False,
@@ -297,7 +303,7 @@ class FirefoxProfile(Profile):
     def names(self):
         if sys.platform == 'darwin':
             return ['firefox', 'minefield', 'shiretoko']
-        if sys.platform == 'linux2':
+        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
             return ['firefox', 'mozilla-firefox', 'iceweasel']
         if os.name == 'nt' or sys.platform == 'cygwin':
             return ['firefox']
@@ -320,8 +326,8 @@ class Runner(object):
                  aggressively_kill=['crashreporter'], kp_kwargs={}):
         if binary is None:
             self.binary = self.find_binary()
-        elif binary.endswith('.app'):
-            self.binary = os.path.join(binary, 'Contents/MacOS/'+self.names[0]+'-bin')
+        elif sys.platform == 'darwin':
+            self.binary = os.path.join(binary, 'Contents/MacOS/%s-bin' % self.names[0])
         else:
             self.binary = binary
 
@@ -343,7 +349,7 @@ class Runner(object):
     def find_binary(self):
         """Finds the binary for self.names if one was not provided."""
         binary = None
-        if sys.platform == 'linux2':
+        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
             for name in reversed(self.names):
                 binary = findInPath(name)
         elif os.name == 'nt' or sys.platform == 'cygwin':
@@ -429,7 +435,7 @@ class FirefoxRunner(Runner):
     def names(self):
         if sys.platform == 'darwin':
             return ['firefox', 'minefield', 'shiretoko']
-        if sys.platform == 'linux2':
+        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
             return ['firefox', 'mozilla-firefox', 'iceweasel']
         if os.name == 'nt' or sys.platform == 'cygwin':
             return ['firefox']
@@ -450,9 +456,9 @@ class CLI(object):
                                                 metavar=None, default=None),
                       ('-p', "--profile",): dict(dest="profile", help="Profile path.",
                                                  metavar=None, default=None),
-                      ('-w', "--plugins",): dict(dest="plugins",
-                                                 help="Plugin paths to install.",
-                                                 metavar=None, default=None),
+                      ('-a', "--addons",): dict(dest="addons",
+                                                help="Addons paths to install.",
+                                                metavar=None, default=None),
                       ("-n", "--no-new-profile",): dict(dest="create_new",
                                                         action="store_false",
                                                         help="Do not create new profile.",
@@ -468,9 +474,9 @@ class CLI(object):
         (self.options, self.args) = self.parser.parse_args()
 
         try:
-            self.plugins = self.options.plugins.split(',')
+            self.addons = self.options.addons.split(',')
         except:
-            self.plugins = []
+            self.addons = []
 
     def create_runner(self):
         """ Get the runner object """
@@ -478,7 +484,7 @@ class CLI(object):
         profile = self.get_profile(binary=runner.binary,
                                    profile=self.options.profile,
                                    create_new=self.options.create_new,
-                                   plugins=self.plugins)
+                                   addons=self.addons)
         runner.profile = profile
         return runner
 
@@ -487,10 +493,10 @@ class CLI(object):
         the profile instance returned from self.get_profile()."""
         return self.runner_class(binary, profile)
 
-    def get_profile(self, binary=None, profile=None, create_new=None, plugins=[],
+    def get_profile(self, binary=None, profile=None, create_new=None, addons=[],
                     preferences={}):
         """Returns the profile instance for the given command line arguments."""
-        return self.profile_class(binary, profile, create_new, plugins, preferences)
+        return self.profile_class(binary, profile, create_new, addons, preferences)
 
     def run(self):
         runner = self.create_runner()

@@ -162,9 +162,9 @@ def run_app(harness_root_dir, harness_options, xpts,
 
         popen = killableprocess.Popen(cmdline, env=env, **popen_kwargs)
     else:
-        plugins = [harness_root_dir]
+        addons = [harness_root_dir]
         create_new = profiledir is None
-        profile = profile_class(plugins=plugins,
+        profile = profile_class(addons=addons,
                                 profile=profiledir,
                                 create_new=create_new,
                                 preferences=preferences)

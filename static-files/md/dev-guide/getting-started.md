@@ -10,13 +10,8 @@ To develop with the new Jetpack SDK, you'll need:
 * A working version of Firefox, Thunderbird, or the [XULRunner SDK] that
   uses Gecko 1.9.2 or later (e.g., Firefox 3.6).
 
-* If you're on Windows, you'll also need [Python for Windows
-  extensions] [pywin32], though we'll be removing this dependency soon
-  (see bug 542000).
-
   [Python]: http://www.python.org/
   [XULRunner SDK]: https://developer.mozilla.org/en/Gecko_SDK
-  [pywin32]: http://python.net/crew/skippy/win32/Downloads.html
 
 Installation
 ------------

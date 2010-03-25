@@ -203,7 +203,7 @@ class Popen(subprocess.Popen):
             else:
                 self.returncode = winprocess.GetExitCodeProcess(self._handle)
         else:
-            if sys.platform == 'linux2':
+            if (sys.platform == 'linux2') or (sys.platform == 'solaris'):
                 def group_wait(timeout):
                     try:
                         os.waitpid(self.pid, 0)
