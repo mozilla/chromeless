@@ -3,9 +3,9 @@ var url = require("url");
 var streams = require("byte-streams");
 
 const ERRORS = {
-  FILE_NOT_FOUND: /^path does not exist: .*$/,
-  NOT_A_DIRECTORY: /^path is not a directory: .*$/,
-  IS_A_DIRECTORY: /^The stream was opened on a directory/,
+  FILE_NOT_FOUND: /^path does not exist: .+$/,
+  NOT_A_DIRECTORY: /^path is not a directory: .+$/,
+  NOT_A_FILE: /^path is not a file: .+$/,
   STREAM_CLOSED: /^The stream is closed/
 };
 
@@ -54,13 +54,11 @@ exports.testRead = function(test) {
     "file.read() on nonexistent file should raise error"
   );
 
-  // TODO: Fix this test so it passes on Windows. See bug 554712.
-  //
-  //test.assertRaises(
-  //  function() { file.read(url.toFilename("resource://gre/modules/")); },
-  //  ERRORS.IS_A_DIRECTORY,
-  //  "file.read() on dir should raise error"
-  //);
+  test.assertRaises(
+   function() { file.read(url.toFilename("resource://gre/modules/")); },
+   ERRORS.NOT_A_FILE,
+   "file.read() on dir should raise error"
+  );
 };
 
 exports.testJoin = function(test) {
@@ -109,6 +107,11 @@ exports.testOpenRemove = function (test) {
               "Stream returned from file.open('zzz') should be read-only");
   stream.close();
 
+  // Open a directory in read-only mode.
+  test.assertRaises(function () file.open(dir),
+                    ERRORS.NOT_A_FILE,
+                    "file.open() on directory should raise error");
+
   // Open a nonexistent file in write-only mode.
   stream = file.open(nonexistFname, "w");
   test.assert(stream instanceof streams.ByteWriter && !("read" in stream),
@@ -129,6 +132,11 @@ exports.testOpenRemove = function (test) {
   file.remove(nonexistFname);
   test.assert(!file.exists(nonexistFname),
               "file.exists() should return false after file.remove()");
+
+  // Open a directory in write-only mode.
+  test.assertRaises(function () file.open(dir, "w"),
+                    ERRORS.NOT_A_FILE,
+                    "file.open('w') on directory should raise error");
 };
 
 exports.testWriteRead = function (test) {

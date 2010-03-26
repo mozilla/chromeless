@@ -91,8 +91,17 @@ exports.exists = function exists(filename) {
 
 exports.read = function read(filename) {
   var stream = exports.open(filename);
-  var str = stream.read();
-  stream.close();
+  try {
+    var str = stream.read();
+  }
+  catch (err) {
+    throw err;
+  }
+  finally {
+    // Ensure the stream is closed, even if there's a read error.
+    stream.close();
+  }
+
   return str;
 };
 
@@ -131,6 +140,8 @@ exports.open = function open(filename, mode) {
 
   // File opened for write only.
   if (/w/.test(mode)) {
+    if (file.exists())
+      ensureFile(file);
     var stream = Cc['@mozilla.org/network/file-output-stream;1'].
                  createInstance(Ci.nsIFileOutputStream);
     var openFlags = OPEN_FLAGS.WRONLY |
@@ -147,6 +158,7 @@ exports.open = function open(filename, mode) {
   }
 
   // File opened for read only, the default.
+  ensureFile(file);
   stream = Cc['@mozilla.org/network/file-input-stream;1'].
            createInstance(Ci.nsIFileInputStream);
   try {
