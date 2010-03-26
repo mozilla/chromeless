@@ -70,6 +70,35 @@ def follow_file(filename):
                 f.close()
         yield newstuff
 
+class FennecProfile(mozrunner.Profile):
+    preferences = {}
+
+    names = ['fennec']
+
+class FennecRunner(mozrunner.Runner):
+    profile_class = FennecProfile
+
+    names = ['fennec']
+
+    __DARWIN_PATH = '/Applications/Fennec.app/Contents/MacOS/fennec'
+
+    def __init__(self, binary=None, **kwargs):
+        if sys.platform == 'darwin' and binary and binary.endswith('.app'):
+            # Assume it's a Fennec app dir.
+            binary = os.path.join(binary, 'Contents/MacOS/fennec')
+
+        self.__real_binary = binary
+
+        mozrunner.Runner.__init__(self, **kwargs)
+
+    def find_binary(self):
+        if not self.__real_binary:
+            if sys.platform == 'darwin':
+                if os.path.exists(self.__DARWIN_PATH):
+                    return self.__DARWIN_PATH
+            self.__real_binary = mozrunner.Runner.find_binary(self)
+        return self.__real_binary
+
 class XulrunnerAppProfile(mozrunner.Profile):
     preferences = {'browser.dom.window.dump.enabled': True,
                    'javascript.options.strict': True}
@@ -156,10 +185,10 @@ def run_app(harness_root_dir, harness_options, xpts,
 
     addons = []
     cmdargs = []
+    preferences = {}
 
     if app_type == "xulrunner":
         profile_class = XulrunnerAppProfile
-        preferences = {}
         runner_class = XulrunnerAppRunner
         cmdargs.append(os.path.join(harness_root_dir, 'application.ini'))
     else:
@@ -172,6 +201,9 @@ def run_app(harness_root_dir, harness_options, xpts,
             profile_class = mozrunner.ThunderbirdProfile
             preferences = DEFAULT_THUNDERBIRD_PREFS
             runner_class = mozrunner.ThunderbirdRunner
+        elif app_type == "fennec":
+            profile_class = FennecProfile
+            runner_class = FennecRunner
         else:
             raise ValueError("Unknown app: %s" % app_type)
 

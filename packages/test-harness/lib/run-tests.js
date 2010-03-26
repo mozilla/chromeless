@@ -36,6 +36,7 @@
 
 const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
 const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
+const FENNEC_ID = "{a23983c0-fd0e-11dc-95ff-0800200c9a66}";
 
 var obsvc = require("observer-service");
 
@@ -64,10 +65,15 @@ function runTests(iterations, verbose, rootPaths, quit, print) {
 }
 
 exports.main = function main(options, callbacks) {
+  var testsStarted = false;
+
   function doRunTests() {
-    runTests(options.iterations, options.verbose,
-             options.rootPaths, callbacks.quit,
-             callbacks.print);
+    if (!testsStarted) {
+      testsStarted = true;
+      runTests(options.iterations, options.verbose,
+               options.rootPaths, callbacks.quit,
+               callbacks.print);
+    }
   }
 
   // TODO: This is optional code that might be put in by
@@ -86,6 +92,7 @@ exports.main = function main(options, callbacks) {
 
   switch (appInfo.ID) {
   case THUNDERBIRD_ID:
+  case FENNEC_ID:
     obsvc.add("xul-window-visible", doRunTests);
     break;
   case FIREFOX_ID:

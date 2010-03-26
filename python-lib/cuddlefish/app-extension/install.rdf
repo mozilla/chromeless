@@ -19,6 +19,15 @@
       </Description>
     </em:targetApplication>
 
+    <!-- Fennec -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{a23983c0-fd0e-11dc-95ff-0800200c9a66}</em:id>
+        <em:minVersion>0.1</em:minVersion>
+        <em:maxVersion>1.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
     <!-- Thunderbird -->
     <em:targetApplication>
       <Description>
@@ -27,7 +36,7 @@
         <em:maxVersion>3.1.*</em:maxVersion>
       </Description>
     </em:targetApplication>
-   
+
     <!-- Front End MetaData -->
     <em:name>Test App</em:name>
     <em:description>Harness for tests.</em:description>
