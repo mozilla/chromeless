@@ -39,7 +39,7 @@ Then, if you're on Linux, OS X, or another Unix-based system, run:
 
 Otherwise, if you're on Windows, run:
 
-    bin/activate
+    bin\activate
 
 Now the beginning of your command prompt should contain the text
 `(jetpack-sdk)`, which means that your shell has entered a special
