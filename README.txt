@@ -18,7 +18,7 @@ you can execute the following command:
 
 Windows users using cmd.exe should instead run:
 
-  bin/activate.bat
+  bin\activate.bat
 
 Then run:
 
