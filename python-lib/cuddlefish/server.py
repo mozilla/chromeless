@@ -25,6 +25,7 @@ except ImportError:
     except IOError:
         pass
 
+DEV_SERVER_PORT = 15832
 DEFAULT_PORT = 8888
 DEFAULT_HOST = '127.0.0.1'
 
@@ -364,7 +365,7 @@ def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
             timeout=None, logfile=None,
             host=DEFAULT_HOST,
-            port=DEFAULT_PORT):
+            port=DEV_SERVER_PORT):
     payload = json.dumps(harness_options)
     url = 'http://%s:%d/%s/%s/%s' % (host, port,
                                      API_PATH,

@@ -23,6 +23,7 @@ Global Commands:
   sdocs      - export static documentation
   testcfx    - test the cfx tool
   testall    - test all packages
+  develop    - run development server
 """
 
 parser_options = {
@@ -85,10 +86,10 @@ parser_groups = Bunch(
                                        help="log console output to file",
                                        metavar=None,
                                        default=None),
-            ("", "--use-server",): dict(dest="use_server",
-                                        help="use task queue server",
-                                        action="store_true",
-                                        default=False),
+            ("-r", "--use-server",): dict(dest="use_server",
+                                          help="use development server",
+                                          action="store_true",
+                                          default=False),
             }
         ),
     xpcom=Bunch(
@@ -176,6 +177,28 @@ def test_all_packages(env_root, defaults):
         pkg_cfg=pkg_cfg,
         defaults=defaults)
 
+def run_development_mode(env_root, defaults):
+    pkgdir = os.path.join(env_root, 'packages', 'development-mode')
+    app = defaults['app']
+
+    from cuddlefish import server
+    port = server.DEV_SERVER_PORT
+    httpd = server.make_httpd(env_root, port=port)
+    thread = server.threading.Thread(target=httpd.serve_forever)
+    thread.setDaemon(True)
+    thread.start()
+
+    print "I am starting an instance of %s in development mode." % app
+    print "From a separate shell, you can now run cfx commands with"
+    print "'-r' as an option to send the cfx command to this instance."
+    print "All logging messages will appear below."
+
+    os.environ['JETPACK_DEV_SERVER_PORT'] = str(port)
+    options = {}
+    options.update(defaults)
+    run(["run", "--pkgdir", pkgdir],
+        defaults=options, env_root=env_root)
+
 def get_config_args(name, env_root):
     local_json = os.path.join(env_root, "local.json")
     if not (os.path.exists(local_json) and
@@ -212,6 +235,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     command = args[0]
 
+    if command == "develop":
+        run_development_mode(env_root, defaults=options.__dict__)
+        return
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
         return
