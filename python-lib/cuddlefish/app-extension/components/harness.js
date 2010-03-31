@@ -35,6 +35,30 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// This file contains an XPCOM component which "bootstraps" a Jetpack
+// program.
+//
+// The main entry point, `NSGetModule()`, is data-driven, and obtains
+// a lot of its configuration information from either the
+// `HARNESS_OPTIONS` environment variable (if present) or a JSON file
+// called `harness-options.json` in the root directory of the extension
+// or application it's a part of.
+//
+// `NSGetModule()` then uses this configuration information to
+// dynamically create an XPCOM component called a "Harness Service",
+// which is responsible for setting up and shutting down the Jetpack
+// program's CommonJS environment. It's also the main mechanism through
+// which other parts of the application can communicate with the Jetpack
+// program.
+// 
+// It should be noted that a lot of what's done by the Harness Service is
+// very similar to what's normally done by a `chrome.manifest` file: the
+// difference here is that everything the Harness Service does is
+// undoable during the lifetime of the application. This is the
+// foundation of what makes it possible for Jetpack-based extensions
+// to be installed and uninstalled without needing to reboot the
+// application being extended.
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
@@ -44,6 +68,8 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 var obSvc = Cc["@mozilla.org/observer-service;1"]
             .getService(Ci.nsIObserverService);
 
+// This function builds and returns a Harness Service XPCOM component.
+// 
 // Parameters:
 //
 //   rootFileSpec - nsILocalFile corresponding to root of extension
