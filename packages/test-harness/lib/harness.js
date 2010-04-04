@@ -250,7 +250,7 @@ var consoleListener = {
     var pointless = [err for each (err in POINTLESS_ERRORS)
                          if (message.indexOf(err) == 0)];
     if (pointless.length == 0)
-      print("console: " + message);
+      print("console: " + message + "\n");
   }
 };
 
