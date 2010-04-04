@@ -206,6 +206,8 @@ def run_app(harness_root_dir, harness_options, xpts,
             runner_class = FennecRunner
         else:
             raise ValueError("Unknown app: %s" % app_type)
+        if sys.platform == 'darwin':
+            cmdargs.append('-foreground')
 
     resultfile = os.path.join(tempfile.gettempdir(), 'harness_result')
     if os.path.exists(resultfile):
