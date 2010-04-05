@@ -191,6 +191,31 @@ function startApp(jQuery, window) {
                });
   }
 
+  function listModules(pkg, entry) {
+    var libs = [];
+    if (pkg.lib) {
+      pkg.lib.forEach(
+        function(libDir) {
+          var modules = getModules(pkg.files[libDir]);
+          libs = libs.concat(modules);
+        });
+    }
+    var modules = entry.find(".modules");
+    if (libs.length > 0) {
+      modules.text("");
+    }
+    libs.sort();
+    libs.forEach(
+      function(moduleName) {
+        var module = $('<li class="module clickable"></li>');
+        var hash = "module/" + pkg.name + "/" + moduleName;
+        module.text(moduleName.replace(/-/g, NON_BREAKING_HYPHEN));
+        module.click(function() { setHash(hash); });
+        modules.append(module);
+        modules.append(document.createTextNode(' '));
+      });
+  }
+
   function showPackageDetail(name) {
     var pkg = packages[name];
     var entry = $("#templates .package-detail").clone();
@@ -215,6 +240,8 @@ function startApp(jQuery, window) {
       entry.find(".dependencies").text(dependencies.join("\n"));
     else
       entry.find(".dependencies").parent().parent().remove();
+
+    listModules(pkg, entry);
 
     queueMainContent(entry);
     getPkgFile(pkg, filename, markdownToHtml,
@@ -254,25 +281,8 @@ function startApp(jQuery, window) {
         entry.find(".name").text(pkg.name);
         entry.find(".name").click(function() { setHash(hash); });
         entry.find(".description").text(pkg.description);
-        var libs = [];
-        if (pkg.lib) {
-          pkg.lib.forEach(
-            function(libDir) {
-              var modules = getModules(pkg.files[libDir]);
-              libs = libs.concat(modules);
-            });
-        }
-        var modules = entry.find(".modules");
-        libs.sort();
-        libs.forEach(
-          function(moduleName) {
-            var module = $('<li class="module clickable"></li>');
-            var hash = "module/" + pkg.name + "/" + moduleName;
-            module.text(moduleName.replace(/-/g, NON_BREAKING_HYPHEN));
-            module.click(function() { setHash(hash); });
-            modules.append(module);
-            modules.append(document.createTextNode(' '));
-          });
+
+        listModules(pkg, entry);
         entries.append(entry);
       });
     entries.fadeIn();

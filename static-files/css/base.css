@@ -105,7 +105,12 @@ span.clickable:hover, li.clickable:hover {
     padding-left: 2em;
 }
 
-.package-entry .module {
+.package-detail .modules {
+    padding-left: 0;
+}
+
+.package-entry .module,
+.package-detail .module {
     display: inline;
     margin-right: 1em;
 }
