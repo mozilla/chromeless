@@ -72,15 +72,6 @@ h1 {
     color: black;
 }
 
-.clickable {
-    cursor: pointer;
-}
-
-span.clickable:hover, li.clickable:hover {
-    color: black;
-    background: yellow;
-}
-
 .meta-header {
     font-weight: bold;
 }
@@ -113,6 +104,11 @@ span.clickable:hover, li.clickable:hover {
 .package-detail .module {
     display: inline;
     margin-right: 1em;
+    white-space: nowrap;
+}
+
+.package-entry .module a:not(:hover) {
+    color: gray;
 }
 
 pre {
@@ -145,7 +141,7 @@ tt strong {
     display: none;
 }
 
-#dev-guide-toc a {
+#left-column a {
     text-decoration: none;
 }
 

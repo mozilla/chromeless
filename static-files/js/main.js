@@ -9,7 +9,6 @@ function startApp(jQuery, window) {
   const BUGZILLA_REGEXP = /bug\s+([0-9]+)/g;
   const DOCTEST_REGEXP = />>>.+/g;
   const DOCTEST_BLANKLINE_REGEXP = /<BLANKLINE>/g;
-  const NON_BREAKING_HYPHEN = "\u2011";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
 
@@ -21,14 +20,6 @@ function startApp(jQuery, window) {
       currentHash = hash;
       onHash(currentHash.slice(1));
     }
-  }
-
-  function setHash(hash) {
-    if (hash && hash.length)
-      window.location.hash = "#" + hash;
-    else
-      window.location.hash = "#" + DEFAULT_HASH;
-    checkHash();
   }
 
   function onHash(hash) {
@@ -207,10 +198,12 @@ function startApp(jQuery, window) {
     libs.sort();
     libs.forEach(
       function(moduleName) {
-        var module = $('<li class="module clickable"></li>');
-        var hash = "module/" + pkg.name + "/" + moduleName;
-        module.text(moduleName.replace(/-/g, NON_BREAKING_HYPHEN));
-        module.click(function() { setHash(hash); });
+        var module = $('<li class="module"></li>');
+        var hash = "#module/" + pkg.name + "/" + moduleName;
+        $('<a target="_self"></a>')
+          .attr("href", hash)
+          .text(moduleName)
+          .appendTo(module);
         modules.append(module);
         modules.append(document.createTextNode(' '));
       });
@@ -277,9 +270,8 @@ function startApp(jQuery, window) {
       function(name) {
         var pkg = packages[name];
         var entry = $("#templates .package-entry").clone();
-        var hash = "package/" + pkg.name;
-        entry.find(".name").text(pkg.name);
-        entry.find(".name").click(function() { setHash(hash); });
+        var hash = "#package/" + pkg.name;
+        entry.find(".name").text(pkg.name).attr("href", hash);
         entry.find(".description").text(pkg.description);
 
         listModules(pkg, entry);
@@ -291,7 +283,11 @@ function startApp(jQuery, window) {
 
   function finalizeSetup() {
     checkHash();
-    window.setInterval(checkHash, CHECK_HASH_DELAY);
+    if ("onhashchange" in window) {
+      window.addEventListener("hashchange", checkHash, false);
+    } else {
+      window.setInterval(checkHash, CHECK_HASH_DELAY);
+    }
   }
 
   function showGuideDetail(name) {
