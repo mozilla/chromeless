@@ -63,8 +63,35 @@ if wsgiref_available:
             pass
 
 def guess_mime_type(url):
-    if url.endswith(".json"):
-        mimetype = "text/plain"
+    """
+    Attempts to guess a MIME type for a given URL.
+
+    Note that some of these are text/plain just so they can be viewed
+    easily in Firefox rather than prompted for download.
+
+    Examples:
+
+      >>> guess_mime_type('http://foo.com/blah.json')
+      'text/plain'
+
+      >>> guess_mime_type('http://foo.com/blah.cpp')
+      'text/plain'
+
+      >>> guess_mime_type('http://foo.com/blah.jpg')
+      'image/jpeg'
+
+      >>> guess_mime_type('http://foo.com/blah.goewjg')
+      'text/plain'
+    """
+
+    MIME_TYPES = dict(json="text/plain",
+                      cpp="text/plain",
+                      c="text/plain",
+                      h="text/plain")
+
+    ext = url.split(".")[-1]
+    if ext in MIME_TYPES:
+        mimetype = MIME_TYPES[ext]
     else:
         mimetype = mimetypes.guess_type(url)[0]
     if not mimetype:
