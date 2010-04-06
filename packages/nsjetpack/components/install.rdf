@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<!-- This isn't the install.rdf for a 'real' extension; it's just
+     a placeholder so that the Mozilla build system will generate
+     an XPI that we can pull binary XPCOM components out of.  --> 
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>jetpack-components@labs.mozilla.com</em:id>
+    <em:version>0.1</em:version>
+    <em:type>2</em:type>
+
+    <!-- Target Application this extension can install into, 
+         with minimum and maximum supported versions. --> 
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>3.0</em:minVersion>
+        <em:maxVersion>3.6.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+   
+    <!-- Front End MetaData -->
+    <em:name>Jetpack Components</em:name>
+    <em:description>Binary XPCOM components for Jetpack</em:description>
+    <em:creator>Mozilla Corporation</em:creator>
+  </Description>
+</RDF>

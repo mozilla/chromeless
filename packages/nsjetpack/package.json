@@ -1,0 +1,16 @@
+{
+    "name": "nsjetpack",
+    "description": "Jetpack binary component.",
+    "author": "Atul Varma (http://toolness.com/)",
+    "dependencies": ["jetpack-core"],
+    "lib": ["lib"],
+    "tests": ["tests"],
+    "version": "0.2",
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
+    "xpcom": {
+        "module": "jetpack",
+        "src": "components",
+        "dest": "lib/platform",
+        "typelibs": "xpt"
+    }
+}

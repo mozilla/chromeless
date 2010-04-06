@@ -1,0 +1,16 @@
+DEPTH		= ../../..
+topsrcdir	= @top_srcdir@
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+include $(DEPTH)/config/autoconf.mk
+
+DIRS = public src
+
+XPI_NAME = jetpack
+INSTALL_EXTENSION_ID = jetpack-components@labs.mozilla.com
+XPI_PKGNAME = jetpack-components
+
+DIST_FILES = install.rdf
+
+include $(topsrcdir)/config/rules.mk
