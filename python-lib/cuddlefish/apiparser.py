@@ -1,245 +1,270 @@
-import re
+import sys, re, textwrap
 
 class ParseError(Exception):
-  pass
+    # args[1] is the line number that caused the problem
+    def __init__(self, why, lineno):
+        self.why = why
+        self.lineno = lineno
+    def __str__(self):
+        return ("ParseError: the JS API docs were unparseable on line %d: %s" %
+                        (self.lineno, self.why))
+
+class Accumulator:
+    def __init__(self, holder, firstline):
+        self.holder = holder
+        self.firstline = firstline
+        self.otherlines = []
+    def addline(self, line):
+        self.otherlines.append(line)
+    def finish(self):
+        # take a list of strings like:
+        #    "initial stuff"    (this is in firstline)
+        #    "  more stuff"     (this is in lines[0])
+        #    "  yet more stuff"
+        #    "      indented block"
+        #    "      indented block"
+        #    "  nonindented stuff"  (lines[-1])
+        #
+        # calculate the indentation level by looking at all but the first
+        # line, and removing the whitespace they all have in common. Then
+        # join the results with newlines and return a single string.
+        pieces = []
+        if self.firstline:
+            pieces.append(self.firstline)
+        if self.otherlines:
+            pieces.append(textwrap.dedent("\n".join(self.otherlines)))
+        self.holder["description"] = "\n".join(pieces)
+
 
 class APIParser:
-  def __init__(self):
-    self.name = None
-    self.meta = dict()
-    self.params = []
-    
-  def feed(self, text):
-    self.lines = text.splitlines()
-    self._parseApiTags()
-    self._parseMetas()
-    self._parseParams()
-    
-    obj = self.meta.copy()
-    
-    obj.update(
-      name = self.name,
-      description = self.description,
-      params = self.params
-    )
-    
-    return obj
-    
-  def _peekNextLine(self):
-    if len(self.lines) > 0:
-      return self.lines[0]
-    else:
-      return ""
-  
-  def _parseApiTags(self):
-    titleLine = self.lines.pop(0)
-    if "name" not in titleLine:
-      raise ParseError("Opening <api> tag must have a name attribute.")
-    name = re.findall("name=['\"]{0,1}([-\w\.]*?)['\"]", titleLine)
-    if not name:
-      raise ParseError("No value for name attribute found in "
-                       "opening <api> tag.")
-    self.name = name[0]
-    
-    finalLine = self.lines.pop()
-    if not "</api>" in finalLine:
-      raise ParseError("Closing </api> not found.")
+    def parse(self, lines, lineno):
+        api = {"line_number": lineno}
 
-  def _parseMetas(self):
-    # Check for the first @param, which signifies the end
-    # of the meta section.
-    description = ""
-    while len(self.lines) > 0 and not self.lines[0].startswith("@param"):
-      line = self.lines.pop(0)
-      if line.startswith("@"):
-        line = line.strip("@ \t") #Remove @ and any white space
-        splitLine = re.split("[ \t]", line)
-        key = splitLine[0]
-        
-        if key != "returns":
-          self.meta["type"] = key
+        titleLine = lines.pop(0)
+        if "name" not in titleLine:
+            raise ParseError("Opening <api> tag must have a name attribute.",
+                             lineno)
+        m = re.search("name=['\"]{0,1}([-\w\.]*?)['\"]", titleLine)
+        if not m:
+            raise ParseError("No value for name attribute found in "
+                                             "opening <api> tag.", lineno)
+        lineno += 1
+        api["name"] = m.group(1)
+
+        finalLine = lines.pop()
+        if not "</api>" in finalLine:
+            raise ParseError("Closing </api> not found.", lineno+len(lines))
+
+        props = []
+        currentPropHolder = None
+        params = []
+        tag, info, firstline = self._parseTypeLine(lines[0], lineno)
+        api["type"] = tag
+        # info is ignored
+        currentAccumulator = Accumulator(api, firstline)
+        for line in lines[1:]:
+            lineno += 1  # note that we count from lines[1:]
+
+            if not line.lstrip().startswith("@"):
+                currentAccumulator.addline(line)
+                continue
+
+            # we're starting a new section
+            currentAccumulator.finish()
+            tag, info, firstline = self._parseTypeLine(line, lineno)
+            if tag == "prop":
+                if "type" not in info:
+                    raise ParseError("@prop lines must include {type}: '%s'" %
+                                     line, lineno)
+                if "name" not in info:
+                    raise ParseError("@prop lines must provide a name: '%s'" %
+                                     line, lineno)
+                props.append(info) # build up props[]
+                currentAccumulator = Accumulator(info, firstline)
+                continue
+            # close off the @prop list
+            if props and currentPropHolder:
+                currentPropHolder["props"] = props
+                props = []
+
+            if tag == "returns":
+                api["returns"] = info
+                # the Accumulator will add ["description"] when done
+                currentAccumulator = Accumulator(info, firstline)
+                # @prop tags get attached to api["returns"]
+                currentPropHolder = info
+                continue
+            if tag == "param":
+                if info.get("required", False) and "default" in info:
+                    raise ParseError("required parameters should not have defaults: '%s'"
+                                     % line, lineno)
+                params.append(info)
+                currentAccumulator = Accumulator(info, firstline)
+                # @prop tags get attached to this param
+                currentPropHolder = info
+                continue
+            raise ParseError("unknown '@' section header %s in '%s'" %
+                             (tag, line), lineno)
+
+        currentAccumulator.finish()
+        if props and currentPropHolder:
+            currentPropHolder["props"] = props
+        if params:
+            api["params"] = params
+
+        return api
+
+    def _parseTypeLine(self, line, lineno):
+        # handle these things:
+        #    @method
+        #    @returns description
+        #    @returns {string} description
+        #    @param NAME {type} description
+        #    @param NAME
+        #    @prop NAME {type} description
+        #    @prop NAME
+        info = {"line_number": lineno}
+        pieces = line.split()
+
+        if not pieces:
+            raise ParseError("line is too short: '%s'" % line, lineno)
+        if not pieces[0].startswith("@"):
+            raise ParseError("type line should start with @: '%s'" % line,
+                             lineno)
+        tag = pieces[0][1:]
+        skip = 1
+
+        expect_name = tag in ("param", "prop")
+
+        if len(pieces) == 1:
+            description = ""
         else:
-          # Deal with @returns
-          # Find the first line that starts with @param
-          try:
-            startParamLine = [line.strip().startswith("@param")
-                              for line in self.lines].index(True)
-          except:
-            startParamLine = len(self.lines)
-          
-          retLines = [" ".join(splitLine[1:])] + self.lines[:startParamLine]
-          self.lines = self.lines[startParamLine:]
-          self._parseReturns(retLines)
-      else:
-        description += line.strip() + "\n"
-    
-    self.description = description.strip()
+            if pieces[1].startswith("{"):
+                # NAME is missing, pieces[1] is TYPE
+                pass
+            else:
+                if expect_name:
+                    info["required"] = not pieces[1].startswith("[")
+                    name = pieces[1].strip("[ ]")
+                    if "=" in name:
+                        name, info["default"] = name.split("=")
+                    info["name"] = name
+                    skip += 1
 
-  def _parseParams(self):
-    while len(self.lines) > 0:
-      self._parseParam()
-      
-      
-  def _parseName(self, raw):
-    partialProps = dict()
-    if "[" in raw:
-      raw = raw.strip("[]")
-      partialProps["required"] = True
+            if len(pieces) > skip and pieces[skip].startswith("{"):
+                info["type"] = pieces[skip].strip("{ }")
+                skip += 1
 
-    if "=" in raw:
-      split = raw.split("=")
-      raw = split[0]
-      partialProps["default"] = split[1]
-        
-    partialProps["name"] = raw
-    return partialProps
-            
-  def _parseType(self, raw):
-    return dict(type = raw.strip("{} \n"))
+            # we've got the metadata, now extract the description
+            pieces = line.split(None, skip)
+            if len(pieces) > skip:
+                description = pieces[skip]
+            else:
+                description = ""
 
-  def _parseReturns(self, returnLines):
-    # Find the first line that starts with @prop
-    try:
-      startPropLine = [line.strip().startswith("@prop")
-                       for line in returnLines].index(True)
-    except:
-      startPropLine = len(returnLines)
-      
-    descLines =  returnLines[ :startPropLine]
-    propLines = returnLines[startPropLine: ]
-    
-    if len(descLines) > 0:
-      split = descLines[0].split(" ")
-      info = self._parseType(split.pop(0))
-      info["description"] = (" ".join(split[1:]) + "\n" +
-                             "\n".join(descLines[1:]))
-      info["description"] = info["description"].strip()
-    
-    propLines = "\n".join(propLines).split("@prop")
-    propLines = [p.strip() for p in propLines if p.strip()]
-    
-    allProps = []
-    
-    for propLine in propLines:
-      split = re.split("[ ]", propLine)      
-      if "{" not in split[0]:
-        raise ParseError("@prop in @returns do not have names "
-                         "and must have {type}s: " + str(split))
-      props = self._parseType(split.pop(0))
-      
-      props["description"] = " ".join([line for line in split if line])
-      allProps.append(props)
-    
-    if len(allProps) > 0:
-      info["props"] = allProps
-
-    self.meta["returns"] = info
+        return tag, info, description
 
 
-          
-  def _parseProps(self, propLines):
-    propLines = "\n".join(propLines).split("@prop")
-    propLines = [p.strip() for p in propLines if p.strip()]
-    
-    allProps = []
-    
-    for propLine in propLines:
-      split = re.split("[ ]", propLine)
-      props = self._parseName(split.pop(0))
-      
-      hasType = "{" in propLine
-      if hasType: props.update( self._parseType(split.pop(0)) )
-      props["description"] = " ".join([line for line in split if line])
-      allProps.append(props)
+def parse_hunks(text):
+    # return a list of tuples. Each is one of:
+    #    ("raw", string)         : non-API blocks
+    #    ("api-json", dict)  : API blocks
+    processed = 0 # we've handled all bytes up-to-but-not-including this offset
+    line_number = 1
+    for m in re.finditer("<api[\w\W]*?</api>", text, re.M):
+        start = m.start()
+        if start > processed+1:
+            hunk = text[processed:start]
+            yield ("markdown", hunk)
+            processed = start
+            line_number += hunk.count("\n")
+        api_text = m.group(0)
+        api_lines = api_text.splitlines()
+        d = APIParser().parse(api_lines, line_number)
+        yield ("api-json", d)
+        processed = m.end()
+        line_number += api_text.count("\n")
+    if processed < len(text):
+        yield ("markdown", text[processed:])
 
-    if not self.params[-1].has_key("props"): self.params[-1]["props"] = []
-    self.params[-1]["props"].append( allProps )
-    
-    
-  def _parseParamMetas(self, paramLines):
-    topLine = paramLines.pop(0).strip()
+class TestRenderer:
+    # render docs for test purposes
 
-    if paramLines:
-      nonPropLines = []
-      while paramLines and "@prop" not in paramLines[0]:
-        nonPropLines.append( paramLines.pop(0) )
-              
-      description = " ".join( [line.strip() for line in nonPropLines] )
-    else:
-      if "}" not in topLine:
-        raise ParseError("The @param definition needs a {type}: " +
-                         topLine)
-      description = topLine.split("}")[1].strip()
-    
-    if len(paramLines) > 0: hasProp = True
-    else: hasProp = False
+    def getm(self, d, key):
+        return d.get(key, "<MISSING>")
 
-    split = topLine.split(" ")
+    def join_lines(self, text):
+        return " ".join([line.strip() for line in text.split("\n")])
 
-    if not (len(split) >= 2):
-      raise ParseError("The @param/@prop definiton requires a name: " +
-                       topLine)
-    name = split[1]
-    if hasProp:
-      theType = "object"
-    else:
-      msg = "The @param/@prop definition requires a {type}: "
-      if (not (len(split) >= 3)) or "{" not in split[2]:
-        raise ParseError(msg + topLine)
-      theType = split[2].strip("{}")
-    
-    param = dict(description = description)
-    param.update( self._parseName(name) )
-    param.update( self._parseType(theType) )
-    
-    self.params.append( param )
-    return paramLines
-    
-  def _parseParam(self):
-    paramLines = []
-    if len(self.lines) > 0:
-      paramLines.append( self.lines.pop(0) )
-    
-    hasProp = False
-    
-    while (len(self.lines) > 0 and
-           not self._peekNextLine().strip().startswith("@param")):
-      line = self.lines.pop(0)
-      if "@prop" in line: hasProp = True
-      paramLines.append(line)
-    
-    paramLines = self._parseParamMetas(paramLines)
-    if hasProp:
-      self._parseProps(paramLines)
+    def render_prop(self, p):
+        s = "props[%s]: " % self.getm(p, "name")
+        pieces = []
+        for k in ("type", "description", "required", "default"):
+            if k in p:
+                pieces.append("%s=%s" % (k, self.join_lines(str(p[k]))))
+        return s + ", ".join(pieces)
 
-class Parser:
-  def __init__(self):
-    pass
-    
-  def feed(self, text):
-    blocks = self._getAPIBlocks(text)
-    for block in blocks:
-      parsed = self._parseBlock(block)
-      compiled = self._compileParsedBlock(parsed)
-      text = text.replace(block, compiled)
-    return text
-    
-  def _getAPIBlocks(self, text):
-    blocks = re.findall("<api[\w\W]*?</api>", text, re.M)
-    return blocks
-    
-  def _parseBlock(self, block):
-    p = APIParser()
-    dictApi = p.feed(block)
-    print dictApi, "\n"*3
-    return "|||%s|||" % repr(dictApi)
-    #return str(api)
-    
-  def _compileParsedBlock( self, parsed):
-    return parsed
+    def render_param(self, p):
+        pieces = []
+        for k in ("name", "type", "description", "required", "default"):
+            if k in p:
+                pieces.append("%s=%s" % (k, self.join_lines(str(p[k]))))
+        yield ", ".join(pieces)
+        for prop in p.get("props", []):
+            yield " " + self.render_prop(prop)
+
+    def format_api(self, api):
+        yield "name= %s" % self.getm(api, "name")
+        yield "type= %s" % self.getm(api, "type")
+        yield "description= %s" % self.getm(api, "description")
+        params = api.get("params", [])
+        if params:
+            yield "parameters:"
+            for p in params:
+                for pline in self.render_param(p):
+                    yield " " + pline
+        r = api.get("returns", None)
+        if r:
+            yield "returns:"
+            if "type" in r:
+                yield " type= %s" % r["type"]
+            if "description" in r:
+                yield " description= %s" % self.join_lines(r["description"])
+            props = r.get("props", [])
+            for p in props:
+                yield "  " + self.render_prop(p)
+
+    def render_docs(self, docs_json, outf=sys.stdout):
+
+        for (t,data) in docs_json:
+            if t == "api-json":
+                #import pprint
+                #for line in str(pprint.pformat(data)).split("\n"):
+                #    outf.write("JSN: " + line + "\n")
+                for line in self.format_api(data):
+                    outf.write("API: " + line + "\n")
+            else:
+                for line in str(data).split("\n"):
+                    outf.write("MD :" +  line + "\n")
+
+def hunks_to_dict(docs_json):
+    exports = {}
+    for (t,data) in docs_json:
+        if t != "api-json":
+            continue
+        if data["name"]:
+            exports[data["name"]] = data
+    return exports
 
 if __name__ == "__main__":
-  import sys
-
-  p = Parser()
-  print p.feed(open(sys.argv[1]).read())
+    json = False
+    if sys.argv[1] == "--json":
+        json = True
+        del sys.argv[1]
+    docs_text = open(sys.argv[1]).read()
+    docs_parsed = list(parse_hunks(docs_text))
+    if json:
+        import simplejson
+        print simplejson.dumps(docs_parsed, indent=2)
+    else:
+        TestRenderer().render_docs(docs_parsed)

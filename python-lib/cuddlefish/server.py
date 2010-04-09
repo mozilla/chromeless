@@ -12,6 +12,7 @@ import SocketServer
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
+from cuddlefish import apiparser
 import simplejson as json
 
 try:
@@ -118,6 +119,18 @@ class Server(object):
                             [('Content-type', mimetype)])
         yield open(path, 'r').read()
 
+    def _respond_with_apidoc_json(self, path):
+        docs_md = open(path, 'r').read()
+        try:
+            parsed = list(apiparser.parse_hunks(docs_md))
+            self.start_response('200 OK',
+                                [('Content-type', "text/plain")])
+            return [json.dumps(parsed)]
+        except apiparser.ParseError, e:
+            self.start_response('500 Parse Error',
+                                [('Content-type', "text/plain")])
+            return [str(e)]
+
     def _get_files_in_dir(self, path):
         data = {}
         files = os.listdir(path)
@@ -174,12 +187,19 @@ class Server(object):
             else:
                 dir_path = os.path.join(root_dir, *parts[1:])
                 dir_path = os.path.normpath(dir_path)
+                parse_apidoc = False
+                if dir_path.endswith(".md.json"):
+                    parse_apidoc = True
+                    dir_path = dir_path[:-len(".json")]
                 if not (dir_path.startswith(root_dir) and
                         os.path.exists(dir_path) and
                         os.path.isfile(dir_path)):
                     return self._respond('404 Not Found')
                 else:
-                    return self._respond_with_file(dir_path)
+                    if parse_apidoc:
+                        return self._respond_with_apidoc_json(dir_path)
+                    else:
+                        return self._respond_with_file(dir_path)
 
     def _respond_with_api(self, parts):
         parts = [part for part in parts

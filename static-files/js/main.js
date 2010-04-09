@@ -5,10 +5,6 @@ function startApp(jQuery, window) {
   var currentHash = "";
 
   const DEFAULT_HASH = "guide/getting-started";
-  const BUGZILLA_SHOW = "https://bugzilla.mozilla.org/show_bug.cgi?id=";
-  const BUGZILLA_REGEXP = /bug\s+([0-9]+)/g;
-  const DOCTEST_REGEXP = />>>.+/g;
-  const DOCTEST_BLANKLINE_REGEXP = /<BLANKLINE>/g;
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
 
@@ -82,20 +78,18 @@ function startApp(jQuery, window) {
       });
   }
 
-  function insertBugzillaLinks(text) {
-    return text.replace(BUGZILLA_REGEXP,
-                        "bug [$1](" + BUGZILLA_SHOW + "$1)");
-  }
-
-  function removePyDoctestCode(text) {
-    return text.replace(DOCTEST_REGEXP, "")
-               .replace(DOCTEST_BLANKLINE_REGEXP, "");
-  }
-
-  function markdownToHtml(text) {
-    var converter = new Showdown.converter();
-    text = removePyDoctestCode(insertBugzillaLinks(text));
-    return converter.makeHtml(text);
+  function renderInterleavedAPIDocs(where, hunks) {
+    $(where).empty();
+    function render_hunk (hunk) {
+      if (hunk[0] == "markdown") {
+        var nh = $("<span>" + markdownToHtml(hunk[1]) + "</span>");
+        nh.appendTo(where);
+      } else if (hunk[0] == "api-json") {
+        var $el = $("<div class='api'/>").appendTo(where);
+        renderDocumentationJSON(hunk[1], $el);
+      }
+    }
+    hunks.forEach(render_hunk);
   }
 
   function getPkgFile(pkg, filename, filter, cb) {
@@ -119,6 +113,39 @@ function startApp(jQuery, window) {
       jQuery.ajax(options);
     } else
       cb(null);
+  }
+
+  function onPkgAPIError(req, where, source_filename) {
+    var errorDisplay = $("#templates .module-parse-error").clone();
+    errorDisplay.find(".filename").text(source_filename);
+    errorDisplay.find(".technical-error").text(req.responseText);
+    where.empty().append(errorDisplay);
+    errorDisplay.hide();
+    errorDisplay.fadeIn();
+  }
+
+  function renderPkgAPI(pkg, source_filename, json_filename, where, donecb) {
+    if (pkgHasFile(pkg, source_filename)) {
+      var options = {
+        url: pkgFileUrl(pkg, json_filename),
+        dataType: "json",
+        success: function(json) {
+          try {
+            renderInterleavedAPIDocs(where, json);
+          } catch (e) {
+            $(where).text("Oops, API docs renderer failed: " + e);
+          }
+          donecb("success");
+        },
+        error: function (req) {
+          onPkgAPIError(req, where, source_filename);
+          donecb("show_error");
+        }
+      };
+      jQuery.ajax(options);
+    } else {
+      donecb(null);
+    }
   }
 
   function showSidenotes(query) {
@@ -170,16 +197,16 @@ function startApp(jQuery, window) {
   function showModuleDetail(pkgName, moduleName) {
     var pkg = packages[pkgName];
     var entry = $("#templates .module-detail").clone();
-    var filename = "docs/" + moduleName + ".md";
+    var source_filename = "docs/" + moduleName + ".md";
+    var json_filename = "docs/" + moduleName + ".md.json";
 
     entry.find(".name").text(moduleName);
     queueMainContent(entry);
-    getPkgFile(pkg, filename, markdownToHtml,
-               function(html) {
-                 if (html)
-                   entry.find(".docs").html(html);
-                 showMainContent(entry, pkgFileUrl(pkg, filename));
-               });
+    renderPkgAPI(pkg, source_filename, json_filename, entry.find(".docs"),
+                 function(please_display) {
+                   if (please_display)
+                     showMainContent(entry, pkgFileUrl(pkg, source_filename));
+                 });
   }
 
   function listModules(pkg, entry) {
