@@ -9,6 +9,8 @@ import mimetypes
 import webbrowser
 import Queue
 import SocketServer
+import shutil
+import tarfile
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
@@ -362,51 +364,69 @@ def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
         print "Ctrl-C received, exiting."
 
 def generate_static_docs(env_root, tgz_filename):
-    import shutil
-    import tarfile
-
     server = Server(env_root=env_root,
                     task_queue=None,
                     expose_privileged_api=False)
-    root_dir = os.path.join(server.root, 'packages')
+    staging_dir = os.path.join(env_root, "jetpack-sdk-docs")
+    if os.path.exists(staging_dir):
+        shutil.rmtree(staging_dir)
 
-    if os.path.exists(root_dir):
-        shutil.rmtree(root_dir)
+    # first, copy static-files
+    def _tempfiles(src, names):
+        return [n for n in names if n.endswith("~")]
+    shutil.copytree(server.root, staging_dir, ignore=_tempfiles)
+
+    # then copy docs from each package
+    os.mkdir(os.path.join(staging_dir, "packages"))
 
     pkg_cfg = server.build_pkg_cfg()
 
-    os.mkdir(root_dir)
-
+    # starting with the (generated) index file
     index = json.dumps(server.build_pkg_index(pkg_cfg))
-    index_path = os.path.join(root_dir, 'index.json')
+    index_path = os.path.join(staging_dir, "packages", 'index.json')
     open(index_path, 'w').write(index)
 
+    # and every doc-like thing in the package
     for pkg_name, pkg in pkg_cfg['packages'].items():
-        dir_made = False
         src_dir = pkg.root_dir
-        dest_dir = os.path.join(root_dir, pkg_name)
+        dest_dir = os.path.join(staging_dir, "packages", pkg_name)
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
 
         # TODO: This is a DRY violation from main.js. We should
         # really move the common logic/names to cuddlefish.packaging.
-        default_items = ['README.md', 'docs']
+        shutil.copyfile(os.path.join(src_dir, "README.md"),
+                        os.path.join(dest_dir, "README.md"))
 
-        for item in default_items:
-            item_src = os.path.join(src_dir, item)
-            item_dest = os.path.join(dest_dir, item)
-            if os.path.exists(item_src):
-                if not dir_made:
-                    os.mkdir(dest_dir)
-                    dir_made = True
-                if os.path.isdir(item_src):
-                    shutil.copytree(item_src, item_dest)
-                else:
-                    shutil.copyfile(item_src, item_dest)
+        docs_src_dir = os.path.join(src_dir, "docs")
+        docs_dest_dir = os.path.join(dest_dir, "docs")
+        if not os.path.exists(docs_dest_dir):
+            os.mkdir(docs_dest_dir)
+        for (dirpath, dirnames, filenames) in os.walk(docs_src_dir):
+            assert dirpath.startswith(docs_src_dir)
+            relpath = dirpath[len(docs_src_dir)+1:]
+            for dirname in dirnames:
+                dest_path = os.path.join(docs_dest_dir, relpath, dirname)
+                if not os.path.exists(dest_path):
+                    os.mkdir(dest_path)
+            for filename in filenames:
+                if filename.endswith("~"):
+                    continue
+                src_path = os.path.join(dirpath, filename)
+                dest_path = os.path.join(docs_dest_dir, relpath, filename)
+                shutil.copyfile(src_path, dest_path)
+                if filename.endswith(".md"):
+                    # parse and JSONify the API docs
+                    docs_md = open(src_path, 'r').read()
+                    docs_parsed = list(apiparser.parse_hunks(docs_md))
+                    docs_json = json.dumps(docs_parsed)
+                    open(dest_path + ".json", "w").write(docs_json)
 
+    # finally, build a tarfile out of everything
     tgz = tarfile.open(tgz_filename, 'w:gz')
-    tgz.add(server.root, 'jetpack-sdk-docs')
+    tgz.add('jetpack-sdk-docs', 'jetpack-sdk-docs')
     tgz.close()
-
-    shutil.rmtree(root_dir)
+    shutil.rmtree(staging_dir)
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
