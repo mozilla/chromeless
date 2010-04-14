@@ -123,6 +123,13 @@ class XulrunnerAppRunner(mozrunner.Runner):
     # Firefox is used in XULRunner mode.
     names = ['xulrunner']
 
+    # Default location of XULRunner on OS X.
+    __DARWIN_PATH = "/Library/Frameworks/XUL.framework/xulrunner-bin"
+
+    # What our application.ini's path looks like if it's part of
+    # an "installed" XULRunner app on OS X.
+    __DARWIN_APP_INI_SUFFIX = '.app/Contents/Resources/application.ini'
+
     def __init__(self, binary=None, **kwargs):
         if sys.platform == 'darwin' and binary and binary.endswith('.app'):
             # Assume it's a Firefox app dir.
@@ -153,6 +160,19 @@ class XulrunnerAppRunner(mozrunner.Runner):
         if not os.path.exists(self.__app_ini):
             raise ValueError("file does not exist: '%s'" % self.__app_ini)
 
+        if (sys.platform == 'darwin' and
+            self.binary == self.__DARWIN_PATH and
+            self.__app_ini.endswith(self.__DARWIN_APP_INI_SUFFIX)):
+            # If the application.ini is in an app bundle, then
+            # it could be inside an "installed" XULRunner app.
+            # If this is the case, use the app's actual
+            # binary instead of the XUL framework's, so we get
+            # a proper app icon, etc.
+            new_binary = '/'.join(self.__app_ini.split('/')[:-2] +
+                                  ['MacOS', 'xulrunner'])
+            if os.path.exists(new_binary):
+                self.binary = new_binary
+
     @property
     def command(self):
         """Returns the command list to run."""
@@ -164,6 +184,12 @@ class XulrunnerAppRunner(mozrunner.Runner):
             return [self.binary, '-app', self.__app_ini, '-profile',
                     self.profile.profile]
 
+    def __find_xulrunner_binary(self):
+        if sys.platform == 'darwin':
+            if os.path.exists(self.__DARWIN_PATH):
+                return self.__DARWIN_PATH
+        return None
+
     def find_binary(self):
         # This gets called by the superclass constructor. It will
         # always get called, even if a binary was passed into the
@@ -171,10 +197,12 @@ class XulrunnerAppRunner(mozrunner.Runner):
         # what the exact setting of self.binary is.
 
         if not self.__real_binary:
-            dummy_profile = {}
-            runner = mozrunner.FirefoxRunner(profile=dummy_profile)
-            self.__real_binary = runner.find_binary()
-            self.names = runner.names
+            self.__real_binary = self.__find_xulrunner_binary()
+            if not self.__real_binary:
+                dummy_profile = {}
+                runner = mozrunner.FirefoxRunner(profile=dummy_profile)
+                self.__real_binary = runner.find_binary()
+                self.names = runner.names
         return self.__real_binary
 
 def run_app(harness_root_dir, harness_options, xpts,

@@ -416,10 +416,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if options.templatedir:
         app_extension_dir = os.path.abspath(options.templatedir)
     else:
-        app_extension_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "app-extension"
-            )
+        mydir = os.path.dirname(os.path.abspath(__file__))
+        if sys.platform == "darwin":
+            # If we're on OS X, at least point into the XULRunner
+            # app dir so we run as a proper app if using XULRunner.
+            app_extension_dir = os.path.join(mydir, "Test App.app",
+                                             "Contents", "Resources")
+        else:
+            app_extension_dir = os.path.join(mydir, "app-extension")
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
