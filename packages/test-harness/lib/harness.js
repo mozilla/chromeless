@@ -53,6 +53,9 @@ var dirs;
 // How many more times to run all tests.
 var iterationsLeft;
 
+// Only tests in files whose names match this regexp filter will be run.
+var filter;
+
 // Information on memory profiler binary component (optional).
 var profiler;
 
@@ -235,6 +238,7 @@ function nextIteration(tests) {
   }
   if (iterationsLeft)
     sandbox.require("unit-test").findAndRunTests({dirs: dirs,
+                                                  filter: filter,
                                                   onDone: nextIteration});
   else
     require("timer").setTimeout(cleanup, 0);
@@ -269,6 +273,7 @@ function TestRunnerConsole(base, options) {
 
 var runTests = exports.runTests = function runTests(options) {
   iterationsLeft = options.iterations;
+  filter = options.filter;
   onDone = options.onDone;
   print = options.print;
 

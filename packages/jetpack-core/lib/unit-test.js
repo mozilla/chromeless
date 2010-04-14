@@ -38,15 +38,16 @@ var timer = require("timer");
 var file = require("file");
 
 exports.findAndRunTests = function findAndRunTests(options) {
-  var finder = new TestFinder(options.dirs);
+  var finder = new TestFinder(options.dirs, options.filter);
   var runner = new TestRunner();
   runner.startMany({tests: finder.findTests(),
                     onDone: options.onDone});
 };
 
-var TestFinder = exports.TestFinder = function TestFinder(dirs) {
+var TestFinder = exports.TestFinder = function TestFinder(dirs, filter) {
   memory.track(this);
   this.dirs = dirs;
+  this.filter = filter;
 };
 
 TestFinder.prototype = {
@@ -61,12 +62,14 @@ TestFinder.prototype = {
   findTests: function findTests() {
     var self = this;
     var tests = [];
+    var filterRegex = this.filter ? new RegExp(this.filter) : null;
 
     this.dirs.forEach(
       function(dir) {
         var suites = [name.slice(0, -3)
                       for each (name in file.list(dir))
-                      if (/^test-.*\.js$/.test(name))];
+                      if (/^test-.*\.js$/.test(name) &&
+                          (!filterRegex || filterRegex.test(name)))];
 
         suites.forEach(
           function(suite) {

@@ -122,6 +122,10 @@ parser_groups = Bunch(
                                      type="int",
                                      help="number of times to run tests",
                                      default=1),
+            ("-F", "--filter",): dict(dest="filter",
+                                      help="only run tests that match regexp",
+                                      metavar=None,
+                                      default=None),
             }
         ),
     )
@@ -404,6 +408,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     else:
         harness_options['main'] = "run-tests"
         inherited_options.extend(['iterations'])
+        inherited_options.extend(['filter'])
 
     for option in inherited_options:
         harness_options[option] = getattr(options, option)

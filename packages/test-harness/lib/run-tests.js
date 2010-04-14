@@ -40,7 +40,7 @@ const FENNEC_ID = "{a23983c0-fd0e-11dc-95ff-0800200c9a66}";
 
 var obsvc = require("observer-service");
 
-function runTests(iterations, verbose, rootPaths, quit, print) {
+function runTests(iterations, filter, verbose, rootPaths, quit, print) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
@@ -58,6 +58,7 @@ function runTests(iterations, verbose, rootPaths, quit, print) {
   };
 
   harness.runTests({iterations: iterations,
+                    filter: filter,
                     verbose: verbose,
                     rootPaths: rootPaths,
                     print: print,
@@ -70,9 +71,9 @@ exports.main = function main(options, callbacks) {
   function doRunTests() {
     if (!testsStarted) {
       testsStarted = true;
-      runTests(options.iterations, options.verbose,
-               options.rootPaths, callbacks.quit,
-               callbacks.print);
+      runTests(options.iterations, options.filter,
+               options.verbose, options.rootPaths,
+               callbacks.quit, callbacks.print);
     }
   }
 
