@@ -6,6 +6,12 @@ import glob
 from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 
+MOZRUNNER_BIN_NOT_FOUND = 'Mozrunner could not locate your binary'
+MOZRUNNER_BIN_NOT_FOUND_HELP = """
+I can't find the application binary in any of its default locations
+on your system. Please specify one using the -b/--binary option.
+"""
+
 UPDATE_RDF_FILENAME = "%s.update.rdf"
 XPI_FILENAME = "%s.xpi"
 
@@ -447,14 +453,20 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
 
-        retval = run_app(harness_root_dir=app_extension_dir,
-                         harness_options=harness_options,
-                         xpts=xpts,
-                         app_type=options.app,
-                         binary=options.binary,
-                         profiledir=options.profiledir,
-                         verbose=options.verbose,
-                         timeout=timeout,
-                         logfile=options.logfile)
-
+        try:
+            retval = run_app(harness_root_dir=app_extension_dir,
+                             harness_options=harness_options,
+                             xpts=xpts,
+                             app_type=options.app,
+                             binary=options.binary,
+                             profiledir=options.profiledir,
+                             verbose=options.verbose,
+                             timeout=timeout,
+                             logfile=options.logfile)
+        except Exception, e:
+            if e.message.startswith(MOZRUNNER_BIN_NOT_FOUND):
+                print MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
+                retval = -1
+            else:
+                raise
     sys.exit(retval)
