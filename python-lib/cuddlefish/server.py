@@ -11,6 +11,7 @@ import Queue
 import SocketServer
 import shutil
 import tarfile
+import traceback
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
@@ -169,7 +170,7 @@ class Server(object):
         except packaging.Error, e:
             self.start_response('500 Internal Server Error',
                                 [('Content-type', 'text/plain')])
-            return [str(e)]
+            return [traceback.format_exc()]
 
         if parts[0] == 'index.json':
             # TODO: This should really be of JSON's mime type,
