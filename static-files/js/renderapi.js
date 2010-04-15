@@ -5,20 +5,22 @@ function _createTitle(doc){
     .html(doc.name + "(<span class='params'></span>)");
 
   var $params = $title.find(".params");
-  doc.params.forEach(function(param, i){
-    var p = $("<span class='param'/>")
-            .text(param.name) // what if param.name is empty?
-            .appendTo($params);
+  if (doc.params) {
+    doc.params.forEach(function(param, i) {
+      var p = $("<span class='param'/>")
+              .text(param.name) // what if param.name is empty?
+              .appendTo($params);
 
-    if( param.required == true ) p.addClass("required");
-    else p.addClass("optional");
+      if( param.required == true ) p.addClass("required");
+      else p.addClass("optional");
 
-    if( param["default"] ){
-      $("<span class='default'/>").text(param["default"]).appendTo(p);
-    }
+      if( param["default"] ){
+        $("<span class='default'/>").text(param["default"]).appendTo(p);
+      }
 
-    if( i != doc.params.length-1 ) p.after(", ");
-  });
+      if( i != doc.params.length-1 ) p.after(", ");
+    });
+  }
 
   if( doc.returns ){
     var $ret = $("<span class='returns'/>").text(" returns ");
@@ -62,7 +64,8 @@ function _createParams(doc){
     var $name = $("<span class='name'/>").text( param.name ).appendTo($param);
     if( param.required == true ) $name.addClass("required");
     else $name.addClass("optional");
-    $("<span class='type'/>").text( param.type ).appendTo($param);
+    if (param.type)
+      $("<span class='type'/>").text( param.type ).appendTo($param);
     $("<span class='description'/>").text( param.description ).appendTo($param);
     if( param["default"] )
       $("<span class='default'/>").text( param["default"] ).appendTo($param);
