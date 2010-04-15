@@ -23,7 +23,8 @@ exports.testCatchAndLogProps = function(test) {
 
   var thing = {
     foo: function(x) { throw Error("nowai" + x); },
-    bar: function() { throw Error("blah"); }
+    bar: function() { throw Error("blah"); },
+    baz: function() { throw Error("fnarg"); }
   };
 
   errors.catchAndLogProps(thing, "foo", "ugh", dummyLog);
@@ -38,6 +39,8 @@ exports.testCatchAndLogProps = function(test) {
                     "blah",
                     "non-wrapped props should be wrapped");
 
-  // TODO: Add test to ensure that an array of props can be
-  // passed in, rather than just a string.
+  errors.catchAndLogProps(thing, ["bar", "baz"], "err", dummyLog);
+  test.assert((thing.bar() == thing.baz()) &&
+              (thing.bar() == "err"),
+              "multiple props should be wrapped if array passed in");
 };
