@@ -407,8 +407,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         harness_options['main'] = target_cfg.get('main')
     else:
         harness_options['main'] = "run-tests"
-        inherited_options.extend(['iterations'])
-        inherited_options.extend(['filter'])
+        inherited_options.extend(['iterations', 'filter'])
 
     for option in inherited_options:
         harness_options[option] = getattr(options, option)
