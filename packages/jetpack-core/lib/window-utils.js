@@ -120,7 +120,7 @@ var gDocsToClose = [];
 function onDocUnload(event) {
   var index = gDocsToClose.indexOf(event.target);
   if (index == -1)
-    throw new Error("assertion failure");
+    throw new Error("internal error: unloading document not found");
   gDocsToClose.splice(index, 1);
 }
 

@@ -23,7 +23,7 @@ var addMethod = exports.addMethod = function addMethod(obj, unloader) {
       called = true;
       var index = unloaders.indexOf(unloadWrapper);
       if (index == -1)
-        throw new Error("assertion failure");
+        throw new Error("internal error: unloader not found");
       unloaders.splice(index, 1);
       unloader.apply(obj, []);
     }
