@@ -121,7 +121,9 @@ function onDocUnload(event) {
   var index = gDocsToClose.indexOf(event.target);
   if (index == -1)
     throw new Error("internal error: unloading document not found");
-  gDocsToClose.splice(index, 1);
+  var document = gDocsToClose.splice(index, 1)[0];
+  // Just in case, let's remove the event listener too.
+  document.defaultView.removeEventListener("unload", onDocUnload, false);
 }
 
 onDocUnload = require("errors").catchAndLog(onDocUnload);

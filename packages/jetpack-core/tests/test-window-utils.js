@@ -23,13 +23,18 @@ exports.testCloseOnUnload = function(test) {
     addEventListener: function(name, func, bool) {
       this._listeners.push(func);
     },
+    removeEventListener: function(name, func, bool) {
+      var index = this._listeners.indexOf(func);
+      if (index == -1)
+        throw new Error("event listener not found");
+      this._listeners.splice(index, 1);
+    },
     close: function() {
       timesClosed++;
       this._listeners.forEach(
         function(func) { 
           func({target: fakeWindow.document});
         });
-      this._listeners = [];
     },
     document: {
       get defaultView() { return fakeWindow; }
@@ -38,11 +43,15 @@ exports.testCloseOnUnload = function(test) {
 
   var loader = test.makeSandboxedLoader();
   loader.require("window-utils").closeOnUnload(fakeWindow);
+  test.assertEqual(fakeWindow._listeners.length, 1,
+                   "unload listener added on closeOnUnload()");
   test.assertEqual(timesClosed, 0,
                    "window not closed when registered.");
   loader.require("unload").send();
   test.assertEqual(timesClosed, 1,
                    "window closed on module unload.");
+  test.assertEqual(fakeWindow._listeners.length, 0,
+                   "unload event listener removed on module unload");
 
   timesClosed = 0;
   loader.require("window-utils").closeOnUnload(fakeWindow);
@@ -51,6 +60,8 @@ exports.testCloseOnUnload = function(test) {
   fakeWindow.close();
   test.assertEqual(timesClosed, 1,
                    "window closed when close() called.");
+  test.assertEqual(fakeWindow._listeners.length, 0,
+                   "unload event listener removed on window close");
   loader.require("unload").send();
   test.assertEqual(timesClosed, 1,
                    "window not closed again on module unload.");
