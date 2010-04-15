@@ -93,7 +93,7 @@ TestRunner.prototype = {
 
   makeSandboxedLoader: function makeSandboxedLoader(options) {
     if (!options)
-      options = {};
+      options = {console: console};
     var Cuddlefish = require("cuddlefish");
 
     options.fs = Cuddlefish.parentLoader.fs;

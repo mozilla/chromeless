@@ -217,6 +217,14 @@ function cleanup() {
                  for each (info in sandbox.memory.getObjects())];
 
     sandbox.unload();
+
+    if ((sandbox.console.errorsLogged ||
+         consoleListener.errorsLogged) && !results.failed) {
+      results.failed++;
+      console.error("warnings and/or errors were logged.");
+    }
+
+    consoleListener.errorsLogged = 0;
     sandbox = null;
 
     memory.gc();
@@ -249,7 +257,10 @@ var POINTLESS_ERRORS = [
 ];
 
 var consoleListener = {
+  errorsLogged: 0,
   observe: function(object) {
+    if (object instanceof Ci.nsIScriptError)
+      this.errorsLogged++;
     var message = object.QueryInterface(Ci.nsIConsoleMessage).message;
     var pointless = [err for each (err in POINTLESS_ERRORS)
                          if (message.indexOf(err) == 0)];
@@ -260,6 +271,15 @@ var consoleListener = {
 
 function TestRunnerConsole(base, options) {
   this.__proto__ = {
+    errorsLogged: 0,
+    warn: function warn() {
+      this.errorsLogged++;
+      base.warn.apply(base, arguments);
+    },
+    error: function error() {
+      this.errorsLogged++;
+      base.error.apply(base, arguments);
+    },
     info: function info(first) {
       if (options.verbose)
         base.info.apply(base, arguments);
@@ -313,6 +333,5 @@ var runTests = exports.runTests = function runTests(options) {
 
 require("unload").when(
   function() {
-    if (consoleListener)
-      cService.unregisterListener(consoleListener);
+    cService.unregisterListener(consoleListener);
   });
