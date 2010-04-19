@@ -40,7 +40,7 @@ parser_options = {
     ("-g", "--use-config",): dict(dest="config",
                                   help="use named config from local.json",
                                   metavar=None,
-                                  default=None),
+                                  default="default"),
     ("-t", "--templatedir",): dict(dest="templatedir",
                                    help="XULRunner app/ext. template",
                                    metavar=None,
@@ -213,15 +213,21 @@ def get_config_args(name, env_root):
     local_json = os.path.join(env_root, "local.json")
     if not (os.path.exists(local_json) and
             os.path.isfile(local_json)):
-        print "File does not exist: %s" % local_json
-        sys.exit(1)
+        if name == "default":
+            return []
+        else:
+            print "File does not exist: %s" % local_json
+            sys.exit(1)
     local_json = packaging.load_json_file(local_json)
     if 'configs' not in local_json:
         print "'configs' key not found in local.json."
         sys.exit(1)
     if name not in local_json.configs:
-        print "No config found for '%s'." % name
-        sys.exit(1)
+        if name == "default":
+            return []
+        else:
+            print "No config found for '%s'." % name
+            sys.exit(1)
     config = local_json.configs[name]
     if type(config) != list:
         print "Config for '%s' must be a list of strings." % name
@@ -238,9 +244,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     (options, args) = parse_args(**parser_kwargs)
 
-    if options.config:
-        parser_kwargs['arguments'] += get_config_args(options.config,
-                                                      env_root)
+    config_args = get_config_args(options.config, env_root);
+    
+    # reparse configs with arguments from local.json
+    if config_args:
+        parser_kwargs['arguments'] += config_args
         (options, args) = parse_args(**parser_kwargs)
 
     command = args[0]
