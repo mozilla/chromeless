@@ -404,7 +404,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         'bootstrap': {
             'contractID': harness_contract_id,
             'classID': '{%s}' % harness_guid
-            }
+            },
+        'jetpackID': identifier,
         }
 
     harness_options.update(build)

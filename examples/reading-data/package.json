@@ -1,0 +1,10 @@
+{
+    "name": "reading-data",
+    "id": "MyUniqueID",
+    "description": "A demonstration of reading bundled data.",
+    "keywords": [],
+    "author": "Brian Warner",
+    "contributors": [],
+    "version": "0.3pre",
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1"
+}

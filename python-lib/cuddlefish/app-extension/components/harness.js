@@ -197,6 +197,8 @@ function buildHarnessService(rootFileSpec, dump, logError,
       return options;
     },
 
+    jetpackID: options.jetpackID,
+
     getURLForData: function getURLForData(path) {
       var traceback = this.__loader.require("traceback");
       var callerInfo = traceback.get().slice(-2)[0];
