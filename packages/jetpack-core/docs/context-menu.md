@@ -1,4 +1,5 @@
-The `context-menu` module allows you to add and remove items to and from the browser's page context menu.
+The `context-menu` module allows you to add and remove items to and from the
+browser's page context menu.
 
 ## Constructors ##
 

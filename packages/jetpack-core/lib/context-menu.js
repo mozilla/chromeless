@@ -62,8 +62,9 @@ const SEPARATOR_ID = "jetpack-context-menu-separator";
 
 // If more than this number of items are added to the context menu, all items
 // overflow into a "Jetpack" submenu.
-const OVERFLOW_THRESH_PREF = "jetpack.browser.context-menu.overflowThreshold";
 const OVERFLOW_THRESH_DEFAULT = 10;
+const OVERFLOW_THRESH_PREF =
+  "jetpack.jetpack-core.context-menu.overflowThreshold";
 
 // The label of the overflow sub-<menu>.
 //
