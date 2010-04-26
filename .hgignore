@@ -2,3 +2,5 @@ syntax: glob
 *.pyc
 local.json
 *~
+*.DS_Store
+.hgignore
