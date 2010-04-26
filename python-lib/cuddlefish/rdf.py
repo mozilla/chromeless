@@ -83,6 +83,16 @@ class RDFManifest(RDF):
             return default
         return elements[0].firstChild.nodeValue
 
+    def remove(self, property):
+        elements = self.dom.documentElement.getElementsByTagName(property)
+        if not elements:
+            return True
+        else:
+            for i in elements:
+                i.parentNode.removeChild(i);
+
+        return True;
+
 def gen_manifest(template_root_dir, target_cfg, default_id,
                  update_url=None):
     install_rdf = os.path.join(template_root_dir, "install.rdf")
@@ -100,6 +110,13 @@ def gen_manifest(template_root_dir, target_cfg, default_id,
                  target_cfg.get("author", ""))
     if update_url:
         manifest.set("em:updateURL", update_url)
+    else:
+	manifest.remove("em:updateURL")
+
+    if target_cfg.get("homepage"):
+        manifest.set("em:homepageURL", target_cfg.get("homepage"))
+    else:
+        manifest.remove("em:homepageURL")
 
     return manifest
 
