@@ -440,20 +440,35 @@ function BrowserWindow(window) {
 
 BrowserWindow.prototype = {
 
-  // The current context description object.
-  get contextObj() {
+  // Adds an array of items to the window's context menu.
+  addItems: function BW_addItems(items) {
+    this.contextMenuPopup.addItems(items);
+  },
+
+  // Returns an object describing the current context.  This object may need to
+  // be slightly adjusted to match the context of a top-level item.  If not,
+  // topLevelItem need not be given.
+  contextObj: function BW_contextObj(topLevelItem) {
     let node = this.doc.popupNode;
+
+    if (topLevelItem) {
+      for (let ctxt in topLevelItem.context) {
+        if (typeof(ctxt) === "string") {
+          let ctxtNode = this._popupNodeMatchingSelector(ctxt);
+          if (ctxtNode) {
+            node = ctxtNode;
+            break;
+          }
+        }
+      }
+    }
+
     return {
       node: node,
       // Just to be safe, don't assume popupNode is non-null.
       document: node ? node.ownerDocument : null,
       window: node ? node.ownerDocument.defaultView : null
     };
-  },
-
-  // Adds an array of items to the window's context menu.
-  addItems: function BW_addItems(items) {
-    this.contextMenuPopup.addItems(items);
   },
 
   // Undoes all modifications to the window's context menu.  The BrowserWindow
@@ -488,7 +503,7 @@ BrowserWindow.prototype = {
   // is needed because it is |this| inside of func.
   _isFunctionContextCurrent: function BW__isFunctionContextCurrent(item, func) {
     try {
-      return !!func.call(item, this.contextObj);
+      return !!func.call(item, this.contextObj());
     }
     catch (err) {
       console.exception(err);
@@ -500,12 +515,12 @@ BrowserWindow.prototype = {
   // context arises when the user invokes the context menu on a non-interactive
   // part of the page.
   _isPageContextCurrent: function BW__isPageContextCurrent() {
-    let contextObj = this.contextObj;
-    let contentWin = contextObj.window;
+    let popupNode = this.doc.popupNode;
+    let contentWin = popupNode ? popupNode.ownerDocument.defaultView : null;
     if (contentWin && !contentWin.getSelection().isCollapsed)
       return false;
 
-    let cursor = contextObj.node;
+    let cursor = popupNode;
     while (cursor && !(cursor instanceof Ci.nsIDOMHTMLHtmlElement)) {
       if (NON_PAGE_CONTEXT_ELTS.some(function (iface) cursor instanceof iface))
         return false;
@@ -517,23 +532,31 @@ BrowserWindow.prototype = {
   // Returns true if the node the user clicked to invoke the context menu or
   // any of the node's ancestors matches the given CSS selector.
   _isSelectorContextCurrent: function BW__isSelectorContextCurrent(selector) {
-    let cursor = this.contextObj.node;
+    return !!this._popupNodeMatchingSelector(selector);
+  },
+
+  // Returns popupNode if it matches selector, or the closest ancestor of
+  // popupNode that matches selector, or null if popupNode and none of its
+  // ancestors matches selector.
+  _popupNodeMatchingSelector: function BW__popupNodeMatchingSelector(selector) {
+    let cursor = this.doc.popupNode;
     while (cursor && !(cursor instanceof Ci.nsIDOMHTMLHtmlElement)) {
       if (cursor.mozMatchesSelector(selector))
-        return true;
+        return cursor;
       cursor = cursor.parentNode;
     }
-    return false;
+    return null;
   }
 };
 
 
-// Represents a container of items that's the child of the given Menu.  popupElt
-// is a <menupopup> that represents the popup in the DOM, and window is the
-// BrowserWindow containing the popup.  The popup is responsible for creating
-// and adding items to poupElt and handling command events.
-function Popup(parentMenu, popupElt, window) {
+// Represents a container of items that's the child of the given Menu and Popup.
+// popupElt is a <menupopup> that represents the popup in the DOM, and window is
+// the BrowserWindow containing the popup.  The popup is responsible for
+// creating and adding items to poupElt and handling command events.
+function Popup(parentMenu, parentPopup, popupElt, window) {
   this.parentMenu = parentMenu;
+  this.parentPopup = parentPopup;
   this.popupElt = popupElt;
   this.window = window;
   this.doc = popupElt.ownerDocument;
@@ -569,16 +592,20 @@ Popup.prototype = {
     try {
       let elt = event.target;
       if (elt.className.split(/\s+/).indexOf(ITEM_CLASS) >= 0) {
-        // The event originated at an item in the popup.  Call its onClick.
-        // Also set Popup.clickedItem so ancestor popups know which item was
-        // clicked.
+        // If the event originated at an item in the popup, call its onClick.
+        // Also set Popup.clickedItem and contextObj so ancestor popups know
+        // which item was clicked and under what context.
         let childItemWrapper = this._findItemWrapper(elt);
         if (childItemWrapper) {
           let clickedItem = childItemWrapper.item;
+          let topLevelItem = this._topLevelItem(clickedItem);
+          let contextObj = this.window.contextObj(topLevelItem);
           Popup.clickedItem = clickedItem;
+          Popup.contextObj = contextObj;
+
           if (clickedItem.onClick) {
             try {
-              clickedItem.onClick(this.window.contextObj, clickedItem);
+              clickedItem.onClick(contextObj, clickedItem);
             }
             catch (err) {
               console.exception(err);
@@ -589,8 +616,7 @@ Popup.prototype = {
         // Call the onClick of this popup's parent menu.
         if (this.parentMenu && this.parentMenu.onClick) {
           try {
-            this.parentMenu.onClick(this.window.contextObj,
-                                    Popup.clickedItem);
+            this.parentMenu.onClick(Popup.contextObj, Popup.clickedItem);
           }
           catch (err) {
             console.exception(err);
@@ -641,7 +667,7 @@ Popup.prototype = {
 
     // Once items are added, this value can be thrown away.  The popup handles
     // popupshowing on its own.
-    let popup = new Popup(menu, popupElt, this.window);
+    let popup = new Popup(menu, this, popupElt, this.window);
     popup.addItems(menu.items);
 
     return menuElt;
@@ -662,6 +688,17 @@ Popup.prototype = {
     let elt = this.doc.createElement("menuseparator");
     elt.className = ITEM_CLASS + (className ? " " + className : "");
     return elt;
+  },
+
+  // Returns the top-level menu that contains item or item if it is top-level.
+  _topLevelItem: function Popup__topLevelItem(item) {
+    let popup = this;
+    let topLevelItem = item;
+    while (popup.parentPopup) {
+      topLevelItem = popup.parentMenu;
+      popup = popup.parentPopup;
+    }
+    return topLevelItem;
   }
 };
 
@@ -671,7 +708,7 @@ Popup.prototype = {
 // context.
 function ContextMenuPopup(popupElt, window) {
   const self = this;
-  Popup.call(this, null, popupElt, window);
+  Popup.call(this, null, null, popupElt, window);
 
   // Adds an array of items to the popup.
   this.addItems = function CMP_addItems(items) {

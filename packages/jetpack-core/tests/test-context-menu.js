@@ -292,7 +292,7 @@ exports.testFunctionContextMatch = function (test) {
     context: function (context) {
       test.assertEqual(this, item,
                        "|this| inside function context should be item");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLHtmlElement);
       return true;
     }
   });
@@ -316,7 +316,7 @@ exports.testFunctionContextNoMatch = function (test) {
     context: function (context) {
       test.assertEqual(this, item,
                        "|this| inside function context should be item");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLHtmlElement);
       return false;
     }
   });
@@ -716,7 +716,7 @@ exports.testItemOnCommand = function (test) {
     data: "item data",
     onClick: function (context, clickedItem) {
       test.assertEqual(this, item, "|this| inside onClick should be item");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLHtmlElement);
       test.assertEqual(clickedItem, item,
                        "Clicked item passed to onClick should be item");
       test.done();
@@ -733,7 +733,8 @@ exports.testItemOnCommand = function (test) {
 
 
 // A menu's onClick function should work and bubble appropriately.  This also
-// tests menus.
+// tests menus and ensures that when a CSS selector context matches the clicked
+// node's ancestor, the matching ancestor is contextObj.node.
 exports.testMenuOnCommand = function (test) {
   // Create a top-level menu, submenu, and item, like this:
   // topMenu -> submenu -> item
@@ -750,7 +751,7 @@ exports.testMenuOnCommand = function (test) {
     onClick: function (context, clickedItem) {
       itemOnCommandFired = true;
       test.assertEqual(this, item, "|this| inside item should be item");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLAnchorElement);
       test.assertEqual(clickedItem, item,
                        "Clicked item passed to item should be item");
     }
@@ -763,7 +764,7 @@ exports.testMenuOnCommand = function (test) {
       test.assert(itemOnCommandFired,
                   "Item's onClick should have fired before submenu's");
       test.assertEqual(this, submenu, "|this| inside submenu should be menu");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLAnchorElement);
       test.assertEqual(clickedItem, item,
                        "Clicked item passed to submenu should be item");
     },
@@ -778,23 +779,26 @@ exports.testMenuOnCommand = function (test) {
       test.assert(submenuOnCommandFired,
                   "Submenu's onClick should have fired before top menu's");
       test.assertEqual(this, topMenu, "|this| inside top menu should be menu");
-      test.checkContextObj(context);
+      test.checkContextObj(context, Ci.nsIDOMHTMLAnchorElement);
       test.assertEqual(clickedItem, item,
                        "Clicked item passed to top menu should be item");
       test.done();
     },
-    items: [submenu]
+    items: [submenu],
+    context: "a"
   });
   loader.cm.add(topMenu);
 
-  test.showMenu(null, function (popup) {
-    test.checkMenu([topMenu], [], []);
-    let topMenuElt = test.getItemElt(popup, topMenu);
-    let topMenuPopup = topMenuElt.firstChild;
-    let submenuElt = test.getItemElt(topMenuPopup, submenu);
-    let submenuPopup = submenuElt.firstChild;
-    let itemElt = test.getItemElt(submenuPopup, item);
-    itemElt.click();
+  test.withTestDoc(function (window, doc) {
+    test.showMenu(doc.getElementById("span-link"), function (popup) {
+      test.checkMenu([topMenu], [], []);
+      let topMenuElt = test.getItemElt(popup, topMenu);
+      let topMenuPopup = topMenuElt.firstChild;
+      let submenuElt = test.getItemElt(topMenuPopup, submenu);
+      let submenuPopup = submenuElt.firstChild;
+      let itemElt = test.getItemElt(submenuPopup, item);
+      itemElt.click();
+    });
   });
 };
 
@@ -1082,10 +1086,10 @@ TestHelper.prototype = {
     }
   },
 
-  // Asserts that context, and object describing the current context, looks OK.
-  checkContextObj: function (context) {
-    this.test.assert(context.node instanceof Ci.nsIDOMHTMLElement,
-                     "context.node should be an HTML element");
+  // Asserts that context, an object describing the current context, looks OK.
+  checkContextObj: function (context, nodeIface) {
+    this.test.assert(context.node instanceof nodeIface,
+                     "context.node should be the expected type of element");
     this.test.assert(context.document instanceof Ci.nsIDOMHTMLDocument,
                      "context.document should be an HTML document");
     this.test.assert(context.window instanceof Ci.nsIDOMWindow,
