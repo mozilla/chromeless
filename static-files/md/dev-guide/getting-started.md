@@ -5,6 +5,10 @@ Prerequisites
 
 To develop with the new Jetpack SDK, you'll need:
 
+<span class="aside">
+Verify that Python is in your path.
+</span>
+
 * [Python] 2.5 or greater.
 
 * A working version of Firefox, Thunderbird, or the [XULRunner SDK] that
@@ -22,7 +26,7 @@ SDK is 0.3. You can obtain it as a [tarball] or a [zip file].
 Alternatively, you can get the latest development version of the
 Jetpack SDK from its [HG repository].
 
-Regardless of which option you choose, simply enter the root directory
+Regardless of which option you choose, navigate to the root directory
 of your checkout with a shell/command prompt. This directory should
 be called `jetpack-sdk`.
 
