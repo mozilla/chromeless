@@ -65,8 +65,15 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-var obSvc = Cc["@mozilla.org/observer-service;1"]
-            .getService(Ci.nsIObserverService);
+const obSvc = Cc["@mozilla.org/observer-service;1"]
+              .getService(Ci.nsIObserverService);
+
+const ioSvc = Cc["@mozilla.org/network/io-service;1"]
+              .getService(Ci.nsIIOService);
+
+const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
+const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
+const FENNEC_ID = "{a23983c0-fd0e-11dc-95ff-0800200c9a66}";
 
 // This function builds and returns a Harness Service XPCOM component.
 // 
@@ -270,8 +277,14 @@ function buildHarnessService(rootFileSpec, dump, logError,
       obSvc.addObserver(this, "quit-application-granted", true);
       if (options.main) {
         try {
+
           var program = this.loader.require(options.main);
           program.main(options, {quit: quit, print: dump});
+
+          // Send application readiness notification
+          const APP_READY_TOPIC = options.jetpackID + "_APPLICATION_READY";
+          obSvc.notifyObservers(null, APP_READY_TOPIC, null);
+
         } catch (e) {
           this.loader.console.exception(e);
           quit("FAIL");
@@ -300,6 +313,25 @@ function buildHarnessService(rootFileSpec, dump, logError,
       try {
         switch (topic) {
         case "app-startup":
+          var appInfo = Cc["@mozilla.org/xre/app-info;1"]
+                        .getService(Ci.nsIXULAppInfo);
+          switch (appInfo.ID) {
+          case THUNDERBIRD_ID:
+          case FENNEC_ID:
+            obSvc.addObserver(this, "xul-window-visible", true);
+            break;
+          case FIREFOX_ID:
+            obSvc.addObserver(this, "sessionstore-windows-restored", true);
+            break;
+          default:
+            obSvc.addObserver(this, "final-ui-startup", true);
+            break;
+          }
+          break;
+        case "final-ui-startup": // XULRunner
+        case "sessionstore-windows-restored": // Firefox
+        case "xul-window-visible": // Thunderbird, Fennec
+          obSvc.removeObserver(this, topic);
           this.load();
           break;
         case "quit-application-granted":

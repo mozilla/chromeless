@@ -56,6 +56,23 @@ var service = Cc["@mozilla.org/observer-service;1"].
 var cache = [];
 
 /**
+ * Topics specifically available to Jetpack-generated extensions.
+ *
+ * Using these predefined consts instead of the platform strings is good:
+ *   - allows us to scope topics specifically for Jetpacks
+ *   - addons aren't dependent on strings nor behavior of core platform topics
+ *   - the core platform topics are not clearly named
+ *
+ */
+exports.topics = {
+  /**
+   * A topic indicating that the application is in a state usable
+   * by add-ons.
+   */
+  get APPLICATION_READY() packaging.jetpackID + "_APPLICATION_READY"
+};
+
+/**
  * Register the given callback as an observer of the given topic.
  *
  * @param   topic       {String}
