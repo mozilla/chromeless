@@ -13,7 +13,7 @@ def build_xpi(template_root_dir, manifest, xpi_name,
 
     IGNORED_FILES = [".hgignore", "install.rdf", 
                      "application.ini", xpi_name]
-    IGNORED_DIRS = [".svn", ".hg"]
+    IGNORED_DIRS = [".svn", ".hg", "defaults"]
 
     for dirpath, dirnames, filenames in os.walk(template_root_dir):
         filenames = [filename for filename in filenames
