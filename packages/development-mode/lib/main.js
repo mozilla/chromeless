@@ -67,7 +67,23 @@ function processNextTask() {
   req.send(null);
 }
 
-exports.main = function(options) {
+function makeMainWindow(quit) {
+  var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
+           .getService(Ci.nsIWindowWatcher);
+  var text = "Now in development mode. Close this window to exit.";
+  var window = ww.openWindow(null, "data:text/plain," + encodeURI(text),
+                             "development-mode", "centerscreen", null);
+
+  window.addEventListener("close", function() quit("OK"), false);
+}
+
+exports.main = function(options, callbacks) {
+  var appInfo = Cc["@mozilla.org/xre/app-info;1"]
+                .getService(Ci.nsIXULAppInfo);
+
+  if (appInfo.ID == "xulapp@toolness.com")
+    // We're running barebones XULRunner, open a default window.
+    makeMainWindow(callbacks.quit);
   console.log("Starting.");
   processNextTask();
 };
