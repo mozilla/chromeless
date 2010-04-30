@@ -222,7 +222,7 @@ TestRunner.prototype = {
 
   startMany: function startMany(options) {
     function runNextTest(self) {
-      var test = options.tests.pop();
+      var test = options.tests.shift();
       if (test)
         self.start({test: test, onDone: runNextTest});
       else
