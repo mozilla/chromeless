@@ -26,7 +26,12 @@ class DuplicatePackageError(Error):
     pass
 
 class PackageNotFoundError(Error):
-    pass
+    def __init__(self, missing_package, reason):
+        self.missing_package = missing_package
+        self.reason = reason
+    def __str__(self):
+        return "%s (%s)" % (self.missing_package, self.reason)
+    
 
 def find_packages_with_module(pkg_cfg, name):
     # TODO: Make this support more than just top-level modules.
@@ -151,16 +156,19 @@ def build_config(root_dir, target_cfg):
 
 def get_deps_for_targets(pkg_cfg, targets):
     visited = []
-    deps_left = list(targets)
+    deps_left = [[dep, None] for dep in list(targets)]
 
     while deps_left:
-        dep = deps_left.pop()
+        [dep, required_by] = deps_left.pop()
         if dep not in visited:
             visited.append(dep)
             if dep not in pkg_cfg.packages:
-                raise PackageNotFoundError(dep)
+                required_reason = ("required by '%s'" % (required_by)) \
+                                    if required_by is not None \
+                                    else "specified as target"
+                raise PackageNotFoundError(dep, required_reason)
             dep_cfg = pkg_cfg.packages[dep]
-            deps_left.extend(dep_cfg.get('dependencies', []))
+            deps_left.extend([[i, dep] for i in dep_cfg.get('dependencies', [])])
 
     return visited
 
