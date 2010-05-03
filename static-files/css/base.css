@@ -115,27 +115,14 @@ pre {
     padding-left: 1em;
 }
 
-pre, code, tt {
+pre, code {
     font-family: Monaco, Lucida Console, monospace;
     font-size: 8pt;
 }
 
-/* This is done to make API documentation look less
-   wonky, but doesn't really stay true to the semantics 
-   of the underlying HTML. */
-tt em {
-    font-family: Helvetica Neue, Arial, sans-serif;
-    font-size: 9pt;
+code em, code strong {
+  font-size: 9pt;
 }
-
-/* This is done to make API documentation look less
-   wonky, but doesn't really stay true to the semantics 
-   of the underlying HTML. */
-tt strong {
-    font-family: Helvetica Neue, Arial, sans-serif;
-    font-size: 9pt;
-}
-
 
 #templates {
     display: none;

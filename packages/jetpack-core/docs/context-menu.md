@@ -3,7 +3,7 @@ browser's page context menu.
 
 ## Constructors ##
 
-<tt>contextMenu.**Item**(*options*)</tt>
+<code>contextMenu.**Item**(*options*)</code>
 
 Creates a labeled menu item that can perform an action when clicked.  *options*
 is an object with the following keys.  If any option is invalid, an exception is
@@ -11,84 +11,84 @@ thrown.
 
 <table>
   <tr>
-    <td><tt>label</tt></td>
+    <td><code>label</code></td>
     <td>
       The item's label.  It must be either a string or an object that implements
-      <tt>toString()</tt>.
+      <code>toString()</code>.
     </td>
   </tr>
   <tr>
-    <td><tt>data</tt></td>
+    <td><code>data</code></td>
     <td>
       An optional arbitrary value to associate with the item.  It must be either
-      a string or an object that implements <tt>toString()</tt>.
+      a string or an object that implements <code>toString()</code>.
     </td>
   </tr>
   <tr>
-    <td><tt>onClick</tt></td>
+    <td><code>onClick</code></td>
     <td>
       An optional function that will be called when the item is clicked.  It is
-      called as <tt>onClick(<em>contextObj</em>, <em>item</em>)</tt>.
+      called as <code>onClick(<em>contextObj</em>, <em>item</em>)</code>.
       <em>contextObj</em> is an object describing the context in which the menu
       was invoked.  See Examining Contexts below for details.  <em>item</em>
       is the item itself.
     </td>
   </tr>
   <tr>
-    <td><tt>context</tt></td>
+    <td><code>context</code></td>
     <td>
       If the item is added to the top-level context menu, this specifies the
       context under which the item will appear.  If undefined, the page context
       is assumed.  See Specifying Contexts below for details.  It's ignored if
-      the item is contained in a <tt>Menu</tt>.
+      the item is contained in a <code>Menu</code>.
     </td>
   </tr>
 </table>
 
-<tt>contextMenu.**Menu**(*options*)</tt>
+<code>contextMenu.**Menu**(*options*)</code>
 
 Creates a menu item that expands into a submenu.  *options* is an object with
 the following keys.  If any option is invalid, an exception is thrown.
 
 <table>
   <tr>
-    <td><tt>label</tt></td>
+    <td><code>label</code></td>
     <td>
       The menu's label.  It must be either a string or an object that implements
-      <tt>toString()</tt>.
+      <code>toString()</code>.
     </td>
   </tr>
   <tr>
-    <td><tt>items</tt></td>
+    <td><code>items</code></td>
     <td>
       An array of menu items that the menu will contain.  Each must be an
-      <tt>Item</tt>, <tt>Menu</tt>, or <tt>Separator</tt>.
+      <code>Item</code>, <code>Menu</code>, or <code>Separator</code>.
     </td>
   </tr>
   <tr>
-    <td><tt>onClick</tt></td>
+    <td><code>onClick</code></td>
     <td>
       An optional function that will be called when any of the menu's descendant
-      <tt>Item</tt>s is clicked.  (The <tt>onClick</tt>s of descendants are
+      <code>Item</code>s is clicked.  (The <code>onClick</code>s of descendants are
       invoked first, in a bottom-up, bubbling manner.)  It is called as
-      <tt>onClick(<em>contextObj</em>, <em>item</em>)</tt>.  <em>contextObj</em>
+      <code>onClick(<em>contextObj</em>, <em>item</em>)</code>.  <em>contextObj</em>
       is an object describing the context in which the context menu was invoked.
       See Examining Contexts below for details.  <em>item</em> is the
-      <tt>Item</tt> that was clicked.
+      <code>Item</code> that was clicked.
     </td>
   </tr>
   <tr>
-    <td><tt>context</tt></td>
+    <td><code>context</code></td>
     <td>
       If the menu is added to the top-level context menu, this specifies the
       context under which the menu will appear.  If undefined, the page context
       is assumed.  See Specifying Contexts below for details.  It's ignored if
-      the menu is contained in a <tt>Menu</tt>.
+      the menu is contained in a <code>Menu</code>.
     </td>
   </tr>
 </table>
 
-<tt>contextMenu.**Separator**()</tt>
+<code>contextMenu.**Separator**()</code>
 
 Creates a menu separator.  Separators can only be contained in `Menu`s; they
 can't be added to the top-level context menu.
@@ -96,13 +96,13 @@ can't be added to the top-level context menu.
 
 ## Functions ##
 
-<tt>contextMenu.**add**(*item*)</tt>
+<code>contextMenu.**add**(*item*)</code>
 
 Adds a menu item to the context menu.  *item* is an `Item` or `Menu`.
 `Separator`s can't be added to the top-level menu; an exception is thrown if
 attempted.
 
-<tt>contextMenu.**remove**(*item*)</tt>
+<code>contextMenu.**remove**(*item*)</code>
 
 Removes a menu item from the context menu.  *item* must have been previously
 added.  An exception is thrown if *item* was never added.
@@ -199,22 +199,22 @@ the following properties:
 
 <table>
   <tr>
-    <td><tt>node</tt></td>
+    <td><code>node</code></td>
     <td>
      The node the user clicked to invoke the menu.
     </td>
   </tr>
   <tr>
-    <td><tt>document</tt></td>
+    <td><code>document</code></td>
     <td>
-     The document containing <tt>node</tt> (i.e., <tt>node.ownerDocument</tt>).
+     The document containing <code>node</code> (i.e., <code>node.ownerDocument</code>).
     </td>
   </tr>
   <tr>
-    <td><tt>window</tt></td>
+    <td><code>window</code></td>
     <td>
-     The window containing <tt>document</tt> (i.e.,
-     <tt>node.ownerDocument.defaultView</tt>).
+     The window containing <code>document</code> (i.e.,
+     <code>node.ownerDocument.defaultView</code>).
     </td>
   </tr>
 </table>

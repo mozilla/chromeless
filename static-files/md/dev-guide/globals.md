@@ -23,24 +23,24 @@ chrome privileges. While all Jetpack modules are currently run with
 chrome privileges by default, you shouldn't use them unless you
 absolutely need to; see the [Security Roadmap] for more information.
 
-<tt>**Components**</tt>
+<code>**Components**</code>
 
 The infamous [Components object] that grants unfettered access to the
 host system.
 
-<tt>**Cc**</tt>
+<code>**Cc**</code>
 
 An alias for `Components.classes`.
 
-<tt>**Ci**</tt>
+<code>**Ci**</code>
 
 An alias for `Components.interfaces`.
 
-<tt>**Cu**</tt>
+<code>**Cu**</code>
 
 An alias for `Components.utils`.
 
-<tt>**Cr**</tt>
+<code>**Cr**</code>
 
 An alias for `Components.results`.
 
@@ -49,45 +49,45 @@ An alias for `Components.results`.
 These globals are available regardless of the security context of the
 Jetpack code.
 
-<tt>**\_\_url\_\_**</tt>
+<code>**\_\_url\_\_**</code>
 
 The `__url__` global is a string identifying the URL from which
 the Jetpack code has been retrieved.  If the code has no identifiable
-URL, this value may be <tt>null</tt>.
+URL, this value may be `null`.
 
-<tt>**console**</tt>
+<code>**console**</code>
 
-<tt>console</tt> is an object with the following methods:
+`console` is an object with the following methods:
 
-<tt>console.**log**(*object*[, *object*, ...])</tt>
+<code>console.**log**(*object*[, *object*, ...])</code>
 
 Logs an informational message to the console. Depending on console's
 underlying implementation and user interface, you may be able to
 introspect into the properties of non-primitive objects that are
 logged.
 
-<tt>console.**info**(*object*[, *object*, ...])</tt>
+<code>console.**info**(*object*[, *object*, ...])</code>
 
-A synonym for <tt>console.log()</tt>.
+A synonym for `console.log()`.
 
-<tt>console.**warn**(*object*[, *object*, ...])</tt>
+<code>console.**warn**(*object*[, *object*, ...])</code>
 
 Logs a warning message to the console.
 
-<tt>console.**error**(*object*[, *object*, ...])</tt>
+<code>console.**error**(*object*[, *object*, ...])</code>
 
 Logs an error message to the console.
 
-<tt>console.**debug**(*object*[, *object*, ...])</tt>
+<code>console.**debug**(*object*[, *object*, ...])</code>
 
 Logs a debug message to the console.
 
-<tt>console.**exception**(*exception*)</tt>
+<code>console.**exception**(*exception*)</code>
 
 Logs the given exception instance as an error, outputting information
 about the exception's stack traceback if one is available.
 
-<tt>console.**trace**()</tt>
+<code>console.**trace**()</code>
 
 Inserts a stack trace into the console at the point this function is called.
 
@@ -95,12 +95,12 @@ Inserts a stack trace into the console at the point this function is called.
 For more information on packaging, see the [Package Specification] appendix.
 </span>
 
-<tt>**packaging**</tt>
+<code>**packaging**</code>
 
-The <tt>packaging</tt> global contains methods and metadata related to
+The `packaging` global contains methods and metadata related to
 the packages available in the current environment.
 
-<tt>packaging.**getURLForData**(*path*)</tt>
+<code>packaging.**getURLForData**(*path*)</code>
 
 Given a unix-style path relative to the calling package's `data`
 directory, returns an absolute URL to the file or directory.
@@ -118,25 +118,25 @@ to `data/mydata.dat`:
 If the calling package has no `data` directory, an exception is
 thrown.
 
-<tt>**memory**</tt>
+<code>**memory**</code>
 
-<tt>memory</tt> is an object that exposes functionality to track
+`memory` is an object that exposes functionality to track
 objects of interest and help diagnose and prevent memory leaks.
 
-<tt>memory.**track**(*object*, [*bin*])</tt>
+<code>memory.**track**(*object*, [*bin*])</code>
 
 Marks *object* for being tracked, and categorizes it with the given
 bin name. If *bin* isn't specified, the memory tracker attempts to
 infer a bin name by first checking the object's
-<tt>constructor.name</tt>; if that fails or results in the generic
-<tt>Object</tt>, the stack is inspected and the name of the current
+`constructor.name`; if that fails or results in the generic
+`Object`, the stack is inspected and the name of the current
 function being executed&mdash;which is assumed to be a constructor
 function&mdash;is used. If that fails, then the object is placed in a
-bin named <tt>generic</tt>.
+bin named `generic`.
 
-<tt>memory.**getObjects**([*bin*])</tt>
+<code>memory.**getObjects**([*bin*])</code>
 
-Returns an <tt>Array</tt> containing information about tracked objects
+Returns an `Array` containing information about tracked objects
 that have been categorized with the given bin name. If *bin* isn't
 provided, information about all live tracked objects are returned.
 
@@ -144,33 +144,33 @@ Each element of the array is an object with the following keys:
 
 <table>
   <tr>
-    <td><tt>weakref</tt></td>
+    <td><code>weakref</code></td>
     <td>A weak reference to the object being tracked. Call
-    <tt>get()</tt> on this object to retrieve its strong reference; if
-    a strong reference to the object no longer exists, <tt>get()</tt>
-    will return <tt>null</tt>.</td>
+    <code>get()</code> on this object to retrieve its strong reference; if
+    a strong reference to the object no longer exists, <code>get()</code>
+    will return <code>null</code>.</td>
   </tr>
   <tr>
-    <td><tt>created</tt></td>
-    <td>A <tt>Date</tt> representing the date and time that
-    <tt>memory.track()</tt> was called on the object being
+    <td><code>created</code></td>
+    <td>A <code>Date</code> representing the date and time that
+    <code>memory.track()</code> was called on the object being
     tracked.</td>
   </tr>
   <tr>
-    <td><tt>filename</tt></td>
-    <td>The name of the file that called <tt>memory.track()</tt> on
+    <td><code>filename</code></td>
+    <td>The name of the file that called <code>memory.track()</code> on
     the object being tracked.</td>
   </tr>
   <tr>
-    <td><tt>lineNo</tt></td>
+    <td><code>lineNo</code></td>
     <td>The line number of the file that called
-    <tt>memory.track()</tt> on the object being tracked.</td>
+    <code>memory.track()</code> on the object being tracked.</td>
   </tr>
 </table>
 
-<tt>memory.**getBins**()</tt>
+<code>memory.**getBins**()</code>
 
-Returns an <tt>Array</tt> containing the names of all bins that aren't
+Returns an `Array` containing the names of all bins that aren't
 currently empty.
 
   [Components object]: https://developer.mozilla.org/en/Components_object

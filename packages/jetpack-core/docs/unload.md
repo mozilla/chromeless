@@ -1,16 +1,16 @@
-The <tt>unload</tt> module allows modules to register callbacks that
+The `unload` module allows modules to register callbacks that
 are called when Jetpack code is unloaded.  It is similar to the
 CommonJS module of the same name in the [Narwhal] platform.
 
-<tt>unload.**when**(*callback*)</tt>
+<code>unload.**when**(*callback*)</code>
 
-Registers *callback* to be called when <tt>unload.send()</tt> is
+Registers *callback* to be called when `unload.send()` is
 called.
 
-<tt>unload.**send**()</tt>
+<code>unload.**send**()</code>
 
 Sends an unload signal, thereby triggering all callbacks registered
-via <tt>unload.when()</tt>. In general, this function need not be
+via `unload.when()`. In general, this function need not be
 manually called; it is automatically triggered by the embedder.
 
   [Narwhal]: http://narwhaljs.org/

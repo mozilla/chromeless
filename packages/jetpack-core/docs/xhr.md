@@ -1,17 +1,17 @@
-The <tt>xhr</tt> module provides access to <tt>XMLHttpRequest</tt>
+The `xhr` module provides access to `XMLHttpRequest`
 functionality, also known as AJAX.
 
 ## Exports ##
 
-<tt>xhr.**XMLHttpRequest**()</tt>
+<code>xhr.**XMLHttpRequest**()</code>
 
-Creates an <tt>XMLHttpRequest</tt>. This is a constructor, so its use
+Creates an `XMLHttpRequest`. This is a constructor, so its use
 should always be preceded by the `new` operator. For more information,
 see the MDC page on [Using XMLHttpRequest].
 
-<tt>xhr.**getRequestCount**()</tt>
+<code>xhr.**getRequestCount**()</code>
 
-Returns the number of <tt>XMLHttpRequest</tt> objects that are alive
+Returns the number of `XMLHttpRequest` objects that are alive
 (i.e., currently active or about to be).
 
 ## Limitations ##

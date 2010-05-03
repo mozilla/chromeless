@@ -4,7 +4,7 @@ like a set.
 
 ## Constructors ##
 
-<tt>collection.**Collection**(*array*)</tt>
+<code>collection.**Collection**(*array*)</code>
 
 Creates a new collection.  The collection is backed by an array.  If *array* is
 given, it will be used as the backing array.  This way the caller can fully
@@ -34,25 +34,25 @@ order they were added.  For example, the following code...
 
 ### Members ###
 
-<tt>Collection.**length**</tt>
+<code>Collection.**length**</code>
 
 The number of items in the collection.
 
 ### Methods ###
 
-<tt>Collection.**add**(*itemOrItems*)</tt>
+<code>Collection.**add**(*itemOrItems*)</code>
 
 Adds a single item or an array of items to the collection.  Any items already
 contained in the collection are ignored.  The collection is returned.
 
-<tt>Collection.**remove**(*itemOrItems*)</tt>
+<code>Collection.**remove**(*itemOrItems*)</code>
 
 Removes a single item or an array of items from the collection.  Any items not
 contained in the collection are ignored.  The collection is returned.
 
 ## Functions ##
 
-<tt>collection.**addCollectionProperty**(*object*, *propertyName*, *backingArray*)</tt>
+<code>collection.**addCollectionProperty**(*object*, *propertyName*, *backingArray*)</code>
 
 Adds a collection property to the given object.  Setting the property to a
 scalar value empties the collection and adds the value.  Setting it to an array

@@ -1,22 +1,22 @@
 The `file` module provides access to the local filesystem.
 
-<tt>file.**dirname**(*path*)</tt>
+<code>file.**dirname**(*path*)</code>
 
 Returns the path of a file’s containing directory, albeit the parent directory if the file is a directory.
 
-<tt>file.**exists**(*path*)</tt>
+<code>file.**exists**(*path*)</code>
 
 Returns true if a file exists at the given path and false otherwise.
 
-<tt>file.**join**(*...*)</tt>
+<code>file.**join**(*...*)</code>
 
 Takes a variable number of strings, joins them on the file system’s path separator, and returns the result.
 
-<tt>file.**list**(*path*)</tt>
+<code>file.**list**(*path*)</code>
 
 Returns an array of files in the given directory.
 
-<tt>file.**open**(*path*, *mode*)</tt>
+<code>file.**open**(*path*, *mode*)</code>
 
 Returns a byte stream providing access to the file at the given path.
 
@@ -24,10 +24,10 @@ Returns a byte stream providing access to the file at the given path.
 
 Opened files should always be closed after use by calling `close` on the returned stream.
 
-<tt>file.**read**(*path*)</tt>
+<code>file.**read**(*path*)</code>
 
 Returns a string containing the entire contents of the file at the given path.
 
-<tt>file.**remove**(*path*)</tt>
+<code>file.**remove**(*path*)</code>
 
 Removes the file at the given path from the file system.
