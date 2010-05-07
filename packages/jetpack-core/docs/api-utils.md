@@ -52,62 +52,76 @@ If it's null or otherwise falsey, an empty object is assumed.
 *`requirements`* is an object whose keys are the expected keys in *`options`*.
 Any key in *`options`* that is not present in *`requirements`* is ignored.  Each
 value in *`requirements`* is itself an object describing the requirements of its
-key.  There are three optional keys in this object:
+key.  There are four optional keys in this object:
 
 <table>
   <tr>
     <td><code>map</code></td>
     <td>
       A function that's passed the value of the key in
-      <em><code>options</code></em>.  The return value of this function is used
-      as the value of the key.  All exceptions thrown when calling the function
-      are caught and discarded, and in that case the value of the key is its
-      value in <em><code>options</code></em>.
+      <em><code>options</code></em>.  <code>map</code>'s return value is taken
+      as the key's value in the final validated options, <code>is</code>, and
+      <code>ok</code>.  If <code>map</code> throws an exception it's caught and
+      discarded, and the key's value is its value in
+      <em><code>options</code></em>.
+    </td>
+  </tr>
+  <tr>
+    <td><code>is</code></td>
+    <td>
+      An array containing any number of the <code>typeof</code> type names.  If
+      the key's value is none of these types, it fails validation.  Arrays and
+      null are identified by the special type names "array" and "null"; "object"
+      will not match either.  No type coercion is done.
     </td>
   </tr>
   <tr>
     <td><code>ok</code></td>
     <td>
-      A function that's passed the value of the key in
-      <em><code>options</code></em> or, if <code>map</code> is defined,
-      <code>map</code>'s return value.  If it returns true, or if this function
-      is undefined, the value is accepted.
+      A function that's passed the key's value.  If it returns false, the value
+      fails validation.
     </td>
   </tr>
   <tr>
     <td><code>msg</code></td>
     <td>
-      If <code>ok</code> returns false, an exception is thrown.  This string
-      will be used as its message.  If undefined, a generic message is used.
+      If the key's value fails validation, an exception is thrown.  This string
+      will be used as its message.  If undefined, a generic message is used,
+      unless <code>is</code> is defined, in which case the message will state
+      that the value needs to be one of the given types.
     </td>
   </tr>
 </table>
 
+`map`, `is`, and `ok` are used in that order.
+
 The return value is an object whose keys are those keys in *`requirements`* that
 are also in *`options`* and whose values are the corresponding return values of
-`map` or the corresponding values in *`options`*.  Note that any keys in
-*`requirements`* that are not in *`options`* are not in the returned object.
+`map` or the corresponding values in *`options`*.  Note that any keys not shared
+by both *`requirements`* and *`options`* are not in the returned object.
 
 *Examples*
 
 A typical use:
 
-    var options = { foo: 1337 };
-    var validated = apiUtils.validateOptions(options, {
+    var opts = { foo: 1337 };
+    var requirements = {
       foo: {
         map: function (val) val.toString(),
-        ok: function (val) typeof(val) === "string",
-        msg: "foo must be a string."
+        is: ["string"],
+        ok: function (val) val.length > 0,
+        msg: "foo must be a non-empty string."
       }
-    });
-    // validated == { foo: "1337" }
+    };
+    var validatedOpts = apiUtils.validateOptions(opts, requirements);
+    // validatedOpts == { foo: "1337" }
 
 If the key `foo` is optional and doesn't need to be mapped:
 
-    var options = { foo: 1337 };
-    var validated = apiUtils.validateOptions(options, { foo: {} });
-    // validated == { foo: 1337 }
+    var opts = { foo: 1337 };
+    var validatedOpts = apiUtils.validateOptions(opts, { foo: {} });
+    // validatedOpts == { foo: 1337 }
 
-    options = {};
-    validated = apiUtils.validateOptions(options, { foo: {} });
-    // validated == {}
+    opts = {};
+    validatedOpts = apiUtils.validateOptions(opts, { foo: {} });
+    // validatedOpts == {}

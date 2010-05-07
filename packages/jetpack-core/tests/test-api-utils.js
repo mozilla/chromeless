@@ -125,11 +125,62 @@ exports.testValidateOptionsOk = function (test) {
   );
 };
 
-exports.testValidateOptionsMapOk = function (test) {
-  let val = apiUtils.validateOptions({ foo: 3 }, {
-    foo: { map: function (v) v * v, ok: function (v) v === 9 }
+exports.testValidateOptionsIs = function (test) {
+  let opts = {
+    array: [],
+    boolean: true,
+    func: function () {},
+    nul: null,
+    number: 1337,
+    object: {},
+    string: "foo",
+    undef1: undefined
+  };
+  let requirements = {
+    array: { is: ["array"] },
+    boolean: { is: ["boolean"] },
+    func: { is: ["function"] },
+    nul: { is: ["null"] },
+    number: { is: ["number"] },
+    object: { is: ["object"] },
+    string: { is: ["string"] },
+    undef1: { is: ["undefined"] },
+    undef2: { is: ["undefined"] }
+  };
+  let val = apiUtils.validateOptions(opts, requirements);
+  assertObjsEqual(test, val, opts);
+
+  test.assertRaises(
+    function () apiUtils.validateOptions(null, {
+      foo: { is: ["object", "number"] }
+    }),
+    'The option "foo" must be one of the following types: object, number',
+    "Invalid type should raise exception"
+  );
+};
+
+exports.testValidateOptionsMapIsOk = function (test) {
+  let [map, is, ok] = [false, false, false];
+  let val = apiUtils.validateOptions({ foo: 1337 }, {
+    foo: {
+      map: function (v) v.toString(),
+      is: ["string"],
+      ok: function (v) v.length > 0
+    }
   });
-  assertObjsEqual(test, val, { foo: 9 });
+  assertObjsEqual(test, val, { foo: "1337" });
+
+  let requirements = {
+    foo: {
+      is: ["object"],
+      ok: function () test.fail("is should have caused us to throw by now")
+    }
+  };
+  test.assertRaises(
+    function () apiUtils.validateOptions(null, requirements),
+    'The option "foo" must be one of the following types: object',
+    "is should be used before ok is called"
+  );
 };
 
 exports.testValidateOptionsErrorMsg = function (test) {
