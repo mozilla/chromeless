@@ -75,7 +75,10 @@ TestFinder.prototype = {
           function(suite) {
             var module = require(suite);
             for (name in module)
-                tests.push(self._makeTest(suite, name, module[name]));
+                tests.push({
+                  testFunction: self._makeTest(suite, name, module[name]),
+                  name: suite + "." + name
+                });
           });
       });
     return tests;
@@ -86,6 +89,7 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
   memory.track(this);
   this.passed = 0;
   this.failed = 0;
+  this.failedTests = [];
 };
 
 TestRunner.prototype = {
@@ -197,6 +201,13 @@ TestRunner.prototype = {
         timer.clearTimeout(this.waitTimeout);
         this.waitTimeout = null;
       }
+      if (this.previousPassed == this.passed &&
+          this.previousFailed == this.failed) {
+        this.failed++;
+      }
+      if (this.failed > this.previousFailed) {
+        this.failedTests.push(this.testName);
+      }
       if (this.onDone !== null) {
         var onDone = this.onDone;
         var self = this;
@@ -232,10 +243,14 @@ TestRunner.prototype = {
   },
 
   start: function start(options) {
-    this.test = options.test;
+    this.test = options.test.testFunction;
+    this.testName = options.test.name;
     this.isDone = false;
     this.onDone = options.onDone;
     this.waitTimeout = null;
+
+    this.previousPassed = this.passed;
+    this.previousFailed = this.failed;
 
     try {
       this.test(this);

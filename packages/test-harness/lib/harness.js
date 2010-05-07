@@ -59,9 +59,12 @@ var filter;
 // Information on memory profiler binary component (optional).
 var profiler;
 
-// Combined results from all test runs.
-var results = {passed: 0,
-               failed: 0};
+// Combined information from all test runs.
+var results = {
+  passed: 0,
+  failed: 0,
+  testRuns: []
+};
 
 // JSON serialization of last memory usage stats; we keep it stringified
 // so we don't actually change the memory usage stats (in terms of objects)
@@ -242,6 +245,9 @@ function nextIteration(tests) {
     results.passed += tests.passed;
     results.failed += tests.failed;
     reportMemoryUsage();
+    results.testRuns.push({
+      failedTests: tests.failedTests.slice(0)
+    });
     iterationsLeft--;
   }
   if (iterationsLeft)

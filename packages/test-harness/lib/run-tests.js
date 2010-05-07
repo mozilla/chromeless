@@ -47,10 +47,16 @@ function runTests(iterations, filter, verbose, rootPaths, quit, print) {
 
   function onDone(tests) {
     window.close();
-    if (tests.passed > 0 && tests.failed == 0)
+    if (tests.passed > 0 && tests.failed == 0) {
       quit("OK");
-    else
+    } else {
+      if (tests.passed == 0) {
+        print("No tests were run");
+      } else {
+        printFailedTests(tests, verbose, print);
+      }
       quit("FAIL");
+    }
   };
 
   harness.runTests({iterations: iterations,
@@ -59,6 +65,25 @@ function runTests(iterations, filter, verbose, rootPaths, quit, print) {
                     rootPaths: rootPaths,
                     print: print,
                     onDone: onDone});
+}
+
+function printFailedTests(tests, verbose, print) {
+  if (!verbose)
+    return;
+
+  let iterationNumber = 0;
+  
+  print("\nThe following tests failed:\n");
+  for each (let testRun in tests.testRuns) {
+    iterationNumber++;
+    if (testRun.failedTests.length == 0)
+      continue;
+    print("  Iteration " + iterationNumber + ":\n"); 
+    for each (let failedTest in testRun.failedTests) {
+      print("    " + failedTest +"\n");
+    }
+    print("\n");
+  }
 }
 
 exports.main = function main(options, callbacks) {
