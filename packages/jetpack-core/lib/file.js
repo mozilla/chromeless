@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 const byteStreams = require("byte-streams");
+const textStreams = require("text-streams");
 const xpcom = require("xpcom");
 
 // Flags passed when opening a file.  See nsprpub/pr/include/prio.h.
@@ -94,11 +95,7 @@ exports.read = function read(filename) {
   try {
     var str = stream.read();
   }
-  catch (err) {
-    throw err;
-  }
   finally {
-    // Ensure the stream is closed, even if there's a read error.
     stream.close();
   }
 
@@ -154,7 +151,9 @@ exports.open = function open(filename, mode) {
     catch (err) {
       throw xpcom.friendlyError(err, { filename: filename });
     }
-    return new byteStreams.ByteWriter(stream);
+    return /b/.test(mode) ?
+           new byteStreams.ByteWriter(stream) :
+           new textStreams.TextWriter(stream);
   }
 
   // File opened for read only, the default.
@@ -167,7 +166,9 @@ exports.open = function open(filename, mode) {
   catch (err) {
     throw xpcom.friendlyError(err, { filename: filename });
   }
-  return new byteStreams.ByteReader(stream);
+  return /b/.test(mode) ?
+         new byteStreams.ByteReader(stream) :
+         new textStreams.TextReader(stream);
 };
 
 exports.remove = function remove(path) {
