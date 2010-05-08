@@ -66,10 +66,9 @@ function openBrowserWindow(callback) {
   return window;
 }
 
-exports.testAddTab = function(test) {
-  if (!tabBrowser.isAppSupported())
-    return;
+var tests = {};
 
+tests.testAddTab = function(test) {
   var firstUrl = "data:text/html,one";
   var secondUrl = "data:text/html,two";
 
@@ -115,10 +114,7 @@ exports.testAddTab = function(test) {
   test.waitUntilDone(5000);
 };
 
-exports.testTrackerWithDelegate = function(test) {
-  if (!tabBrowser.isAppSupported())
-    return;
-
+tests.testTrackerWithDelegate = function(test) {
   var delegate = {
     state: "initializing",
     onTrack: function onTrack(browser) {
@@ -151,10 +147,7 @@ exports.testTrackerWithDelegate = function(test) {
   test.waitUntilDone(5000);
 };
 
-exports.testWhenContentLoaded = function(test) {
-  if (!tabBrowser.isAppSupported())
-    return;
-
+tests.testWhenContentLoaded = function(test) {
   var tracker = tabBrowser.whenContentLoaded(
     function(window) {
       var item = window.document.getElementById("foo");
@@ -175,10 +168,7 @@ exports.testWhenContentLoaded = function(test) {
   test.waitUntilDone(5000);
 };
 
-exports.testTrackerWithoutDelegate = function(test) {
-  if (!tabBrowser.isAppSupported())
-    return;
-
+tests.testTrackerWithoutDelegate = function(test) {
   openBrowserWindow(
     function(window, newBrowser) {
       var tb = new tabBrowser.Tracker();
@@ -207,3 +197,7 @@ exports.testTrackerWithoutDelegate = function(test) {
 
   test.waitUntilDone(5000);
 };
+
+if (tabBrowser.isAppSupported())
+  for (let name in tests)
+    exports[name] = tests[name];

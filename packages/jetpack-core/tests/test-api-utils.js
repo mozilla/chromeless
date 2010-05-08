@@ -194,12 +194,18 @@ exports.testValidateOptionsErrorMsg = function (test) {
 };
 
 function assertObjsEqual(test, obj1, obj2) {
+  var items = 0;
   for (let [key, val] in Iterator(obj1)) {
+    items++;
     test.assert(key in obj2, "obj1 key should be present in obj2");
     test.assertEqual(obj2[key], val, "obj1 value should match obj2 value");
   }
   for (let [key, val] in Iterator(obj2)) {
+    items++;
     test.assert(key in obj1, "obj2 key should be present in obj1");
     test.assertEqual(obj1[key], val, "obj2 value should match obj1 value");
   }
+  if (!items)
+    test.assertEqual(JSON.stringify(obj1), JSON.stringify(obj2),
+                     "obj1 should have same JSON representation as obj2");
 }
