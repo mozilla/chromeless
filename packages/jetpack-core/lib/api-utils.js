@@ -54,7 +54,8 @@ const VALID_TYPES = [
  * with or without the new keyword.  The prototype of each instance returned
  * from C is C.prototype, and C.prototype is an object whose prototype is
  * privateCtor.prototype.  Instances returned from C will therefore be instances
- * of both C and privateCtor.
+ * of both C and privateCtor.  Additionally, the constructor of each instance
+ * returned from C is C.
  *
  * @param  privateCtor
  *         A constructor.
@@ -66,7 +67,7 @@ exports.publicConstructor = function publicConstructor(privateCtor) {
     memory.track(obj, privateCtor.name);
     privateCtor.apply(obj, arguments);
     return obj;
-  };
+  }
   PublicCtor.prototype = { __proto__: privateCtor.prototype };
   return PublicCtor;
 };

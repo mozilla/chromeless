@@ -33,6 +33,8 @@ The prototype of each instance returned from *C* is *C*.`prototype`, and
 *`privateConstructor`*`.prototype`.  Instances returned from *C* are therefore
 instances of both *C* and *`privateConstructor`*.
 
+Additionally, the constructor of each instance returned from *C* is *C*.
+
 Instances returned from *C* are automatically memory tracked using
 `memory.track` under the bin name *`privateConstructor`*`.name`.
 
