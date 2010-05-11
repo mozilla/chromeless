@@ -95,6 +95,13 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
 TestRunner.prototype = {
   DEFAULT_PAUSE_TIMEOUT: 10000,
 
+  logTestFailed: function logTestFailed(why) {
+    if (!this.testFailureLogged) {
+      console.error("TEST FAILED: " + this.testName + " (" + why + ")");
+      this.testFailureLogged = true;
+    }
+  },
+
   makeSandboxedLoader: function makeSandboxedLoader(options) {
     if (!options)
       options = {console: console};
@@ -110,12 +117,14 @@ TestRunner.prototype = {
   },
 
   fail: function fail(message) {
+    this.logTestFailed("fail");
     console.error("fail:", message);
     console.trace();
     this.failed++;
   },
 
   exception: function exception(e) {
+    this.logTestFailed("exception");
     console.exception(e);
     this.failed++;
   },
@@ -224,6 +233,7 @@ TestRunner.prototype = {
     var self = this;
 
     function tiredOfWaiting() {
+      self.logTestFailed("timed out");
       self.failed++;
       self.done();
     }
