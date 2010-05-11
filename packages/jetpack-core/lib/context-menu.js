@@ -45,6 +45,7 @@ if (!require("xul-app").is("Firefox")) {
   ].join(""));
 }
 
+const apiUtils = require("api-utils");
 const collection = require("collection");
 
 // All user items we add have this class name.
@@ -100,9 +101,9 @@ const NON_PAGE_CONTEXT_ELTS = [
 ];
 
 
-exports.Item = makePublicConstructor(Item);
-exports.Menu = makePublicConstructor(Menu);
-exports.Separator = makePublicConstructor(Separator);
+exports.Item = apiUtils.publicConstructor(Item);
+exports.Menu = apiUtils.publicConstructor(Menu);
+exports.Separator = apiUtils.publicConstructor(Separator);
 
 /**
  * Adds an item to the context menu.
@@ -161,34 +162,32 @@ exports._insertionPoint = insertionPoint;
  *               contained in a submenu.
  */
 function Item(options) {
-  options = validateOptions(options, {
+  options = apiUtils.validateOptions(options, {
     context: {
-      ok: function (v) !v ||
-                       typeof(v) === "string" ||
-                       typeof(v) === "function" ||
-                       isArray(v),
-      msg: "The item's context must be a string, function, undefined, null, " +
-           "or an array."
+      is: ["undefined", "null", "string", "function", "array"]
     },
     data: {
-      map: function (v) v ? v.toString() : v
+      map: function (v) v.toString(),
+      is: ["string", "undefined"]
     },
     label: {
-      map: function (v) v ? v.toString() : v,
+      map: function (v) v.toString(),
+      is: ["string"],
       ok: function (v) !!v,
       msg: "The item must have a non-empty string label."
     },
     onClick: {
-      ok: function (v) !v || typeof(v) === "function",
-      msg: "The item's onClick must be a function."
+      is: ["function", "undefined"]
     }
   });
 
   // TODO: Add setters for these.  Updating label and data would require finding
   // this item's DOM element and changing its attributes as well.
   this.__defineGetter__("label", function () options.label);
-  this.__defineGetter__("onClick", function () options.onClick);
-  this.__defineGetter__("data", function () options.data);
+  this.__defineGetter__("onClick", function () options.onClick || undefined);
+  this.__defineGetter__("data", function () {
+    return "data" in options ? options.data : undefined;
+  });
 
   collection.addCollectionProperty(this, "context");
   if (options.context)
@@ -227,35 +226,29 @@ function Item(options) {
  *               contained in a submenu.
  */
 function Menu(options) {
-  options = validateOptions(options, {
+  options = apiUtils.validateOptions(options, {
     context: {
-      ok: function (v) !v ||
-                       typeof(v) === "string" ||
-                       typeof(v) === "function" ||
-                       isArray(v),
-      msg: "The menu's context must be a string, function, undefined, null, " +
-           "or an array."
+      is: ["undefined", "null", "string", "function", "array"]
     },
     items: {
-      ok: isArray,
-      msg: "The menu must have an array of items."
+      is: ["array"]
     },
     label: {
-      map: function (v) v ? v.toString() : v,
+      map: function (v) v.toString(),
+      is: ["string"],
       ok: function (v) !!v,
       msg: "The menu must have a non-empty string label."
     },
     onClick: {
-      ok: function (v) !v || typeof(v) === "function",
-      msg: "The menu's onClick must be a function."
+      is: ["function", "undefined"]
     }
   });
 
   // TODO: Add setters for these.  Updating label and items would require
   // finding this menus's DOM element updating it as well.
   this.__defineGetter__("label", function () options.label);
-  this.__defineGetter__("items", function () (options.items || []).slice(0));
-  this.__defineGetter__("onClick", function () options.onClick);
+  this.__defineGetter__("items", function () options.items.slice(0));
+  this.__defineGetter__("onClick", function () options.onClick || undefined);
 
   collection.addCollectionProperty(this, "context");
   if (options.context)
@@ -296,62 +289,6 @@ function insertionPoint(targetLabel, elts) {
   return elts[from] || null;
 }
 
-// Returns true if val is an array.
-//
-// TODO: Move this to a helpers module.  See bug 559859.
-function isArray(val) {
-  return val && val.constructor && val.constructor.name === "Array";
-}
-
-// High-level Jetpack API constructors are supposed to be callable without using
-// |new|.  This returns a function that creates instances of privateCtor.  It
-// can be used with or without |new|.  However, because the object returned by
-// the public constructor is really an instance of privateCtor, instanceof will
-// appear broken to consumers.
-//
-// TODO: Move this to a helpers module.  See bug 559859.
-function makePublicConstructor(privateCtor) {
-  return function PublicCtor() {
-    let obj = { constructor: PublicCtor, __proto__: privateCtor.prototype };
-    memory.track(obj, privateCtor.name);
-    privateCtor.apply(obj, arguments);
-    return obj;
-  };
-}
-
-// Returns a validated options dictionary given some requirements.  If any of
-// the requirements are not met, an exception is thrown.  requirements is an
-// object whose keys are the expected keys in options.  Each value in
-// requirements is an object describing the requirements of its key.  There are
-// three optional keys in this object:
-//
-//   map: A function that's passed the value of the key in options.  The return
-//        value of this function is used as the value of the key.
-//   ok:  A function that's passed the value of the key in options or, if map is
-//        defined, map's return value.  If it returns true, or if this function
-//        is undefined, the value is accepted.
-//   msg: If ok returns false, an error is thrown.  This string will be used as
-//        its message.  If undefined, a generic message is used.
-//
-// TODO: Move this to a helpers module.  See bug 559859.
-function validateOptions(options, requirements) {
-  options = options || {};
-  let acceptedOptions = {};
-
-  for (let [key, requirement] in Iterator(requirements)) {
-    let optsVal = (key in options) ? options[key] : undefined;
-    if (requirement.map)
-      optsVal = requirement.map(optsVal);
-    if (requirement.ok && !requirement.ok(optsVal)) {
-      let msg = requirement.msg || 'The option "' + key + '" is invalid.';
-      throw new Error(msg);
-    }
-    acceptedOptions[key] = optsVal;
-  }
-
-  return acceptedOptions;
-}
-
 
 // Keeps track of all browser windows.
 let browserManager = {
@@ -369,7 +306,7 @@ let browserManager = {
   // Registers the manager to listen for window openings and closings.  Note
   // that calling this method can cause onTrack to be called immediately if
   // there are open windows.
-  init: function () {
+  init: function browserManager_init() {
     let windowTracker = new (require("window-utils").WindowTracker)(this);
     require("unload").ensure(windowTracker);
   },
