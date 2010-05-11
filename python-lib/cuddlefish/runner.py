@@ -125,7 +125,6 @@ class XulrunnerAppRunner(mozrunner.Runner):
 
     # Default location of XULRunner on OS X.
     __DARWIN_PATH = "/Library/Frameworks/XUL.framework/xulrunner-bin"
-    __LINUX_PATH  = "/usr/bin/xulrunner"
 
     # What our application.ini's path looks like if it's part of
     # an "installed" XULRunner app on OS X.
@@ -189,9 +188,6 @@ class XulrunnerAppRunner(mozrunner.Runner):
         if sys.platform == 'darwin':
             if os.path.exists(self.__DARWIN_PATH):
                 return self.__DARWIN_PATH
-        if sys.platform == 'linux2':
-            if os.path.exists(self.__LINUX_PATH):
-                return self.__LINUX_PATH
         return None
 
     def find_binary(self):
