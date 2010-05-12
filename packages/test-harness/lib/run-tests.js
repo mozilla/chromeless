@@ -51,7 +51,7 @@ function runTests(iterations, filter, verbose, rootPaths, quit, print) {
       quit("OK");
     } else {
       if (tests.passed == 0) {
-        print("No tests were run");
+        print("No tests were run\n");
       } else {
         printFailedTests(tests, verbose, print);
       }
