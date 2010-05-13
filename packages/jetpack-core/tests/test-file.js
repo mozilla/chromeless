@@ -153,6 +153,85 @@ exports.testOpenTypes = function (test) {
   file.remove(filename);
 };
 
+exports.testMkpathRmdir = function (test) {
+  var basePath = file.dirname(url.toFilename(__url__));
+  var dirs = [];
+  for (var i = 0; i < 3; i++)
+    dirs.push("test-file-dir");
+  var paths = [];
+  for (var i = 0; i < dirs.length; i++) {
+    var args = [basePath].concat(dirs.slice(0, i + 1));
+    paths.unshift(file.join.apply(null, args));
+  }
+  for (i = 0; i < paths.length; i++) {
+    test.assert(!file.exists(paths[i]),
+                "Sanity check: path should not exist: " + paths[i]);
+  }
+  file.mkpath(paths[0]);
+  test.assert(file.exists(paths[0]), "mkpath should create path: " + paths[0]);
+  for (i = 0; i < paths.length; i++) {
+    file.rmdir(paths[i]);
+    test.assert(!file.exists(paths[i]),
+                "rmdir should remove path: " + paths[i]);
+  }
+};
+
+exports.testMkpathTwice = function (test) {
+  var dir = file.dirname(url.toFilename(__url__));
+  var path = file.join(dir, "test-file-dir");
+  test.assert(!file.exists(path),
+              "Sanity check: path should not exist: " + path);
+  file.mkpath(path);
+  test.assert(file.exists(path), "mkpath should create path: " + path);
+  file.mkpath(path);
+  test.assert(file.exists(path),
+              "After second mkpath, path should still exist: " + path);
+  file.rmdir(path);
+  test.assert(!file.exists(path), "rmdir should remove path: " + path);
+};
+
+exports.testMkpathExistingNondirectory = function (test) {
+  var fname = dataFileFilename(test);
+  file.open(fname, "w").close();
+  test.assert(file.exists(fname), "File should exist");
+  test.assertRaises(function () file.mkpath(fname),
+                    /^The path already exists and is not a directory: .+$/,
+                    "mkpath on file should raise error");
+  file.remove(fname);
+};
+
+exports.testRmdirNondirectory = function (test) {
+  var fname = dataFileFilename(test);
+  file.open(fname, "w").close();
+  test.assert(file.exists(fname), "File should exist");
+  test.assertRaises(function () file.rmdir(fname),
+                    ERRORS.NOT_A_DIRECTORY,
+                    "rmdir on file should raise error");
+  file.remove(fname);
+  test.assert(!file.exists(fname), "File should not exist");
+  test.assertRaises(function () file.rmdir(fname),
+                    ERRORS.FILE_NOT_FOUND,
+                    "rmdir on non-existing file should raise error");
+};
+
+exports.testRmdirNonempty = function (test) {
+  var dir = file.dirname(url.toFilename(__url__));
+  var path = file.join(dir, "test-file-dir");
+  test.assert(!file.exists(path),
+              "Sanity check: path should not exist: " + path);
+  file.mkpath(path);
+  var filePath = file.join(path, "file");
+  file.open(filePath, "w").close();
+  test.assert(file.exists(filePath),
+              "Sanity check: path should exist: " + filePath);
+  test.assertRaises(function () file.rmdir(path),
+                    /^The directory is not empty: .+$/,
+                    "rmdir on non-empty directory should raise error");
+  file.remove(filePath);
+  file.rmdir(path);
+  test.assert(!file.exists(path), "Path should not exist");
+};
+
 // Returns the name of a file that should be used to test writing and reading.
 function dataFileFilename(test) {
   var dir = file.dirname(url.toFilename(__url__));

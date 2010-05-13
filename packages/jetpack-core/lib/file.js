@@ -176,3 +176,22 @@ exports.remove = function remove(path) {
   ensureFile(file);
   file.remove(false);
 };
+
+exports.mkpath = function mkpath(path) {
+  var file = MozFile(path);
+  if (!file.exists())
+    file.create(Ci.nsIFile.DIRECTORY_TYPE, 0755); // u+rwx go+rx
+  else if (!file.isDirectory())
+    throw new Error("The path already exists and is not a directory: " + path);
+};
+
+exports.rmdir = function rmdir(path) {
+  var file = MozFile(path);
+  ensureDir(file);
+  try {
+    file.remove(false);
+  }
+  catch (err if err.result === Cr.NS_ERROR_FILE_DIR_NOT_EMPTY) {
+    throw new Error("The directory is not empty: " + path);
+  }
+};
