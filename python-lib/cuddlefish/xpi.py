@@ -13,11 +13,20 @@ def build_xpi(template_root_dir, manifest, xpi_name,
 
     IGNORED_FILES = [".hgignore", "install.rdf", 
                      "application.ini", xpi_name]
+    IGNORED_FILE_SUFFIXES = ["~"]
     IGNORED_DIRS = [".svn", ".hg", "defaults"]
 
+    def filter_filenames(filenames):
+        for filename in filenames:
+            if filename in IGNORED_FILES:
+                continue
+            if any([filename.endswith(suffix)
+                    for suffix in IGNORED_FILE_SUFFIXES]):
+                continue
+            yield filename
+
     for dirpath, dirnames, filenames in os.walk(template_root_dir):
-        filenames = [filename for filename in filenames
-                     if filename not in IGNORED_FILES]
+        filenames = list(filter_filenames(filenames))
         dirnames[:] = [dirname for dirname in dirnames
                        if dirname not in IGNORED_DIRS]
         for filename in filenames:
@@ -36,8 +45,7 @@ def build_xpi(template_root_dir, manifest, xpi_name,
         new_resources[resource] = ['resources', resource]
         abs_dirname = harness_options['resources'][resource]
         for dirpath, dirnames, filenames in os.walk(abs_dirname):
-            goodfiles = [filename for filename in filenames
-                         if filename not in IGNORED_FILES]
+            goodfiles = list(filter_filenames(filenames))
             for filename in goodfiles:
                 abspath = os.path.join(dirpath, filename)
                 arcpath = abspath[len(abs_dirname)+1:]
