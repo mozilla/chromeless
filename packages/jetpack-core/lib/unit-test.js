@@ -108,6 +108,7 @@ TestRunner.prototype = {
     var Cuddlefish = require("cuddlefish");
 
     options.fs = Cuddlefish.parentLoader.fs;
+    options.globals = { packaging: packaging };
     return new Cuddlefish.Loader(options);
   },
 
