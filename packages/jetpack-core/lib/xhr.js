@@ -167,7 +167,7 @@ READ_ONLY_PROPS.forEach(
 DELEGATED_METHODS.forEach(
   function(name) {
     XMLHttpRequest.prototype[name] = function() {
-      this._req[name].apply(this._req, arguments);
+      return this._req[name].apply(this._req, arguments);
     };
   });
 
