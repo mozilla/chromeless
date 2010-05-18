@@ -1247,6 +1247,10 @@ TestHelper.prototype = {
   // Call to finish the test.
   done: function () {
     function commonDone() {
+      if (this.tab) {
+        this.tabBrowser.removeTab(this.tab);
+        this.tabBrowser.selectedTab = this.oldSelectedTab;
+      }
       while (this.loaders.length)
         this.loaders[0].unload();
       this.test.done();
@@ -1254,15 +1258,12 @@ TestHelper.prototype = {
 
     this.contextMenuPopup.hidePopup();
 
-    if (this.tab) {
-      this.tabBrowser.removeTab(this.tab);
-      this.tabBrowser.selectedTab = this.oldSelectedTab;
-    }
-
     if (this.oldBrowserWindow) {
       this.delayedEventListener(this.browserWindow, "unload", commonDone,
                                 false);
       this.browserWindow.close();
+      this.browserWindow = this.oldBrowserWindow;
+      delete this.oldBrowserWindow;
     }
     else {
       commonDone.call(this);
@@ -1311,19 +1312,38 @@ TestHelper.prototype = {
   // menu is opened in the top-left corner.  onShowncallback is passed the
   // popup.
   showMenu: function(targetNode, onshownCallback) {
-    this.delayedEventListener(this.browserWindow, "popupshowing", function (e) {
-      let popup = e.target;
-      onshownCallback.call(this, popup);
-    }, false);
+    function sendEvent() {
+      this.delayedEventListener(this.browserWindow, "popupshowing",
+        function (e) {
+          let popup = e.target;
+          onshownCallback.call(this, popup);
+        }, false);
 
-    let rect = targetNode ?
-               targetNode.getBoundingClientRect() :
-               { left: 0, top: 0 };
-    let contentWin = this.browserWindow.content;
-    contentWin.
-      QueryInterface(Components.interfaces.nsIInterfaceRequestor).
-      getInterface(Components.interfaces.nsIDOMWindowUtils).
-      sendMouseEvent("contextmenu", rect.left, rect.top, 2, 1, 0);
+      let rect = targetNode ?
+                 targetNode.getBoundingClientRect() :
+                 { left: 0, top: 0 };
+      let contentWin = this.browserWindow.content;
+      contentWin.
+        QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+        getInterface(Components.interfaces.nsIDOMWindowUtils).
+        sendMouseEvent("contextmenu", rect.left, rect.top, 2, 1, 0);
+    }
+
+    // If a new tab or window has not yet been opened, open a new tab now.  For
+    // some reason using the tab already opened when the test starts causes
+    // leaks.  See bug 566351 for details.
+    if (!targetNode && !this.oldSelectedTab && !this.oldBrowserWindow) {
+      this.oldSelectedTab = this.tabBrowser.selectedTab;
+      this.tab = this.tabBrowser.addTab("about:blank");
+      let browser = this.tabBrowser.getBrowserForTab(this.tab);
+
+      this.delayedEventListener(browser, "load", function () {
+        this.tabBrowser.selectedTab = this.tab;
+        sendEvent.call(this);
+      }, true);
+    }
+    else
+      sendEvent.call(this);
   },
 
   // Opens a new browser window.  The window will be closed automatically when
