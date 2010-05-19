@@ -6,7 +6,6 @@
     <em:id>xulapp@toolness.com</em:id>
     <em:version>1.0</em:version>
     <em:type>2</em:type>
-    <em:bootstrap>true</em:bootstrap>
 
     <!-- Target Application this extension can install into, 
          with minimum and maximum supported versions. --> 
