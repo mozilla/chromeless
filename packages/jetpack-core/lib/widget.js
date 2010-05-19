@@ -250,19 +250,18 @@ BrowserWindow.prototype = {
     this._createContainer();
 
     // Hook up a window-scope function for toggling the UI.
-    var self = this;
+    let self = this;
     this.window.toggleJetpackWidgets = function() self._onToggleUI();
 
     // Hook up pref observer for UI visibility state.
-    let self = this;
     const prefsvc = Cc["@mozilla.org/preferences-service;1"].
                     getService(Ci.nsIPrefBranch2);
-    prefsvc.addObserver(PREF_ADDON_BAR_HIDDEN, {
-      observe: function BW__containerIsHidden_observe(s, t, d) {
-        let val = prefs.get(PREF_ADDON_BAR_HIDDEN, PREF_DEFAULT_ADDON_BAR_HIDDEN);
-        self.container.hidden = !!val;
-      }
-    }, false);
+    prefsvc.addObserver(PREF_ADDON_BAR_HIDDEN, this, false);
+  },
+
+  observe: function BW_observe(s, t, d) {
+    let val = prefs.get(PREF_ADDON_BAR_HIDDEN, PREF_DEFAULT_ADDON_BAR_HIDDEN);
+    this.container.hidden = !!val;
   },
 
   _addKeyCommands: function BW__addKeyCommands() {
@@ -471,8 +470,6 @@ BrowserWindow.prototype = {
       // Store listeners for later removal
       item.eventListeners[method] = listener;
     }
-    return;
-
   },
 
   // Removes an array of items from the window.
@@ -497,8 +494,11 @@ BrowserWindow.prototype = {
     // Remove all items from the panel
     this._items.forEach(function(item) this.removeItems([item.widget]), this);
 
-    // Break this cycle
-    delete this.window.toggleJetpackWidgets;
+    const prefsvc = Cc["@mozilla.org/preferences-service;1"].
+                    getService(Ci.nsIPrefBranch2);
+    prefsvc.removeObserver(PREF_ADDON_BAR_HIDDEN, this);
+
+    this.window.toggleJetpackWidgets = null;
   }
 };
 
