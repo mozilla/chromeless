@@ -89,15 +89,16 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
   memory.track(this);
   this.passed = 0;
   this.failed = 0;
-  this.failedTests = [];
+  this.testRunSummary = [];
 };
 
 TestRunner.prototype = {
   DEFAULT_PAUSE_TIMEOUT: 10000,
 
-  logTestFailed: function logTestFailed(why) {
+  _logTestFailed: function _logTestFailed(why) {
+    this.test.errors[why]++;
     if (!this.testFailureLogged) {
-      console.error("TEST FAILED: " + this.testName + " (" + why + ")");
+      console.error("TEST FAILED: " + this.test.name + " (" + why + ")");
       this.testFailureLogged = true;
     }
   },
@@ -115,19 +116,22 @@ TestRunner.prototype = {
   pass: function pass(message) {
     console.info("pass:", message);
     this.passed++;
+    this.test.passed++;
   },
 
   fail: function fail(message) {
-    this.logTestFailed("fail");
+    this._logTestFailed("failure");
     console.error("fail:", message);
     console.trace();
     this.failed++;
+    this.test.failed++;
   },
 
   exception: function exception(e) {
-    this.logTestFailed("exception");
+    this._logTestFailed("exception");
     console.exception(e);
     this.failed++;
+    this.test.failed++;
   },
 
   assertMatches: function assertMatches(string, regexp, message) {
@@ -211,13 +215,19 @@ TestRunner.prototype = {
         timer.clearTimeout(this.waitTimeout);
         this.waitTimeout = null;
       }
-      if (this.previousPassed == this.passed &&
-          this.previousFailed == this.failed) {
+      if (this.test.passed == 0 && this.test.failed == 0) {
+        this._logTestFailed("empty test");
         this.failed++;
+        this.test.failed++;
       }
-      if (this.failed > this.previousFailed) {
-        this.failedTests.push(this.testName);
-      }
+      
+      this.testRunSummary.push({
+        name: this.test.name,
+        passed: this.test.passed,
+        failed: this.test.failed,
+        errors: [error for (error in this.test.errors)].join(", ")
+      });
+      
       if (this.onDone !== null) {
         var onDone = this.onDone;
         var self = this;
@@ -234,8 +244,9 @@ TestRunner.prototype = {
     var self = this;
 
     function tiredOfWaiting() {
-      self.logTestFailed("timed out");
+      self._logTestFailed("timed out");
       self.failed++;
+      self.test.failed++;
       self.done();
     }
 
@@ -254,17 +265,17 @@ TestRunner.prototype = {
   },
 
   start: function start(options) {
-    this.test = options.test.testFunction;
-    this.testName = options.test.name;
+    this.test = options.test;
+    this.test.passed = 0;
+    this.test.failed = 0;
+    this.test.errors = {};
+
     this.isDone = false;
     this.onDone = options.onDone;
     this.waitTimeout = null;
 
-    this.previousPassed = this.passed;
-    this.previousFailed = this.failed;
-
     try {
-      this.test(this);
+      this.test.testFunction(this);
     } catch (e) {
       this.exception(e);
     }

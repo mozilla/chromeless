@@ -245,9 +245,17 @@ function nextIteration(tests) {
     results.passed += tests.passed;
     results.failed += tests.failed;
     reportMemoryUsage();
-    results.testRuns.push({
-      failedTests: tests.failedTests.slice(0)
-    });
+    
+    let testRun = [];
+    for each (let test in tests.testRunSummary) {
+      let testCopy = {};
+      for (let info in test) {
+        testCopy[info] = test[info];
+      }
+      testRun.push(testCopy);
+    }
+
+    results.testRuns.push(testRun);
     iterationsLeft--;
   }
   if (iterationsLeft)

@@ -72,15 +72,21 @@ function printFailedTests(tests, verbose, print) {
     return;
 
   let iterationNumber = 0;
-  
+  let singleIteration = tests.testRuns.length == 1;
+  let padding = singleIteration ? "" : "  ";
+
   print("\nThe following tests failed:\n");
+
   for each (let testRun in tests.testRuns) {
     iterationNumber++;
-    if (testRun.failedTests.length == 0)
-      continue;
-    print("  Iteration " + iterationNumber + ":\n"); 
-    for each (let failedTest in testRun.failedTests) {
-      print("    " + failedTest +"\n");
+
+    if (!singleIteration)
+      print("  Iteration " + iterationNumber + ":\n"); 
+
+    for each (let test in testRun) {
+      if (test.failed > 0) {
+        print(padding + "  " + test.name + ": " + test.errors +"\n");
+      }
     }
     print("\n");
   }
