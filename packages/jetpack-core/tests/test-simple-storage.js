@@ -55,14 +55,14 @@ exports.testSetGet = function (test) {
   test.waitUntilDone();
 
   // Load the module once, set a value.
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   manager(loader).jsonStore.onWrite.add(function () {
     test.assertEqual(this, ss, "|this| should be simple storage module");
     test.assert(file.exists(storeFilename), "Store file should exist");
 
     // Load the module again and make sure the value stuck.
-    loader = new test.makeSandboxedLoader();
+    loader = newLoader(test);
     ss = loader.require("simple-storage");
     manager(loader).jsonStore.onWrite.add(function () {
       test.assertEqual(this, ss, "|this| should be simple storage module");
@@ -130,7 +130,7 @@ exports.testSetGetRootUndefined = function (test) {
 };
 
 exports.testEmpty = function (test) {
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   loader.unload();
   test.assert(!file.exists(storeFilename), "Store file should not exist");
@@ -140,7 +140,7 @@ exports.testMalformed = function (test) {
   let stream = file.open(storeFilename, "w");
   stream.write("i'm not json");
   stream.close();
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   let empty = true;
   for (let key in ss.storage) {
@@ -156,14 +156,14 @@ exports.testQuotaExceededHandle = function (test) {
   test.waitUntilDone();
   prefs.set(QUOTA_PREF, 18);
 
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   ss.onOverQuota = function () {
     test.pass("onOverQuota callback called as expected");
     ss.storage = { x: 4, y: 5 };
 
     manager(loader).jsonStore.onWrite.add(function () {
-      loader = new test.makeSandboxedLoader();
+      loader = newLoader(test);
       ss = loader.require("simple-storage");
       let numProps = 0;
       for (let prop in ss.storage)
@@ -190,11 +190,11 @@ exports.testQuotaExceededNoHandle = function (test) {
   test.waitUntilDone();
   prefs.set(QUOTA_PREF, 5);
 
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
 
   manager(loader).jsonStore.onWrite.add(function () {
-    loader = new test.makeSandboxedLoader();
+    loader = newLoader(test);
     ss = loader.require("simple-storage");
     test.assertEqual(ss.storage, val,
                      "Value should have persisted: " + ss.storage);
@@ -206,7 +206,7 @@ exports.testQuotaExceededNoHandle = function (test) {
       });
       loader.unload();
 
-      loader = new test.makeSandboxedLoader();
+      loader = newLoader(test);
       ss = loader.require("simple-storage");
       test.assertEqual(ss.storage, val,
                        "Over-quota value should not have been written, " +
@@ -229,7 +229,7 @@ exports.testQuotaUsage = function (test) {
   let quota = 21;
   prefs.set(QUOTA_PREF, quota);
 
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
 
   // {"a":1} (7 bytes)
@@ -253,12 +253,12 @@ exports.testQuotaUsage = function (test) {
 
 exports.testUninstall = function (test) {
   test.waitUntilDone();
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   manager(loader).jsonStore.onWrite.add(function () {
     test.assert(file.exists(storeFilename), "Store file should exist");
 
-    loader = new test.makeSandboxedLoader();
+    loader = newLoader(test);
     ss = loader.require("simple-storage");
 
     let man = manager(loader);
@@ -283,19 +283,23 @@ function manager(loader) {
   return loader.sandboxes[uri].globalScope.manager;
 }
 
+function newLoader(test) {
+  return new test.makeSandboxedLoader({ globals: { packaging: packaging } });
+}
+
 function setGetRoot(test, val, compare) {
   test.waitUntilDone();
 
   compare = compare || function (a, b) a === b;
 
   // Load the module once, set a value.
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   manager(loader).jsonStore.onWrite.add(function () {
     test.assert(file.exists(storeFilename), "Store file should exist");
 
     // Load the module again and make sure the value stuck.
-    loader = new test.makeSandboxedLoader();
+    loader = newLoader(test);
     ss = loader.require("simple-storage");
     manager(loader).jsonStore.onWrite.add(function () {
       file.remove(storeFilename);
@@ -312,7 +316,7 @@ function setGetRoot(test, val, compare) {
 function setGetRootError(test, val, msg) {
   let pred = "storage must be one of the following types: " +
              "array, boolean, null, number, object, string";
-  let loader = new test.makeSandboxedLoader();
+  let loader = newLoader(test);
   let ss = loader.require("simple-storage");
   test.assertRaises(function () ss.storage = val, pred, msg);
   loader.unload();
