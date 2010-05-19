@@ -1,3 +1,6 @@
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 The `api-utils` module provides some helpers useful to Jetpack's high-level API
 implementations.
 
@@ -23,10 +26,16 @@ messages should be generated when clients make mistakes.  With the
 Functions
 ---------
 
-<code>apiUtils.**publicConstructor**(*privateConstructor*)</code>
-
-Returns a function *C* that creates instances of *`privateConstructor`*.  *C*
+<api name="publicConstructor">
+@method
+Returns a function *C* that creates an instance of `privateCtor`. *C*
 may be called with or without the `new` keyword.
+
+@returns {function}
+A function that makes new instances of privateCtor.
+
+@param [privateCtor] {constructor}
+</api>
 
 The prototype of each instance returned from *C* is *C*.`prototype`, and
 *C*.`prototype` is an object whose prototype is
@@ -38,62 +47,49 @@ Additionally, the constructor of each instance returned from *C* is *C*.
 Instances returned from *C* are automatically memory tracked using
 `memory.track` under the bin name *`privateConstructor`*`.name`.
 
-*Example*
+**Example**
 
     function MyObject() {}
     exports.MyObject = apiUtils.publicConstructor(MyObject);
 
-<code>apiUtils.**validateOptions**(*options*, *requirements*)</code>
-
-Returns a validated options dictionary given some requirements.  If any of the
+<api name="validateOptions">
+@method
+@returns {object}
+A validated options dictionary given some requirements. If any of the
 requirements are not met, an exception is thrown.
 
-*`options`* is an object, the options dictionary to validate.  It's not modified.
-If it's null or otherwise falsey, an empty object is assumed.
+@param [options] {object}
+The options dictionary to validate.  It's not modified. If it's null or
+otherwise falsey, an empty object is assumed.
 
-*`requirements`* is an object whose keys are the expected keys in *`options`*.
-Any key in *`options`* that is not present in *`requirements`* is ignored.  Each
-value in *`requirements`* is itself an object describing the requirements of its
-key.  There are four optional keys in this object:
+@param [requirements] {object}
+An object whose keys are the expected keys in *`options`*. Any key in
+*`options`* that is not present in *`requirements`* is ignored.  Each
+value in *`requirements`* is itself an object describing the requirements
+of its key.
 
-<table>
-  <tr>
-    <td><code>map</code></td>
-    <td>
-      A function that's passed the value of the key in
-      <em><code>options</code></em>.  <code>map</code>'s return value is taken
-      as the key's value in the final validated options, <code>is</code>, and
-      <code>ok</code>.  If <code>map</code> throws an exception it's caught and
-      discarded, and the key's value is its value in
-      <em><code>options</code></em>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>is</code></td>
-    <td>
-      An array containing any number of the <code>typeof</code> type names.  If
-      the key's value is none of these types, it fails validation.  Arrays and
-      null are identified by the special type names "array" and "null"; "object"
-      will not match either.  No type coercion is done.
-    </td>
-  </tr>
-  <tr>
-    <td><code>ok</code></td>
-    <td>
-      A function that's passed the key's value.  If it returns false, the value
-      fails validation.
-    </td>
-  </tr>
-  <tr>
-    <td><code>msg</code></td>
-    <td>
-      If the key's value fails validation, an exception is thrown.  This string
-      will be used as its message.  If undefined, a generic message is used,
-      unless <code>is</code> is defined, in which case the message will state
-      that the value needs to be one of the given types.
-    </td>
-  </tr>
-</table>
+@prop map {function}
+A function that's passed the value of the key in the *`options`*. `map`'s
+return value is taken as the key's value in the final validated options,
+`is`, and `ok`. If `map` throws an exception it is caught and discarded,
+and the key's value is its value in `options`.
+
+@prop is {array}
+An array containing the number of `typeof` type names. If the key's value is
+none of these types it fails validation. Arrays and nulls are identified by
+the special type names "array" and "null"; "object" will not match either.
+No type coercion is done.
+
+@prop ok {function}
+A function that is passed the key's value. If it returns false, the value
+fails validation.
+
+@prop msg {string}
+If the key's value fails validation, an exception is thrown. This string
+will be used as its message. If undefined, a generic message is used, unless
+`is` is defined, in which case the message will state that the value needs to
+be one of the given types.
+</api>
 
 `map`, `is`, and `ok` are used in that order.
 
@@ -102,7 +98,7 @@ are also in *`options`* and whose values are the corresponding return values of
 `map` or the corresponding values in *`options`*.  Note that any keys not shared
 by both *`requirements`* and *`options`* are not in the returned object.
 
-*Examples*
+**Examples**
 
 A typical use:
 
