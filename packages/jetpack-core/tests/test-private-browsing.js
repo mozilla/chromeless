@@ -39,12 +39,9 @@ let pb = require("private-browsing");
 
 let pbService;
 // Currently, only Firefox implements the private browsing service.
-try {
+if (require("xul-app").is("Firefox")) {
   pbService = Cc["@mozilla.org/privatebrowsing;1"].
               getService(Ci.nsIPrivateBrowsingService);
-}
-catch (e) {
-  // We don't need to do anything here.
 }
 
 if (pbService) {
