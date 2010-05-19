@@ -5,7 +5,8 @@ exports.test_replace = function(test) {
     const input = "Hello World";
     const output = m.replace_mom(input);
     test.assertEqual(output, "Hello Mom");
-    m.main(); // make sure it doesn't crash
+    var callbacks = {quit: function() {} };
+    m.main({}, callbacks); // make sure it doesn't crash
 }
 
 exports.test_id = function(test) {

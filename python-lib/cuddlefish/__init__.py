@@ -287,6 +287,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         print "Wrote %s." % filename
         return
 
+    target_cfg_json = None
     if not target_cfg:
         if not options.pkgdir:
             options.pkgdir = find_parent_package(os.getcwd())
@@ -300,6 +301,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             print "cannot find 'package.json' in %s." % options.pkgdir
             sys.exit(1)
 
+        target_cfg_json = os.path.join(options.pkgdir, 'package.json')
         target_cfg = packaging.get_config_in_dir(options.pkgdir)
 
     use_main = False
@@ -356,9 +358,22 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     # on absolute filesystem pathname, in the root directory
     # or something.
     if command == 'xpi':
-        import uuid
-        harness_guid = str(uuid.uuid4())
+        from cuddlefish.preflight import preflight_config
+        if target_cfg_json:
+            config_was_ok, modified = preflight_config(target_cfg,
+                                                       target_cfg_json)
+            if not config_was_ok:
+                if modified:
+                    # we need to re-read package.json . The safest approach
+                    # is to re-run the "cfx xpi" command.
+                    print "package.json modified: please re-run 'cfx xpi'"
+                else:
+                    print ("package.json needs modification: please update"
+                           " it and then re-run 'cfx xpi'")
+                sys.exit(1)
+        harness_guid = target_cfg.id
         unique_prefix = '%s-' % harness_guid
+
     else:
         if options.use_server:
             harness_guid = '2974c5b5-b671-46f8-a4bb-63c6eca6261b'

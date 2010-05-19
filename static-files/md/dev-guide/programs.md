@@ -100,8 +100,16 @@ Your program is packaged like any other extension for a Mozilla-based
 application, as a XPI file. The Jetpack SDK simplifies the packaging
 process by generating this file for you.
 
+<span class="aside"> Each Jetpack program (such as an add-on) gets a
+separate cryptographic keypair. Your program is signed by the private
+key, and the public key is used as the "ID". See
+[XPI Generation](#guide/xpi) for more details.</span>
+
 To package your program as a XPI, navigate to the root of your package
-directory in your shell and run `cfx xpi`. You should see a message:
+directory in your shell and run `cfx xpi`. The first time you do this,
+you'll see a message about generating a keypair and modifying your
+`package.json` to add an `id` field, asking you to run `cfx xpi` again.
+When you re-run it, you should see a message:
 
     Exporting extension to test.xpi.
 

@@ -38,10 +38,11 @@ called `package.json`. This file is also referred to as the
 * `license` - the name of the license as a String, with an optional
   URL in parentheses.
 
-* `id` - a globally unique identifier for the package, which is
-  usually either a String in the form of a GUID or an email
-  address. If the package is ever built as an XPI, this is used as the
-  extension's `em:id` element in its `install.rdf`.
+* `id` - a globally unique identifier for the package, a String
+  derived from the public half of a private/public keypair, generated
+  the first time you run `cfx xpi`. When the package is built as an
+  XPI, this is used as the extension's `em:id` element in its
+  `install.rdf`.
 
 * `version` - a String representing the version of the package. If the
   package is ever built as an XPI, this is used as the extension's

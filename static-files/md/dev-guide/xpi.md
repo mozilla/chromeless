@@ -135,4 +135,51 @@ In an actual XPI built by the SDK, the string `"GUID"` in these
 examples is a unique identifier that the SDK prepends to all
 `resource:` URIs to namespace the XPI's resources so they don't
 collide with anything else, including other extensions built by the
-SDK and containing the same packages.
+SDK and containing the same packages. This GUID is built from the
+"Jetpack ID", described below.
+
+The Program ID
+--------------
+
+Each jetpack-based program (including add-on) gets a unique identifier
+string, based upon a cryptographic keypair generated the first time you run
+`cfx xpi`. You keep the private key safe on your local computer. The public
+key is used as the "Program ID", and is written into the `package.json` file
+as the `id` key. Eventually, the generated XPI (or other distribution format)
+will be signed by the private key, so the browser (or other tools) can verify
+that the XPI was signed by the original author and not by someone else.
+
+This ID is used to index things like the `simple-storage` API, and is tracked
+by services like addons.mozilla.org to tell the difference between a new
+add-on and upgrades of an existing one. Addons can learn their ID by using
+the `require("self").id` call. The cryptographic properties of the keypair
+makes these IDs "unforgeable": no other add-on can successfully pretend to
+have your ID.
+
+When you run `cfx xpi` for the first time on a new add-on, your
+`package.json` will be examined for the presence of an `id` key. If missing,
+a new keypair will be generated for you: the public key will be written into
+`package.json`, and the private key will be saved in a file in
+`~/.jetpack/keys/` (or a similar place on windows). You will be asked to
+re-run the `cfx xpi` command so it can pick up the updated ID.
+
+The private key is very important! If you lose it, you will not be able to
+upgrade your add-on: you'll have to create a new add-on ID, and your users
+will have to manually uninstall the old one and install the new one. If
+somebody else gets a copy of your private key, they will be able to write
+add-ons that could displace your own.
+
+The add-on's private key needs to be available (in ~/.jetpack/keys/) on any
+computer that you use to build that add-on. When you copy the add-on source
+code to a new machine, you also need to copy the private key (`cfx xpi` will
+remind you of this). The best idea is to just copy the whole `~/.jetpack`
+directory to a USB flash drive that you can carry with you. It is not stored
+in your package source tree, so that you can show your code to somebody else
+without also giving them the ability to create forged upgrades for your
+add-on.
+
+If you start your add-on work by copying somebody else's source code, you'll
+need to remove their Program ID from the `package.json` file before you can
+build your own XPIs. Again, `cfx xpi` will remind you of this, and your
+options, when you attempt to build an XPI from a `package.json` that
+references a private key that you don't have in `~/.jetpack/keys/`.

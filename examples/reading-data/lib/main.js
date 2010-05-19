@@ -5,7 +5,7 @@ function replace_mom(html) {
 }
 exports.replace_mom = replace_mom;
 
-exports.main = function() {
+exports.main = function(options, callbacks) {
     console.log("My ID is " + self.id);
 
     var hello_html = self.data.load("sample.html");
@@ -19,4 +19,6 @@ exports.main = function() {
     var icon_url = self.data.url("mom.png");
     hello_html.replace("Mom", '<img source="'+icon_url+'">');
     //let p = new Panel(content: hello_html).show();
+
+    callbacks.quit();
 }
