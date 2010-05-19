@@ -279,8 +279,7 @@ exports.testUninstall = function (test) {
 
 
 function manager(loader) {
-  let uri = "resource://jetpack-core-jetpack-core-lib/simple-storage.js";
-  return loader.sandboxes[uri].globalScope.manager;
+  return loader.findSandboxForModule("simple-storage").globalScope.manager;
 }
 
 function newLoader(test) {

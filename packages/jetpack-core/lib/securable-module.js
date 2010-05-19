@@ -217,6 +217,18 @@
        };
      },
 
+     findSandboxForModule: function findSandboxForModule(module) {
+       var path = this.fs.resolveModule(null, module);
+       if (!path)
+         throw new Error('Module "' + module + '" not found');
+       if (!(path in this.sandboxes))
+         this.require(module);
+       if (!(path in this.sandboxes))
+         throw new Error('Internal error: path not in sandboxes: ' +
+                         path);
+       return this.sandboxes[path];
+     },
+
      require: function require(module) {
        return (this._makeRequire(null))(module);
      },

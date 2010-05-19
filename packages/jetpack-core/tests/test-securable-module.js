@@ -246,3 +246,22 @@
      }
    }
  })(this);
+
+exports.testFindSandboxForModule = function(test) {
+  var fs = {
+    resolveModule: function(base, path) {
+      test.assertEqual(base, null);
+      test.assertEqual(path, "foo");
+      return "/blarg/foo";
+    },
+    getFile: function(path) {
+      test.assertEqual(path, "/blarg/foo");
+      return {contents: "var baz = 1;"};
+    }
+  };
+
+  var sm = require("securable-module");
+  var loader = new sm.Loader({fs: fs});
+  var sandbox = loader.findSandboxForModule("foo");
+  test.assertEqual(sandbox.globalScope.baz, 1);
+};
