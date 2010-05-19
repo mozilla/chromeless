@@ -460,7 +460,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         manifest = gen_manifest(template_root_dir=app_extension_dir,
                                 target_cfg=target_cfg,
                                 default_id=identifier,
-                                update_url=options.update_url)
+                                update_url=options.update_url,
+                                bootstrap=True)
 
         if options.update_link:
             rdf_name = UPDATE_RDF_FILENAME % target_cfg.name
