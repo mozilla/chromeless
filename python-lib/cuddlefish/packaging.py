@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 import simplejson as json
 from cuddlefish.bunch import Bunch
@@ -12,6 +13,8 @@ DEFAULT_PROGRAM_MODULE = 'main'
 
 METADATA_PROPS = ['name', 'description', 'keywords', 'author',
                   'contributors', 'license', 'url']
+
+RESOURCE_HOSTNAME_RE = re.compile(r'^[a-z0-9_\-]+$')
 
 class Error(Exception):
     pass
@@ -32,6 +35,31 @@ class PackageNotFoundError(Error):
     def __str__(self):
         return "%s (%s)" % (self.missing_package, self.reason)
     
+def validate_resource_hostname(name):
+    """
+    Validates the given hostname for a resource: URI.
+
+    For more information, see:
+
+      https://bugzilla.mozilla.org/show_bug.cgi?id=566812#c13
+
+    Examples:
+
+      >>> validate_resource_hostname('blarg')
+
+      >>> validate_resource_hostname('BLARG')
+      Traceback (most recent call last):
+      ...
+      ValueError: invalid resource hostname: BLARG
+
+      >>> validate_resource_hostname('foo@bar')
+      Traceback (most recent call last):
+      ...
+      ValueError: invalid resource hostname: foo@bar
+    """
+
+    if not RESOURCE_HOSTNAME_RE.match(name):
+        raise ValueError('invalid resource hostname: %s' % name)
 
 def find_packages_with_module(pkg_cfg, name):
     # TODO: Make this support more than just top-level modules.
@@ -176,6 +204,8 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                               include_tests=True,
                               include_dep_tests=False,
                               default_loader=DEFAULT_LOADER):
+    validate_resource_hostname(prefix)
+
     build = Bunch(resources=Bunch(),
                   resourcePackages=Bunch(),
                   packageData=Bunch(),
@@ -193,6 +223,7 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
             for dirname in resolve_dirs(cfg, dirnames):
                 name = "-".join([prefix + cfg.name,
                                  os.path.basename(dirname)])
+                validate_resource_hostname(name)
                 if name in build.resources:
                     raise KeyError('resource already defined', name)
                 build.resourcePackages[name] = cfg.name
