@@ -104,6 +104,9 @@ function Widget(options) {
     }
   });
 
+  if (!(options.image || options.content))
+    throw new Error("No image or content property found. Widgets must have one or the other.");
+
   let self = this;
 
   this.__defineGetter__("label", function() options.label);

@@ -42,19 +42,29 @@ exports.testConstructor = function(test) {
       "The widget must have a non-empty label property.",
       "throws on empty label");
 
-    /*
-    // Test no content 
-    test.assertRaises(
-      function() widgets.Widget({label: "foo"}),
-      "The widget must have a non-empty content property.",
-      "throws on no content");
-
-    // Test empty content 
-    test.assertRaises(
-      function() widgets.Widget({label: "foo", content: ""}),
-      "The widget must have a non-empty content property.",
-      "throws on empty content");
-    */
+   // Test no content or image
+   test.assertRaises(
+     function() widgets.Widget({label: "foo"}),
+     "No image or content property found. Widgets must have one or the other.",
+     "throws on no content");
+ 
+   // Test empty content, no image
+   test.assertRaises(
+     function() widgets.Widget({label: "foo", content: ""}),
+     "No image or content property found. Widgets must have one or the other.",
+     "throws on empty content");
+ 
+   // Test empty image, no content 
+   test.assertRaises(
+     function() widgets.Widget({label: "foo", image: ""}),
+     "No image or content property found. Widgets must have one or the other.",
+     "throws on empty content");
+ 
+   // Test empty content, empty image 
+   test.assertRaises(
+     function() widgets.Widget({label: "foo", content: "", image: ""}),
+     "No image or content property found. Widgets must have one or the other.",
+     "throws on empty content");
 
     // Test adding same widget twice
     test.assertRaises(
