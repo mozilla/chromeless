@@ -371,8 +371,15 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                     print ("package.json needs modification: please update"
                            " it and then re-run 'cfx xpi'")
                 sys.exit(1)
-        harness_guid = target_cfg.id
-        unique_prefix = '%s-' % harness_guid
+        # if we make it this far, we have a JID
+        jid = target_cfg["id"]
+        assert not jid.endswith("@jetpack")
+        unique_prefix = '%s-' % jid # used for resource: URLs
+
+        # the harness_guid is used for an XPCOM class ID. We use the
+        # JetpackID for the add-on ID and the XPCOM contract ID.
+        import uuid
+        harness_guid = str(uuid.uuid4())
 
     else:
         if options.use_server:
@@ -380,8 +387,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         else:
             harness_guid = '6724fc1b-3ec4-40e2-8583-8061088b3185'
         unique_prefix = '%s-' % target
+        jid = harness_guid
 
-    identifier = target_cfg.get('id', '{%s}' % harness_guid)
+    assert not jid.endswith("@jetpack")
+    addon_id = jid + "@jetpack"
+    # the resource: URLs prefix is treated too much like a DNS hostname
+    unique_prefix = unique_prefix.lower()
+    assert "@" not in unique_prefix
+    assert "." not in unique_prefix
 
     timeout = None
     targets = [target]
@@ -395,7 +408,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     deps = packaging.get_deps_for_targets(pkg_cfg, targets)
     build = packaging.generate_build_for_target(
         pkg_cfg, target, deps,
-        prefix=unique_prefix,
+        prefix=unique_prefix,  # used to create resource: URLs
         include_dep_tests=options.dep_tests
         )
 
@@ -413,14 +426,13 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             dep_xpt_dirs.append(abspath)
     xpts = get_xpts(dep_xpt_dirs)
 
-    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' %
-                           identifier)
+    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % jid)
     harness_options = {
         'bootstrap': {
             'contractID': harness_contract_id,
             'classID': '{%s}' % harness_guid
             },
-        'jetpackID': identifier,
+        'jetpackID': jid,
         }
 
     harness_options.update(build)
@@ -459,7 +471,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         manifest = gen_manifest(template_root_dir=app_extension_dir,
                                 target_cfg=target_cfg,
-                                default_id=identifier,
+                                addon_id=addon_id,
                                 update_url=options.update_url,
                                 bootstrap=True)
 

@@ -55,7 +55,8 @@ def build_xpi(template_root_dir, manifest, xpi_name,
                            if dirname not in IGNORED_DIRS]
     harness_options['resources'] = new_resources
 
-    open('.options.json', 'w').write(json.dumps(harness_options))
+    open('.options.json', 'w').write(json.dumps(harness_options, indent=1,
+                                                sort_keys=True))
     zf.write('.options.json', 'harness-options.json')
     os.remove('.options.json')
 

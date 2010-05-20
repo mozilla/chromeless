@@ -56,6 +56,17 @@ class Util(unittest.TestCase):
             cfg["name"] = "pretend name"
         return cfg
 
+    def parse(self, keydata):
+        fields = {}
+        fieldnames = []
+        for line in keydata.split("\n"):
+            if line.strip():
+                k,v = line.split(":", 1)
+                k = k.strip() ; v = v.strip()
+                fields[k] = v
+                fieldnames.append(k)
+        return fields, fieldnames
+
     def test_no_name(self):
         basedir = self.make_basedir()
         fn = os.path.join(basedir, "package.json")
@@ -79,16 +90,15 @@ class Util(unittest.TestCase):
         self.failUnless("id" in config)
         self.failUnlessEqual(out.getvalue().strip(),
                              "No 'id' in package.json: creating a new keypair for you.")
-        keyid = preflight.jid_to_keyid(str(config["id"]))
-        keyfile = os.path.join(keydir, keyid)
-        keydata = open(keyfile).read()
-        lines = keydata.split("\n")
-        self.failUnless(lines[0].startswith("private-key: private-jid0-"),
-                        lines[0])
-        self.failUnless("jid: "+config["id"] in lines)
-        self.failUnless("name: pretend name" in lines, lines)
+        jid = str(config["id"])
+        keyfile = os.path.join(keydir, jid)
+        fields, fieldnames = self.parse(open(keyfile).read())
+        self.failUnlessEqual(fieldnames[0], "private-key")
+        privkey = fields["private-key"]
+        self.failUnless(privkey.startswith("private-jid0-"), privkey)
+        self.failUnlessEqual(fields["jid"], jid)
+        self.failUnlessEqual(fields["name"], "pretend name")
         os.unlink(backup_fn)
-
 
         # just a name? we add the id
         config_orig = '{"name": "my-awesome-package"}'
@@ -108,16 +118,13 @@ class Util(unittest.TestCase):
         self.failUnless("id" in config)
         self.failUnlessEqual(out.getvalue().strip(),
                              "No 'id' in package.json: creating a new keypair for you.")
-        keyid = preflight.jid_to_keyid(str(config["id"]))
-        keyfile = os.path.join(keydir, keyid)
-        keydata = open(keyfile).read()
-        lines = keydata.split("\n")
-        self.failUnless(lines[0].startswith("private-key: private-jid0-"),
-                        lines[0])
-        self.failUnless("jid: "+config["id"] in lines)
-        self.failUnless("name: my-awesome-package" in lines)
-
         jid = str(config["id"])
+        keyfile = os.path.join(keydir, jid)
+        fields, fieldnames = self.parse(open(keyfile).read())
+        privkey = fields["private-key"]
+        self.failUnless(privkey.startswith("private-jid0-"), privkey)
+        self.failUnlessEqual(fields["jid"], jid)
+        self.failUnlessEqual(fields["name"], "my-awesome-package")
 
         # name and valid id? great! ship it!
         config2 = '{"name": "my-awesome-package", "id": "%s"}' % jid
@@ -144,7 +151,7 @@ class Util(unittest.TestCase):
         self.failUnlessEqual(config_was_ok, False)
         self.failUnlessEqual(modified, False)
         out = out.getvalue().strip()
-        self.failUnless("Your package.json says our Program ID is" in out, out)
+        self.failUnless("Your package.json says our ID is" in out, out)
         self.failUnless("But I don't have a corresponding private key in"
                         in out, out)
         self.failUnless("If you are the original developer" in out, out)

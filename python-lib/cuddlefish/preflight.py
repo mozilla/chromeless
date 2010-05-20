@@ -17,7 +17,7 @@ def remove_prefix(s, prefix, errormsg):
         raise ValueError(errormsg)
     return s[len(prefix):]
 
-def vk_to_keyid(vk):
+def vk_to_jid(vk):
     """Return 'jid0-XYZ', where 'XYZ' is a string that securely identifies
     a specific public key. To get a suitable add-on ID, append '@jetpack'
     to this string.
@@ -55,8 +55,8 @@ def vk_to_keyid(vk):
     jid = "jid0-" + s
     return jid
 
-def keyid_to_jid(keyid):
-    return keyid + "@jetpack"
+def jid_to_programid(jid):
+    return jid + "@jetpack"
 
 def create_key(keydir, name):
     # return jid
@@ -65,28 +65,28 @@ def create_key(keydir, name):
     sk_text = "private-jid0-%s" % my_b32encode(sk.to_string())
     vk = sk.get_verifying_key()
     vk_text = "public-jid0-%s" % my_b32encode(vk.to_string())
-    keyid = vk_to_keyid(vk)
-    jid = keyid + "@jetpack"
-    # save privkey to ~/.jetpack-keys/$id
-    f = open(os.path.join(keydir, keyid), "w")
+    jid = vk_to_jid(vk)
+    program_id = jid_to_programid(jid)
+    # save privkey to ~/.jetpack-keys/$jid
+    f = open(os.path.join(keydir, jid), "w")
     f.write("private-key: %s\n" % sk_text)
     f.write("public-key: %s\n" % vk_text)
     f.write("jid: %s\n" % jid)
+    f.write("program-id: %s\n" % program_id)
     f.write("name: %s\n" % name)
     f.close()
     return jid
 
-def jid_to_keyid(jid):
-    assert jid.endswith("@jetpack")
-    keyid = jid[:-len("@jetpack")]
-    return keyid
+def programid_to_jid(programid):
+    assert programid.endswith("@jetpack")
+    jid = programid[:-len("@jetpack")]
+    return jid
 
 def check_for_privkey(keydir, jid, stdout):
-    keyid = jid_to_keyid(jid)
-    keypath = os.path.join(keydir, keyid)
+    keypath = os.path.join(keydir, jid)
     if not os.path.isfile(keypath):
         msg = """\
-Your package.json says our Program ID is:
+Your package.json says our ID is:
   %(jid)s
 But I don't have a corresponding private key in:
   %(keypath)s
@@ -117,7 +117,7 @@ disassociate our new package from the old one.
     sk = SigningKey.from_string(my_b32decode(sk_s), curve=NIST256p)
     vk = sk.get_verifying_key()
 
-    jid_2 = keyid_to_jid(vk_to_keyid(vk))
+    jid_2 = vk_to_jid(vk)
     if jid_2 != jid:
         raise ValueError("invalid keydata: private-key in %s does not match"
                          " public key for %s" % (keypath, jid))

@@ -18,7 +18,7 @@ def get_configs(pkg_name):
         pkg_cfg=pkg_cfg,
         target=pkg_name,
         deps=deps,
-        prefix='GUID-'
+        prefix='guid-'
         )
     return Bunch(target_cfg=target_cfg, pkg_cfg=pkg_cfg, build=build)
 
