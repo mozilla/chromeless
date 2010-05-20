@@ -27,18 +27,20 @@ exist are also created.  `mkpath` can be called multiple times on the same path.
 
 Returns a byte stream providing access to the file at the given path.
 
-*`mode`* is an optional string describing the characteristics of the returned
-stream; currently only `"r"` and `"w"` are supported.  `"r"` opens the file in
-read-only mode and causes a `ByteReader` to be returned.  `"w"` opens the file
-in write-only mode and causes a `ByteWriter` to be returned.  If *`mode`* is
-not given, `"r"` is assumed.
+*`mode`* is an optional string, each character of which describes a
+characteristic of the returned stream.  If the string contains `"r"`, the file
+is opened in read-only mode.  `"w"` opens the file in write-only mode.  `"b"`
+opens the file in binary mode.  If `"b"` is not present, the file is opened in
+text mode, and its contents are assumed to be UTF-8.  If *`mode`* is not given,
+`"r"` is assumed, and the file is opened in read-only text mode.
 
 Opened files should always be closed after use by calling `close` on the
 returned stream.
 
 <code>file.**read**(*path*)</code>
 
-Returns a string containing the entire contents of the file at the given path.
+Opens the file at the given path in text mode and returns a string containing
+its entire contents.
 
 <code>file.**remove**(*path*)</code>
 
