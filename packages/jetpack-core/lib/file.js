@@ -191,7 +191,8 @@ exports.rmdir = function rmdir(path) {
   try {
     file.remove(false);
   }
-  catch (err if err.result === Cr.NS_ERROR_FILE_DIR_NOT_EMPTY) {
+  catch (err) {
+    // Bug 566950 explains why we're not catching a specific exception here.
     throw new Error("The directory is not empty: " + path);
   }
 };
