@@ -10,7 +10,9 @@ exports.test_replace = function(test) {
 }
 
 exports.test_id = function(test) {
-    test.assertEqual(self.id, "MyUniqueID");
+    /* the id is randomly generated during tests, so we cannot compare it
+       against anything in particular. Just assert that it is not empty. */
+    test.assert(self.id.length > 0);
     test.assertEqual(self.data.url("sample.html"),
                      "resource://reading-data-reading-data-data/sample.html");
 }
