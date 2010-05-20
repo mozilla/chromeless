@@ -28,6 +28,7 @@ Global Commands:
   docs       - view web-based documentation
   sdocs      - export static documentation
   testcfx    - test the cfx tool
+  testex     - test all example code
   testall    - test all packages
   develop    - run development server
 """
@@ -174,6 +175,16 @@ def get_xpts(component_dirs):
         files.extend(xpts)
     return files
 
+def test_all_examples(env_root, defaults):
+    examples_dir = os.path.join(env_root, "examples")
+    for dirname in os.listdir(examples_dir):
+        print "Testing %s..." % dirname
+        run(arguments=["test",
+                       "--pkgdir",
+                       os.path.join(examples_dir, dirname)],
+            defaults=defaults,
+            env_root=env_root)
+
 def test_all_packages(env_root, defaults):
     deps = []
     target_cfg = Bunch(name = "testall", dependencies = deps)
@@ -258,6 +269,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         return
     if command == "testall":
         test_all_packages(env_root, defaults=options.__dict__)
+        return
+    elif command == "testex":
+        test_all_examples(env_root, defaults=options.__dict__)
         return
     elif command == "testcfx":
         import cuddlefish.tests
