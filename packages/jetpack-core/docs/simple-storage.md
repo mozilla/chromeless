@@ -1,6 +1,6 @@
 The `simple-storage` module lets you easily and persistently store data across
-browser restarts.  If you're familiar with [DOM storage][] on the Web, it's kind
-of like that, but for extensions.
+application restarts.  If you're familiar with [DOM storage][] on the Web, it's
+kind of like that, but for extensions.
 
 [DOM storage]: https://developer.mozilla.org/en/DOM/Storage
 
