@@ -27,10 +27,13 @@ Package-Specific Commands:
 Global Commands:
   docs       - view web-based documentation
   sdocs      - export static documentation
+  develop    - run development server
+
+Global Tests:
   testcfx    - test the cfx tool
   testex     - test all example code
-  testall    - test all packages
-  develop    - run development server
+  testpkgs   - test all installed packages
+  testall    - test whole environment
 """
 
 parser_options = {
@@ -175,6 +178,33 @@ def get_xpts(component_dirs):
         files.extend(xpts)
     return files
 
+def test_all(env_root, defaults):
+    retval = 0
+
+    print "Testing cfx..."
+    result = test_cfx(defaults['verbose'])
+    if result.failures or result.errors:
+        retval = -1
+
+    try:
+        test_all_examples(env_root, defaults)
+    except SystemExit, e:
+        retval = e
+
+    try:
+        test_all_packages(env_root, defaults)
+    except SystemExit, e:
+        retval = e
+
+    if retval:
+        print "Some tests were unsuccessful."
+
+    sys.exit(retval)
+
+def test_cfx(verbose):
+    import cuddlefish.tests
+    return cuddlefish.tests.run(verbose)
+
 def test_all_examples(env_root, defaults):
     examples_dir = os.path.join(env_root, "examples")
     for dirname in os.listdir(examples_dir):
@@ -187,10 +217,10 @@ def test_all_examples(env_root, defaults):
 
 def test_all_packages(env_root, defaults):
     deps = []
-    target_cfg = Bunch(name = "testall", dependencies = deps)
+    target_cfg = Bunch(name = "testpkgs", dependencies = deps)
     pkg_cfg = packaging.build_config(env_root, target_cfg)
     for name in pkg_cfg.packages:
-        if name != "testall":
+        if name != "testpkgs":
             deps.append(name)
     print "Testing all available packages: %s." % (", ".join(deps))
     run(arguments=["test", "--dep-tests"],
@@ -267,16 +297,17 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command == "develop":
         run_development_mode(env_root, defaults=options.__dict__)
         return
-    if command == "testall":
+    if command == "testpkgs":
         test_all_packages(env_root, defaults=options.__dict__)
         return
     elif command == "testex":
         test_all_examples(env_root, defaults=options.__dict__)
         return
+    elif command == "testall":
+        test_all(env_root, defaults=options.__dict__)
+        return
     elif command == "testcfx":
-        import cuddlefish.tests
-
-        cuddlefish.tests.run(options.verbose)
+        test_cfx(options.verbose)
         return
     elif command == "docs":
         import subprocess

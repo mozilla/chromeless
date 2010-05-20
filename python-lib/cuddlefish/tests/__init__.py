@@ -55,7 +55,7 @@ def run(verbose=False):
     tests = get_tests()
     suite = unittest.TestSuite(tests)
     runner = unittest.TextTestRunner(verbosity=verbosity)
-    runner.run(suite)
+    return runner.run(suite)
 
 if __name__ == '__main__':
     run()
