@@ -341,7 +341,9 @@ function openBrowserWindow(callback) {
         window.removeEventListener("load", onLoad, true);
         var browsers = window.document.getElementsByTagName("tabbrowser");
         try {
-          callback(window, browsers[0]);
+          require("timer").setTimeout(function () {
+            callback(window, browsers[0]);
+          }, 50);
         } catch (e) { console.exception(e); }
       }
     }
