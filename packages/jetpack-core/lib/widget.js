@@ -249,9 +249,6 @@ BrowserWindow.prototype = {
     // Add keyboard shortcut for toggling UI.
     this._addKeyCommands();
 
-    // Add main UI
-    this._createContainer();
-
     // Hook up a window-scope function for toggling the UI.
     let self = this;
     this.window.toggleJetpackWidgets = function() self._onToggleUI();
@@ -289,20 +286,27 @@ BrowserWindow.prototype = {
     this.cmd = cmd;
   },
 
-  // Create the widget container in the main application
-  // UI, if not already created.
-  _createContainer: function BW__createContainer() {
-    var container = this.doc.getElementById("jetpack-widget-panel");
-    if (!container) {
+  get container() {
+    if (!this._container) {
+      let container = this.doc.getElementById("jetpack-widget-panel");
       container = this.doc.createElement("hbox");
       container.id = "jetpack-widget-panel";
       container.hidden = require("preferences-service").get("jetpack.jetpack-core.widget.barIsHidden", PREF_DEFAULT_ADDON_BAR_HIDDEN);
       container.setAttribute("style", "height: 100px; padding: 0px; margin: 0px;");
 
-      var statusbar = this.doc.getElementById("status-bar");
+      let statusbar = this.doc.getElementById("status-bar");
       statusbar.parentNode.insertBefore(container, statusbar);
+      this._container = container;
     }
-    this.container = container;
+    return this._container;
+  },
+
+  // Remove container
+  _removeContainer: function BW__removeContainer() {
+    if (this._container) {
+      this._container.parentNode.removeChild(this._container);
+      this._container = null;
+    }
   },
 
   // Update the visibility state for the addon bar.
@@ -477,7 +481,7 @@ BrowserWindow.prototype = {
 
   // Removes an array of items from the window.
   removeItems: function BW_removeItems(removedItems) {
-    removedItems.forEach(function(removedItem, i) {
+    removedItems.forEach(function(removedItem) {
       let entry = this._items.filter(function(entry) entry.widget == removedItem).shift();
       if (entry) {
         // remove event listeners
@@ -486,16 +490,22 @@ BrowserWindow.prototype = {
         // remove dom node
         this.container.removeChild(entry.node);
         // remove entry
-        this._items.splice(i, 1);
+        this._items.splice(this._items.indexOf(entry), 1);
       }
     }, this);
+
+    // remove the add-on bar if no more items
+    if (this._items.length == 0)
+      this._removeContainer();
   },
 
   // Undoes all modifications to the window. The BrowserWindow
   // should not be used afterward.
   destroy: function BW_destroy() {
     // Remove all items from the panel
-    this._items.forEach(function(item) this.removeItems([item.widget]), this);
+    let len = this._items.length;
+    for (let i = 0; i < len; i++)
+      this.removeItems([this._items[0].widget]);
 
     const prefsvc = Cc["@mozilla.org/preferences-service;1"].
                     getService(Ci.nsIPrefBranch2);

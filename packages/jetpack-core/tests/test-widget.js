@@ -10,12 +10,9 @@ exports.testConstructor = function(test) {
 
     let doc = browserWindow.document;
 
-    let container = doc.getElementById("jetpack-widget-panel");
-    test.assert(container, "found the container in the current window");
-    test.assertEqual(container.tagName, "hbox", "found the container in the current window");
-
-    function widgetCount() container.childNodes.length;
-    function widgetNode(index) container.childNodes[index];
+    function container() doc.getElementById("jetpack-widget-panel");
+    function widgetCount() container() ? container().childNodes.length : 0;
+    function widgetNode(index) container() ? container().childNodes[index] : null;
 
     // Test basic add/remove
     let w = widgets.Widget({ label: "foo", content: "bar" });
@@ -42,29 +39,29 @@ exports.testConstructor = function(test) {
       "The widget must have a non-empty label property.",
       "throws on empty label");
 
-   // Test no content or image
-   test.assertRaises(
-     function() widgets.Widget({label: "foo"}),
-     "No image or content property found. Widgets must have one or the other.",
-     "throws on no content");
+    // Test no content or image
+    test.assertRaises(
+      function() widgets.Widget({label: "foo"}),
+      "No image or content property found. Widgets must have one or the other.",
+      "throws on no content");
  
-   // Test empty content, no image
-   test.assertRaises(
-     function() widgets.Widget({label: "foo", content: ""}),
-     "No image or content property found. Widgets must have one or the other.",
-     "throws on empty content");
+    // Test empty content, no image
+    test.assertRaises(
+      function() widgets.Widget({label: "foo", content: ""}),
+      "No image or content property found. Widgets must have one or the other.",
+      "throws on empty content");
  
-   // Test empty image, no content 
-   test.assertRaises(
-     function() widgets.Widget({label: "foo", image: ""}),
-     "No image or content property found. Widgets must have one or the other.",
-     "throws on empty content");
+    // Test empty image, no content 
+    test.assertRaises(
+      function() widgets.Widget({label: "foo", image: ""}),
+      "No image or content property found. Widgets must have one or the other.",
+      "throws on empty content");
  
-   // Test empty content, empty image 
-   test.assertRaises(
-     function() widgets.Widget({label: "foo", content: "", image: ""}),
-     "No image or content property found. Widgets must have one or the other.",
-     "throws on empty content");
+    // Test empty content, empty image 
+    test.assertRaises(
+      function() widgets.Widget({label: "foo", content: "", image: ""}),
+      "No image or content property found. Widgets must have one or the other.",
+      "throws on empty content");
 
     // Test adding same widget twice
     test.assertRaises(
@@ -250,11 +247,8 @@ exports.testConstructor = function(test) {
     tests.push(function() {
       openBrowserWindow(function(browserWindow) {
         let doc = browserWindow.document;
-        let container = doc.getElementById("jetpack-widget-panel");
-        test.assert(container, "found the container in the second window");
-        test.assertEqual(container.tagName, "hbox", "found the container in the second window");
-
-        function widgetCount2() container.childNodes.length;
+        function container() doc.getElementById("jetpack-widget-panel");
+        function widgetCount2() container() ? container().childNodes.length : 0;
 
         let w1 = widgets.Widget({label: "first widget", content: "first content"});
         testSingleWidget(w1);
