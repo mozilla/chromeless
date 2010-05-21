@@ -293,8 +293,13 @@ let manager = {
     if (this.unotif && typeof(this.unotif.unload) === "function")
       this.unotif.unload();
 
+    // self.id is a JID.  The extension manager API speaks in add-on IDs, and
+    // since we're talking to the extension manager API, that's what we need
+    // here.  The IDs of Jetpack-based add-ons are JID@jetpack.  See bug 567293.
+    let addonId = jpSelf.id + "@jetpack";
+
     const self = this;
-    this.unotif = new ctor(jpSelf.id, {
+    this.unotif = new ctor(addonId, {
       onUninstalling: function () self.jsonStore.purgeOnUnload = true,
       onCancelled: function () self.jsonStore.purgeOnUnload = false
     });
