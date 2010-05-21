@@ -182,28 +182,33 @@ def test_all(env_root, defaults):
     retval = 0
 
     print "Testing cfx..."
-    result = test_cfx(defaults['verbose'])
+    result = test_cfx(env_root, defaults['verbose'])
     if result.failures or result.errors:
         retval = -1
 
     try:
         test_all_examples(env_root, defaults)
     except SystemExit, e:
-        retval = e
+        retval = e.code
 
     try:
         test_all_packages(env_root, defaults)
     except SystemExit, e:
-        retval = e
+        retval = e.code
 
     if retval:
         print "Some tests were unsuccessful."
 
     sys.exit(retval)
 
-def test_cfx(verbose):
+def test_cfx(env_root, verbose):
     import cuddlefish.tests
-    return cuddlefish.tests.run(verbose)
+
+    olddir = os.getcwd()
+    os.chdir(env_root)
+    retval = cuddlefish.tests.run(verbose)
+    os.chdir(olddir)
+    return retval
 
 def test_all_examples(env_root, defaults):
     examples_dir = os.path.join(env_root, "examples")
@@ -307,7 +312,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         test_all(env_root, defaults=options.__dict__)
         return
     elif command == "testcfx":
-        test_cfx(options.verbose)
+        test_cfx(env_root, options.verbose)
         return
     elif command == "docs":
         import subprocess
