@@ -411,6 +411,8 @@ BrowserWindow.prototype = {
 
   // Set up all supported events for a widget.
   addEventHandlers: function BW_addEventHandlers(item) {
+    let contentType = this.getContentType(item.widget);
+
     // Given an event type (eg: load) return the
     // handler name (eg: onLoad).
     function getHandlerForType(type) {
@@ -421,46 +423,35 @@ BrowserWindow.prototype = {
       return null;
     }
 
-    // For ignoring about:blank load events
-    function loadURIIsMatch(loadedURI, widget) {
-      const ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
-      let targetURI = ios.newURI(loadedURI, null, null);
-      let widgetURL = widget.content ? widget.content :
-                      require("self").data.url(widget.image);
-      let widgetURI = ios.newURI(widgetURL, null, null);
-      return targetURI.equals(widgetURI);
+    // Detect if document consists of a single image.
+    function isImageDoc(doc) {
+      return doc.body.childNodes.length == 1 &&
+             doc.body.firstElementChild &&
+             doc.body.firstElementChild.tagName == "IMG";
     }
 
     // Make modifications required for nice default presentation.
     function modifyStyle(doc) {
       // TODO: special-casing of images will be replaced, probably by an
       // image-specific extension of the URI object.
-      if (doc.body.childNodes.length == 1 &&
-          doc.body.firstElementChild &&
-          doc.body.firstElementChild.tagName == "IMG") {
+      if (contentType == CONTENT_TYPE_IMAGE || isImageDoc(doc)) {
         // Force image content to size.
         // Add-on authors must size their images correctly.
         doc.body.firstElementChild.style.width = "24px";
         doc.body.firstElementChild.style.height = "24px";
-
       }
 
       // Allow all content to fill the box by default.
       doc.body.style.margin = "0";
     }
 
-    let contentType = this.getContentType(item.widget);
-
     let listener = function(e) {
-      // URL-specific handling
-      if (e.type == "load" &&
-          contentType == CONTENT_TYPE_URI || contentType == CONTENT_TYPE_IMAGE) {
-        if (!loadURIIsMatch(e.target.location, item.widget))
-          return;
-      }
+      // Ignore about:blank loads
+      if (e.type == "load" && e.target.location == "about:blank")
+        return;
 
       // Content-specific document modifications
-      if (e.target.body)
+      if (e.type == "load")
         modifyStyle(e.target);
 
       // Proxy event to the widget's listeners

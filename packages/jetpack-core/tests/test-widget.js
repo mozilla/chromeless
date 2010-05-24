@@ -168,9 +168,9 @@ exports.testConstructor = function(test) {
       }
     })));
 
-    // event: onclick
+    // event: onclick + content
     tests.push(function() testSingleWidget(widgets.Widget({
-      label: "click test widget",
+      label: "click test widget - content",
       content: "<div id='me'>foo</div>",
       onReady: function(e) {
         if (e.target.defaultView)
@@ -183,9 +183,9 @@ exports.testConstructor = function(test) {
       }
     })));
 
-    // event: onmouseover
+    // event: onmouseover + content
     tests.push(function() testSingleWidget(widgets.Widget({
-      label: "mouseover test widget",
+      label: "mouseover test widget - content",
       content: "<div id='me'>foo</div>",
       onReady: function(e) {
         sendMouseEvent({type:"mouseover"}, "me", e.target.defaultView);
@@ -197,12 +197,55 @@ exports.testConstructor = function(test) {
       }
     })));
 
-    // event: onmouseout
+    // event: onmouseout + content
     tests.push(function() testSingleWidget(widgets.Widget({
-      label: "mouseout test widget",
+      label: "mouseout test widget - content",
       content: "<div id='me'>foo</div>",
       onReady: function(e) {
         sendMouseEvent({type:"mouseout"}, "me", e.target.defaultView);
+      },
+      onMouseout: function(e) {
+        test.pass("onMouseout called");
+        widgets.remove(this);
+        doneTest();
+      }
+    })));
+
+    // event: onclick + image
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "click test widget - image",
+      image: require("self").data.url("moz_favicon.ico"),
+      onLoad: function(e) {
+        if (e.target.defaultView)
+          sendMouseEvent({type:"click"}, null, e.target.defaultView);
+      },
+      onClick: function(e) {
+        test.pass("onClick called");
+        widgets.remove(this);
+        doneTest();
+      }
+    })));
+
+    // event: onmouseover + image
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "mouseover test widget - image",
+      image: require("self").data.url("moz_favicon.ico"),
+      onLoad: function(e) {
+        sendMouseEvent({type:"mouseover"}, null, e.target.defaultView);
+      },
+      onMouseover: function(e) {
+        test.pass("onMouseover called");
+        widgets.remove(this);
+        doneTest();
+      }
+    })));
+
+    // event: onmouseout + image 
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "mouseout test widget - image",
+      image: require("self").data.url("moz_favicon.ico"),
+      onLoad: function(e) {
+        sendMouseEvent({type:"mouseout"}, null, e.target.defaultView);
       },
       onMouseout: function(e) {
         test.pass("onMouseout called");
@@ -324,7 +367,9 @@ function sendMouseEvent(aEvent, aTarget, aWindow) {
                        ctrlKeyArg, altKeyArg, shiftKeyArg, metaKeyArg,
                        buttonArg, relatedTargetArg);
 
-  aWindow.document.getElementById(aTarget).dispatchEvent(event);
+  var target = aTarget ? aWindow.document.getElementById(aTarget) :
+                         aWindow.document;
+  target.dispatchEvent(event);
 }
 
 // Utility function to open a new browser window.
