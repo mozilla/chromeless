@@ -28,24 +28,24 @@ Functions
 
 <api name="publicConstructor">
 @method
-Returns a function *C* that creates an instance of `privateCtor`. *C*
+Returns a function *C* that creates an instance of `privateConstructor`. *C*
 may be called with or without the `new` keyword.
 
 @returns {function}
-A function that makes new instances of privateCtor.
+A function that makes new instances of `privateConstructor`.
 
-@param [privateCtor] {constructor}
+@param privateConstructor {constructor}
 </api>
 
 The prototype of each instance returned from *C* is *C*.`prototype`, and
 *C*.`prototype` is an object whose prototype is
-*`privateConstructor`*`.prototype`.  Instances returned from *C* are therefore
-instances of both *C* and *`privateConstructor`*.
+`privateConstructor.prototype`.  Instances returned from *C* are therefore
+instances of both *C* and `privateConstructor`.
 
 Additionally, the constructor of each instance returned from *C* is *C*.
 
 Instances returned from *C* are automatically memory tracked using
-`memory.track` under the bin name *`privateConstructor`*`.name`.
+`memory.track` under the bin name `privateConstructor.name`.
 
 **Example**
 
@@ -58,33 +58,33 @@ Instances returned from *C* are automatically memory tracked using
 A validated options dictionary given some requirements. If any of the
 requirements are not met, an exception is thrown.
 
-@param [options] {object}
+@param options {object}
 The options dictionary to validate.  It's not modified. If it's null or
 otherwise falsey, an empty object is assumed.
 
-@param [requirements] {object}
-An object whose keys are the expected keys in *`options`*. Any key in
-*`options`* that is not present in *`requirements`* is ignored.  Each
-value in *`requirements`* is itself an object describing the requirements
-of its key.
+@param requirements {object}
+An object whose keys are the expected keys in `options`. Any key in
+`options` that is not present in `requirements` is ignored.  Each
+value in `requirements` is itself an object describing the requirements
+of its key.  The keys of that object are the following, and each is optional:
 
-@prop map {function}
-A function that's passed the value of the key in the *`options`*. `map`'s
+@prop [map] {function}
+A function that's passed the value of the key in the `options`. `map`'s
 return value is taken as the key's value in the final validated options,
 `is`, and `ok`. If `map` throws an exception it is caught and discarded,
 and the key's value is its value in `options`.
 
-@prop is {array}
+@prop [is] {array}
 An array containing the number of `typeof` type names. If the key's value is
 none of these types it fails validation. Arrays and nulls are identified by
 the special type names "array" and "null"; "object" will not match either.
 No type coercion is done.
 
-@prop ok {function}
+@prop [ok] {function}
 A function that is passed the key's value. If it returns false, the value
 fails validation.
 
-@prop msg {string}
+@prop [msg] {string}
 If the key's value fails validation, an exception is thrown. This string
 will be used as its message. If undefined, a generic message is used, unless
 `is` is defined, in which case the message will state that the value needs to
@@ -93,10 +93,10 @@ be one of the given types.
 
 `map`, `is`, and `ok` are used in that order.
 
-The return value is an object whose keys are those keys in *`requirements`* that
-are also in *`options`* and whose values are the corresponding return values of
-`map` or the corresponding values in *`options`*.  Note that any keys not shared
-by both *`requirements`* and *`options`* are not in the returned object.
+The return value is an object whose keys are those keys in `requirements` that
+are also in `options` and whose values are the corresponding return values of
+`map` or the corresponding values in `options`.  Note that any keys not shared
+by both `requirements` and `options` are not in the returned object.
 
 **Examples**
 
