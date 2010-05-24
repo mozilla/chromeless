@@ -28,10 +28,6 @@ visibility.
 
 ## TODO
 
-P1 (0.4, before landing)
-* write test for keyboard shortcut, bar toggling
-* write test for multiple window support: updating/adding/removing
-
 Future (0.5 and beyond)
 * URL ctor, content frames
 * fix image special-casing, IMG ctor
@@ -149,14 +145,14 @@ const widgets = require("widget");
 // A basic click-able image widget.
 widgets.add(widgets.Widget({
   label: "Widget with an image and a click handler",
-  content: "http://www.google.com/favicon.ico",
+  image: "http://www.google.com/favicon.ico",
   onClick: function(e) e.view.content.location = "http://www.google.com"
 }));
 
 // A widget that changes display on mouseover.
 widgets.add(widgets.Widget({
   label: "Widget with changing image on mouseover",
-  content: "http://www.yahoo.com/favicon.ico",
+  image: "http://www.yahoo.com/favicon.ico",
   onMouseover: function(e) {
     e.target.src = "http://www.bing.com/favicon.ico";
   },

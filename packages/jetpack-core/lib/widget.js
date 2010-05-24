@@ -402,7 +402,8 @@ BrowserWindow.prototype = {
         break;
       case CONTENT_TYPE_IMAGE:
         let imageURL = item.widget.image;
-        iframe.setAttribute("src", imageURL);
+        iframe.setAttribute("src", "data:text/html,<html><body><img src='" +
+                                   encodeURI(imageURL) + "'></body></html>");
         break;
       default:
         throw new Error("The widget's type cannot be determined.");
