@@ -441,6 +441,10 @@ BrowserWindow.prototype = {
     }
 
     let listener = function(e) {
+      // Ignore event firings that target the iframe
+      if (e.target == item.node.firstElementChild)
+        return;
+
       // Ignore about:blank loads
       if (e.type == "load" && e.target.location == "about:blank")
         return;
