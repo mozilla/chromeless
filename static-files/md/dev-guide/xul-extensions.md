@@ -9,7 +9,8 @@ We assume you have already completed the [Getting Started](#guide/getting-starte
 [Packaging](#guide/packaging), and [Programs](#guide/programs) steps of the
 main tutorial. You should have a package called "my-first-package" (including a
 `package.json` manifest) and modules named "my-module" and "main".
-You have used `cfx run` to run the program.
+You have used `cfx run` to run the program, which creates a
+[keypair](#guide/xpi) for you.
 
 Let's now use `cfx` to run Firefox with your extension.
 
@@ -59,16 +60,20 @@ Loading modules from extension's code
 To load modules we'll need to get the harness XPCOM service provided by
 Jetpack. This service has contract ID 
 `@mozilla.org/harness-service;1?id=<package id>`, where *&lt;package-id>*
-is a random GUID if not specified explicitly.
+is the programs "JID", found in `package.json` as the `id` key.
 
 <span class="aside">
-The specified ID will also be used as `em:id` in `install.rdf` when building an XPI
-with `cfx xpi`.
+The specified ID will also be used as `em:id` in `install.rdf` when building
+an XPI with `cfx xpi`, but with a `@jetpack` suffix to fulfill the rules of
+add-on identifiers.
 </span>
-Edit `package.json` to specify the `id`:
+
+The first time you invoke `cfx xpi` or `cfx run`, the `cfx` tool will modify
+your `package.json` (if necessary) provide you with an `id` value. The result
+will look something like this:
 
     {
-      "id": "test@example.com",
+      "id": "jid0-i6WjYzrJ0UFR0pPPM7Znl3BvYbk",
       // other properties here
     }
 
@@ -76,7 +81,7 @@ Now we can use CommonJS modules from regular extension code using this code:
 
     function loadJetpackModule(module) {
       return Components.classes[
-        "@mozilla.org/harness-service;1?id=test@example.com"].
+        "@mozilla.org/harness-service;1?id="jid0-i6WjYzrJ0UFR0pPPM7Znl3BvYbk"].
         getService().wrappedJSObject.loader.require(module);
     }
     alert(loadJetpackModule("my-module").add(1, 3)); // alerts 4!

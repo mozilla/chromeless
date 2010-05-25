@@ -407,7 +407,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     # TODO: Consider keeping a cache of dynamic UUIDs, based
     # on absolute filesystem pathname, in the root directory
     # or something.
-    if command == 'xpi':
+    if command in ('xpi', 'run'):
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
             config_was_ok, modified = preflight_config(target_cfg,
@@ -415,11 +415,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             if not config_was_ok:
                 if modified:
                     # we need to re-read package.json . The safest approach
-                    # is to re-run the "cfx xpi" command.
-                    print "package.json modified: please re-run 'cfx xpi'"
+                    # is to re-run the "cfx xpi"/"cfx run" command.
+                    print ("package.json modified: please re-run 'cfx %s'" %
+                           command)
                 else:
                     print ("package.json needs modification: please update"
-                           " it and then re-run 'cfx xpi'")
+                           " it and then re-run 'cfx %s'" % command)
                 sys.exit(1)
         # if we make it this far, we have a JID
         jid = target_cfg["id"]
