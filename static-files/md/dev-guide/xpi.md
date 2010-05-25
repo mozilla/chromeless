@@ -83,59 +83,60 @@ auto-generated files:
     >>> document_dir('xpi-output')
     install.rdf:
       <RDF><!-- Extension metadata is here. --></RDF>
-    <BLANKLINE>
     components/harness.js:
       // This file contains XPCOM code that bootstraps a
       // Jetpack-based extension by loading its harness-options.json,
       // registering all its resource directories, executing its loader,
       // and then executing its main module's main() function.
+    resources/guid-aardvark-lib/:
     <BLANKLINE>
     resources/guid-aardvark-lib/main.js:
       exports.main = function(options, callbacks) {
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
       };
+    resources/guid-barbeque-lib/:
     <BLANKLINE>
     resources/guid-barbeque-lib/bar-module.js:
       exports.add = function add(a, b) {
         return a + b;
       };
+    resources/guid-jetpack-core-lib/:
     <BLANKLINE>
     resources/guid-jetpack-core-lib/loader.js:
       // This module will be imported by the XPCOM harness/boostrapper
       // via Components.utils.import() and is responsible for creating a
       // CommonJS module loader.
-    <BLANKLINE>
     harness-options.json:
-    {
-     "loader": "resource://guid-jetpack-core-lib/loader.js",
-     "main": "main",
-     "packageData": {},
-     "resourcePackages": {
-      "guid-aardvark-lib": "aardvark",
-      "guid-barbeque-lib": "barbeque",
-      "guid-jetpack-core-lib": "jetpack-core"
-     },
-     "resources": {
-      "guid-aardvark-lib": [
-       "resources",
-       "guid-aardvark-lib"
-      ],
-      "guid-barbeque-lib": [
-       "resources",
-       "guid-barbeque-lib"
-      ],
-      "guid-jetpack-core-lib": [
-       "resources",
-       "guid-jetpack-core-lib"
-      ]
-     },
-     "rootPaths": [
-      "resource://guid-jetpack-core-lib/",
-      "resource://guid-barbeque-lib/",
-      "resource://guid-aardvark-lib/"
-     ]
-    }
+      {
+       "loader": "resource://guid-jetpack-core-lib/loader.js",
+       "main": "main",
+       "packageData": {},
+       "resourcePackages": {
+        "guid-aardvark-lib": "aardvark",
+        "guid-barbeque-lib": "barbeque",
+        "guid-jetpack-core-lib": "jetpack-core"
+       },
+       "resources": {
+        "guid-aardvark-lib": [
+         "resources",
+         "guid-aardvark-lib"
+        ],
+        "guid-barbeque-lib": [
+         "resources",
+         "guid-barbeque-lib"
+        ],
+        "guid-jetpack-core-lib": [
+         "resources",
+         "guid-jetpack-core-lib"
+        ]
+       },
+       "rootPaths": [
+        "resource://guid-jetpack-core-lib/",
+        "resource://guid-barbeque-lib/",
+        "resource://guid-aardvark-lib/"
+       ]
+      }
 
 It can be observed from the listing above that the `barbeque` package's `lib`
 directory will be mapped to `resource://guid-barbeque-lib/` when the XPI is
