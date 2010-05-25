@@ -311,11 +311,39 @@ exports.testConstructor = function(test) {
       });
     });
 
-    // TODO test the visibility pref and keyboard shortcut
+    // test the visibility pref and keyboard shortcut
     tests.push(function() {
+      // Test hide/show the widget bar
+      function toggleUI() {
+        let keyEvent = doc.createEvent("KeyEvents");
+        let ctrlKey = false, metaKey = false, shiftKey = true, altKey = false, charCode = keyEvent.DOM_VK_U, keyCode = 0;
+        if(/^Mac/.test(browserWindow.navigator.platform))
+          metaKey = true;
+        else
+          ctrlKey = true;
+        keyEvent.initKeyEvent("keypress", true, true, browserWindow, ctrlKey, altKey, shiftKey, metaKey, keyCode, charCode);
+        doc.dispatchEvent(keyEvent);
+      }
+
+      // Get the value of the UI visibility pref
+      function prefVal() require("preferences-service").get("jetpack.jetpack-core.widget.barIsHidden");
+
+      test.assert(!container(), "UI does not exist when no widgets");
+      let w = widgets.Widget({label: "foo", content: "bar"});
+      widgets.add(w);
+      test.assert(container(), "UI exists when widgets are added");
+      test.assertEqual(container().hidden, false, "UI is visible by default");
+      toggleUI(); 
+      test.assertEqual(prefVal(), true, "pref set to hide after toggle");
+      test.assertEqual(container().hidden, true, "keyboard shortcut hides UI when visible");
+      toggleUI(); 
+      test.assertEqual(prefVal(), false, "pref set to show after another toggle");
+      test.assertEqual(container().hidden, false, "keyboard shortcut shows UI when hidden");
+      widgets.remove(w);
       doneTest();
     });
 
+    // kick off test execution
     doneTest();
   });
 };

@@ -246,12 +246,8 @@ BrowserWindow.prototype = {
     // }
     this._items = [];
 
-    // Add keyboard shortcut for toggling UI.
-    this._addKeyCommands();
-
-    // Hook up a window-scope function for toggling the UI.
-    let self = this;
-    this.window.toggleJetpackWidgets = function() self._onToggleUI();
+    // Add keypress listener
+    this.window.addEventListener("keypress", this, false);
 
     // Hook up pref observer for UI visibility state.
     const prefsvc = Cc["@mozilla.org/preferences-service;1"].
@@ -259,31 +255,29 @@ BrowserWindow.prototype = {
     prefsvc.addObserver(PREF_ADDON_BAR_HIDDEN, this, false);
   },
 
+  // nsIObserver
   observe: function BW_observe(s, t, d) {
     let val = prefs.get(PREF_ADDON_BAR_HIDDEN, PREF_DEFAULT_ADDON_BAR_HIDDEN);
     this.container.hidden = !!val;
   },
 
-  _addKeyCommands: function BW__addKeyCommands() {
-    let key = this.doc.getElementById("jetpack-widget-key");
-    if (!key) {
-      let key = this.doc.createElement("key");
-      key.id = "jetpack-widget-key";
-      key.setAttribute("key", "u");
-      key.setAttribute("modifiers", "accel,shift");
-      key.setAttribute("command", "jetpack-widget-cmd");
-      this.doc.getElementById("mainKeyset").appendChild(key);
+  // nsIDOMEventListener
+  handleEvent: function BW_handleEvent(aEvent) {
+    switch (aEvent.type) {
+      case "keypress":
+        this._onKeyPress(aEvent);
+        break;
     }
-    this.key = key;
-    
-    let cmd = this.doc.getElementById("jetpack-widget-cmd");
-    if (!cmd) {
-      let cmd = this.doc.createElement("command");
-      cmd.id = "jetpack-widget-cmd";
-      cmd.setAttribute("oncommand", "window.toggleJetpackWidgets();");
-      this.doc.getElementById("mainCommandSet").appendChild(cmd);
-    }
-    this.cmd = cmd;
+  },
+
+  _onKeyPress: function BW__onKeyPress(aEvent) {
+    let accelKey = /^Mac/.test(this.window.navigator.platform) ?
+                   aEvent.metaKey : aEvent.ctrlKey;
+    let nonAccelKey = /^Mac/.test(this.window.navigator.platform) ?
+                            aEvent.ctrlKey : aEvent.metaKey;
+    if (aEvent.which == aEvent.DOM_VK_U && aEvent.shiftKey &&
+        accelKey && !nonAccelKey && !aEvent.altKey)
+      this._onToggleUI();
   },
 
   get container() {
@@ -503,7 +497,7 @@ BrowserWindow.prototype = {
                     getService(Ci.nsIPrefBranch2);
     prefsvc.removeObserver(PREF_ADDON_BAR_HIDDEN, this);
 
-    this.window.toggleJetpackWidgets = null;
+    this.window.removeEventListener("keypress", this, false);
   }
 };
 
