@@ -44,6 +44,9 @@ def build_xpi(template_root_dir, manifest, xpi_name,
         base_arcpath = os.path.join('resources', resource)
         new_resources[resource] = ['resources', resource]
         abs_dirname = harness_options['resources'][resource]
+        # Always write the directory, even if it contains no files,
+        # since the harness will try to access it.
+        zf.writestr(zipfile.ZipInfo(base_arcpath + "/"), "")
         for dirpath, dirnames, filenames in os.walk(abs_dirname):
             goodfiles = list(filter_filenames(filenames))
             for filename in goodfiles:
