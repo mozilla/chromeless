@@ -110,6 +110,7 @@ exports.publicConstructor = function publicConstructor(privateCtor) {
 exports.validateOptions = function validateOptions(options, requirements) {
   options = options || {};
   let validatedOptions = {};
+  let mapThrew = false;
 
   for (let [key, req] in Iterator(requirements)) {
     let [optsVal, keyInOpts] = (key in options) ?
@@ -119,7 +120,9 @@ exports.validateOptions = function validateOptions(options, requirements) {
       try {
         optsVal = req.map(optsVal);
       }
-      catch (err) {}
+      catch (err) {
+        mapThrew = true;
+      }
     }
     if (req.is) {
       // Sanity check the caller's type names.
@@ -135,7 +138,7 @@ exports.validateOptions = function validateOptions(options, requirements) {
     if (req.ok && !req.ok(optsVal))
       throw requirementError(key, req);
 
-    if (keyInOpts)
+    if (keyInOpts || (req.map && !mapThrew))
       validatedOptions[key] = optsVal;
   }
 

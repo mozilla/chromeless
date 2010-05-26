@@ -193,6 +193,22 @@ exports.testValidateOptionsErrorMsg = function (test) {
   );
 };
 
+exports.testValidateMapWithMissingKey = function (test) {
+  let val = apiUtils.validateOptions({ }, {
+    foo: {
+      map: function (v) v || "bar"
+    }
+  });
+  assertObjsEqual(test, val, { foo: "bar" });
+
+  val = apiUtils.validateOptions({ }, {
+    foo: {
+      map: function (v) { throw "bar" }
+    }
+  });
+  assertObjsEqual(test, val, { });
+}
+
 function assertObjsEqual(test, obj1, obj2) {
   var items = 0;
   for (let [key, val] in Iterator(obj1)) {
