@@ -29,6 +29,7 @@ visibility.
 ## TODO
 
 Future (0.5 and beyond)
+
 * URL ctor, content frames
 * fix image special-casing, IMG ctor
 * add `unbind` support to event handlers
@@ -140,56 +141,56 @@ Removes a widget from the bar.
 
 ## Examples ##
 
-const widgets = require("widget");
+    const widgets = require("widget");
 
-// A basic click-able image widget.
-widgets.add(widgets.Widget({
-  label: "Widget with an image and a click handler",
-  image: "http://www.google.com/favicon.ico",
-  onClick: function(e) e.view.content.location = "http://www.google.com"
-}));
+    // A basic click-able image widget.
+    widgets.add(widgets.Widget({
+      label: "Widget with an image and a click handler",
+      image: "http://www.google.com/favicon.ico",
+      onClick: function(e) e.view.content.location = "http://www.google.com"
+    }));
 
-// A widget that changes display on mouseover.
-widgets.add(widgets.Widget({
-  label: "Widget with changing image on mouseover",
-  image: "http://www.yahoo.com/favicon.ico",
-  onMouseover: function(e) {
-    e.target.src = "http://www.bing.com/favicon.ico";
-  },
-  onMouseout: function(e) {
-    e.target.src = this.content;
-  }
-}));
+    // A widget that changes display on mouseover.
+    widgets.add(widgets.Widget({
+      label: "Widget with changing image on mouseover",
+      image: "http://www.yahoo.com/favicon.ico",
+      onMouseover: function(e) {
+        e.target.src = "http://www.bing.com/favicon.ico";
+      },
+      onMouseout: function(e) {
+        e.target.src = this.content;
+      }
+    }));
 
-// A widget that updates content on a timer.
-widgets.add(widgets.Widget({
-  label: "Widget that updates content on a timer",
-  content: "0",
-  onReady: function(e) {
-    if (!this.timer) {
-      var self = this;
-      this.timer = require("timer").setInterval(function() {
-        self.content++;
-      }, 2000);
-    }
-  }
-}));
+    // A widget that updates content on a timer.
+    widgets.add(widgets.Widget({
+      label: "Widget that updates content on a timer",
+      content: "0",
+      onReady: function(e) {
+        if (!this.timer) {
+          var self = this;
+          this.timer = require("timer").setInterval(function() {
+            self.content++;
+          }, 2000);
+        }
+      }
+    }));
 
-// A widget that loads a random Flickr photo every 5 minutes.
-widgets.add(widgets.Widget({
-  label: "Random Flickr Photo Widget",
-  content: "http://www.flickr.com/explore/",
-  onReady: function(e) {
-    var imgNode = e.target.querySelector(".pc_img");
-    this.content = imgNode.src;
-  },
-  onLoad: function(e) {
-    var self = this;
-    require("timer").setTimeout(function() {
-      self.content = "http://www.flickr.com/explore/";
-    }, (5 * 60 * 1000));
-  },
-  onClick: function(e) {
-    e.view.content.location = this.content
-  }
-}));
+    // A widget that loads a random Flickr photo every 5 minutes.
+    widgets.add(widgets.Widget({
+      label: "Random Flickr Photo Widget",
+      content: "http://www.flickr.com/explore/",
+      onReady: function(e) {
+        var imgNode = e.target.querySelector(".pc_img");
+        this.content = imgNode.src;
+      },
+      onLoad: function(e) {
+        var self = this;
+        require("timer").setTimeout(function() {
+          self.content = "http://www.flickr.com/explore/";
+        }, (5 * 60 * 1000));
+      },
+      onClick: function(e) {
+        e.view.content.location = this.content
+      }
+    }));
