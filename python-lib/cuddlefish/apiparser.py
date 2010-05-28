@@ -60,6 +60,12 @@ class APIParser:
         params = []
         tag, info, firstline = self._parseTypeLine(lines[0], lineno)
         api["type"] = tag
+
+        if tag == 'property':
+            if not 'type' in info:
+                raise ParseError("No type found for @property.", lineno)
+            api['property_type'] = info['type']
+
         # info is ignored
         currentAccumulator = Accumulator(api, firstline)
         for line in lines[1:]:

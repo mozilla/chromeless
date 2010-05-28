@@ -1,6 +1,28 @@
 (function(global){
 
+function _indefiniteArticle(str) {
+  // If str is upper case, assume it's an acronym and use "a".
+  return str.toUpperCase() === str ? "a" :
+         /^[aeiou]/i.test(str) ? "an" :
+         "a";
+}
+
 function _createTitle(doc){
+  return doc.type === "property" ?
+         _createPropertyTitle(doc) :
+         _createMethodTitle(doc);
+}
+
+function _createPropertyTitle(doc) {
+  var $title = $("<span class='name'/>").html(doc.name);
+  var text = " is " + _indefiniteArticle(doc.property_type) + " ";
+  var $isSpan = $("<span class='property_type'/>").text(text);
+  $("<span class='type'/>").text(doc.property_type).appendTo($isSpan);
+  $isSpan.appendTo($title);
+  return $title;
+}
+
+function _createMethodTitle(doc){
   var $title = $("<div class='name'/>")
     .html(doc.name + "(<span class='params'></span>)");
 
@@ -23,7 +45,8 @@ function _createTitle(doc){
   }
 
   if( doc.returns ){
-    var $ret = $("<span class='returns'/>").text(" returns ");
+    var text = " returns " + _indefiniteArticle(doc.returns.type) + " ";
+    var $ret = $("<span class='returns'/>").text(text);
     $("<span class='type'/>").text(doc.returns.type).appendTo($ret);
     $ret.appendTo($title);
   }

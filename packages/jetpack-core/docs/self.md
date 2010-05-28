@@ -3,7 +3,7 @@ jetpack program as a whole. It also provides the "add-on ID", a value which
 is unique for each add-on.
 
 <api name="id">
-@property
+@property {string}
 This property is a printable string that is unique for each add-on. It comes
 from the `id` property set in the `package.json` file in the main package
 (i.e. the package in which you run `cfx xpi`). While not generally of use to
@@ -19,7 +19,7 @@ The [Package Specification](#guide/package-spec) section explains the
 </span>
 
 <api name="data">
-@property
+@property {object}
 The `data` object is used to access data that was bundled with the add-on.
 This data lives in the main package's `data/` directory, immediately below
 the `package.json` file. All files in this directory will be copied into the

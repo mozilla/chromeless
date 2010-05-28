@@ -362,5 +362,33 @@ This is a function which does nothing in particular.
 '''
         self.assertRaises(ParseError, self.parse_text, md)
 
+    def test_property(self):
+        md = '''\
+<api name="test">
+@property {foo}
+An object property named test of type foo.
+</api>
+'''
+        parsed = self.parse_text(md)
+        self.assertEqual(parsed[0][0], 'api-json')
+        actual_api_json_obj = parsed[0][1]
+        expected_api_json_obj = {
+            'line_number': 1,
+            'property_type': 'foo',
+            'type': 'property',
+            'name': 'test',
+            'description': "An object property named test of type foo."
+            }
+        self.assertEqual(actual_api_json_obj, expected_api_json_obj)
+
+    def test_property_no_type(self):
+        md = '''\
+<api name="test">
+@property
+This property needs to specify a type!
+</api>
+'''
+        self.assertRaises(ParseError, self.parse_text, md)
+
 if __name__ == "__main__":
     unittest.main()

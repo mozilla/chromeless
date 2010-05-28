@@ -7,6 +7,8 @@
 .api>.name>.params .default:before{ content: "=";}
 .api>.name>.returns{ color: #555;}
 .api>.name>.returns .type{ color: #000;}
+.api>.name>.property_type{ color: #555;}
+.api>.name>.property_type .type{ color: #000;}
 
 .api>.params, .api>.returns{ background-color: #EEE; margin:3px; }
 .api>.params>.param, .api .prop{ padding: 3px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,.3);}
