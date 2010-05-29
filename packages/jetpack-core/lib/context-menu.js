@@ -852,14 +852,8 @@ function ContextMenuPopup(popupElt, window) {
   // Returns the OVERFLOW_THRESH_PREF pref value if it exists or
   // OVERFLOW_THRESH_DEFAULT if it doesn't.
   function overflowThreshold() {
-    try {
-      return Cc["@mozilla.org/preferences-service;1"].
-             getService(Ci.nsIPrefService).
-             getBranch(null).
-             getIntPref(OVERFLOW_THRESH_PREF);
-    }
-    catch (err) {}
-    return OVERFLOW_THRESH_DEFAULT;
+    let prefs = require("preferences-service");
+    return prefs.get(OVERFLOW_THRESH_PREF, OVERFLOW_THRESH_DEFAULT);
   }
 
   // Returns the <menuseparator>.
