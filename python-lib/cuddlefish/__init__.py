@@ -262,21 +262,21 @@ def get_config_args(name, env_root):
         if name == "default":
             return []
         else:
-            print "File does not exist: %s" % local_json
+            print >>sys.stderr, "File does not exist: %s" % local_json
             sys.exit(1)
     local_json = packaging.load_json_file(local_json)
     if 'configs' not in local_json:
-        print "'configs' key not found in local.json."
+        print >>sys.stderr, "'configs' key not found in local.json."
         sys.exit(1)
     if name not in local_json.configs:
         if name == "default":
             return []
         else:
-            print "No config found for '%s'." % name
+            print >>sys.stderr, "No config found for '%s'." % name
             sys.exit(1)
     config = local_json.configs[name]
     if type(config) != list:
-        print "Config for '%s' must be a list of strings." % name
+        print >>sys.stderr, "Config for '%s' must be a list of strings." % name
         sys.exit(1)
     return config
 
@@ -342,13 +342,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if not options.pkgdir:
             options.pkgdir = find_parent_package(os.getcwd())
             if not options.pkgdir:
-                print ("cannot find 'package.json' in the current "
-                       "directory or any parent.")
+                print >>sys.stderr, ("cannot find 'package.json' in the"
+                                     " current directory or any parent.")
                 sys.exit(1)
         else:
             options.pkgdir = os.path.abspath(options.pkgdir)
         if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
-            print "cannot find 'package.json' in %s." % options.pkgdir
+            print >>sys.stderr, ("cannot find 'package.json' in"
+                                 " %s." % options.pkgdir)
             sys.exit(1)
 
         target_cfg_json = os.path.join(options.pkgdir, 'package.json')
@@ -357,10 +358,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     use_main = False
     if command == "xpcom":
         if 'xpcom' not in target_cfg:
-            print "package.json does not have a 'xpcom' entry."
+            print >>sys.stderr, "package.json does not have a 'xpcom' entry."
             sys.exit(1)
         if not (options.moz_srcdir and options.moz_objdir):
-            print "srcdir and objdir not specified."
+            print >>sys.stderr, "srcdir and objdir not specified."
             sys.exit(1)
         options.moz_srcdir = os.path.expanduser(options.moz_srcdir)
         options.moz_objdir = os.path.expanduser(options.moz_objdir)
@@ -388,15 +389,15 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     elif command == "run":
         use_main = True
     else:
-        print "Unknown command: %s" % command
-        print "Try using '--help' for assistance."
+        print >>sys.stderr, "Unknown command: %s" % command
+        print >>sys.stderr, "Try using '--help' for assistance."
         sys.exit(1)
 
     if use_main and 'main' not in target_cfg:
         # If the user supplies a template dir, then the main
         # program may be contained in the template.
         if not options.templatedir:
-            print "package.json does not have a 'main' entry."
+            print >>sys.stderr, "package.json does not have a 'main' entry."
             sys.exit(1)
 
     if not pkg_cfg:
@@ -416,11 +417,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                 if modified:
                     # we need to re-read package.json . The safest approach
                     # is to re-run the "cfx xpi"/"cfx run" command.
-                    print ("package.json modified: please re-run 'cfx %s'" %
-                           command)
+                    print >>sys.stderr, ("package.json modified: please re-run"
+                                         " 'cfx %s'" % command)
                 else:
-                    print ("package.json needs modification: please update"
-                           " it and then re-run 'cfx %s'" % command)
+                    print >>sys.stderr, ("package.json needs modification:"
+                                         " please update it and then re-run"
+                                         " 'cfx %s'" % command)
                 sys.exit(1)
         # if we make it this far, we have a JID
         jid = target_cfg["id"]
@@ -561,7 +563,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              logfile=options.logfile)
         except Exception, e:
             if e.message.startswith(MOZRUNNER_BIN_NOT_FOUND):
-                print MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
+                print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
                 retval = -1
             else:
                 raise
