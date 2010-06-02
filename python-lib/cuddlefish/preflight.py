@@ -82,7 +82,7 @@ def programid_to_jid(programid):
     jid = programid[:-len("@jetpack")]
     return jid
 
-def check_for_privkey(keydir, jid, stdout):
+def check_for_privkey(keydir, jid, stderr):
     keypath = os.path.join(keydir, jid)
     if not os.path.isfile(keypath):
         msg = """\
@@ -100,7 +100,7 @@ package to use as a starting point, you need to remove the 'id' property
 from package.json, so that we can generate a new id and keypair. This will
 disassociate our new package from the old one.
 """
-        print >>stdout, msg % {"jid": jid, "keypath": keypath}
+        print >>stderr, msg % {"jid": jid, "keypath": keypath}
         return None
     keylines = open(keypath, "r").readlines()
     keydata = {}
@@ -128,7 +128,7 @@ disassociate our new package from the old one.
         raise ValueError("invalid keydata: public-key mismatch")
     return sk
 
-def preflight_config(target_cfg, filename, stdout=sys.stdout, keydir=None):
+def preflight_config(target_cfg, filename, stderr=sys.stderr, keydir=None):
     # check the top-level package.json for missing keys. We generate anything
     # that we can, and ask the user for the rest.
     if keydir is None:
@@ -139,7 +139,7 @@ def preflight_config(target_cfg, filename, stdout=sys.stdout, keydir=None):
     name = target_cfg["name"] # defaults to parentdir if not set
 
     if "id" not in config:
-        print >>stdout, ("No 'id' in package.json: creating a new"
+        print >>stderr, ("No 'id' in package.json: creating a new"
                          " keypair for you.")
         if not os.path.isdir(keydir):
             os.makedirs(keydir, 0700) # not world readable
@@ -152,7 +152,7 @@ def preflight_config(target_cfg, filename, stdout=sys.stdout, keydir=None):
     # copies an add-on from developer A and then (accidentally) tries to
     # publish it without replacing the JID
 
-    sk = check_for_privkey(keydir, config["id"], stdout)
+    sk = check_for_privkey(keydir, config["id"], stderr)
     if not sk:
         return False, False
 

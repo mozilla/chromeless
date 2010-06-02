@@ -78,7 +78,7 @@ class Util(unittest.TestCase):
         out = StringIO()
         cfg = self.get_cfg()
         config_was_ok, modified = preflight.preflight_config(cfg, fn,
-                                                             stdout=out,
+                                                             stderr=out,
                                                              keydir=keydir)
         self.failUnlessEqual(config_was_ok, False)
         self.failUnlessEqual(modified, True)
@@ -106,7 +106,7 @@ class Util(unittest.TestCase):
         out = StringIO()
         cfg = self.get_cfg()
         config_was_ok, modified = preflight.preflight_config(cfg, fn,
-                                                             stdout=out,
+                                                             stderr=out,
                                                              keydir=keydir)
         self.failUnlessEqual(config_was_ok, False)
         self.failUnlessEqual(modified, True)
@@ -132,7 +132,7 @@ class Util(unittest.TestCase):
         out = StringIO()
         cfg = self.get_cfg()
         config_was_ok, modified = preflight.preflight_config(cfg, fn,
-                                                             stdout=out,
+                                                             stderr=out,
                                                              keydir=keydir)
         self.failUnlessEqual(config_was_ok, True)
         self.failUnlessEqual(modified, False)
@@ -146,7 +146,7 @@ class Util(unittest.TestCase):
         out = StringIO()
         cfg = self.get_cfg()
         config_was_ok, modified = preflight.preflight_config(cfg, fn,
-                                                             stdout=out,
+                                                             stderr=out,
                                                              keydir=keydir)
         self.failUnlessEqual(config_was_ok, False)
         self.failUnlessEqual(modified, False)
