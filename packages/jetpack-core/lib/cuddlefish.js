@@ -109,7 +109,8 @@
      if (options.memory)
        globals.memory = options.memory;
 
-     var modules = {};
+     var modules = options.modules || {};
+
      var loaderOptions = {rootPath: options.rootPath,
                           rootPaths: options.rootPaths,
                           fs: options.fs,
