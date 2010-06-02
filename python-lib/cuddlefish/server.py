@@ -373,9 +373,13 @@ def generate_static_docs(env_root, tgz_filename):
         shutil.rmtree(staging_dir)
 
     # first, copy static-files
-    def _tempfiles(src, names):
-        return [n for n in names if n.endswith("~")]
-    shutil.copytree(server.root, staging_dir, ignore=_tempfiles)
+    shutil.copytree(server.root, staging_dir)
+    # py2.5 doesn't have ignore=, so we delete tempfiles afterwards. If we
+    # required >=py2.6, we could use ignore=shutil.ignore_patterns("*~")
+    for (dirpath, dirnames, filenames) in os.walk(staging_dir):
+        for n in filenames:
+            if n.endswith("~"):
+                os.unlink(os.path.join(dirpath, n))
 
     # then copy docs from each package
     os.mkdir(os.path.join(staging_dir, "packages"))
