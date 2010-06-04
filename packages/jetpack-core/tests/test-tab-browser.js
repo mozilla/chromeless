@@ -34,28 +34,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var tabBrowser = require("tab-browser");
 var timer = require("timer");
 
-// Arbitrary delay needed to avoid weird behavior.
-// TODO: We need to find all uses of this and replace them
-// with more deterministic solutions.
-var ARB_DELAY = 100;
-
-function openBrowserWindow(callback) {
-  var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-           .getService(Ci.nsIWindowWatcher);
-  var features = ["chrome"];
-  var window = ww.openWindow(null, "chrome://browser/content/browser.xul",
-                             null, features.join(","), null);
-
+// Utility function to open a new browser window.
+function openBrowserWindow(callback, url) {
+  let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+           .getService(Ci.nsIWindowMediator);
+  let win = wm.getMostRecentWindow("navigator:browser");
+  let window = win.openDialog("chrome://browser/content/browser.xul",
+                              "_blank", "chrome,all,dialog=no", url); 
   if (callback) {
     function onLoad(event) {
       if (event.target && event.target.defaultView == window) {
         window.removeEventListener("load", onLoad, true);
-        var browsers = window.document.getElementsByTagName("tabbrowser");
+        let browsers = window.document.getElementsByTagName("tabbrowser");
         try {
-          callback(window, browsers[0]);
+          require("timer").setTimeout(function () {
+            callback(window, browsers[0]);
+          }, 10);
         } catch (e) { console.exception(e); }
       }
     }
@@ -66,63 +62,60 @@ function openBrowserWindow(callback) {
   return window;
 }
 
-var tests = {};
+exports.testAddTab = function(test) {
+  openBrowserWindow(function(firstWindow, browser) {
+    const tabBrowser = require("tab-browser");
 
-tests.testAddTab = function(test) {
-  var firstUrl = "data:text/html,one";
-  var secondUrl = "data:text/html,two";
-
-  openBrowserWindow(
-    function(firstWindow, browser) {
-      var browsers = new tabBrowser.Tracker();
-      var browsersAtStart = browsers.length;
-      var state = "waiting for first tab";
-
-      var contentLoader = tabBrowser.whenContentLoaded(
-        function(window) {
-          if (window.location == firstUrl &&
-              state == "waiting for first tab") {
-            test.assertEqual(browsers.length,
-                             browsersAtStart,
-                             "no new window should be opened");
-            test.pass("calling w/ no options opens tab");
-            // No need to close the window, as we close
-            // the browser it's in later.
-            state = "waiting for second tab";
-            tabBrowser.addTab(secondUrl, {inNewWindow: true});
-          } else if (window.location == secondUrl &&
-                     state == "waiting for second tab") {
-            test.assertEqual(browsers.length,
-                             browsersAtStart+1,
-                             "inNewWindow should open new window");
-            test.pass("calling w/ inNewWindow opens tab");
-            window.close();
-            firstWindow.close();
-            state = "done";
-            timer.setTimeout(function() {
-                               browsers.unload();
-                               contentLoader.unload();
-                               test.done();
-                             }, ARB_DELAY);
-          } else
-            test.fail("unexpected window/state: " + window.location +
-                      " / " + state);
-        });
-      tabBrowser.addTab(firstUrl);
+    let cache = [];
+    let windowUtils = require("window-utils");
+    new windowUtils.WindowTracker({
+      onTrack: function(win) {
+        cache.push(win);
+      },
+      onUntrack: function(win) {
+        cache.splice(cache.indexOf(win), 1)
+      }
     });
+    let startWindowCount = cache.length;
 
-  test.waitUntilDone(5000);
+    // Test 1: add a tab
+    let firstUrl = "data:text/html,one";
+    tabBrowser.addTab(firstUrl, {
+      onLoad: function(e) {
+        test.assertEqual(cache[startWindowCount - 1].content.location, firstUrl, "URL of new tab in first window matches");
+
+        // Test 2: add a tab in a new window
+        let secondUrl = "data:text/html,two";
+        tabBrowser.addTab(secondUrl, {
+          inNewWindow: true,
+          onLoad: function(e) {
+            test.assertEqual(cache.length, startWindowCount + 1, "a new window was opened");
+            test.assertEqual(cache[startWindowCount].content.location, secondUrl, "URL of new tab in the new window matches");
+            timer.setTimeout(function() {
+            cache[startWindowCount].close();
+            cache[startWindowCount - 1].close();
+            test.done();
+            }, 1000);
+          }
+        });
+      }
+    });
+  });
+  test.waitUntilDone();
 };
 
-tests.testTrackerWithDelegate = function(test) {
+exports.testTrackerWithDelegate = function(test) {
+  const tabBrowser = require("tab-browser");
+
   var delegate = {
     state: "initializing",
     onTrack: function onTrack(browser) {
       if (this.state == "waiting for browser window to open") {
         this.state = "waiting for browser window to close";
         test.pass("Tracker detects new browser windows");
-        timer.setTimeout(function() { window.close(); },
-                         ARB_DELAY);
+        timer.setTimeout(function() {
+          browser.ownerDocument.defaultView.close();
+        }, 20);
       } else {
         if (this.state != "initializing")
           test.fail("bad state: " + this.state);
@@ -131,7 +124,8 @@ tests.testTrackerWithDelegate = function(test) {
     onUntrack: function onUntrack(browser) {
       if (this.state == "waiting for browser window to close") {
         this.state = "deinitializing";
-        timer.setTimeout(function() { tb.unload(); test.done(); }, 1);
+        tb.unload();
+        test.done();
       } else {
         if (this.state != "deinitializing")
           test.fail("bad state: " + this.state);
@@ -144,19 +138,19 @@ tests.testTrackerWithDelegate = function(test) {
 
   var window = openBrowserWindow();
 
-  test.waitUntilDone(5000);
+  test.waitUntilDone();
 };
 
-tests.testWhenContentLoaded = function(test) {
+exports.testWhenContentLoaded = function(test) {
+  const tabBrowser = require("tab-browser");
   var tracker = tabBrowser.whenContentLoaded(
     function(window) {
       var item = window.document.getElementById("foo");
       test.assertEqual(item.textContent, "bar",
                        "whenContentLoaded() works.");
       browserWindow.close();
-      timer.setTimeout(function() { tracker.unload();
-                                    test.done(); },
-                       ARB_DELAY);
+      tracker.unload();
+      test.done();
     });
 
   var browserWindow = openBrowserWindow(
@@ -165,10 +159,12 @@ tests.testWhenContentLoaded = function(test) {
       browser.addTab("data:text/html," + html);
     });
 
-  test.waitUntilDone(5000);
+  test.waitUntilDone();
 };
 
-tests.testTrackerWithoutDelegate = function(test) {
+exports.testTrackerWithoutDelegate = function(test) {
+  const tabBrowser = require("tab-browser");
+
   openBrowserWindow(
     function(window, newBrowser) {
       var tb = new tabBrowser.Tracker();
@@ -189,15 +185,70 @@ tests.testTrackerWithoutDelegate = function(test) {
                        "New browser should be in tracker.");
 
       timer.setTimeout(function() {
-                         window.close();
-                         tb.unload();
-                         test.done();
-                       }, ARB_DELAY);
+        window.close();
+        tb.unload();
+        test.done();
+      }, 10);
     });
 
-  test.waitUntilDone(5000);
+  test.waitUntilDone();
 };
 
-if (tabBrowser.isAppSupported())
-  for (let name in tests)
-    exports[name] = tests[name];
+exports.testTabTracker = function(test) {
+  const tabBrowser = require("tab-browser");
+
+  openBrowserWindow(function() {
+    var delegate = {
+      tracked: 0,
+      onTrack: function(tab) {
+        this.tracked++;
+        var tabBrowser = tab.ownerDocument.defaultView.gBrowser.getBrowserForTab(tab);
+        var doc = tabBrowser.contentDocument;
+        if (this.tracked == 5)
+          tab.ownerDocument.defaultView.close();
+      },
+      onUntrack: function(tab) {
+        this.tracked--;
+        if (this.tracked == 1)
+          test.done();
+      }
+    };
+
+    tabBrowser.TabTracker(delegate);
+
+    let tracked = delegate.tracked;
+    let url1 = "data:text/html,1";
+    tabBrowser.addTab(url1, {
+      onLoad: function(e) {
+        test.assertEqual(delegate.tracked, ++tracked, "first tab tracked matched count");
+        test.assertEqual(url1, e.target.defaultView.location, "open() load listener matched URLs")
+        tabBrowser.addTab("data:text/html,2");
+        test.assertEqual(delegate.tracked, ++tracked, "second tab tracked matched count");
+        tabBrowser.addTab("data:text/html,3");
+        test.assertEqual(delegate.tracked, ++tracked, "third tab tracked matched count");
+      }
+    });
+  });
+
+  test.waitUntilDone();
+};
+
+// If the module doesn't support the app we're being run in, require() will
+// throw.  In that case, remove all tests above from exports, and add one dummy
+// test that passes.
+try {
+  require("tab-browser");
+}
+catch (err) {
+  // This bug should be mentioned in the error message.
+  let bug = "https://bugzilla.mozilla.org/show_bug.cgi?id=560716";
+  if (err.message.indexOf(bug) < 0)
+    throw err;
+  for (let [prop, val] in Iterator(exports)) {
+    if (/^test/.test(prop) && typeof(val) === "function")
+      delete exports[prop];
+  }
+  exports.testAppNotSupported = function (test) {
+    test.pass("the tab-browser module does not support this application.");
+  };
+}

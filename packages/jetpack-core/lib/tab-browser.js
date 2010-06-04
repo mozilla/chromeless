@@ -34,8 +34,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var errors = require("errors");
-var windowUtils = require("window-utils");
+const errors = require("errors");
+const windowUtils = require("window-utils");
+const apiUtils = require("api-utils");
 
 // TODO: The hard-coding of app-specific info here isn't very nice;
 // ideally such app-specific info should be more decoupled, and the
@@ -43,44 +44,118 @@ var windowUtils = require("window-utils");
 // runtime, perhaps by inspecting supported packages (e.g. via
 // dynamically-named modules or package-defined extension points).
 
-exports.isAppSupported = function isAppSupported() {
-  return require("xul-app").isOneOf(["Firefox"]);
-};
+if (!require("xul-app").is("Firefox")) {
+  throw new Error([
+    "The tab-browser module currently supports only Firefox.  In the future ",
+    "it will support other applications. Please see ",
+    "https://bugzilla.mozilla.org/show_bug.cgi?id=560716 for more information."
+  ].join(""));
+}
 
-var addTab = exports.addTab = function addTab(url, options) {
+// Utility function to open a new browser window.
+function openBrowserWindow(callback, url) {
+  let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+           .getService(Ci.nsIWindowMediator);
+  let win = wm.getMostRecentWindow("navigator:browser");
+  let window = win.openDialog("chrome://browser/content/browser.xul",
+                              "_blank", "chrome,all,dialog=no", url); 
+  if (callback) {
+    function onLoad(event) {
+      if (event.target && event.target.defaultView == window) {
+        window.removeEventListener("load", onLoad, true);
+        let browsers = window.document.getElementsByTagName("tabbrowser");
+        try {
+          require("timer").setTimeout(function () {
+            callback(window, browsers[0]);
+          }, 10);
+        } catch (e) { console.exception(e); }
+      }
+    }
+
+    window.addEventListener("load", onLoad, true);
+  }
+
+  return window;
+}
+
+// Open a URL in a new tab
+exports.addTab = function addTab(url, options) {
+  if (!options)
+    options = {};
+  options.url = url;
+
+  options = apiUtils.validateOptions(options, {
+    // TODO: take URL object instead of string (bug 564524)
+    url: {
+      is: ["string"],
+      ok: function (v) !!v,
+      msg: "The url parameter must have be a non-empty string."
+    },
+    inNewWindow: {
+      is: ["undefined", "null", "boolean"]
+    },
+    // TODO: test this
+    openInBackground: {
+      is: ["undefined", "null", "boolean"]
+    },
+    onLoad: {
+      is: ["undefined", "null", "function"]
+    }
+  });
+
   var wm = Cc["@mozilla.org/appshell/window-mediator;1"]
            .getService(Ci.nsIWindowMediator);
   var win = wm.getMostRecentWindow("navigator:browser");
-  if (!options)
-    options = {};
   if (!win || options.inNewWindow) {
-    var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-             .getService(Ci.nsIWindowWatcher);
-    var urlStr = Cc["@mozilla.org/supports-string;1"]
-                 .createInstance(Ci.nsISupportsString);
-    urlStr.data = url;
-    ww.openWindow(null, "chrome://browser/content/browser.xul",
-                  null, "chrome", urlStr);
+    openBrowserWindow(function(e) {
+      require("errors").catchAndLog(function(e) options.onLoad(e))(e);
+    }, options.url);
   } else {
-    var browser = win.document.querySelector("tabbrowser");
-    browser.selectedTab = browser.addTab(url);
+    let tab = win.gBrowser.addTab(options.url);
+    if (!options.openInBackground)
+      win.gBrowser.selectedTab = tab;
+    if (options.onLoad) {
+      let tabBrowser = win.gBrowser.getBrowserForTab(tab);
+      tabBrowser.addEventListener("load", function(e) {
+        // remove event handler from addTab - don't want notified
+        // for subsequent loads in same tab.
+        tabBrowser.removeEventListener("load", arguments.callee, true);
+        require("errors").catchAndLog(function(e) options.onLoad(e))(e);
+      }, true);
+    }
   }
-};
+}
 
+// Iterate over a window's tabbrowsers
 function tabBrowserIterator(window) {
   var browsers = window.document.querySelectorAll("tabbrowser");
   for (var i = 0; i < browsers.length; i++)
     yield browsers[i];
 }
 
-var Tracker = exports.Tracker = function Tracker(delegate) {
+// Iterate over a window's tabbrowsers
+function tabBrowserIterator(window) {
+  var browsers = window.document.querySelectorAll("tabbrowser");
+  for (var i = 0; i < browsers.length; i++)
+    yield browsers[i];
+}
+
+// Iterate over a tabbrowser's tabs
+function tabIterator(tabbrowser) {
+  var tabs = tabbrowser.tabContainer;
+  for (var i = 0; i < tabs.children.length; i++) {
+    yield tabs.children[i];
+  }
+}
+
+// Tracker for all tabbrowsers across all windows
+function Tracker(delegate) {
   this._delegate = delegate;
   this._browsers = [];
   this._windowTracker = new windowUtils.WindowTracker(this);
 
   require("unload").ensure(this);
-};
-
+}
 Tracker.prototype = {
   __iterator__: function __iterator__() {
     for (var i = 0; i < this._browsers.length; i++)
@@ -115,6 +190,74 @@ Tracker.prototype = {
     this._windowTracker.unload();
   }
 };
+exports.Tracker = apiUtils.publicConstructor(Tracker);
+
+// Tracker for all tabs across all windows
+function TabTracker(delegate) {
+  this._delegate = delegate;
+  this._tabs = [];
+  this._tracker = new Tracker(this);
+  require("unload").ensure(this);
+}
+TabTracker.prototype = {
+  _TAB_EVENTS: ["TabOpen", "TabClose"],
+  _safeTrackTab: function safeTrackTab(tab) {
+    this._tabs.push(tab);
+    try {
+      this._delegate.onTrack(tab);
+    } catch (e) {
+      console.exception(e);
+    }
+  },
+  _safeUntrackTab: function safeUntrackTab(tab) {
+    var index = this._tabs.indexOf(tab);
+    if (index == -1)
+      console.error("internal error: tab not found");
+    this._tabs.splice(index, 1);
+    try {
+      this._delegate.onUntrack(tab);
+    } catch (e) {
+      console.exception(e);
+    }
+  },
+  handleEvent: function handleEvent(event) {
+    switch (event.type) {
+    case "TabOpen":
+      this._safeTrackTab(event.target);
+      break;
+    case "TabClose":
+      this._safeUntrackTab(event.target);
+      break;
+    default:
+      throw new Error("internal error: unknown event type: " +
+                      event.type);
+    }
+  },
+  onTrack: function onTrack(tabbrowser) {
+    for (tab in tabIterator(tabbrowser))
+      this._safeTrackTab(tab);
+    var self = this;
+    this._TAB_EVENTS.forEach(
+      function(eventName) {
+        tabbrowser.tabContainer.addEventListener(eventName, self, true);
+      });
+  },
+  onUntrack: function onUntrack(tabbrowser) {
+    for (tab in tabIterator(tabbrowser))
+      this._safeUntrackTab(tab);
+    var self = this;
+    this._TAB_EVENTS.forEach(
+      function(eventName) {
+        tabbrowser.tabContainer.removeEventListener(eventName, self, true);
+      });
+  },
+  unload: function unload() {
+    this._tracker.unload();
+  }
+};
+exports.TabTracker = apiUtils.publicConstructor(TabTracker);
+
+errors.catchAndLogProps(TabTracker.prototype, ["handleEvent"]);
 
 exports.whenContentLoaded = function whenContentLoaded(callback) {
   var cb = require("errors").catchAndLog(function eventHandler(event) {
