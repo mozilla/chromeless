@@ -311,12 +311,16 @@
      getFile: function getFile(path) {
        var channel = ios.newChannel(path, null, null);
        var iStream = channel.open();
-       var siStream = Cc['@mozilla.org/scriptableinputstream;1']
-                      .createInstance(Ci.nsIScriptableInputStream);
-       siStream.init(iStream);
-       var data = new String();
-       data += siStream.read(-1);
-       siStream.close();
+       var ciStream = Cc["@mozilla.org/intl/converter-input-stream;1"].
+                      createInstance(Ci.nsIConverterInputStream);
+       var bufLen = 0x8000;
+       ciStream.init(iStream, "UTF-8", bufLen,
+                     Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
+       var chunk = {};
+       var data = "";
+       while (ciStream.readString(bufLen, chunk) > 0)
+         data += chunk.value;
+       ciStream.close();
        iStream.close();
        return {contents: data};
      }

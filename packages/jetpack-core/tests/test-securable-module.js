@@ -265,3 +265,17 @@ exports.testFindSandboxForModule = function(test) {
   var sandbox = loader.findSandboxForModule("foo");
   test.assertEqual(sandbox.globalScope.baz, 1);
 };
+
+exports.testUtf8 = function (test) {
+  // This test ensures that the securable module loader assumes files are
+  // UTF-8-encoded and therefore decodes them properly when it reads them.
+  var str = "文字";
+
+  // Read this file into readStr, decoding from UTF-8.
+  var filename = require("url").toFilename(__url__);
+  var readStr = require("file").read(filename);
+
+  // If str is not in readStr, then str and therefore this file were not decoded
+  // from UTF-8 by the loader.
+  test.assert(readStr.indexOf(str) >= 0, "Loader should treat files as UTF-8");
+};
