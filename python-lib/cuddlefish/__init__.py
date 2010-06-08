@@ -59,6 +59,11 @@ parser_options = {
                                     "current directory"),
                               metavar=None,
                               default=None),
+    ("--keydir",): dict(dest="keydir",
+                        help=("directory holding private keys;"
+                              " default is ~/.jetpack/keys"),
+                        metavar=None,
+                        default=os.path.expanduser("~/.jetpack/keys")),
     }
 
 parser_groups = Bunch(
@@ -412,7 +417,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
             config_was_ok, modified = preflight_config(target_cfg,
-                                                       target_cfg_json)
+                                                       target_cfg_json,
+                                                       keydir=options.keydir)
             if not config_was_ok:
                 if modified:
                     # we need to re-read package.json . The safest approach
