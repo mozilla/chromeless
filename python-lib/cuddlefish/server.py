@@ -142,8 +142,11 @@ class Server(object):
             if os.path.isdir(fullpath):
                 data[filename] = self._get_files_in_dir(fullpath)
             else:
-                info = os.stat(fullpath)
-                data[filename] = dict(size=info.st_size)
+                try:
+                    info = os.stat(fullpath)
+                    data[filename] = dict(size=info.st_size)
+                except OSError:
+                    pass
         return data
 
     def build_pkg_index(self, pkg_cfg):
