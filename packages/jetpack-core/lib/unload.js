@@ -9,23 +9,23 @@ var when = exports.when = function when(observer) {
   observers.unshift(observer);
 };
 
-var send = exports.send = function send() {
+var send = exports.send = function send(reason) {
   observers.forEach(function (observer) {
-    observer();
+    observer(reason);
   });
 };
 
 var addMethod = exports.addMethod = function addMethod(obj, unloader) {
   var called = false;
 
-  function unloadWrapper() {
+  function unloadWrapper(reason) {
     if (!called) {
       called = true;
       var index = unloaders.indexOf(unloadWrapper);
       if (index == -1)
         throw new Error("internal error: unloader not found");
       unloaders.splice(index, 1);
-      unloader.apply(obj, []);
+      unloader.apply(obj, [reason]);
     }
   };
 
@@ -41,9 +41,9 @@ var ensure = exports.ensure = function ensure(obj) {
 };
 
 when(
-  function() {
+  function(reason) {
     unloaders.slice().forEach(
       function(unloadWrapper) {
-        unloadWrapper();
+        unloadWrapper(reason);
       });
   });

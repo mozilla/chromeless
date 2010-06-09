@@ -20,6 +20,7 @@
  * Contributor(s):
  *  Dan Mills <thunder@mozilla.com>
  *  Atul Varma <atul@mozilla.com>
+ *  Drew Willcoxon <adw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -104,6 +105,9 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
   // Whether we've been asked to quit or not yet.
   var isQuitting;
+
+  // The Jetpack program's main module.
+  var program;
 
   var ioService = Cc["@mozilla.org/network/io-service;1"]
                   .getService(Ci.nsIIOService);
@@ -206,6 +210,8 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
     jetpackID: options.jetpackID,
 
+    bundleID: options.bundleID,
+
     getURLForData: function getURLForData(path) {
       var traceback = this.__loader.require("traceback");
       var callerInfo = traceback.get().slice(-2)[0];
@@ -269,7 +275,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
       return options;
     },
 
-    load: function Harness_load() {
+    load: function Harness_load(reason) {
       if (isStarted)
         return;
 
@@ -278,7 +284,9 @@ function buildHarnessService(rootFileSpec, dump, logError,
       if (options.main) {
         try {
 
-          var program = this.loader.require(options.main);
+          if (reason)
+            options.loadReason = reason;
+          program = this.loader.require(options.main);
           program.main(options, {quit: quit, print: dump});
 
           // Send application readiness notification
@@ -292,7 +300,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
       }
     },
 
-    unload: function Harness_unload() {
+    unload: function Harness_unload(reason) {
       if (!isStarted)
         return;
 
@@ -300,8 +308,26 @@ function buildHarnessService(rootFileSpec, dump, logError,
       harnessService = null;
 
       obSvc.removeObserver(this, "quit-application-granted");
+
+      lifeCycleObserver192.unload();
+
+      // Notify the program of unload.
+      if (program) {
+        if (typeof(program.onUnload) === "function") {
+          try {
+            program.onUnload(reason);
+          }
+          catch (err) {
+            if (loader)
+              loader.console.exception(err);
+          }
+        }
+        program = null;
+      }
+
+      // Notify the loader of unload.
       if (loader) {
-        loader.unload();
+        loader.unload(reason);
         loader = null;
       }
 
@@ -327,15 +353,16 @@ function buildHarnessService(rootFileSpec, dump, logError,
             obSvc.addObserver(this, "final-ui-startup", true);
             break;
           }
+          lifeCycleObserver192.init(options.bundleID, logError);
           break;
         case "final-ui-startup": // XULRunner
         case "sessionstore-windows-restored": // Firefox
         case "xul-window-visible": // Thunderbird, Fennec
           obSvc.removeObserver(this, topic);
-          this.load();
+          this.load(lifeCycleObserver192.loadReason || "startup");
           break;
         case "quit-application-granted":
-          this.unload();
+          this.unload(lifeCycleObserver192.unloadReason || "shutdown");
           quit("OK");
           break;
         }
@@ -489,3 +516,88 @@ function NSGetModule(compMgr, fileSpec) {
                                            defaults.options);
   return XPCOMUtils.generateModule([HarnessService]);
 }
+
+// Program life-cycle events originate in bootstrap.js on 1.9.3.  But 1.9.2
+// doesn't use bootstrap.js, so we need to do a little extra work there to
+// determine the reasons for app startup and shutdown.  That's what this
+// singleton is for.  On 1.9.3 all methods are no-ops.
+var lifeCycleObserver192 = {
+  get loadReason() {
+    if (this._inited) {
+      // If you change these names, change them in bootstrap.js too.
+      if (this._addonIsNew)
+        return "install";
+      return "startup";
+    }
+    return undefined;
+  },
+
+  get unloadReason() {
+    if (this._inited) {
+      // If you change these names, change them in bootstrap.js too.
+      switch (this._emState) {
+      case "item-uninstalled":
+        return "uninstall";
+      case "item-disabled":
+        return "disable";
+      }
+      return "shutdown";
+    }
+    return undefined;
+  },
+
+  // This must be called first to initialize the singleton.  It must be called
+  // before profile-after-change.
+  init: function lifeCycleObserver192_init(bundleID, logError) {
+    // This component is present in 1.9.2 but not 1.9.3.
+    if ("@mozilla.org/extensions/manager;1" in Cc && !this._inited) {
+      // Need an event that's sent before the HarnessService is loaded but after
+      // the preferences service is available.  profile-after-change works.
+      obSvc.addObserver(this, "profile-after-change", true);
+      obSvc.addObserver(this, "em-action-requested", true);
+      this._bundleID = bundleID;
+      this._logError = logError;
+      this._inited = true;
+    }
+  },
+
+  unload: function lifeCycleObserver192_unload() {
+    if (this._inited && !this._unloaded) {
+      obSvc.removeObserver(this, "em-action-requested");
+      delete this._logError;
+      this._unloaded = true;
+    }
+  },
+
+  observe: function lifeCycleObserver192_observe(subj, topic, data) {
+    try {
+      if (topic === "profile-after-change") {
+        obSvc.removeObserver(this, topic);
+        try {
+          // This throws if the pref doesn't exist, which is the case when no
+          // new add-ons were installed.
+          var addonIdStr = Cc["@mozilla.org/preferences-service;1"].
+                           getService(Ci.nsIPrefBranch).
+                           getCharPref("extensions.newAddons");
+        }
+        catch (err) {}
+        if (addonIdStr) {
+          var addonIds = addonIdStr.split(",");
+          this._addonIsNew = addonIds.indexOf(this._bundleID) >= 0;
+        }
+      }
+      else if (topic === "em-action-requested") {
+        if (subj instanceof Ci.nsIUpdateItem && subj.id === this._bundleID)
+          this._emState = data;
+      }
+    }
+    catch (err) {
+      this._logError(err);
+    }
+  },
+
+  QueryInterface: XPCOMUtils.generateQI([
+    Ci.nsIObserver,
+    Ci.nsISupportsWeakReference,
+  ])
+};

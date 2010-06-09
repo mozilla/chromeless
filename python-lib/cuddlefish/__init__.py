@@ -449,7 +449,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         jid = harness_guid
 
     assert not jid.endswith("@jetpack")
-    addon_id = jid + "@jetpack"
+    bundle_id = jid + "@jetpack"
     # the resource: URLs prefix is treated too much like a DNS hostname
     unique_prefix = unique_prefix.lower()
     assert "@" not in unique_prefix
@@ -492,6 +492,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             'classID': '{%s}' % harness_guid
             },
         'jetpackID': jid,
+        'bundleID': bundle_id,
         }
 
     harness_options.update(build)
@@ -530,7 +531,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         manifest = gen_manifest(template_root_dir=app_extension_dir,
                                 target_cfg=target_cfg,
-                                addon_id=addon_id,
+                                bundle_id=bundle_id,
                                 update_url=options.update_url,
                                 bootstrap=True)
 

@@ -75,8 +75,8 @@
      }
    }
 
-   function unloadLoader() {
-     this.require("unload").send();
+   function unloadLoader(reason) {
+     this.require("unload").send(reason);
    }
 
    var cuddlefishSandboxFactory = {

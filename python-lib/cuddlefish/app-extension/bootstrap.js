@@ -20,6 +20,7 @@
  * Contributor(s):
  *  Dan Mills <thunder@mozilla.com>
  *  Atul Varma <atul@mozilla.com>
+ *  Drew Willcoxon <adw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -58,7 +59,7 @@ var manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
 // components/harness.js around so that versions of Gecko that don't
 // support rebootless addons can still work.)
 
-function setupHarness(installPath) {
+function setupHarness(installPath, loadReason) {
   var harnessJs = installPath.clone();
   harnessJs.append("components");
   harnessJs.append("harness.js");
@@ -67,7 +68,7 @@ function setupHarness(installPath) {
   var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
                .getService(Ci.mozIJSSubScriptLoader);
   loader.loadSubScript(path, harness);
-    
+
   var defaults = harness.getDefaults(installPath);
   var HarnessService = harness.buildHarnessService(
     installPath,
@@ -86,7 +87,7 @@ function setupHarness(installPath) {
                           proto.classDescription,
                           proto.contractID,
                           factory);
-  
+
   var harnessService = factory.createInstance(null, Ci.nsISupports);
   harnessService = harnessService.wrappedJSObject;
 
@@ -97,7 +98,33 @@ function setupHarness(installPath) {
     factory: factory
   };
 
-  harnessService.load();
+  harnessService.load(loadReason);
+}
+
+function reasonToString(reason) {
+  // If you change these names, change them in harness.js's lifeCycleObserver192
+  // too.
+  switch (reason) {
+  case ADDON_INSTALL:
+    return "install";
+  case ADDON_UNINSTALL:
+    return "uninstall";
+  case ADDON_ENABLE:
+    return "enable";
+  case ADDON_DISABLE:
+    return "disable";
+  case ADDON_UPGRADE:
+    return "upgrade";
+  case ADDON_DOWNGRADE:
+    return "downgrade";
+  // The startup and shutdown strings are also used outside of
+  // lifeCycleObserver192.
+  case APP_STARTUP:
+    return "startup";
+  case APP_SHUTDOWN:
+    return "shutdown";
+  }
+  return undefined;
 }
 
 function install(data, reason) {
@@ -108,14 +135,14 @@ function install(data, reason) {
 
 function startup(data, reason) {
   if (!gHarness)
-    setupHarness(data.installPath);
+    setupHarness(data.installPath, reasonToString(reason));
 }
 
 function shutdown(data, reason) {
   if (gHarness) {
     var harness = gHarness;
     gHarness = undefined;
-    harness.service.unload();
+    harness.service.unload(reasonToString(reason));
     manager.unregisterFactory(harness.classID, harness.factory);
   }
 }
