@@ -1,111 +1,93 @@
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 The `context-menu` module allows you to add and remove items to and from the
 browser's page context menu.
 
 ## Constructors ##
 
-<code>contextMenu.**Item**(*options*)</code>
-
-Creates a labeled menu item that can perform an action when clicked.  *options*
+<api name="Item">
+@constructor
+Creates a labeled menu item that can perform an action when clicked. `options`
 is an object with the following keys.  If any option is invalid, an exception is
 thrown.
+@param options {object}
+If any of the following options are invalid, an error is thrown.
+    @prop label {string} This is the item's label. It must either be a string or
+    an object that implements `toString()`.
 
-<table>
-  <tr>
-    <td><code>label</code></td>
-    <td>
-      The item's label.  It must be either a string or an object that implements
-      <code>toString()</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>data</code></td>
-    <td>
-      An optional arbitrary value to associate with the item.  It must be either
-      a string or an object that implements <code>toString()</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>onClick</code></td>
-    <td>
-      An optional function that will be called when the item is clicked.  It is
-      called as <code>onClick(<em>contextObj</em>, <em>item</em>)</code>.
-      <em>contextObj</em> is an object describing the context in which the menu
-      was invoked.  See Examining Contexts below for details.  <em>item</em>
-      is the item itself.
-    </td>
-  </tr>
-  <tr>
-    <td><code>context</code></td>
-    <td>
-      If the item is added to the top-level context menu, this specifies the
-      context under which the item will appear.  If undefined, the page context
-      is assumed.  See Specifying Contexts below for details.  It's ignored if
-      the item is contained in a <code>Menu</code>.
-    </td>
-  </tr>
-</table>
+    @prop [data] {string} An optional arbitrary value to associate with the
+    item. It must be either a string or an object that implements toString().
 
-<code>contextMenu.**Menu**(*options*)</code>
+    @prop [onClick] {callback} An optional function that will be called when the
+    Item is clicked. It is called as `onClick(contextObj, item)`. `contextObj`
+    is an object describing the context in which the context menu was invoked:
+    `{ node, document, window }`, where `node` is the node the user
+    right-clicked to invoke the menu, `document` is the node's document, and
+    `window` is the document's window.  See Examining Contexts below for
+    details. `item` is the item itself.
 
-Creates a menu item that expands into a submenu.  *options* is an object with
+    @prop [context] {object} If the item is added to the top-level context menu,
+    this specifies the context under which the theme will appear. It must be a
+    string, function, undefined, null or an array. If undefined, the page
+    context is used. See Specifying Contexts below for details. Ignored if the
+    item is contained in a submenu.
+</api>
+
+<api name="Menu">
+@constructor
+Creates a menu item that expands into a submenu.  `options` is an object with
 the following keys.  If any option is invalid, an exception is thrown.
+@param options {object}
+If any of the following options are invalid, an error is thrown.
+    @prop label {string} This is the item's label. It must either be a string or
+    an object that implements `toString()`.
 
-<table>
-  <tr>
-    <td><code>label</code></td>
-    <td>
-      The menu's label.  It must be either a string or an object that implements
-      <code>toString()</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>items</code></td>
-    <td>
-      An array of menu items that the menu will contain.  Each must be an
-      <code>Item</code>, <code>Menu</code>, or <code>Separator</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>onClick</code></td>
-    <td>
-      An optional function that will be called when any of the menu's descendant
-      <code>Item</code>s is clicked.  (The <code>onClick</code>s of descendants are
-      invoked first, in a bottom-up, bubbling manner.)  It is called as
-      <code>onClick(<em>contextObj</em>, <em>item</em>)</code>.  <em>contextObj</em>
-      is an object describing the context in which the context menu was invoked.
-      See Examining Contexts below for details.  <em>item</em> is the
-      <code>Item</code> that was clicked.
-    </td>
-  </tr>
-  <tr>
-    <td><code>context</code></td>
-    <td>
-      If the menu is added to the top-level context menu, this specifies the
-      context under which the menu will appear.  If undefined, the page context
-      is assumed.  See Specifying Contexts below for details.  It's ignored if
-      the menu is contained in a <code>Menu</code>.
-    </td>
-  </tr>
-</table>
+    @prop [items] {string} An array of menu items that the menu will contain.
+    Each must be an `Item`, `Menu`, or `Separator`.
 
-<code>contextMenu.**Separator**()</code>
+    @prop [onClick] {callback} An optional function that will be called when any
+    of the menu's Item descendants is clicked. (The onClicks of descendants are
+    invoked first, in a bottom-up, bubbling manner.)  It is called as
+    `onClick(contextObj, item)`. `contextObj` is an object describing the
+    context in which the context menu was invoked: `{ node, document, window }`,
+    where `node` is the node the user right-clicked to invoke the menu,
+    `document` is the node's document, and `window` is the document's
+    window. See Examining Contexts below for details. `item` is the item that
+    was clicked.
 
+    @prop [context] {object} If the item is added to the top-level context menu,
+    this specifies the context under which the theme will appear. It must be a
+    string, function, undefined, null or an array. If undefined, the page
+    context is used. See Specifying Contexts below for details. Ignored if the
+    item is contained in a submenu.
+</api>
+
+<api name="Separator">
+@constructor
 Creates a menu separator.  Separators can only be contained in `Menu`s; they
 can't be added to the top-level context menu.
+</api>
 
 
 ## Functions ##
 
-<code>contextMenu.**add**(*item*)</code>
-
-Adds a menu item to the context menu.  *item* is an `Item` or `Menu`.
+<api name="add">
+@function
+Adds a menu item to the context menu.
+@param item {object} An `Item` or `Menu` object to be added to the context menu.
 `Separator`s can't be added to the top-level menu; an exception is thrown if
 attempted.
+</api>
 
-<code>contextMenu.**remove**(*item*)</code>
 
-Removes a menu item from the context menu.  *item* must have been previously
-added.  An exception is thrown if *item* was never added.
+<api name="remove">
+@function
+Removes a menu item from the context menu.
+@param item {object} An `Item` or `Menu` object to be removed from context menu.
+This must have been previously added.  An exception is thrown if `item` was
+never added.
+</api>
 
 
 ## Specifying Contexts ##
@@ -207,7 +189,8 @@ the following properties:
   <tr>
     <td><code>document</code></td>
     <td>
-     The document containing <code>node</code> (i.e., <code>node.ownerDocument</code>).
+     The document containing <code>node</code> (i.e.,
+     <code>node.ownerDocument</code>).
     </td>
   </tr>
   <tr>
