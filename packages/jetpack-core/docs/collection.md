@@ -1,15 +1,20 @@
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 The `collection` module provides a simple list-like class and utilities for
 using it.  A collection is ordered, like an array, but its items are unique,
 like a set.
 
 ## Constructors ##
 
-<code>collection.**Collection**(*array*)</code>
-
-Creates a new collection.  The collection is backed by an array.  If *array* is
-given, it will be used as the backing array.  This way the caller can fully
-control the collection.  Otherwise a new empty array will be used, and no one
-but the collection will have access to it.
+<api name="Collection">
+@constructor
+Creates a new collection.  The collection is backed by an array.
+@param [array] {array}
+If *array* is given, it will be used as the backing array.  This way the caller 
+can fully control the collection.  Otherwise a new empty array will be used, and 
+no one but the collection will have access to it.
+</api>
 
 ## Collection Objects ##
 
@@ -34,28 +39,44 @@ order they were added.  For example, the following code...
 
 ### Members ###
 
-<code>Collection.**length**</code>
-
-The number of items in the collection.
+<api name="length">
+@property {number}
+The number of items in the collection array.
+</api>
 
 ### Methods ###
 
-<code>Collection.**add**(*itemOrItems*)</code>
-
+<api name="add">
+@method
 Adds a single item or an array of items to the collection.  Any items already
-contained in the collection are ignored.  The collection is returned.
+contained in the collection are ignored.
+@param itemOrItems {object} An item or array of items.
+@returns {Collection} The Collection.
+</api>
 
-<code>Collection.**remove**(*itemOrItems*)</code>
 
+<api name="remove">
+@method
 Removes a single item or an array of items from the collection.  Any items not
-contained in the collection are ignored.  The collection is returned.
+contained in the collection are ignored.
+@param itemOrItems {object} An item or array of items.
+@returns {Collection} The Collection.
+</api>
+
+
 
 ## Functions ##
 
-<code>collection.**addCollectionProperty**(*object*, *propertyName*, *backingArray*)</code>
-
+<api name="addCollectionProperty">
+@function
 Adds a collection property to the given object.  Setting the property to a
 scalar value empties the collection and adds the value.  Setting it to an array
-empties the collection and adds all the items in the array.  The name of the
-property will be *propertyName*.  *backingArray*, if given, will be used as the
-collection's backing array.
+empties the collection and adds all the items in the array.  
+@param object {object}
+The property will be defined on this object.
+@param propName {string}
+The name of the property.
+@param [backingArray] {array}
+If given, this will be used as the collection's backing array.
+</api>
+
