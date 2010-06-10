@@ -184,27 +184,28 @@ def get_xpts(component_dirs):
     return files
 
 def test_all(env_root, defaults):
-    retval = 0
+    fail = False
 
     print "Testing cfx..."
     result = test_cfx(env_root, defaults['verbose'])
     if result.failures or result.errors:
-        retval = -1
+        fail = True
 
     try:
         test_all_examples(env_root, defaults)
     except SystemExit, e:
-        retval = e.code
+        fail = (e.code != 0) or fail
 
     try:
         test_all_packages(env_root, defaults)
     except SystemExit, e:
-        retval = e.code
+        fail = (e.code != 0) or fail
 
-    if retval:
+    if fail:
         print "Some tests were unsuccessful."
-
-    sys.exit(retval)
+        sys.exit(1)
+    print "All tests were successful. Ship it!"
+    sys.exit(0)
 
 def test_cfx(env_root, verbose):
     import cuddlefish.tests
