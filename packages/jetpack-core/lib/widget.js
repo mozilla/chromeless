@@ -375,7 +375,7 @@ BrowserWindow.prototype = {
                               CONTENT_TYPE_HTML;
     if (widget.content) {
       try {
-        require("url").parse(widget.content);
+        require("url").URL(widget.content);
         type = CONTENT_TYPE_URI;
       } catch(e) {}
     }

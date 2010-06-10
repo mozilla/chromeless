@@ -28,7 +28,7 @@ exports.id = id;
 
 function caller(levels) {
     let callerInfo = traceback.get().slice(-2-levels)[0];
-    let info = url.parse(callerInfo.filename);
+    let info = url.URL(callerInfo.filename);
     let pkgName = resourcePackages[info.host];
     // pkgName is "my-package", suitable for lookup in options["packageData"]
     return pkgName;
@@ -38,7 +38,7 @@ function getURL(name, level) {
     let pkgName = caller(level+1);
     // packageData[] = "resource://jetpack-JID-PKGNAME-data/"
     if (pkgName in packageData)
-        return url.resolve(packageData[pkgName], name);
+        return url.URL(name, packageData[pkgName]).toString();
     throw new Error("No data for package " + pkgName);
 }
 

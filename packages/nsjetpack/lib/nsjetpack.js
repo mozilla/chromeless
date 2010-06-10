@@ -5,7 +5,7 @@ var component = null;
 
 exports.get = function get() {
   if (!component) {
-    var path = url.toFilename(url.resolve(__url__, "platform"));
+    var path = url.toFilename(url.URL("platform", __url__).toString());
     xpcom.autoRegister(path);
 
     var factory = xpcom.getClass("@labs.mozilla.com/jetpackdi;1",

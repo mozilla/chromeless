@@ -40,13 +40,16 @@ var ios = Cc['@mozilla.org/network/io-service;1']
 var resProt = ios.getProtocolHandler("resource")
               .QueryInterface(Ci.nsIResProtocolHandler);
 
-function newURI(uriStr) {
+function newURI(uriStr, base) {
   try {
-    return ios.newURI(uriStr, null, null);
-  } catch (e if e.result == Cr.NS_ERROR_MALFORMED_URI) {
+    let baseURI = base ? ios.newURI(base, null, null) : null;
+    return ios.newURI(uriStr, null, baseURI);
+  }
+  catch (e if e.result == Cr.NS_ERROR_MALFORMED_URI) {
     throw new Error("malformed URI: " + uriStr);
-  } catch (e if (e.result == Cr.NS_ERROR_FAILURE ||
-                 e.result == Cr.NS_ERROR_ILLEGAL_VALUE)) {
+  }
+  catch (e if (e.result == Cr.NS_ERROR_FAILURE ||
+               e.result == Cr.NS_ERROR_ILLEGAL_VALUE)) {
     throw new Error("invalid URI: " + uriStr);
   }
 }
@@ -61,14 +64,14 @@ function resolveResourceURI(uri) {
   return resolved;
 }
 
-var fromFilename = exports.fromFilename = function fromFilename(path) {
+let fromFilename = exports.fromFilename = function fromFilename(path) {
   var file = Cc['@mozilla.org/file/local;1']
              .createInstance(Ci.nsILocalFile);
   file.initWithPath(path);
   return ios.newFileURI(file).spec;
 };
 
-var toFilename = exports.toFilename = function toFilename(url) {
+let toFilename = exports.toFilename = function toFilename(url) {
   var uri = newURI(url);
   if (uri.scheme == "resource")
     uri = newURI(resolveResourceURI(uri));
@@ -88,8 +91,8 @@ var toFilename = exports.toFilename = function toFilename(url) {
   throw new Error("cannot map to filename: " + url);
 };
 
-var parse = exports.parse = function parse(url) {
-  var uri = newURI(url);
+function URL(url, base) {
+  var uri = newURI(url, base);
 
   var userPass = null;
   try {
@@ -106,14 +109,11 @@ var parse = exports.parse = function parse(url) {
     port = uri.port == -1 ? null : uri.port;
   } catch (e if e.result == Cr.NS_ERROR_FAILURE) {}
 
-  return {scheme: uri.scheme,
-          userPass: userPass,
-          host: host,
-          port: port,
-          path: uri.path};
+  this.__defineGetter__("scheme", function() uri.scheme);
+  this.__defineGetter__("userPass", function() userPass);
+  this.__defineGetter__("host", function() host);
+  this.__defineGetter__("port", function() port);
+  this.__defineGetter__("path", function() uri.path);
+  this.toString = function URL_toString() uri.spec;
 };
-
-var resolve = exports.resolve = function resolve(base, relative) {
-  var baseURI = newURI(base);
-  return ios.newURI(relative, null, baseURI).spec;
-};
+exports.URL = require("api-utils").publicConstructor(URL);

@@ -216,10 +216,10 @@ function buildHarnessService(rootFileSpec, dump, logError,
       var traceback = this.__loader.require("traceback");
       var callerInfo = traceback.get().slice(-2)[0];
       var url = this.__loader.require("url");
-      var info = url.parse(callerInfo.filename);
+      var info = url.URL(callerInfo.filename);
       var pkgName = options.resourcePackages[info.host];
       if (pkgName in options.packageData)
-        return url.resolve(options.packageData[pkgName], path);
+        return url.URL(path, options.packageData[pkgName]).toString();
       else
         throw new Error("No data for package " + pkgName);
     },

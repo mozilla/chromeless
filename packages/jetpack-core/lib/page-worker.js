@@ -178,7 +178,7 @@ function Page(options) {
     options.content = newVal;
     let content = newVal;
     try {
-      require("url").parse(content);
+      require("url").URL(content);
     } catch(e) {
       content = "data:text/html," + content;
     }
@@ -266,7 +266,7 @@ function startPageWorker(self) {
     let content = self.content || "about:blank";
 
     try {
-      require("url").parse(content);
+      require("url").URL(content);
     } catch(e) {
       content = "data:text/html," + content;
     }
