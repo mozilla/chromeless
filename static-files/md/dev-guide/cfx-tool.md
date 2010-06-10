@@ -27,9 +27,22 @@ saved to the directory in which the command was executed.
 This will run a number of tests on the cfx tool, including tests against the
 documentation. Use `cfx testcfx -v` for the specific list of tests.
 
+**`cfx testpkgs`**
+
+This will test all of the available CommonJS packages. Note that the number
+of tests run and their success depends on what application they are run
+with, and which binary is used.
+
+**`cfx testex`**
+
+This will test all available example code. Note that the number
+of tests run and their success depends on what application they are run
+with, and which binary is used.
+
 **`cfx testall`**
 
-This will test all of the available packages.
+This will test *everything*: the cfx tool, all available CommonJS packages,
+and all examples.
 
 Run options:
 
@@ -56,18 +69,23 @@ Test options:
 
 **`cfx develop`**
 
-This initiates an instance of xulrunner in development mode. This allows you to
-pipe commands from a different shell to the local.
+This initiates an instance of a host application in development mode,
+and allows you to pipe commands into it from another shell without
+having to constantly restart it. Aside from convenience, for Jetpack
+Platform developers this has the added benefit of making it easier to
+detect leaks.
 
-shell A:
+For example, in shell A, type:
 
     cfx develop
 
-shell B:
+in shell B, type:
 
     cfx test -r
 
-This will send `cfx test -r` output to shell A.
+This will send `cfx test -r` output to shell A. If you repeat the
+command in shell B, `cfx test -r` output will appear again in shell A
+without restarting the host application.
 
 # Package Specific Commands #
 
@@ -98,6 +116,9 @@ Package creation/run options:
                                  use named config from local.json
 
 **`cfx xpi`**
+
+<span class="aside"> For more information on how XPIs are generated,
+see the [XPI Generation](#guide/xpi) reference.</span>
 
 This tool is used to build the XPI file that you can distribute by submitting it to
 [addons.mozilla.org][].
