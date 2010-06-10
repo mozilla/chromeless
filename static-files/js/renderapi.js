@@ -96,7 +96,11 @@ function _createParams(doc){
     if( !param.props ) param.props = [];
     param.props.forEach(function(prop){
       var $prop = $("<div class='prop'/>").appendTo($param);
-      $("<span class='name'/>").text( prop.name ).appendTo($prop);
+      $name = $("<span class='name'/>").text( prop.name ).appendTo($prop);
+      if (prop.required)
+        $name.addClass("required");
+      else
+        $name.addClass("optional");
       prop.type = prop.type || " ";
       $("<span class='type'/>").text( prop.type ).appendTo($prop);
       $("<span class='description'/>").text( prop.description ).appendTo($prop);
