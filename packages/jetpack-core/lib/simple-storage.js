@@ -82,16 +82,6 @@ function JsonStore(options) {
 
 JsonStore.prototype = {
 
-  get purgeOnUnload() {
-    return this._purgeOnUnload || false;
-  },
-
-  // Set this to remove the backing file on unload, e.g., when the extension has
-  // been uninstalled.
-  set purgeOnUnload(val) {
-    return this._purgeOnUnload = !!val;
-  },
-
   // The store's root.
   get root() {
     return this._root === undefined ? {} : this._root;
@@ -157,12 +147,12 @@ JsonStore.prototype = {
       this._write();
   },
 
-  // Clean up on unload, and depending on the value of purgeOnUnload, write the
-  // store or purge it.
-  unload: function JsonStore_unload() {
+  // Cleans up on unload.  If unloading because of uninstall, the store is
+  // purged; otherwise it's written.
+  unload: function JsonStore_unload(reason) {
     timer.clearInterval(this.writeTimer);
 
-    if (this.purgeOnUnload)
+    if (reason === "uninstall")
       this.purge();
     else
       this._write();
@@ -283,90 +273,7 @@ let manager = {
       onOverQuota: exports.onOverQuota,
       observersThisArg: exports
     });
-    this.newUninstallNotifier(UninstallNotifier);
-  },
-
-  // Causes the manager to register a new uninstallation notifier.  ctor is the
-  // constructor of the notifier.  This exists so that the unit test can easily
-  // test uninstallation.
-  newUninstallNotifier: function manager_newUninstallNotifier(ctor) {
-    if (this.unotif && typeof(this.unotif.unload) === "function")
-      this.unotif.unload();
-
-    // self.id is a JID.  The extension manager API speaks in add-on IDs, and
-    // since we're talking to the extension manager API, that's what we need
-    // here.  The IDs of Jetpack-based add-ons are JID@jetpack.  See bug 567293.
-    let addonId = jpSelf.id + "@jetpack";
-
-    const self = this;
-    this.unotif = new ctor(addonId, {
-      onUninstalling: function () self.jsonStore.purgeOnUnload = true,
-      onCancelled: function () self.jsonStore.purgeOnUnload = false
-    });
-  },
-
-  // This exists so that the unit test can make one call to unload the resources
-  // of the module.
-  unload: function manager_unload() {
-    if (typeof(this.unotif.unload) === "function")
-      this.unotif.unload();
-    this.jsonStore.unload();
   }
 };
-
-
-// Notifies when the given extension is being uninstalled.  observer is an
-// object that must define methods onUninstalling and onCancelled.
-function UninstallNotifier(addonId, observer) {
-  this.observer = observer;
-  if ("@mozilla.org/extensions/manager;1" in Cc)
-    this._init192(addonId);
-  else
-    this._init193(addonId);
-}
-
-UninstallNotifier.prototype = {
-
-  // Gecko 1.9.2 implementation.
-  _init192: function (addonId) {
-    function observe(subject, data) {
-      if (subject instanceof Ci.nsIUpdateItem && subject.id === addonId) {
-        if (data === "item-uninstalled")
-          this.observer.onUninstalling();
-        else
-          this.observer.onCancelled();
-      }
-    }
-
-    let obsServ = require("observer-service");
-    let topic = "em-action-requested";
-    obsServ.add(topic, observe, this);
-
-    const self = this;
-    this.unload = function unload() obsServ.remove(topic, observe, self);
-    unload.ensure(this);
-  },
-
-  // Gecko 1.9.3+ implementation.
-  _init193: function (addonId) {
-    const self = this;
-    let listener = {
-      onOperationCancelled: function onOperationCancelled(addon) {
-        if (addon.id === addonId &&
-            !(addon.pendingOperations & AddonManager.PENDING_UNINSTALL))
-          self.observer.onCancelled();
-      },
-      onUninstalling: function onUninstalling(addon) {
-        if (addon.id === addonId)
-          self.observer.onUninstalling();
-      }
-    };
-    Components.utils.import("resource://gre/modules/AddonManager.jsm");
-    AddonManager.addAddonListener(listener);
-    this.unload = function unload() AddonManager.removeAddonListener(listener);
-    unload.ensure(this);
-  }
-};
-
 
 manager.init();

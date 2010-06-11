@@ -260,17 +260,8 @@ exports.testUninstall = function (test) {
 
     loader = newLoader(test);
     ss = loader.require("simple-storage");
-
-    let man = manager(loader);
-    function Unotif(addonId, observer) {
-      this.trigger = function () observer.onUninstalling();
-    };
-    man.newUninstallNotifier(Unotif);
-    man.unotif.trigger();
-    man.unload();
-
+    loader.unload("uninstall");
     test.assert(!file.exists(storeFilename), "Store file should be removed");
-    loader.unload();
     test.done();
   });
   ss.storage.foo = "foo";
