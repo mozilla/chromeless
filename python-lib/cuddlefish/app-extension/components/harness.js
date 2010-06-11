@@ -436,6 +436,35 @@ function buildDevQuit(options, dump) {
   };
 }
 
+function buildForsakenConsoleDump(dump) {
+  var buffer = "";
+  var cService = Cc['@mozilla.org/consoleservice;1'].getService()
+                 .QueryInterface(Ci.nsIConsoleService);
+
+  function stringify(arg) {
+    try {
+      return String(arg);
+    }
+    catch(ex) {
+      return "<toString() error>";
+    }
+  }
+
+  return function forsakenConsoleDump(msg) {
+    // No harm in calling dump() just in case the
+    // end-user *can* see the console...
+    dump(msg);
+
+    msg = stringify(msg);
+    if (msg.indexOf('\n') >= 0) {
+      cService.logStringMessage(buffer + msg);
+      buffer = "";
+    } else {
+      buffer += msg;
+    }
+  };
+}
+
 function getDefaults(rootFileSpec) {
   // Default options to pass back.
   var options;
@@ -473,9 +502,15 @@ function getDefaults(rootFileSpec) {
   }
 
   var onQuit = function() {};
+  var doDump = dump;
 
   if ('resultFile' in options)
     onQuit = buildDevQuit(options, print);
+  else
+    // If we're not being run by cfx or some other kind of tool that is
+    // ensuring dump() calls are visible, we'll have to log to the
+    // forsaken Error Console.
+    doDump = buildForsakenConsoleDump(doDump);
 
   var logFile;
   var logStream;
@@ -491,7 +526,7 @@ function getDefaults(rootFileSpec) {
   }
 
   function print(msg) {
-    dump(msg);
+    doDump(msg);
     if (logStream && typeof(msg) == "string") {
       logStream.write(msg, msg.length);
       logStream.flush();
