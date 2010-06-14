@@ -9,14 +9,18 @@
     <em:bootstrap>false</em:bootstrap>
 
     <!-- Target Application this extension can install into, 
-         with minimum and maximum supported versions. --> 
+         with minimum and maximum supported versions. For a list 
+         of valid values, see:
+
+         https://addons.mozilla.org/en-US/firefox/pages/appversions
+     --> 
 
     <!-- Firefox -->
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>3.5</em:minVersion>
-        <em:maxVersion>3.7a5pre</em:maxVersion>
+        <em:maxVersion>3.7a6pre</em:maxVersion>
       </Description>
     </em:targetApplication>
 
@@ -25,7 +29,7 @@
       <Description>
         <em:id>{a23983c0-fd0e-11dc-95ff-0800200c9a66}</em:id>
         <em:minVersion>0.1</em:minVersion>
-        <em:maxVersion>1.1.*</em:maxVersion>
+        <em:maxVersion>2.0a1pre</em:maxVersion>
       </Description>
     </em:targetApplication>
 
