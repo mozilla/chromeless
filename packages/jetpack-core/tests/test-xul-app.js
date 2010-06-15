@@ -31,4 +31,11 @@ exports.testXulApp = function(test) {
   test.assert(xulApp.isOneOf(apps) == true ||
               xulApp.isOneOf(apps) == false,
               "isOneOf() returns true or false.");
+
+  test.assertEqual(xulApp.versionInRange(xulApp.platformVersion, "1.9", "*"),
+                   true, "platformVersion in range [1.9, *)");
+  test.assertEqual(xulApp.versionInRange("3.6.4", "3.6.4", "3.6.*"),
+                   true, "3.6.4 in [3.6.4, 3.6.*)");
+  test.assertEqual(xulApp.versionInRange("1.9.3", "1.9.2", "1.9.3"),
+                   false, "1.9.3 not in [1.9.2, 1.9.3)");
 };

@@ -72,3 +72,18 @@ var isOneOf = exports.isOneOf = function isOneOf(names) {
       return true;
   return false;
 };
+
+/**
+ * Use this to check whether the given version (e.g. xulApp.platformVersion)
+ * is in the given range. Versions must be in version comparator-compatible
+ * format. See MDC for details:
+ * https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator
+ */
+var versionInRange = exports.versionInRange =
+function versionInRange(version, lowInclusive, highExclusive) {
+  var vc = Cc["@mozilla.org/xpcom/version-comparator;1"]
+           .getService(Ci.nsIVersionComparator);
+  return (vc.compare(version, lowInclusive) >= 0) &&
+         (vc.compare(version, highExclusive) < 0);
+}
+
