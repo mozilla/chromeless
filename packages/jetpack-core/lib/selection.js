@@ -38,7 +38,7 @@ if (!require("xul-app").is("Firefox")) {
   throw new Error([
     "The selection module currently supports only Firefox.  In the future ",
     "we would like it to support other applications, however.  Please see ",
-    "https://bugzilla.mozilla.org/show_bug.cgi?id=547092 for more information."
+    "https://bugzilla.mozilla.org/show_bug.cgi?id=560716 for more information."
   ].join(""));
 }
 
