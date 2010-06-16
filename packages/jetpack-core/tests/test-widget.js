@@ -1,13 +1,15 @@
 
 exports.testConstructor = function(test) {
 
+  const tabBrowser = require("tab-browser");
+
   test.waitUntilDone();
 
-  openBrowserWindow(function(browserWindow) {
-
+  tabBrowser.addTab("about:blank", { inNewWindow: true, onLoad: function(e) {
     const widgets = require("widget");
     const url = require("url");
 
+    let browserWindow = e.target.defaultView;
     let doc = browserWindow.document;
 
     function container() doc.getElementById("jetpack-widget-panel");
@@ -288,7 +290,8 @@ exports.testConstructor = function(test) {
 
     // test multiple windows
     tests.push(function() {
-      openBrowserWindow(function(browserWindow) {
+      tabBrowser.addTab("about:blank", { inNewWindow: true, onLoad: function(e) {
+        let browserWindow = e.target.defaultView;
         let doc = browserWindow.document;
         function container() doc.getElementById("jetpack-widget-panel");
         function widgetCount2() container() ? container().childNodes.length : 0;
@@ -308,7 +311,7 @@ exports.testConstructor = function(test) {
 
         browserWindow.close();
         doneTest();
-      });
+      }});
     });
 
     // test the visibility pref and keyboard shortcut
@@ -345,7 +348,7 @@ exports.testConstructor = function(test) {
 
     // kick off test execution
     doneTest();
-  });
+  }});
 };
 
 // FROM: http://mxr.mozilla.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/EventUtils.js
@@ -398,33 +401,6 @@ function sendMouseEvent(aEvent, aTarget, aWindow) {
   var target = aTarget ? aWindow.document.getElementById(aTarget) :
                          aWindow.document;
   target.dispatchEvent(event);
-}
-
-// Utility function to open a new browser window.
-function openBrowserWindow(callback) {
-  var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
-           .getService(Ci.nsIWindowWatcher);
-  var features = ["chrome"];
-  var window = ww.openWindow(null, "chrome://browser/content/browser.xul",
-                             null, features.join(","), null);
-
-  if (callback) {
-    function onLoad(event) {
-      if (event.target && event.target.defaultView == window) {
-        window.removeEventListener("load", onLoad, true);
-        var browsers = window.document.getElementsByTagName("tabbrowser");
-        try {
-          require("timer").setTimeout(function () {
-            callback(window, browsers[0]);
-          }, 50);
-        } catch (e) { console.exception(e); }
-      }
-    }
-
-    window.addEventListener("load", onLoad, true);
-  }
-
-  return window;
 }
 
 // ADD NO TESTS BELOW THIS LINE! ///////////////////////////////////////////////

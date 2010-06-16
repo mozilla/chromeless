@@ -14,6 +14,11 @@ This is a low-level API that has full privileges, and is intended to be used
 by SDK internal modules. If you just need easy access to tab events for your
 add-on, use the Tabs module (JEP 110).
 
+<api name="activeTab">
+@property {element}
+The XUL tab element of the currently active tab.
+</api>
+
 Functions
 ---------
 

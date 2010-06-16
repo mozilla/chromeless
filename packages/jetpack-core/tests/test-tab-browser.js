@@ -233,6 +233,22 @@ exports.testTabTracker = function(test) {
   test.waitUntilDone();
 };
 
+exports.testActiveTab = function(test) {
+  test.waitUntilDone();
+  openBrowserWindow(function(window, browser) {
+    const tabBrowser = require("tab-browser");
+    let url = "data:text/html,foo";
+    tabBrowser.addTab(url, {
+      onLoad: function(e) {
+        let tabIndex = browser.getBrowserIndexForDocument(e.target);
+        test.assertEqual(browser.tabContainer.getItemAtIndex(tabIndex), tabBrowser.activeTab, "activeTab element matches");
+        window.close();
+        test.done();
+      }
+    });
+  });
+};
+
 // If the module doesn't support the app we're being run in, require() will
 // throw.  In that case, remove all tests above from exports, and add one dummy
 // test that passes.

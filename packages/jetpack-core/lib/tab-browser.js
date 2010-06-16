@@ -63,10 +63,9 @@ function openBrowserWindow(callback, url) {
     function onLoad(event) {
       if (event.target && event.target.defaultView == window) {
         window.removeEventListener("load", onLoad, true);
-        let browsers = window.document.getElementsByTagName("tabbrowser");
         try {
           require("timer").setTimeout(function () {
-            callback(window, browsers[0]);
+            callback(event);
           }, 10);
         } catch (e) { console.exception(e); }
       }
@@ -124,13 +123,6 @@ exports.addTab = function addTab(url, options) {
       }, true);
     }
   }
-}
-
-// Iterate over a window's tabbrowsers
-function tabBrowserIterator(window) {
-  var browsers = window.document.querySelectorAll("tabbrowser");
-  for (var i = 0; i < browsers.length; i++)
-    yield browsers[i];
 }
 
 // Iterate over a window's tabbrowsers
@@ -276,3 +268,10 @@ exports.whenContentLoaded = function whenContentLoaded(callback) {
 
   return tracker;
 };
+
+exports.__defineGetter__("activeTab", function() {
+  const wm = Cc["@mozilla.org/appshell/window-mediator;1"].
+             getService(Ci.nsIWindowMediator);
+  let mainWindow = wm.getMostRecentWindow("navigator:browser");
+  return mainWindow.gBrowser.selectedTab;
+});
