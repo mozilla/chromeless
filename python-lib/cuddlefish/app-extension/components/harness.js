@@ -287,7 +287,8 @@ function buildHarnessService(rootFileSpec, dump, logError,
           if (reason)
             options.loadReason = reason;
           program = this.loader.require(options.main);
-          program.main(options, {quit: quit, print: dump});
+          if ('main' in program)
+            program.main(options, {quit: quit, print: dump});
 
           // Send application readiness notification
           const APP_READY_TOPIC = options.jetpackID + "_APPLICATION_READY";
