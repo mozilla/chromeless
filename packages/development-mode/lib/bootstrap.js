@@ -50,7 +50,6 @@ manager.QueryInterface(Ci.nsIComponentRegistrar);
 // given contract ID and class ID, if it is managed by us.
 function maybeUnload(contractID, classID) {
   if (contractID in gServices) {
-    console.log("unloading", contractID);
     try {
       gServices[contractID].unload();
     } catch (e) {
@@ -78,9 +77,7 @@ function maybeUnregister(contractID, classID) {
 // automatically take care of unloading and unregistering it.
 function makeQuit(contractID, classID) {
   return function quit(status) {
-    console.log("TASK: quit", status);
     maybeUnload(contractID, classID);
-    console.log("Done.");
   };
 }
 
@@ -96,7 +93,7 @@ function makeUnloader(contractID, classID) {
 // blob and a root directory of where the Jetpack Program
 // is installed, takes care of loading the program, running it, and
 // unloading its resources when they're no longer needed.
-exports.run = function run(options, rootDirPath) {
+exports.run = function run(options, rootDirPath, dump) {
   var harnessService;
   var contractID = options.bootstrap.contractID;
   var classID = Components.ID(options.bootstrap.classID);
@@ -125,7 +122,6 @@ exports.run = function run(options, rootDirPath) {
                           proto.classDescription,
                           proto.contractID,
                           factory);
-  console.log("Registered factory.");
 
   try {
     harnessService = factory.createInstance(null, Ci.nsISupports);

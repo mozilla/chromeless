@@ -35,6 +35,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var print;
+
 var xhr = require("xhr");
 
 // TODO: Eventually we should be able to e.g. require("os").environ
@@ -43,7 +45,7 @@ var environ = Cc["@mozilla.org/process/environment;1"]
               .getService(Ci.nsIEnvironment);
 
 function runTask(options) {
-  require("bootstrap").run(options, packaging.root.path);
+  require("bootstrap").run(options, packaging.root.path, print);
   processNextTask();
 }
 
@@ -81,6 +83,7 @@ exports.main = function(options, callbacks) {
   var appInfo = Cc["@mozilla.org/xre/app-info;1"]
                 .getService(Ci.nsIXULAppInfo);
 
+  print = callbacks.print;
   if (appInfo.ID == "xulapp@toolness.com")
     // We're running barebones XULRunner, open a default window.
     makeMainWindow(callbacks.quit);
