@@ -44,13 +44,12 @@ function openBrowserWindow(callback, url) {
   let window = win.openDialog("chrome://browser/content/browser.xul",
                               "_blank", "chrome,all,dialog=no", url); 
   if (callback) {
-    function onLoad(event) {
-      if (event.target && event.target.defaultView == window) {
+    function onLoad(e) {
+      if (e.target && e.target.defaultView == window) {
         window.removeEventListener("load", onLoad, true);
-        let browsers = window.document.getElementsByTagName("tabbrowser");
         try {
           require("timer").setTimeout(function () {
-            callback(window, browsers[0]);
+            callback(e);
           }, 10);
         } catch (e) { console.exception(e); }
       }
@@ -62,8 +61,17 @@ function openBrowserWindow(callback, url) {
   return window;
 }
 
+// Helper for calling code at window close
+function closeBrowserWindow(window, callback) {
+  window.addEventListener("unload", function() {
+    window.removeEventListener("unload", arguments.callee, false);
+    callback();
+  }, false);
+  window.close();
+}
+
 exports.testAddTab = function(test) {
-  openBrowserWindow(function(firstWindow, browser) {
+  openBrowserWindow(function(e) {
     const tabBrowser = require("tab-browser");
 
     let cache = [];
@@ -90,12 +98,17 @@ exports.testAddTab = function(test) {
           inNewWindow: true,
           onLoad: function(e) {
             test.assertEqual(cache.length, startWindowCount + 1, "a new window was opened");
-            test.assertEqual(cache[startWindowCount].content.location, secondUrl, "URL of new tab in the new window matches");
-            timer.setTimeout(function() {
-            cache[startWindowCount].close();
-            cache[startWindowCount - 1].close();
-            test.done();
-            }, 1000);
+            let gBrowser = e.target.defaultView.gBrowser;
+            gBrowser.addEventListener("DOMContentLoaded", function(e) {
+              gBrowser.removeEventListener("DOMContentLoaded", arguments.callee, false);
+              test.assertEqual(cache[startWindowCount].content.location, secondUrl, "URL of new tab in the new window matches");
+
+              closeBrowserWindow(cache[startWindowCount], function() {
+                closeBrowserWindow(cache[startWindowCount - 1], function() {
+                  test.done();
+                });
+              });
+            }, false);
           }
         });
       }
@@ -154,9 +167,9 @@ exports.testWhenContentLoaded = function(test) {
     });
 
   var browserWindow = openBrowserWindow(
-    function(window, browser) {
+    function(e) {
       var html = '<div id="foo">bar</div>';
-      browser.addTab("data:text/html," + html);
+      e.target.defaultView.gBrowser.addTab("data:text/html," + html);
     });
 
   test.waitUntilDone();
@@ -166,7 +179,9 @@ exports.testTrackerWithoutDelegate = function(test) {
   const tabBrowser = require("tab-browser");
 
   openBrowserWindow(
-    function(window, newBrowser) {
+    function(e) {
+      let window = e.target.defaultView;
+      let newBrowser = window.gBrowser;
       var tb = new tabBrowser.Tracker();
 
       if (tb.length == 0)
@@ -185,9 +200,10 @@ exports.testTrackerWithoutDelegate = function(test) {
                        "New browser should be in tracker.");
 
       timer.setTimeout(function() {
-        window.close();
-        tb.unload();
-        test.done();
+        closeBrowserWindow(window, function() {
+          tb.unload();
+          test.done();
+        });
       }, 10);
     });
 
@@ -235,9 +251,11 @@ exports.testTabTracker = function(test) {
 
 exports.testActiveTab = function(test) {
   test.waitUntilDone();
-  openBrowserWindow(function(window, browser) {
+  openBrowserWindow(function(e) {
     const tabBrowser = require("tab-browser");
     let url = "data:text/html,foo";
+    let window = e.target.defaultView;
+    let browser = window.gBrowser;
     tabBrowser.addTab(url, {
       onLoad: function(e) {
         let tabIndex = browser.getBrowserIndexForDocument(e.target);
