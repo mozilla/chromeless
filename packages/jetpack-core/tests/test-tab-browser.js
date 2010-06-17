@@ -225,12 +225,14 @@ exports.testTabTracker = function(test) {
       },
       onUntrack: function(tab) {
         this.tracked--;
-        if (this.tracked == 1)
+        if (this.tracked == 1) {
+          tabTracker.unload();
           test.done();
+        }
       }
     };
 
-    tabBrowser.TabTracker(delegate);
+    let tabTracker = tabBrowser.TabTracker(delegate);
 
     let tracked = delegate.tracked;
     let url1 = "data:text/html,1";
