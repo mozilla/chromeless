@@ -21,7 +21,7 @@ Installation
 ------------
 
 At the time of this writing, the latest stable version of the Jetpack
-SDK is 0.4. You can obtain it as a [tarball] or a [zip file].
+SDK is 0.5. You can obtain it as a [tarball] or a [zip file].
 
 Alternatively, you can get the latest development version of the
 Jetpack SDK from its [HG repository].
