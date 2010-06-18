@@ -84,9 +84,9 @@ __Jetpack XPI__: A build target of the CFX tool that, when loaded as
 an extension by a supported Mozilla application, bootstraps a Jetpack
 Loader and executes a Jetpack Program.
 
-__Jetpack Program__: A Jetpack Module that exports a `main()` function.
-This function is intended either to start a program for an end-user
-or add features to an existing program.
+__Jetpack Program__: A Jetpack Module named `main` that optionally exports
+a `main()` function.  This module is intended either to start a program for
+an end-user or add features to an existing program.
 
 __Jetpack Platform Library__: A set of Low-Level Jetpack API Modules
 that expose the functionality of the Mozilla Platform (Gecko).

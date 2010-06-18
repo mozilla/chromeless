@@ -28,47 +28,74 @@ something like this now:
 
 ### Adding Your Code ###
 
-If a module called `main` exists in your package and it exports a
-function called `main`, the function will be called as soon as your
-program is activated. By "activated", we mean that either a host
-application such as Firefox or Thunderbird has enabled your program as
-an extension, or that your program is itself a standalone application.
-The forthcoming example will demonstrate an extension.
+If a module called `main` exists in your package, that module will be evaluated
+as soon as your program is loaded. By "loaded", we mean that either a host
+application such as Firefox or Thunderbird has enabled your program as an
+extension, or that your program is itself a standalone application.  The
+forthcoming example will demonstrate an extension.
 
 With this in mind, let's create a file at `lib/main.js` with the
 following content:
 
-    // The `main` function is called by the host application that enables
-    // this module. In this example, `options` and `callbacks` are not
-    // used.
-    exports.main = function(options, callbacks) {
+    var contextMenu = require("context-menu");
 
-      var contextMenu = require("context-menu");
+    // Create a new context menu item.
+    var menuItem = contextMenu.Item({
 
-      // Create a new context menu item.
-      var menuItem = contextMenu.Item({
+      label: "Search with Google",
 
-        label: "Search with Google",
+      // A CSS selector. Matching on this selector triggers the
+      // display of our context menu.
+      context: "a[href]",
 
-        // A CSS selector. Matching on this selector triggers the
-        // display of our context menu.
-        context: "a[href]",
+      // When the context menu item is clicked, perform a Google
+      // search for the link text.
+      onClick: function (contextObj, item) {
+        var anchor = contextObj.node;
+        console.log("searching for " + anchor.textContent);
+        var searchUrl = "http://www.google.com/search?q=" +
+                        anchor.textContent;
+        contextObj.window.location.href = searchUrl;
+      }
+    });
 
-        // When the context menu item is clicked, perform a Google
-        // search for the link text.
-        onClick: function (contextObj, item) {
-          var anchor = contextObj.node;
-          console.log("searching for " + anchor.textContent);
-          var searchUrl = "http://www.google.com/search?q=" +
-                          anchor.textContent;
-          contextObj.window.location.href = searchUrl;
-        }
-      });
+    // Add the new menu item to the application's context menu.
+    contextMenu.add(menuItem);
 
-      // Add the new menu item to the application's context menu.
-      contextMenu.add(menuItem);
-    };
+### Listening for Load and Unload ###
 
+We take a moment to note that just as your program is loaded when it starts, it
+is unloaded when it exits. By "unloaded", we mean that either the host
+application has quit or disabled or uninstalled your program as an extension, or
+that your program as a standalone application has quit. Your program can listen
+for both of these load and unload events.
+
+If your program exports a function called `main`, that function will be called
+when your program is loaded.
+
+    exports.main = function (options, callbacks) {};
+
+`options` is an object describing the parameters with which your program was
+loaded.  In particular, `options.loadReason` is one of the following strings
+describing the reason your program was loaded: `"install"`, `"enable"`,
+`"startup"`, `"upgrade"`, or `"downgrade"`.  (On Gecko 1.9.2-based applications
+such as Firefox 3.6, `"enable"`, `"upgrade"`, and `"downgrade"` are not
+available, and `"startup"` will be sent in their place.)
+
+If your program exports a function called `onUnload`, that function will be
+called when your program is unloaded.
+
+    exports.onUnload = function (reason) {};
+
+`reason` is one of the following strings describing the reason your program was
+unloaded: `"uninstall"`, `"disable"`, `"shutdown"`, `"upgrade"`, or
+`"downgrade"`.  (On Gecko 1.9.2-based applications such as Firefox 3.6,
+`"upgrade"` and `"downgrade"` are not available, and `"shutdown"` will be sent
+in their place.)
+
+Note that if your program is unloaded with reason `"disable"`, it will not be
+notified about `"uninstall"` while it is disabled.  (A solution to this issue is
+being investigated; see bug 571049.)
 
 ### Logging ###
 
