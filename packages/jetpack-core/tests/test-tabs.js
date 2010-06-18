@@ -34,8 +34,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-let URL = require("url").URL;
-
 // test tab.activeTab getter
 exports.testActiveTab_getter = function(test) {
   test.waitUntilDone();
@@ -82,7 +80,7 @@ exports.testActiveTab_setter = function(test) {
     };
 
     tabs.open({
-      url: URL(location),
+      url: location,
       inBackground: true
     });
   });
@@ -95,7 +93,7 @@ exports.testTabProperties = function(test) {
     let tabs = require("tabs");
     let url = "data:text/html,<html><head><title>foo</title></head><body>foo</body></html>";
     tabs.open({
-      url: URL(url),
+      url: url,
       onOpen: function(tab) {
         test.assertEqual(tab.title, "foo", "title of the new tab matches");
         test.assertEqual(tab.location, url, "URL of the new tab matches");
@@ -119,10 +117,10 @@ exports.testTabsIterator= function(test) {
     let startCount = 0;
     for each (let t in tabs) startCount++;
     let url = "data:text/html,default";
-    tabs.open(URL(url));
-    tabs.open(URL(url));
+    tabs.open(url);
+    tabs.open(url);
     tabs.open({
-      url: URL(url),
+      url: url,
       onOpen: function(tab) {
         let count = 0;
         for each (let t in tabs) count++;
@@ -150,7 +148,7 @@ exports.testTabLocation = function(test) {
     };
 
     tabs.open({
-      url: URL(url1),
+      url: url1,
       onOpen: function(tab) tab.location = url2
     });
   });
@@ -172,7 +170,7 @@ exports.testTabClose = function(test) {
       closeBrowserWindow(window, function() test.done());
     };
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -184,7 +182,7 @@ exports.testTabMove = function(test) {
     let url = "data:text/html,foo";
 
     tabs.open({
-      url: URL(url),
+      url: url,
       onOpen: function(tab) {
         test.assertEqual(tab.index, 1, "tab index before move matches");
         tab.move(0);
@@ -203,13 +201,13 @@ exports.testOpen = function(test) {
     let url = "data:text/html,default";
     // test url + options
     tabs.open({
-      url: URL(url),
+      url: url,
       onOpen: function(tab) {
         test.assertEqual(tab.location, url, "URL of the new tab matches");
         test.assertEqual(window.content.location, url, "URL of active tab in the current window matches");
         // test url in options
         tabs.open({
-          url: URL(url),
+          url: url,
           onOpen: function(tab) {
             test.assertEqual(tab.location, url, "URL of the new tab matches");
             test.assertEqual(window.content.location, url, "URL of active tab in the current window matches");
@@ -238,7 +236,7 @@ exports.testInBackground = function(test) {
       closeBrowserWindow(window, function() test.done());
     };
     tabs.open({
-      url: URL(url),
+      url: url,
       inBackground: true
     });
   });
@@ -264,7 +262,7 @@ exports.testOpenInNewWindow = function(test) {
 
     let url = "data:text/html,newwindow";
     tabs.open({
-      url: URL(url),
+      url: url,
       inNewWindow: true,
       onOpen: function(tab) {
         let newWindow = cache[cache.length - 1];
@@ -306,7 +304,7 @@ exports.testTabsEvent_onOpen = function(test) {
     };
     tabs.onOpen.add(listener2);
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -338,7 +336,7 @@ exports.testTabsEvent_onClose = function(test) {
       tab.close();
     };
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -365,7 +363,7 @@ exports.testTabsEvent_onReady = function(test) {
     };
     tabs.onReady.add(listener2);
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -392,7 +390,7 @@ exports.testTabsEvent_onLoad = function(test) {
     };
     tabs.onLoad.add(listener2);
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -419,7 +417,7 @@ exports.testTabsEvent_onPaint = function(test) {
     };
     tabs.onPaint.add(listener2);
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -446,7 +444,7 @@ exports.testTabsEvent_onActivate = function(test) {
     };
     tabs.onActivate.add(listener2);
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -475,10 +473,10 @@ exports.testTabsEvent_onDeactivate = function(test) {
 
     tabs.onOpen = function(tab) {
       tabs.onOpen.remove(arguments.callee);
-      tabs.open(URL("data:text/html,foo"));
+      tabs.open("data:text/html,foo");
     };
 
-    tabs.open(URL(url));
+    tabs.open(url);
   });
 };
 
@@ -491,7 +489,7 @@ exports.testPerTabEvents = function(test) {
     let eventCount = 0;
 
     tabs.open({
-      url: URL("about:blank"),
+      url: "about:blank",
       onOpen: function(tab) {
         // add listener via property assignment
         let listener1 = function() {

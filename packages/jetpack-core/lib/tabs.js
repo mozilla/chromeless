@@ -153,12 +153,12 @@ exports.__defineSetter__("activeTab", function(tab) {
  * tabs.open - open a URL in a new tab
  */
 function open(options) {
-  if (options instanceof url.URL)
+  if (typeof options === "string")
     options = { url: options };
 
   options = apiUtils.validateOptions(options, {
     url: {
-      is: ["object"]
+      is: ["string"]
     },
     inNewWindow: {
       is: ["undefined", "boolean"]
@@ -170,9 +170,6 @@ function open(options) {
       is: ["undefined", "function"]
     }
   });
-
-  if (!(options.url instanceof url.URL))
-    throw new Error("The url must be a URL object.");
 
   // TODO: remove me. maybe implement window-utils.activeWindow?
   const wm = Cc["@mozilla.org/appshell/window-mediator;1"].
