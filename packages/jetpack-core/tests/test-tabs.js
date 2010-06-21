@@ -99,7 +99,7 @@ exports.testTabProperties = function(test) {
         test.assertEqual(tab.location, url, "URL of the new tab matches");
         test.assertEqual(tab.contentWindow, window.content, "contentWindow of the new tab matches");
         test.assertEqual(tab.contentDocument, window.content.document, "contentDocument of the new tab matches");
-        test.assertEqual(tab.favicon, "chrome://mozapps/skin/places/defaultFavicon.png", "favicon of the new tab matches");
+        test.assert(tab.favicon, "favicon of the new tab is not empty");
         test.assertEqual(tab.style, null, "style of the new tab matches");
         test.assertEqual(tab.index, 1, "index of the new tab matches");
         test.assertNotEqual(tab.thumbnail, null, "thumbnail of the new tab matches");
