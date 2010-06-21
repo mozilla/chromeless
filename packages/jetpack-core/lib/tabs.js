@@ -82,9 +82,18 @@ let tabConstructor = apiUtils.publicConstructor(function(element) {
   this.__defineGetter__("contentDocument", function() browser.contentDocument);
   this.__defineGetter__("favicon", function() {
     let pageURI = NetUtil.newURI(browser.contentDocument.location);
-    return Cc["@mozilla.org/browser/favicon-service;1"].
-           getService(Ci.nsIFaviconService).
-           getFaviconImageForPage(pageURI).spec;
+    let fs = Cc["@mozilla.org/browser/favicon-service;1"].
+             getService(Ci.nsIFaviconService);
+    let faviconURL;
+    try {
+      let faviconURI = fs.getFaviconForPage(pageURI);
+      faviconURL = fs.getFaviconDataAsDataURL(faviconURI);
+    } catch(ex) {
+      let data = getChromeURLContents("chrome://mozapps/skin/places/defaultFavicon.png");
+      let encoded = exports.activeTab.contentWindow.btoa(data);
+      faviconURL = "data:image/png;base64," + encoded;
+    }
+    return faviconURL;
   });
   this.__defineGetter__("style", function() null); // TODO
   this.__defineGetter__("index", function() win.gBrowser.getBrowserIndexForDocument(browser.contentDocument));
@@ -122,6 +131,21 @@ function getThumbnailCanvasForTab(tabEl, window) {
   ctx.scale(scale, scale);
   ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWidth * aspectRatio, "rgb(255,255,255)");
   return thumbnail;
+}
+
+// Utility to return the contents of the target of a chrome URL
+function getChromeURLContents(chromeURL) {
+  let io = Cc["@mozilla.org/network/io-service;1"].
+           getService(Ci.nsIIOService);
+  let channel = io.newChannel(chromeURL, null, null);
+  let input = channel.open();
+  let stream = Cc["@mozilla.org/binaryinputstream;1"].
+               createInstance(Ci.nsIBinaryInputStream); 
+  stream.setInputStream(input);
+  let str = stream.readBytes(input.available());
+  stream.close();
+  input.close();
+  return str;
 }
 
 /**
