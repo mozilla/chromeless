@@ -339,6 +339,8 @@ TabTracker.prototype = {
   _safeMozAfterPaint: function safeMozAfterPaint(event) {
     let win = event.currentTarget.ownerDocument.defaultView;
     let tabIndex = win.gBrowser.getBrowserIndexForDocument(event.target.document);
+    if (tabIndex == -1)
+      return;
     let tab = win.gBrowser.tabContainer.getItemAtIndex(tabIndex);
     let index = this._tabs.indexOf(tab);
     if (index == -1)
