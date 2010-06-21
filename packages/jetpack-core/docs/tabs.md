@@ -209,7 +209,7 @@ This property is read-only.
 
 <api name="thumbnail">
 @property {canvas}
-A thumbnail of the page currently loaded in the tab. NOT IMPLEMENTED YET.
+A thumbnail of the page currently loaded in the tab.
 This property is read-only.
 </api>
 
