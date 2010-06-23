@@ -16,7 +16,7 @@ Subsequent releases will allow authors to specify a larger panel
 for displaying rich content. You may hook up extended UI via the
 supported events, however keep in mind that direct access to the
 browser's XUL window DOM, directly or through events, may break
-in the very near future, likely in the 0.5 release.
+in the very near future, likely in the 0.6pre release.
 
 ## Permanent vs Transient Widgets
 
@@ -28,7 +28,7 @@ visibility.
 
 ## TODO
 
-Future (0.5 and beyond)
+Future (0.6pre and beyond)
 
 * URL ctor, content frames
 * fix image special-casing, IMG ctor

@@ -2,7 +2,7 @@
     "name": "test-harness",
     "description": "A harness for running Jetpack tests.",
     "author": "Atul Varma (http://toolness.com/)",
-    "version": "0.5",
+    "version": "0.6pre",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "dependencies": ["jetpack-core"]
 }
