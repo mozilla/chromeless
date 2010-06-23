@@ -13,10 +13,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is Cuddlefish.
+ * The Original Code is Jetpack.
  *
  * The Initial Developer of the Original Code is
- * Mozilla Foundation.
+ * the Mozilla Foundation.
  * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
@@ -40,43 +40,20 @@
 exports.ByteReader = ByteReader;
 exports.ByteWriter = ByteWriter;
 
-const xpcom = require("xpcom");
+// This just controls the maximum number of bytes we read in at one time.
+const BUFFER_BYTE_LEN = 0x8000;
 
-const BUFFER_BYTE_LEN = 1024;
-
-/**
- * A binary input stream.  The stream is backed by a Mozilla platform stream
- * that provides the underlying data, such as an nsIFileInputStream.
- *
- * @param backingStream
- *        A Mozilla platform stream object.
- */
-function ByteReader(backingStream) {
+function ByteReader(inputStream) {
   const self = this;
-  streamRegistry.register(this);
+
   let stream = Cc["@mozilla.org/binaryinputstream;1"].
-                 createInstance(Ci.nsIBinaryInputStream);
-  stream.setInputStream(backingStream);
+               createInstance(Ci.nsIBinaryInputStream);
+  stream.setInputStream(inputStream);
 
-  /**
-   * Closes the stream.
-   */
-  this.close = function ByteReader_close() {
-    stream.close();
-    streamRegistry.unregister(self);
-  };
+  let manager = new StreamManager(this, stream);
 
-  /**
-   * Reads from the stream starting at its current position.  If the stream is
-   * closed, an exception is thrown.
-   *
-   * @param  numBytes
-   *         The number of bytes to read.  If not specified, the remainder of
-   *         the entire stream is read.
-   * @return A string containing the bytes read.  If the stream is at EOF,
-   *         returns the empty string.
-   */
   this.read = function ByteReader_read(numBytes) {
+    manager.ensureOpened();
     if (typeof(numBytes) !== "number")
       numBytes = Infinity;
 
@@ -93,89 +70,62 @@ function ByteReader(backingStream) {
       }
     }
     catch (err) {
-      throw xpcom.friendlyError(err);
+      throw new Error("Error reading from stream: " + err);
     }
 
     return data;
   };
 }
 
-/**
- * A binary output stream.  The stream is backed by a Mozilla platform stream
- * that actually writes out the data, such as an nsIFileOutputStream.
- *
- * @param backingStream
- *        A Mozilla platform stream object.
- */
-function ByteWriter(backingStream) {
+function ByteWriter(outputStream) {
   const self = this;
-  streamRegistry.register(this);
+
   let stream = Cc["@mozilla.org/binaryoutputstream;1"].
                createInstance(Ci.nsIBinaryOutputStream);
-  stream.setOutputStream(backingStream);
+  stream.setOutputStream(outputStream);
 
-  /**
-   * Closes the stream.
-   */
-  this.close = function ByteWriter_close() {
-    stream.close();
-    streamRegistry.unregister(self);
-  };
+  let manager = new StreamManager(this, stream);
 
-  /**
-   * Writes to the stream.  If the stream is closed, an exception is thrown.
-   * begin and end are optional and control the portion of str that is output.
-   * If neither is specified, str is output in its entirety.  If only begin is
-   * specified, the suffix begining at that index is output.  If both are
-   * specified, the range [begin, end) is output.
-   *
-   * @param str
-   *        The string to write.
-   * @param begin
-   *        An optional argument specifying the index of str at which to start
-   *        output.
-   * @param end
-   *        An optional argument specifying the index of str at which to end
-   *        output.  The byte at index end - 1 is the last byte output.
-   */
-  this.write = function ByteWriter_write(str, begin, end) {
-    if (typeof(begin) === "number") {
-      let args = [begin];
-      if (typeof(end) === "number")
-        args.push(end);
-      str = str.substring.apply(str, args);
-    }
+  this.write = function ByteWriter_write(str) {
+    manager.ensureOpened();
     try {
       stream.writeBytes(str, str.length);
     }
     catch (err) {
-      throw xpcom.friendlyError(err);
+      throw new Error("Error writing to stream: " + err);
     }
   };
 }
 
-// On unload, close all currently opened streams.
-require("unload").when(function byteStreams_unload() {
-  while (streamRegistry.streams.length > 0) {
-    streamRegistry.streams[0].close();
-  }
-});
 
-// This keeps track of all open streams, nothing more.  Streams register
-// themselves when they're opened and unregister when they're closed.
-let streamRegistry = {
-  streams: [],
+// This manages the lifetime of stream, a ByteReader or ByteWriter.  It defines
+// closed and close() on stream and registers an unload listener that closes
+// rawStream if it's still opened.  It also provides ensureOpened(), which
+// throws an exception if the stream is closed.
+function StreamManager(stream, rawStream) {
+  const self = this;
+  this.rawStream = rawStream;
+  this.opened = true;
 
-  register: function streamRegistry_register(stream) {
-    this.streams.push(stream);
+  stream.__defineGetter__("closed", function stream_closed() {
+    return !self.opened;
+  });
+
+  stream.close = function stream_close() {
+    self.ensureOpened();
+    self.unload();
+  };
+
+  require("unload").ensure(this);
+}
+
+StreamManager.prototype = {
+  ensureOpened: function StreamManager_ensureOpened() {
+    if (!this.opened)
+      throw new Error("The stream is closed and cannot be used.");
   },
-
-  unregister: function streamRegistry_unregister(stream) {
-    let idx = this.streams.indexOf(stream);
-    if (idx < 0) {
-      throw new Error("Internal error: tried to unregister an unregistered " +
-                      "byte stream");
-    }
-    this.streams.splice(idx, 1);
+  unload: function StreamManager_unload() {
+    this.rawStream.close();
+    this.opened = false;
   }
 };

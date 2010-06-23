@@ -41,11 +41,10 @@ const byteStreams = require("byte-streams");
 const file = require("file");
 const url = require("url");
 
-const STREAM_CLOSED_ERROR =
-  "The stream is closed and cannot be read or written.";
+const STREAM_CLOSED_ERROR = "The stream is closed and cannot be used.";
 
 // This should match the constant of the same name in byte-streams.js.
-const BUFFER_BYTE_LEN = 1024;
+const BUFFER_BYTE_LEN = 0x8000;
 
 exports.testWriteRead = function (test) {
   let fname = dataFileFilename();
@@ -56,6 +55,7 @@ exports.testWriteRead = function (test) {
   test.assert(!stream.closed, "stream.closed after open should be false");
   stream.write(str);
   stream.close();
+  test.assert(stream.closed, "Stream should be closed after stream.close");
   test.assertRaises(function () stream.write("This shouldn't be written!"),
                     STREAM_CLOSED_ERROR,
                     "stream.write after close should raise error");
@@ -67,6 +67,7 @@ exports.testWriteRead = function (test) {
   test.assertEqual(stream.read(), "",
                    "stream.read at EOS should return empty string");
   stream.close();
+  test.assert(stream.closed, "Stream should be closed after stream.close");
   test.assertRaises(function () stream.read(),
                     STREAM_CLOSED_ERROR,
                     "stream.read after close should raise error");
@@ -174,29 +175,6 @@ exports.testTruncate = function (test) {
   file.remove(fname);
 };
 
-exports.testWriteBeginEnd = function (test) {
-  let str = "exports.testWriteBeginEnd data!";
-  let fname = dataFileFilename();
-
-  function check(begin, end, msg) {
-    let stream = open(test, fname, true);
-    stream.write(str, begin, end);
-    stream.close();
-    stream = open(test, fname);
-    test.assertEqual(stream.read(), str.substring(begin, end), msg);
-    stream.close();
-  }
-
-  check(5, 10, "stream.write with 0 < begin < end should work");
-  check(10, 5, "stream.write with 0 < end < begin should work");
-  check(-10, 5, "stream.write with begin < 0 < end should work");
-  check(10, -5, "stream.write with end < 0 < begin should work");
-  check(-10, -5, "stream.write with begin < end < 0 should work");
-  check(-5, -10, "stream.write with end < begin < 0 should work");
-
-  file.remove(fname);
-};
-
 exports.testUnload = function (test) {
   let loader = new test.makeSandboxedLoader();
   let file = loader.require("file");
@@ -205,9 +183,7 @@ exports.testUnload = function (test) {
   let stream = file.open(filename, "b");
 
   loader.unload();
-  test.assertRaises(function () stream.read(),
-                    STREAM_CLOSED_ERROR,
-                    "stream.read after close should raise error");
+  test.assert(stream.closed, "Stream should be closed after module unload");
 };
 
 // Returns the name of a file that should be used to test writing and reading.
