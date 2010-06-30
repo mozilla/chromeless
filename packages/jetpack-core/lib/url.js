@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci,Cr} = require("chrome");
+
 var ios = Cc['@mozilla.org/network/io-service;1']
           .getService(Ci.nsIIOService);
 

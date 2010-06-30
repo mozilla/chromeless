@@ -2,6 +2,8 @@
 // They were originally written to run in xpcshell, then ported to run
 // in a hidden window, and then ported to run in cuddlefish.
 
+var {Cc,Ci,Cu} = require("chrome");
+
 var WrapperTests = {
   runTests: function(test, doOutput) {
     function output(msg) {

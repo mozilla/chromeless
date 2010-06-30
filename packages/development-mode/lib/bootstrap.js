@@ -35,6 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var {Cc,Cm,Ci,components} = require("chrome");
 var file = require("file");
 
 // A global registry of all Jetpack Programs that we're responsible
@@ -43,7 +44,7 @@ var file = require("file");
 // wrappedJSObject of the harness services themselves.
 var gServices = {};
 
-var manager = Components.manager;
+var manager = Cm;
 manager.QueryInterface(Ci.nsIComponentRegistrar);
 
 // Attempts to unload and then unregister the XPCOM component with the
@@ -96,7 +97,7 @@ function makeUnloader(contractID, classID) {
 exports.run = function run(options, rootDirPath, dump) {
   var harnessService;
   var contractID = options.bootstrap.contractID;
-  var classID = Components.ID(options.bootstrap.classID);
+  var classID = components.ID(options.bootstrap.classID);
 
   maybeUnload(contractID, classID);
   options.runImmediately = true;

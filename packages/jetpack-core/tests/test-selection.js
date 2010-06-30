@@ -35,6 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 let timer = require("timer");
+let {Cc,Ci} = require("chrome");
 
 // Arbitrary delay needed to avoid weird behavior.
 // TODO: We need to find all uses of this and replace them

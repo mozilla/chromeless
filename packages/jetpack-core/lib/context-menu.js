@@ -37,6 +37,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Ci} = require("chrome");
+
 if (!require("xul-app").is("Firefox")) {
   throw new Error([
     "The context-menu module currently supports only Firefox.  In the future ",

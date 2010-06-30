@@ -37,6 +37,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+let {Cc,Ci} = require("chrome");
+
 // These should match the same constants in the module.
 const ITEM_CLASS = "jetpack-context-menu-item";
 const SEPARATOR_ID = "jetpack-context-menu-separator";
@@ -1324,8 +1326,8 @@ TestHelper.prototype = {
                  { left: 0, top: 0 };
       let contentWin = this.browserWindow.content;
       contentWin.
-        QueryInterface(Components.interfaces.nsIInterfaceRequestor).
-        getInterface(Components.interfaces.nsIDOMWindowUtils).
+        QueryInterface(Ci.nsIInterfaceRequestor).
+        getInterface(Ci.nsIDOMWindowUtils).
         sendMouseEvent("contextmenu", rect.left, rect.top, 2, 1, 0);
     }
 

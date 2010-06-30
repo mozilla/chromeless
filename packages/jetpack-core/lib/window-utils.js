@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
+
 var errors = require("errors");
 
 var gWindowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]

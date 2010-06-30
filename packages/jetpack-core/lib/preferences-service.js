@@ -43,6 +43,8 @@
 const MAX_INT = Math.pow(2, 31) - 1;
 const MIN_INT = -MAX_INT;
 
+const {Cc,Ci,Cr} = require("chrome");
+
 var prefSvc = Cc["@mozilla.org/preferences-service;1"].
               getService(Ci.nsIPrefService).getBranch(null);
 

@@ -1,4 +1,5 @@
 var observers = require("observer-service");
+var {Cc,Ci} = require("chrome");
 
 exports.testUnloadAndErrorLogging = function(test) {
   var prints = [];

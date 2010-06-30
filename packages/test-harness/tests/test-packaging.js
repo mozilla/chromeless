@@ -1,12 +1,13 @@
 var url = require("url");
 var file = require("file");
+var {Cm,Ci} = require("chrome");
 
 exports.testPackaging = function(test) {
   test.assertEqual(packaging.options.main,
                    'run-tests',
                    "main program should be the test harness");
 
-  var factory = Components.manager.getClassObjectByContractID(
+  var factory = Cm.getClassObjectByContractID(
     packaging.options.bootstrap.contractID,
     Ci.nsIFactory
   );

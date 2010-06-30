@@ -38,6 +38,7 @@ let xhr = require('xhr');
 let timer = require("timer");
 let prefs = require("preferences-service");
 let file = require("file");
+let {Cc, Ci} = require("chrome");
 
 /**
  * An interface jetpack localization capabilities

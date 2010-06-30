@@ -42,6 +42,7 @@ const prefs = require("preferences-service");
 
 const QUOTA_PREF = "jetpack.jetpack-core.simple-storage.quota";
 
+let {Cc,Ci} = require("chrome");
 let storeFile = Cc["@mozilla.org/file/directory_service;1"].
                 getService(Ci.nsIProperties).
                 get("ProfD", Ci.nsIFile);

@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var {Cc,Ci} = require("chrome");
+
 // test tab.activeTab getter
 exports.testActiveTab_getter = function(test) {
   test.waitUntilDone();

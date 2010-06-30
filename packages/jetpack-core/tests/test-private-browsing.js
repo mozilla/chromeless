@@ -36,6 +36,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 let pb = require("private-browsing");
+let {Cc,Ci} = require("chrome");
 
 let pbService;
 // Currently, only Firefox implements the private browsing service.

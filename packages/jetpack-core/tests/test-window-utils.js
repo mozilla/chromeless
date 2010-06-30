@@ -1,5 +1,6 @@
 var windowUtils = require("window-utils");
 var timer = require("timer");
+var {Cc,Ci} = require("chrome");
 
 function makeEmptyWindow() {
   var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";

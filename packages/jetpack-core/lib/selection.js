@@ -42,6 +42,8 @@ if (!require("xul-app").is("Firefox")) {
   ].join(""));
 }
 
+let {Ci} = require("chrome");
+
 // The selection type HTML
 const HTML = 0x01;
 

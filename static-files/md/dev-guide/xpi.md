@@ -111,6 +111,28 @@ auto-generated files:
       {
        "loader": "resource://guid-jetpack-core-lib/loader.js",
        "main": "main",
+       "manifest": [
+        [
+         "aardvark",
+         "main",
+         [
+          "bar-module"
+         ],
+         false
+        ],
+        [
+         "barbeque",
+         "bar-module",
+         [],
+         false
+        ],
+        [
+         "jetpack-core",
+         "loader",
+         [],
+         false
+        ]
+       ],
        "packageData": {},
        "resourcePackages": {
         "guid-aardvark-lib": "aardvark",

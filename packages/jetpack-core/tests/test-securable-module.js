@@ -1,7 +1,5 @@
 (function(global) {
-   const Cc = Components.classes;
-   const Ci = Components.interfaces;
-   const Cu = Components.utils;
+   const {Cc,Ci,Cu} = require("chrome");
 
    var exports = new Object();
 

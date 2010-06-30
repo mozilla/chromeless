@@ -37,6 +37,7 @@
 
 var print;
 
+var {Cc,Ci} = require("chrome");
 var xhr = require("xhr");
 
 // TODO: Eventually we should be able to e.g. require("os").environ

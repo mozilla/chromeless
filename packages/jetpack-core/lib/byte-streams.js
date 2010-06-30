@@ -40,6 +40,8 @@
 exports.ByteReader = ByteReader;
 exports.ByteWriter = ByteWriter;
 
+const {Cc, Ci} = require("chrome");
+
 // This just controls the maximum number of bytes we read in at one time.
 const BUFFER_BYTE_LEN = 0x8000;
 

@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
+
 // ## Implementation Notes ##
 // 
 // Making `XMLHttpRequest` objects available to Jetpack code involves a

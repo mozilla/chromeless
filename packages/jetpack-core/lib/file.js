@@ -37,6 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci,Cr} = require("chrome");
 const byteStreams = require("byte-streams");
 const textStreams = require("text-streams");
 const xpcom = require("xpcom");

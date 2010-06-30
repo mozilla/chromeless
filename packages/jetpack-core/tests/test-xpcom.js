@@ -1,5 +1,6 @@
 var traceback = require("traceback");
 var xpcom = require("xpcom");
+var {Cc,Ci,Cm,Cr} = require("chrome");
 
 exports.testRegister = function(test, text) {
   if (!text)
@@ -34,7 +35,7 @@ exports.testRegister = function(test, text) {
                                 categories: ["bingy"],
                                 create: Component});
 
-  var manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
+  var manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
   test.assertEqual(manager.isContractIDRegistered(contractID), true);
 
   test.assertEqual(xpcom.getCategory("bingy").length, 1,
@@ -168,7 +169,7 @@ exports.testUnload = function(test) {
                     contractID: contractID,
                     create: Component});
 
-  var manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
+  var manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
   test.assertEqual(manager.isContractIDRegistered(contractID), true);
 
   loader.unload();

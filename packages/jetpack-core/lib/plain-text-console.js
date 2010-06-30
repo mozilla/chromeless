@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
+
 function stringify(arg) {
   try {
     return String(arg);

@@ -35,12 +35,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci,Cm,Cr,Cu} = require("chrome");
+
 var jsm = {};
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm", jsm);
+Cu.import("resource://gre/modules/XPCOMUtils.jsm", jsm);
 var utils = exports.utils = jsm.XPCOMUtils;
 
-var manager = Components.manager;
-manager.QueryInterface(Ci.nsIComponentRegistrar);
+Cm.QueryInterface(Ci.nsIComponentRegistrar);
 
 var categoryManager = Cc["@mozilla.org/categorymanager;1"]
                       .getService(Ci.nsICategoryManager);
@@ -57,10 +58,10 @@ function Factory(options) {
   this.contractID = options.contractID;
   this.categories = options.categories || [];
 
-  manager.registerFactory(this.uuid,
-                          this.name,
-                          this.contractID,
-                          this);
+  Cm.registerFactory(this.uuid,
+                     this.name,
+                     this.contractID,
+                     this);
 
   var self = this;
   this.categories.forEach(
@@ -103,7 +104,7 @@ Factory.prototype = {
       });
 
     factories.splice(index, 1);
-    manager.unregisterFactory(this.uuid, this);
+    Cm.unregisterFactory(this.uuid, this);
   },
   QueryInterface: utils.generateQI([Ci.nsIFactory])
 };
@@ -142,9 +143,8 @@ var autoRegister = exports.autoRegister = function autoRegister(path) {
     throw new Error("component not available for OS/ABI " +
                     osDirName + " and platform " + platformVersion);
 
-  var mgr = Components.manager;
-  mgr.QueryInterface(Ci.nsIComponentRegistrar);
-  mgr.autoRegister(file);
+  Cm.QueryInterface(Ci.nsIComponentRegistrar);
+  Cm.autoRegister(file);
 };
 
 var register = exports.register = function register(options) {
@@ -157,8 +157,7 @@ var register = exports.register = function register(options) {
 var getClass = exports.getClass = function getClass(contractID, iid) {
   if (!iid)
     iid = Ci.nsISupports;
-  return Components.manager.getClassObjectByContractID(contractID,
-                                                       iid);
+  return Cm.getClassObjectByContractID(contractID, iid);
 };
 
 var getCategory = exports.getCategory = function getCategory(name) {

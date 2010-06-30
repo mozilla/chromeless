@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci,components} = require("chrome");
+
 // Undo the auto-parentification of URLs done in bug 418356.
 function deParentifyURL(url) {
   return url ? url.split(" -> ").slice(-1)[0] : url;
@@ -116,7 +118,7 @@ var fromException = exports.fromException = function fromException(e) {
 };
 
 var get = exports.get = function get() {
-  return nsIStackFramesToJSON(Components.stack.caller);
+  return nsIStackFramesToJSON(components.stack.caller);
 };
 
 var format = exports.format = function format(tbOrException) {

@@ -34,6 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
 const errors = require("errors");
 const windowUtils = require("window-utils");
 const apiUtils = require("api-utils");

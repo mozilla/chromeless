@@ -16,33 +16,8 @@ At the time of this writing, Jetpack code does *not* have access to
 any globals defined by the [HTML5] specification, such as `window`,
 `document`, or `localStorage`.
 
-## Privileged Globals ##
-
-The following globals are available if a Jetpack module is run with
-chrome privileges. While all Jetpack modules are currently run with
-chrome privileges by default, you shouldn't use them unless you
-absolutely need to; see the [Security Roadmap] for more information.
-
-<code>**Components**</code>
-
-The infamous [Components object] that grants unfettered access to the
-host system.
-
-<code>**Cc**</code>
-
-An alias for `Components.classes`.
-
-<code>**Ci**</code>
-
-An alias for `Components.interfaces`.
-
-<code>**Cu**</code>
-
-An alias for `Components.utils`.
-
-<code>**Cr**</code>
-
-An alias for `Components.results`.
+To access the infamous and powerful `Components` object, see the
+[Chrome Authority](#guide/chrome) documentation.
 
 ## Unprivileged Globals ##
 

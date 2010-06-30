@@ -37,7 +37,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+const {Cc,Ci,Cu,components} = require("chrome");
+var NetUtil = {};
+Cu.import("resource://gre/modules/NetUtil.jsm", NetUtil);
+NetUtil = NetUtil.NetUtil;
 
 // NetUtil.asyncCopy() uses this buffer length, and since we call it, for best
 // performance we use it, too.
@@ -196,7 +199,7 @@ function TextWriter(outputStream, charset) {
     manager.ensureOpened();
     let istream = uconv.convertToInputStream(str);
     NetUtil.asyncCopy(istream, stream, function (result) {
-      let err = Components.isSuccessCode(result) ? undefined :
+        let err = components.isSuccessCode(result) ? undefined :
         new Error("An error occured while writing to the stream: " + result);
       if (err)
         console.error(err);

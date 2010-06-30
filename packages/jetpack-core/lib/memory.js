@@ -34,6 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci,Cu,components} = require("chrome");
 var trackedObjects = {};
 
 var Compacter = {
@@ -66,7 +67,7 @@ timer.initWithCallback(Compacter,
                        Ci.nsITimer.TYPE_REPEATING_SLACK);
 
 var track = exports.track = function track(object, bin, stackFrameNumber) {
-  var frame = Components.stack.caller;
+  var frame = components.stack.caller;
   var weakref = Cu.getWeakReference(object);
   if (!bin)
     bin = object.constructor.name;

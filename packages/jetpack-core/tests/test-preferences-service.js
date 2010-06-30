@@ -1,4 +1,5 @@
 var prefs = require("preferences-service");
+var {Cc,Ci} = require("chrome");
 
 exports.testReset = function(test) {
   prefs.reset("test_reset_pref");

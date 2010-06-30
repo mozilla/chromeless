@@ -35,6 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 var obsvc = require("observer-service");
+var {Cc,Ci} = require("chrome");
 
 function runTests(iterations, filter, verbose, rootPaths, quit, print) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]

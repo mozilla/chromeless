@@ -35,6 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
 const collection = require("collection");
 const observers = require("observer-service");
 const errors = require("errors");

@@ -34,6 +34,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var {Cc,Ci} = require("chrome");
+
 var cService = Cc['@mozilla.org/consoleservice;1'].getService()
                .QueryInterface(Ci.nsIConsoleService);
 

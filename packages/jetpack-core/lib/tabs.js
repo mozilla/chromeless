@@ -42,8 +42,12 @@ if (!require("xul-app").is("Firefox")) {
   ].join(""));
 }
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
+
+const {Cc,Ci,Cu} = require("chrome");
+var NetUtil = {};
+Cu.import("resource://gre/modules/NetUtil.jsm", NetUtil);
+NetUtil = NetUtil.NetUtil;
 const errors = require("errors");
 const windowUtils = require("window-utils");
 const apiUtils = require("api-utils");

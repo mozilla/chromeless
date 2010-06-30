@@ -34,7 +34,10 @@ class PackageNotFoundError(Error):
         self.reason = reason
     def __str__(self):
         return "%s (%s)" % (self.missing_package, self.reason)
-    
+
+class BadChromeMarkerError(Error):
+    pass
+
 def validate_resource_hostname(name):
     """
     Validates the given hostname for a resource: URI.
@@ -206,10 +209,13 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                               default_loader=DEFAULT_LOADER):
     validate_resource_hostname(prefix)
 
+    manifest = []
     build = Bunch(resources=Bunch(),
                   resourcePackages=Bunch(),
                   packageData=Bunch(),
-                  rootPaths=[])
+                  rootPaths=[],
+                  manifest=manifest,
+                  )
 
     def add_section_to_build(cfg, section, is_code=False,
                              is_data=False):
@@ -233,6 +239,15 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                     build.rootPaths.insert(0, resource_url)
                 if is_data:
                     build.packageData[cfg.name] = resource_url
+                if section == "lib":
+                    from manifest import scan_package
+                    pkg_manifest, problems = scan_package(cfg.name, dirname)
+                    if problems:
+                        # the relevant instructions have already been written
+                        # to stderr
+                        raise BadChromeMarkerError()
+                    manifest.extend(pkg_manifest)
+
 
     def add_dep_to_build(dep):
         dep_cfg = pkg_cfg.packages[dep]

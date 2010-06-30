@@ -35,6 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 var timer = require("timer");
+var {Cc,Ci} = require("chrome");
 
 // Utility function to open a new browser window.
 function openBrowserWindow(callback, url) {

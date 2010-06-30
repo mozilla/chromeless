@@ -1,4 +1,5 @@
 var traceback = require("traceback");
+var {Cc,Ci,Cr,Cu} = require("chrome");
 
 function throwNsIException() {
   var ios = Cc['@mozilla.org/network/io-service;1']

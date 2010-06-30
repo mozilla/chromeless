@@ -36,6 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
 var xpcom = require("xpcom");
 
 /**

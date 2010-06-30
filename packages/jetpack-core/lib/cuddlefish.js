@@ -95,10 +95,7 @@
    }
 
    var Loader = exports.Loader = function Loader(options) {
-     var globals = {Cc: Components.classes,
-                    Ci: Components.interfaces,
-                    Cu: Components.utils,
-                    Cr: Components.results};
+     var globals = {};
 
      if (options.globals)
        for (var name in options.globals)

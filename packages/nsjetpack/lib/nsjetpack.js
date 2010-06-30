@@ -1,5 +1,6 @@
 var url = require("url");
 var xpcom = require("xpcom");
+var {Ci} = require("chrome");
 
 var component = null;
 

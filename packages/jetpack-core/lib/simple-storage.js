@@ -37,6 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const {Cc,Ci} = require("chrome");
 const collection = require("collection");
 const file = require("file");
 const prefs = require("preferences-service");
