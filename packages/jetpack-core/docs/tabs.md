@@ -16,7 +16,7 @@ The currently active tab.
 
 **Example**
 
-    let tabs = require("tabs");
+    var tabs = require("tabs");
     console.log("title of active tab is " + tabs.activeTab.title);
 
 <api name="tabs">
@@ -27,7 +27,7 @@ The set of open tabs, across all open windows.
 
 **Example**
 
-    let tabs = require("tabs");
+    var tabs = require("tabs");
     for each (tab in tabs) {
       console.log(tab.title);
     }
@@ -67,7 +67,7 @@ visible to the user. This is an optional property.
 
 **Example**
 
-    let tabs = require("tabs");
+    var tabs = require("tabs");
 
     // open a new tab and make it active
     tabs.open("http://www.mysite.com");
@@ -100,52 +100,55 @@ Events representing common actions and state changes for tabs and their content.
 
 These properties are both `collections` and setters. Listeners can be registered
 by either assigning a callback function to any of these properties, or by
-passing the callback to the properties' `add` method.
+passing the callback to the properties' `add` method.  Listeners can be removed
+by passing the callback function to the properties' `remove` method.
 
-Listeners can be removed by passing the callback function to the properties'
-`remove` method.
+Listeners are passed the `tab` object that triggered the event.
 
 <api name="onActivate">
-@property {object}
+@property {collection}
 Fired when an inactive tab is made active.
 </api>
 
 <api name="onDeactivate">
-@property {object}
+@property {collection}
 Fired when the active tab is made inactive.
 </api>
 
 <api name="onOpen">
-@property {object}
-Fired when a new tab is opened.
+@property {collection}
+Fired when a new tab is opened. At this point the page has not finished loading,
+so not all properties of the `tab` object passed to listeners will be available.
+For example, `tab.location` will not be correct. Use `onReady` or `onLoad` to be
+notified when the page has loaded.
 </api>
 
 <api name="onClose">
-@property {object}
+@property {collection}
 Fired when a tab is closed.
 </api>
 
 <api name="onReady">
-@property {object}
+@property {collection}
 Fired when a tab's content's DOM is ready.
 This is equivalent to the DOMContentLoaded event
 for the given content page.
 </api>
 
 <api name="onLoad">
-@property {object}
+@property {collection}
 Fired for each load event in the tab's content page.
 This can fire multiple times, for both content and images.
 </api>
 
 <api name="onPaint">
-@property {object}
+@property {collection}
 Fired whenever a portion of the tab's content page is repainted.
 </api>
 
 **Examples**
 
-    let tabs = require("tabs");
+    var tabs = require("tabs");
 
     // listen for tab openings via property assignment
     tabs.onOpen = function(tab) {
@@ -241,22 +244,22 @@ have the tab object on which the listener was registered.
 
 **Examples**
 
-let tabs = require("tabs");
+    var tabs = require("tabs");
 
-// close the active tab
-tabs.activeTab.close();
+    // close the active tab
+    tabs.activeTab.close();
 
-// move the active tab one position to the right
-tabs.activeTab.move(tabs.activeTab.index + 1);
+    // move the active tab one position to the right
+    tabs.activeTab.move(tabs.activeTab.index + 1);
 
-// open a tab, and listen for content loads
-tabs.open({
-  url: "http://www.mozilla.com",
-  onOpen: function(tab) {
-    
-    // listen for content loads
-    tab.onReady = function() {
-      console.log(tab.title);
-    };
-  }
-});
+    // open a tab, and listen for content loads
+    tabs.open({
+      url: "http://www.mozilla.com",
+      onOpen: function(tab) {
+
+        // listen for content loads
+        tab.onReady = function() {
+          console.log(tab.title);
+        };
+      }
+    });
