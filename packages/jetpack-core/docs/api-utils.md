@@ -23,6 +23,12 @@ options dictionaries should be checked for correct type, and informative error
 messages should be generated when clients make mistakes.  With the
 `validateOptions` function, your module can easily do so.
 
+And objects are sometimes iterable over a custom set of key/value pairs.
+Such objects should have custom iterators that let consumers iterate keys,
+values, or [key, value] pairs.  The `addIterator` function makes it easy to do
+so in a way that is consistent with the behavior of default iterators during
+`for...in`, `for each...in`, and `for...in Iterator()` loops.
+
 Functions
 ---------
 
@@ -123,3 +129,26 @@ If the key `foo` is optional and doesn't need to be mapped:
     opts = {};
     validatedOpts = apiUtils.validateOptions(opts, { foo: {} });
     // validatedOpts == {}
+
+
+<api name="addIterator">
+@method
+Adds an iterator to the specified object that iterates keys, values,
+or [key, value] pairs depending on how it is invoked, i.e.:
+
+    for      (var key in obj)                  { ... } // iterate keys
+    for each (var val in obj)                  { ... } // iterate values
+    for      (var [key, val] in Iterator(obj)) { ... } // iterate pairs
+
+If your object only iterates either keys or values, you don't need this
+function. Simply assign a generator function that iterates the keys/values
+to your object's `__iterator__` property instead, f.e.:
+
+    obj.__iterator__ = function () { for each (var i in items) yield i; }
+
+@param obj {object}
+the object to which to add the iterator
+
+@param keysValsGen {function}
+a generator function that yields [key, value] pairs
+</api>

@@ -151,12 +151,25 @@
        log("modules shouldn't have chrome privileges by default.",
            "fail");
      } catch (e) {
-       assert.isEqual(
-         e.message,
-         ("Permission denied for <http://www.mozilla.org> " +
-          "to get property XPCComponents.classes"),
-         "modules shouldn't have chrome privileges by default."
-       );
+       // The error message that gets thrown is localized, so we must compare
+       // it to the localized version.  This should be as simple as retrieving
+       // that version from its string bundle, but the error message is also
+       // corrupted (its characters' high bytes thrown away due to bug 567597),
+       // so we have to do the same to the version to which we compare it.
+       let bundle =
+         require("app-strings").
+         StringBundle("chrome://global/locale/security/caps.properties");
+       let message = bundle.get("GetPropertyDeniedOriginsOnlySubject",
+                                ["http://www.mozilla.org", "XPCComponents",
+                                 "classes"]).
+                     split("").
+                     map(function(v) v.charCodeAt(0)).
+                     map(function(v) v % 256).
+                     map(function(v) String.fromCharCode(v)).
+                     join("");
+
+       assert.isEqual(e.message, message,
+                      "modules shouldn't have chrome privileges by default.");
      }
 
      loader = new SecurableModule.Loader(

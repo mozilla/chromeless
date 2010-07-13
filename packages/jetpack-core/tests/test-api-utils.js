@@ -209,6 +209,54 @@ exports.testValidateMapWithMissingKey = function (test) {
   assertObjsEqual(test, val, { });
 }
 
+exports.testAddIterator = function testAddIterator(test) {
+  let obj = {};
+  let keys = ["foo", "bar", "baz"];
+  let vals = [1, 2, 3];
+  let keysVals = [["foo", 1], ["bar", 2], ["baz", 3]];
+  apiUtils.addIterator(
+    obj,
+    function keysValsGen() {
+      for each (let keyVal in keysVals)
+        yield keyVal;
+    }
+  );
+
+  let keysItr = [];
+  for (let key in obj)
+    keysItr.push(key);
+  test.assertEqual(keysItr.length, keys.length,
+                   "the keys iterator returns the correct number of items");
+  for (let i = 0; i < keys.length; i++)
+    test.assertEqual(keysItr[i], keys[i], "the key is correct");
+
+  let valsItr = [];
+  for each (let val in obj)
+    valsItr.push(val);
+  test.assertEqual(valsItr.length, vals.length,
+                   "the vals iterator returns the correct number of items");
+  for (let i = 0; i < vals.length; i++)
+    test.assertEqual(valsItr[i], vals[i], "the val is correct");
+
+  let keysValsItr = [];
+  for (let keyVal in Iterator(obj))
+    keysValsItr.push(keyVal);
+  test.assertEqual(keysValsItr.length, keysVals.length, "the keys/vals " +
+                   "iterator returns the correct number of items");
+  for (let i = 0; i < keysVals.length; i++) {
+    test.assertEqual(keysValsItr[i][0], keysVals[i][0], "the key is correct");
+    test.assertEqual(keysValsItr[i][1], keysVals[i][1], "the val is correct");
+  }
+
+  let keysOnlyItr = [];
+  for (let key in Iterator(obj, true /* keysonly */))
+    keysOnlyItr.push(key);
+  test.assertEqual(keysOnlyItr.length, keysVals.length, "the keys only " +
+                   "iterator returns the correct number of items");
+  for (let i = 0; i < keysVals.length; i++)
+    test.assertEqual(keysOnlyItr[i], keysVals[i][0], "the key is correct");
+};
+
 function assertObjsEqual(test, obj1, obj2) {
   var items = 0;
   for (let [key, val] in Iterator(obj1)) {
