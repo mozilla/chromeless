@@ -201,21 +201,12 @@ exports.testOpen = function(test) {
   openBrowserWindow(function(window, browser) {
     let tabs = require("tabs");
     let url = "data:text/html,default";
-    // test url + options
     tabs.open({
       url: url,
       onOpen: function(tab) {
         test.assertEqual(tab.location, url, "URL of the new tab matches");
         test.assertEqual(window.content.location, url, "URL of active tab in the current window matches");
-        // test url in options
-        tabs.open({
-          url: url,
-          onOpen: function(tab) {
-            test.assertEqual(tab.location, url, "URL of the new tab matches");
-            test.assertEqual(window.content.location, url, "URL of active tab in the current window matches");
-            closeBrowserWindow(window, function() test.done());
-          }
-        });
+        closeBrowserWindow(window, function() test.done());
       }
     });
   });
