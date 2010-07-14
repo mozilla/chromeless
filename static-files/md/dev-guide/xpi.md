@@ -16,6 +16,12 @@ packages, structured like so:
 
     >>> from cuddlefish.tests.test_xpi import document_dir
     >>> document_dir('packages')
+    aardvark/lib/main.js:
+      exports.main = function(options, callbacks) {
+        console.log("1 + 1 =", require("bar-module").add(1, 1));
+        callbacks.quit();
+      };
+    <BLANKLINE>
     aardvark/package.json:
       {
         "description": "A package w/ a main module; can be built into
@@ -23,10 +29,9 @@ packages, structured like so:
         "dependencies": ["jetpack-core", "barbeque"]
       }
     <BLANKLINE>
-    aardvark/lib/main.js:
-      exports.main = function(options, callbacks) {
-        console.log("1 + 1 =", require("bar-module").add(1, 1));
-        callbacks.quit();
+    barbeque/lib/bar-module.js:
+      exports.add = function add(a, b) {
+        return a + b;
       };
     <BLANKLINE>
     barbeque/package.json:
@@ -34,10 +39,10 @@ packages, structured like so:
         "description": "A package used by 'aardvark' as a library."
       }
     <BLANKLINE>
-    barbeque/lib/bar-module.js:
-      exports.add = function add(a, b) {
-        return a + b;
-      };
+    jetpack-core/lib/loader.js:
+      // This module will be imported by the XPCOM harness/boostrapper
+      // via Components.utils.import() and is responsible for creating a
+      // CommonJS module loader.
     <BLANKLINE>
     jetpack-core/package.json:
       {
@@ -45,11 +50,6 @@ packages, structured like so:
                         module loader implementation.",
         "loader": "lib/loader.js"
       }
-    <BLANKLINE>
-    jetpack-core/lib/loader.js:
-      // This module will be imported by the XPCOM harness/boostrapper
-      // via Components.utils.import() and is responsible for creating a
-      // CommonJS module loader.
 
 Note that our `packages` directory could actually contain more
 packages, too. This doesn't affect the generated XPI, however, because
@@ -83,11 +83,13 @@ auto-generated files:
     >>> document_dir('xpi-output')
     install.rdf:
       <RDF><!-- Extension metadata is here. --></RDF>
+    <BLANKLINE>
     components/harness.js:
       // This file contains XPCOM code that bootstraps a
       // Jetpack-based extension by loading its harness-options.json,
       // registering all its resource directories, executing its loader,
       // and then executing its main module's main() function.
+    <BLANKLINE>
     resources/guid-aardvark-lib/:
     <BLANKLINE>
     resources/guid-aardvark-lib/main.js:
@@ -95,18 +97,21 @@ auto-generated files:
         console.log("1 + 1 =", require("bar-module").add(1, 1));
         callbacks.quit();
       };
+    <BLANKLINE>
     resources/guid-barbeque-lib/:
     <BLANKLINE>
     resources/guid-barbeque-lib/bar-module.js:
       exports.add = function add(a, b) {
         return a + b;
       };
+    <BLANKLINE>
     resources/guid-jetpack-core-lib/:
     <BLANKLINE>
     resources/guid-jetpack-core-lib/loader.js:
       // This module will be imported by the XPCOM harness/boostrapper
       // via Components.utils.import() and is responsible for creating a
       // CommonJS module loader.
+    <BLANKLINE>
     harness-options.json:
       {
        "loader": "resource://guid-jetpack-core-lib/loader.js",

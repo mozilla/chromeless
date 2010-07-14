@@ -46,6 +46,7 @@ def document_zip_file(path):
     zip.close()
 
 def document_dir_files(path):
+    filename_contents_tuples = []
     for dirpath, dirnames, filenames in os.walk(path):
         relpath = dirpath[len(path)+1:]
         for filename in filenames:
@@ -53,8 +54,11 @@ def document_dir_files(path):
             contents = open(abspath, 'r').read()
             contents = "\n  ".join(contents.splitlines())
             relfilename = os.path.join(relpath, filename)
-            print "%s:" % normpath(relfilename)
-            print "  %s" % contents
+            filename_contents_tuples.append((normpath(relfilename), contents))
+    filename_contents_tuples.sort()
+    for filename, contents in filename_contents_tuples:
+        print "%s:" % filename
+        print "  %s" % contents
 
 def create_xpi(xpiname):
     configs = test_packaging.get_configs('aardvark')
