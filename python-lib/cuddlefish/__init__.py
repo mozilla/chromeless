@@ -220,6 +220,7 @@ def test_all_examples(env_root, defaults):
     examples_dir = os.path.join(env_root, "examples")
     examples = [dirname for dirname in os.listdir(examples_dir)
                 if os.path.isdir(os.path.join(examples_dir, dirname))]
+    examples.sort()
     for dirname in examples:
         print "Testing %s..." % dirname
         run(arguments=["test",
