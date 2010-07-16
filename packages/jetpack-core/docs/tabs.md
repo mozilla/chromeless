@@ -184,13 +184,15 @@ This property can be set, to load a different URL in the tab.
 <api name="contentWindow">
 @property {object}
 The window object for the page currently loaded in the tab.
-This property is read-only.
+This property is read-only, meaning you cannot set it to different window.
+The window itself can be modified.
 </api>
 
 <api name="contentDocument">
 @property {object}
 The document object for the page currently loaded in the tab.
-This property is read-only.
+This property is read-only, meaning you cannot set it to a different document.
+The document itself can be modified.
 </api>
 
 <api name="favicon">
