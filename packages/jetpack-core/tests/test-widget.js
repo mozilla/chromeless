@@ -92,6 +92,7 @@ exports.testConstructor = function(test) {
       let node = widgetNode(startCount);
       test.assert(node, "widget node at index");
       test.assertEqual(node.tagName, "hbox", "widget node is hbox");
+      test.assertEqual(widget.width + "px", node.style.minWidth, "widget width is correct");
       test.assertEqual(widgetCount(), startCount + 1, "container has correct number of child elements after add");
       let content = node.firstElementChild;
       test.assert(content, "found content");
@@ -347,6 +348,25 @@ exports.testConstructor = function(test) {
       widgets.remove(w);
       doneTest();
     });
+
+    // test widget.width
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "test widget.width",
+      content: "test width",
+      width: 200,
+      onReady: function(e) {
+        test.assertEqual(this.width, 200);
+
+        let node = widgetNode(0);
+        test.assertEqual(this.width, node.style.minWidth.replace("px", ""));
+
+        this.width = 300;
+        test.assertEqual(this.width, node.style.minWidth.replace("px", ""));
+
+        widgets.remove(this);
+        doneTest();
+      }
+    })));
 
     // kick off test execution
     doneTest();

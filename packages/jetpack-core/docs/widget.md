@@ -16,7 +16,7 @@ Subsequent releases will allow authors to specify a larger panel
 for displaying rich content. You may hook up extended UI via the
 supported events, however keep in mind that direct access to the
 browser's XUL window DOM, directly or through events, may break
-in the very near future, likely in the 0.6pre release.
+in the very near future, likely in the 0.6 release.
 
 ## Permanent vs Transient Widgets
 
@@ -25,20 +25,6 @@ vs "inactive" widgets, or "pinned" widgets, or time-contextual widgets.
 
 Currently the widget author is in charge of managing their widget's
 visibility.
-
-## TODO
-
-Future (0.6pre and beyond)
-
-* URL ctor, content frames
-* fix image special-casing, IMG ctor
-* add `unbind` support to event handlers
-* overflow
-* support 32px size switching
-* transience
-* discovery pane
-* advanced ordering
-* portability
 
 ## Constructors ##
 
@@ -74,6 +60,13 @@ the following keys.  If any option is invalid, an exception is thrown.
       your static data files.
 
       Widgets must either have a <tt>content</tt> property or an <tt>image</tt> property.
+    </td>
+  </tr>
+  <tr>
+    <td><tt>width</tt></td>
+    <td>
+      Width in pixels of the widget. This property can be updated after
+      the widget has been created, to resize it.
     </td>
   </tr>
   <tr>
@@ -192,5 +185,20 @@ Removes a widget from the bar.
       },
       onClick: function(e) {
         e.view.content.location = this.content
+      }
+    }));
+
+    // A widget created with a specified width, that grows.
+    widgets.add(widgets.Widget({
+      label: "Wide widget that grows wider on a timer",
+      content: "I'm getting longer.",
+      width: 50,
+      onReady: function(e) {
+        if (!this.timer) {
+          var self = this;
+          this.timer = require("timer").setInterval(function() {
+            self.width += 10;
+          }, 1000);
+        }
       }
     }));

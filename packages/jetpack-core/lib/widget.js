@@ -89,6 +89,9 @@ function Widget(options) {
     content: {
       is: ["null", "undefined", "string"],
     },
+    width:  {
+      is: ["null", "undefined", "number"],
+    },
     onClick: {
       is: ["function", "array", "null", "undefined"],
     },
@@ -112,6 +115,12 @@ function Widget(options) {
   let self = this;
 
   this.__defineGetter__("label", function() options.label);
+
+  this.__defineGetter__("width", function() options.width || 24);
+  this.__defineSetter__("width", function(width) {
+    options.width = width;
+    browserManager.updateItem(self, "width", width);
+  });
 
   if (options.image) {
     this.__defineGetter__("image", function() options.image);
@@ -319,8 +328,17 @@ BrowserWindow.prototype = {
   // Update a property of a widget.
   updateItem: function BW_updateItem(updatedItem, property, value) {
     let item = this._items.filter(function(item) item.widget == updatedItem).shift();
-    if (item)
-      this.setContent(item);
+    if (item) {
+      switch(property) {
+        case "image":
+        case "content":
+          this.setContent(item);
+          break;
+        case "width":
+          item.node.style.minWidth = value + "px";
+          break;
+      }
+    }
   },
   
   // Add a widget to this window.
@@ -330,11 +348,13 @@ BrowserWindow.prototype = {
 
     // TODO move into a stylesheet
     node.setAttribute("style", [
-        "min-height: 24px; min-width: 24px; max-height: 24px; max-width: 24px;",
+        "min-height: 24px; max-height: 24px;",
         "overflow: hidden; margin: 5px; padding: 0px;",
         "border: 1px solid #71798F; -moz-box-shadow: 1px 1px 3px #71798F;",
         "-moz-border-radius: 3px;"
     ].join(""));
+
+    node.style.minWidth = widget.width + "px";
 
     // Add to top-level widget container. Must be done early
     // so that widget content can attach event handlers.
