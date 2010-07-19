@@ -52,6 +52,10 @@
 // which other parts of the application can communicate with the Jetpack
 // program.
 // 
+// If we're on Gecko 1.9.3, which supports rebootless extensions, the
+// bootstrap.js file actually evaluates this file and calls parts of
+// it automatically.
+// 
 // It should be noted that a lot of what's done by the Harness Service is
 // very similar to what's normally done by a `chrome.manifest` file: the
 // difference here is that everything the Harness Service does is
@@ -541,6 +545,8 @@ function getDefaults(rootFileSpec) {
   return {options: options, onQuit: onQuit, dump: print,
           logError: logError};
 }
+
+// Everything below is only used on Gecko 1.9.2 or below.
 
 function NSGetModule(compMgr, fileSpec) {
   var rootFileSpec = fileSpec.parent.parent;

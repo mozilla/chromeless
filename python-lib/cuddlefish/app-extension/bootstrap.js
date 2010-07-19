@@ -98,7 +98,12 @@ function setupHarness(installPath, loadReason) {
     factory: factory
   };
 
-  harnessService.load(loadReason);
+  if (loadReason == "startup")
+    // Simulate an app-startup event; the harness service will take care of
+    // waiting until the app is ready for the extension's code to run.
+    harnessService.observe(null, "app-startup", null);
+  else
+    harnessService.load(loadReason);
 }
 
 function reasonToString(reason) {
