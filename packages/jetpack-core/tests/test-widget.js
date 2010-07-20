@@ -12,7 +12,7 @@ exports.testConstructor = function(test) {
     let browserWindow = e.target.defaultView;
     let doc = browserWindow.document;
 
-    function container() doc.getElementById("jetpack-widget-panel");
+    function container() doc.getElementById("addon-bar");
     function widgetCount() container() ? container().childNodes.length : 0;
     function widgetNode(index) container() ? container().childNodes[index] : null;
 
@@ -91,7 +91,7 @@ exports.testConstructor = function(test) {
       widgets.add(widget);
       let node = widgetNode(startCount);
       test.assert(node, "widget node at index");
-      test.assertEqual(node.tagName, "hbox", "widget node is hbox");
+      test.assertEqual(node.tagName, "toolbaritem", "widget element is correct");
       test.assertEqual(widget.width + "px", node.style.minWidth, "widget width is correct");
       test.assertEqual(widgetCount(), startCount + 1, "container has correct number of child elements after add");
       let content = node.firstElementChild;
@@ -295,7 +295,7 @@ exports.testConstructor = function(test) {
       tabBrowser.addTab("about:blank", { inNewWindow: true, onLoad: function(e) {
         let browserWindow = e.target.defaultView;
         let doc = browserWindow.document;
-        function container() doc.getElementById("jetpack-widget-panel");
+        function container() doc.getElementById("addon-bar");
         function widgetCount2() container() ? container().childNodes.length : 0;
 
         let w1 = widgets.Widget({label: "first widget", content: "first content"});

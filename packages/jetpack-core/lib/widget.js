@@ -293,14 +293,40 @@ BrowserWindow.prototype = {
 
   get container() {
     if (!this._container) {
-      let container = this.doc.getElementById("jetpack-widget-panel");
-      container = this.doc.createElement("hbox");
-      container.id = "jetpack-widget-panel";
-      container.hidden = require("preferences-service").get("jetpack.jetpack-core.widget.barIsHidden", PREF_DEFAULT_ADDON_BAR_HIDDEN);
-      container.setAttribute("style", "height: 100px; padding: 0px; margin: 0px;");
+      // Bug 574688 replaces the status bar with the add-on bar. This code
+      // might be removed when that bug is resolved. It might stay, if we 
+      // want to support versions of Firefox that don't have the add-on bar.
+      let container = this.doc.getElementById("addon-bar");
+      if (!container) {
 
-      let statusbar = this.doc.getElementById("status-bar");
-      statusbar.parentNode.insertBefore(container, statusbar);
+        let toolbox = this.doc.createElement("toolbox");
+
+        // Share browser's palette.
+        let browserToolbox = this.doc.getElementById("navigator-toolbox");
+        toolbox.palette = browserToolbox.palette;
+
+        container = this.doc.createElement("toolbar");
+        container.setAttribute("id", "addon-bar");
+        container.setAttribute("customizable", "true");
+        // TODO: needs localization
+        container.setAttribute("toolbarname", "Add-ons Toolbar");
+
+        container.style.height = "100px";
+        container.style.padding = "0px";
+        container.style.margin = "0px";
+
+        // TODO: make part of toolbar infrastructure, so is controlled
+        // via the View menu instead of pref. (bug 579506)
+        container.hidden = require("preferences-service").
+                           get(PREF_ADDON_BAR_HIDDEN,
+                               PREF_DEFAULT_ADDON_BAR_HIDDEN);
+
+        toolbox.appendChild(container);
+
+        let statusbar = this.doc.getElementById("status-bar");
+        statusbar.parentNode.insertBefore(toolbox, statusbar);
+      }
+
       this._container = container;
     }
     return this._container;
@@ -309,7 +335,10 @@ BrowserWindow.prototype = {
   // Remove container
   _removeContainer: function BW__removeContainer() {
     if (this._container) {
-      this._container.parentNode.removeChild(this._container);
+      let toolbar = this._container;
+      let toolbox = toolbar.parentNode;
+      toolbox.removeChild(toolbar);
+      toolbox.parentNode.removeChild(toolbox);
       this._container = null;
     }
   },
@@ -345,7 +374,14 @@ BrowserWindow.prototype = {
   // Add a widget to this window.
   _addItemToWindow: function BW__addItemToWindow(widget) {
     // XUL element container for widget
-    let node = this.doc.createElement("hbox");
+    let node = this.doc.createElement("toolbaritem");
+    let guid = Cc["@mozilla.org/uuid-generator;1"].
+               getService(Ci.nsIUUIDGenerator).
+               generateUUID().toString();
+    let id = "widget: " + guid;
+    node.setAttribute("id", id);
+    node.setAttribute("label", widget.label);
+    node.setAttribute("tooltiptext", widget.description);
 
     // TODO move into a stylesheet
     node.setAttribute("style", [
@@ -357,9 +393,13 @@ BrowserWindow.prototype = {
 
     node.style.minWidth = widget.width + "px";
 
-    // Add to top-level widget container. Must be done early
-    // so that widget content can attach event handlers.
-    this.container.appendChild(node);
+    // Add to the customization palette
+    let toolbox = this.doc.getElementById("navigator-toolbox");
+    let palette = toolbox.palette;
+    palette.appendChild(node);
+
+    // Add the item to the toolbar
+    this.container.insertItem(id, null, null, false);
 
     let item = {widget: widget, node: node};
 
