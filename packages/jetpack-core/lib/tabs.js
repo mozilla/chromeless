@@ -49,11 +49,9 @@ var NetUtil = {};
 Cu.import("resource://gre/modules/NetUtil.jsm", NetUtil);
 NetUtil = NetUtil.NetUtil;
 const errors = require("errors");
-const windowUtils = require("window-utils");
 const apiUtils = require("api-utils");
 const collection = require("collection");
 const tabBrowser = require("tab-browser");
-const url = require("url");
 
 // Supported tab events
 const events = [
