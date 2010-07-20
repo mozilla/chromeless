@@ -353,7 +353,7 @@ BrowserWindow.prototype = {
   addItems: function BW_addItems(items) {
     items.forEach(this._addItemToWindow, this);
   },
-  
+
   // Update a property of a widget.
   updateItem: function BW_updateItem(updatedItem, property, value) {
     let item = this._items.filter(function(item) item.widget == updatedItem).shift();
@@ -370,14 +370,12 @@ BrowserWindow.prototype = {
       }
     }
   },
-  
+
   // Add a widget to this window.
   _addItemToWindow: function BW__addItemToWindow(widget) {
     // XUL element container for widget
     let node = this.doc.createElement("toolbaritem");
-    let guid = Cc["@mozilla.org/uuid-generator;1"].
-               getService(Ci.nsIUUIDGenerator).
-               generateUUID().toString();
+    let guid = require("xpcom").makeUuid().toString();
     let id = "widget: " + guid;
     node.setAttribute("id", id);
     node.setAttribute("label", widget.label);
