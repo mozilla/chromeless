@@ -336,6 +336,7 @@ BrowserWindow.prototype = {
           break;
         case "width":
           item.node.style.minWidth = value + "px";
+          item.node.querySelector("iframe").style.width = value + "px";
           break;
       }
     }
@@ -375,7 +376,8 @@ BrowserWindow.prototype = {
     iframe.setAttribute("transparent", "transparent");
     iframe.style.overflow = "hidden";
     iframe.style.height = "24px";
-    iframe.style.width = "24px";
+    iframe.style.width = item.widget.width + "px";
+    iframe.setAttribute("flex", "1");
     iframe.style.border = "none";
     iframe.style.padding = "0px";
     
@@ -454,7 +456,7 @@ BrowserWindow.prototype = {
       if (contentType == CONTENT_TYPE_IMAGE || isImageDoc(doc)) {
         // Force image content to size.
         // Add-on authors must size their images correctly.
-        doc.body.firstElementChild.style.width = "24px";
+        doc.body.firstElementChild.style.width = item.widget.width + "px";
         doc.body.firstElementChild.style.height = "24px";
       }
 

@@ -359,9 +359,11 @@ exports.testConstructor = function(test) {
 
         let node = widgetNode(0);
         test.assertEqual(this.width, node.style.minWidth.replace("px", ""));
+        test.assertEqual(this.width, node.firstElementChild.style.width.replace("px", ""));
 
         this.width = 300;
         test.assertEqual(this.width, node.style.minWidth.replace("px", ""));
+        test.assertEqual(this.width, node.firstElementChild.style.width.replace("px", ""));
 
         widgets.remove(this);
         doneTest();
