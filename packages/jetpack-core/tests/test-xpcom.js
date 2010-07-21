@@ -32,14 +32,10 @@ exports.testRegister = function(test, text) {
 
   var factory = xpcom.register({name: "test about:boop page",
                                 contractID: contractID,
-                                categories: ["bingy"],
                                 create: Component});
 
   var manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
-  test.assertEqual(manager.isContractIDRegistered(contractID), true);
-
-  test.assertEqual(xpcom.getCategory("bingy").length, 1,
-                   "category should be added to category manager");
+  test.assertEqual(manager.isCIDRegistered(factory.uuid), true);
 
   // We don't want to use Cc[contractID] here because it's immutable,
   // so it can't accept updated versions of a contractID during the
@@ -71,9 +67,7 @@ exports.testRegister = function(test, text) {
   test.assertEqual(data, text);
 
   factory.unregister();
-  test.assertEqual(manager.isContractIDRegistered(contractID), false);
-  test.assertEqual(xpcom.getCategory("bingy").length, 0,
-                   "category should be removed from category manager");
+  test.assertEqual(manager.isCIDRegistered(factory.uuid), false);
 };
 
 exports.testReRegister = function(test) {
@@ -165,14 +159,14 @@ exports.testUnload = function(test) {
   };
 
   var contractID = "@mozilla.org/blargle;1";
-  sbxpcom.register({name: "test component",
-                    contractID: contractID,
-                    create: Component});
+  var factory = sbxpcom.register({name: "test component",
+                                  contractID: contractID,
+                                  create: Component});
 
   var manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
-  test.assertEqual(manager.isContractIDRegistered(contractID), true);
+  test.assertEqual(manager.isCIDRegistered(factory.uuid), true);
 
   loader.unload();
 
-  test.assertEqual(manager.isContractIDRegistered(contractID), false);
+  test.assertEqual(manager.isCIDRegistered(factory.uuid), false);
 };

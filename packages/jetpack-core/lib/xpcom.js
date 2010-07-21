@@ -43,9 +43,6 @@ var utils = exports.utils = jsm.XPCOMUtils;
 
 Cm.QueryInterface(Ci.nsIComponentRegistrar);
 
-var categoryManager = Cc["@mozilla.org/categorymanager;1"]
-                      .getService(Ci.nsICategoryManager);
-
 var factories = [];
 
 function Factory(options) {
@@ -56,7 +53,6 @@ function Factory(options) {
   this.uuid = options.uuid;
   this.name = options.name;
   this.contractID = options.contractID;
-  this.categories = options.categories || [];
 
   Cm.registerFactory(this.uuid,
                      this.name,
@@ -64,14 +60,6 @@ function Factory(options) {
                      this);
 
   var self = this;
-  this.categories.forEach(
-    function(category) {
-      categoryManager.addCategoryEntry(category,
-                                       self.name,
-                                       self.contractID,
-                                       true,
-                                       true);
-    });
 
   factories.push(this);
 }
@@ -96,12 +84,6 @@ Factory.prototype = {
       throw new Error("factory already unregistered");
 
     var self = this;
-    this.categories.forEach(
-      function(category) {
-        categoryManager.deleteCategoryEntry(category,
-                                            self.name,
-                                            true);
-      });
 
     factories.splice(index, 1);
     Cm.unregisterFactory(this.uuid, this);
@@ -158,14 +140,6 @@ var getClass = exports.getClass = function getClass(contractID, iid) {
   if (!iid)
     iid = Ci.nsISupports;
   return Cm.getClassObjectByContractID(contractID, iid);
-};
-
-var getCategory = exports.getCategory = function getCategory(name) {
-  var enumerator = categoryManager.enumerateCategory(name);
-  var objects = [];
-  while (enumerator.hasMoreElements())
-    objects.push(enumerator.getNext());
-  return objects;
 };
 
 /**
