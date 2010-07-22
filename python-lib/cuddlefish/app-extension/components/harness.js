@@ -157,6 +157,8 @@ function buildHarnessService(rootFileSpec, dump, logError,
   }
 
   function buildLoader() {
+    // TODO: This variable doesn't seem to be used, we should
+    // be able to remove it.
     var compMgr = Components.manager;
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
 
@@ -216,6 +218,8 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
     bundleID: options.bundleID,
 
+    // TODO: This has been superseded by require('self').getURL() and
+    // should be deprecated.
     getURLForData: function getURLForData(path) {
       var traceback = this.__loader.require("traceback");
       var callerInfo = traceback.get().slice(-2)[0];

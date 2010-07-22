@@ -228,6 +228,9 @@
        };
      },
 
+     // This is only really used by unit tests and other
+     // development-related facilities, allowing access to symbols
+     // defined in the global scope of a module.
      findSandboxForModule: function findSandboxForModule(module) {
        var path = this.fs.resolveModule(null, module);
        if (!path)
