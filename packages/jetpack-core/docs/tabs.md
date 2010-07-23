@@ -13,13 +13,18 @@ Properties
 <api name="activeTab">
 @property {object}
 
-The currently active tab.
+The currently active tab.  This property can be set to a `tab` object, which
+will focus that tab's parent window and bring the tab to the foreground.
 </api>
 
 **Example**
 
+    // get
     var tabs = require("tabs");
     console.log("title of active tab is " + tabs.activeTab.title);
+
+    // set
+    tabs.activeTab = anotherTab;
 
 <api name="tabs">
 @property {array}
@@ -166,8 +171,7 @@ Fired whenever a portion of the tab's content page is repainted.
 Tab
 ----
 
-The `tab` object represents a single open tab. It is passed to registered
-event handlers, is returned by `tabs.activeTab`. It contains various tab
+A `tab` object represents a single open tab. It contains various tab
 properties, several methods for manipulation, as well as per-tab event
 registration.
 
@@ -218,11 +222,6 @@ This property is read-only.
 @property {canvas}
 A thumbnail of the page currently loaded in the tab.
 This property is read-only.
-</api>
-
-<api name="activate">
-@method 
-Make the tab the active tab in its containing window.
 </api>
 
 <api name="close">
