@@ -1,3 +1,6 @@
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 The `text-streams` module provides streams for reading and writing text using
 particular character encodings.
 
@@ -41,7 +44,7 @@ TextReader Objects
 
 <code>TextReader.**closed**</code>
 
-True iff the stream is closed.
+True if the stream is closed.
 
 <code>TextReader.**close**()</code>
 
@@ -60,7 +63,7 @@ TextWriter Objects
 
 <code>TextWriter.**closed**</code>
 
-True iff the stream is closed.
+True if the stream is closed.
 
 <code>TextWriter.**close**()</code>
 

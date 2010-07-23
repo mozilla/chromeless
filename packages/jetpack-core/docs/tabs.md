@@ -1,4 +1,6 @@
 <!-- contributed by Dietrich Ayala [dietrich@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 
 The `tabs` module provides easy access to tabs and tab-related events.
 
