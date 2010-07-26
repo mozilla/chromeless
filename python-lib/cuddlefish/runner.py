@@ -287,6 +287,10 @@ def run_app(harness_root_dir, harness_options, xpts,
                           env=env,
                           cmdargs=cmdargs,
                           kp_kwargs=popen_kwargs)
+
+    print "Using binary at '%s'." % runner.binary
+    print "Using profile at '%s'." % profile.profile
+
     runner.start()
 
     done = False
