@@ -223,10 +223,17 @@ function cleanup() {
 
     sandbox.unload();
 
-    if ((sandbox.console.errorsLogged ||
-         consoleListener.errorsLogged) && !results.failed) {
+    if (sandbox.console.errorsLogged && !results.failed) {
       results.failed++;
       console.error("warnings and/or errors were logged.");
+    }
+
+    if (consoleListener.errorsLogged && !results.failed) {
+      console.warn(consoleListener.errorsLogged + " " +
+                   "warnings or errors were logged to the " +
+                   "platform's nsIConsoleService, which could " +
+                   "be of no consequence; however, they could also " +
+                   "be indicative of aberrant behavior.");
     }
 
     consoleListener.errorsLogged = 0;
