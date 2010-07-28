@@ -39,7 +39,7 @@ data that can be displayed directly in a content frame, use `data.url(NAME)`.
 </api>
 
 <span class="aside">
-The 0.6 SDK release does not have the Panel API yet. Watch 
+The 0.7pre SDK release does not have the Panel API yet. Watch 
 [JEP 103](https://wiki.mozilla.org/Labs/Jetpack/Reboot/JEP/103) for updates.
 </span>
 

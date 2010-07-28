@@ -2,7 +2,7 @@
     "name": "development-mode",
     "description": "Adds Jetpack SDK development functionality to a program.",
     "author": "Atul Varma (http://toolness.com/)",
-    "version": "0.6",
+    "version": "0.7pre",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "main": "main",
     "dependencies": ["jetpack-core", "test-harness"]

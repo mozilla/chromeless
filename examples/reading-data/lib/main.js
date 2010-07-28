@@ -10,7 +10,7 @@ exports.main = function(options, callbacks) {
 
     var hello_html = self.data.load("sample.html");
     // we could now modify this sample data and then display it in a Panel or
-    // other UI element. Note that the 0.6 SDK release does not have Panel
+    // other UI element. Note that the 0.7pre SDK release does not have Panel
     // yet.. sorry! Watch JEP103 for changes.
     hello_html = replace_mom(hello_html);
     //let p = new Panel(content: hello_html).show();
