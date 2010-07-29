@@ -190,20 +190,26 @@ function reportMemoryUsage() {
         weakrefs.length + "\n");
 }
 
-var gWeakrefs;
+var gWeakrefInfo;
 
 function showResults() {
   memory.gc();
 
-  if (gWeakrefs)
-    gWeakrefs.forEach(
-      function(weakref) {
-        var ref = weakref.get();
+  if (gWeakrefInfo) {
+    gWeakrefInfo.forEach(
+      function(info) {
+        var ref = info.weakref.get();
         if (ref !== null) {
           var data = ref.__url__ ? ref.__url__ : ref;
-          console.warn("LEAK", data);
+          var warning = data == "[object Object]"
+            ? "[object " + data.constructor.name + "(" +
+              [p for (p in data)].join(", ") + ")]"
+            : data;
+          console.warn("LEAK", warning, info.bin);
         }
-      });
+      }
+    );
+  }
 
   print("\n");
   var total = results.passed + results.failed;
@@ -218,8 +224,8 @@ function cleanup() {
                            "module global scope: " + name);
     sandbox.memory.track(sandbox, "Cuddlefish Loader");
 
-    gWeakrefs = [info.weakref
-                 for each (info in sandbox.memory.getObjects())];
+    gWeakrefInfo = [{ weakref: info.weakref, bin: info.bin }
+                    for each (info in sandbox.memory.getObjects())];
 
     sandbox.unload();
 

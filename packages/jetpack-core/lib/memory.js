@@ -85,7 +85,8 @@ var track = exports.track = function track(object, bin, stackFrameNumber) {
   trackedObjects[bin].push({weakref: weakref,
                             created: new Date(),
                             filename: frame.filename,
-                            lineNo: frame.lineNumber});
+                            lineNo: frame.lineNumber,
+                            bin: bin});
 };
 
 var getBins = exports.getBins = function getBins() {
