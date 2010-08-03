@@ -382,7 +382,7 @@ BrowserWindow.prototype = {
     let id = "widget: " + guid;
     node.setAttribute("id", id);
     node.setAttribute("label", widget.label);
-    node.setAttribute("tooltiptext", widget.description);
+    node.setAttribute("tooltiptext", widget.label);
 
     // TODO move into a stylesheet
     node.setAttribute("style", [
