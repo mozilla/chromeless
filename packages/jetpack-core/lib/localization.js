@@ -99,11 +99,9 @@ let cps = {
     if (!file.exists(path) ||
         (getUnixTimeStamp()-
          getLastModificationTime(path)/1000>=STORAGE_UPDATE_INTERVAL)) {
-      console.debug('Updating storage!');
       cps.updateStorage();
       return;
     }
-    console.debug('Not updating storage!');
     let str = file.read(path);
     cps.pool = JSON.parse(str);
     cps.last_update = getUnixTimeStamp();
@@ -114,7 +112,6 @@ let cps = {
    */
   updateStorage: function() {
     if (cps.url === undefined) {
-      console.debug('Cannot update the storage due to lack of server!');
       return;
     }
     let req = new xhr.XMLHttpRequest();
@@ -125,7 +122,6 @@ let cps = {
         try {
           var obj = JSON.parse(req.responseText);
         } catch (e) {
-          console.debug('Bad JSON!');
           return;
         }
         cps.pool = obj;
