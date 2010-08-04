@@ -93,10 +93,11 @@ parser_groups = Bunch(
                                       metavar=None,
                                       default=None),
             ("-a", "--app",): dict(dest="app",
-                                   help=("app to run: xulrunner (default), "
-                                         "firefox, fennec, or thunderbird"),
+                                   help=("app to run: "
+                                         "firefox (default), xulrunner, "
+                                         "fennec, or thunderbird"),
                                    metavar=None,
-                                   default="xulrunner"),
+                                   default="firefox"),
             ("-f", "--logfile",): dict(dest="logfile",
                                        help="log console output to file",
                                        metavar=None,

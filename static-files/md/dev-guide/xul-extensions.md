@@ -22,11 +22,7 @@ can see the Firefox main window when using `cfx run`:
       // Don't need to quit right away: no callbacks.quit();
     }
 
-<span class="aside">
-Reminder: the `--app firefox` parameter makes `cfx` look for the 
-Firefox binary in its default location. See `cfx --help` for other options.
-</span>
-Now go to the package directory and run `cfx run --app firefox` to load
+Now go to the package directory and run `cfx run` to load
 the module in Firefox.
 
 This will start Firefox with a clean profile and our package installed.
@@ -50,7 +46,7 @@ Now you can run Firefox with your XUL extension *and* our test module installed
 by executing the following command from the package folder,
 `jetpack-sdk/packages/my-extension`:
 
-    cfx run --app firefox -t extension
+    cfx run -t extension
 
 (The `-t` parameter is actually the path to the folder with the "template"
 extension to install when running the specified application).
@@ -87,7 +83,7 @@ Now we can use CommonJS modules from regular extension code using this code:
     alert(loadJetpackModule("my-module").add(1, 3)); // alerts 4!
 
 You can test this code by pasting it into the Error Console of the Firefox
-instance that appears when you use `cfx run --app firefox -t extension`.
+instance that appears when you use `cfx run -t extension`.
 
 Packaging the extension into an XPI
 ------------------

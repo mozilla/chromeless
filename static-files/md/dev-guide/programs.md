@@ -116,7 +116,7 @@ for debugging.
 To run your program, navigate to the root of your package directory
 in your shell and run:
 
-    cfx run -a firefox
+    cfx run
 
 That will load an instance of Firefox (or your default application)
 with your program installed.

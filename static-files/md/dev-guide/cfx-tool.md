@@ -46,7 +46,7 @@ and all examples.
 
 Run options:
 
-    -a APP, --app=APP            application to run: xulrunner (default), firefox,
+    -a APP, --app=APP            application to run: firefox (default), xulrunner,
                                  fennec, or thunderbird
 
     -b BINARY, --binary=BINARY   path to application binary
@@ -154,7 +154,7 @@ This tool is used to run the extension code.
 
 Run options:
 
-    -a APP, --app=APP            application to run: xulrunner (default), firefox,
+    -a APP, --app=APP            application to run: firefox (default), xulrunner,
                                  fennec, or thunderbird
 
     -b BINARY, --binary=BINARY   path to application binary
@@ -187,7 +187,7 @@ Run available tests for the specified package.
 
 Run options:
 
-    -a APP, --app=APP            application to run: xulrunner (default), firefox,
+    -a APP, --app=APP            application to run: firefox (default), xulrunner,
                                  fennec, or thunderbird
 
     -b BINARY, --binary=BINARY   path to application binary
