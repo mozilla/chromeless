@@ -438,7 +438,7 @@ def generate_static_docs(env_root, tgz_filename):
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
-            timeout=None, logfile=None,
+            timeout=None, logfile=None, addons=None,
             host=DEFAULT_HOST,
             port=DEV_SERVER_PORT):
     payload = json.dumps(harness_options)

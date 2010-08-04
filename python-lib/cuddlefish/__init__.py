@@ -50,7 +50,8 @@ parser_options = {
                                    metavar=None,
                                    default=None),
     ("-k", "--extra-packages",): dict(dest="extra_packages",
-                                      help="extra packages to include, comma-separated",
+                                      help=("extra packages to include, "
+                                            "comma-separated"),
                                       metavar=None,
                                       default=None),
     ("-p", "--pkgdir",): dict(dest="pkgdir",
@@ -92,6 +93,10 @@ parser_groups = Bunch(
                                       help="path to app binary", 
                                       metavar=None,
                                       default=None),
+            ("", "--addons",): dict(dest="addons",
+                                    help=("paths of addons to install, "
+                                          "comma-separated"),
+                                    metavar=None, default=None),
             ("-a", "--app",): dict(dest="app",
                                    help=("app to run: "
                                          "firefox (default), xulrunner, "
@@ -563,6 +568,9 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
 
+        if options.addons is not None:
+            options.addons = options.addons.split(",")
+
         try:
             retval = run_app(harness_root_dir=app_extension_dir,
                              harness_options=harness_options,
@@ -572,7 +580,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              profiledir=options.profiledir,
                              verbose=options.verbose,
                              timeout=timeout,
-                             logfile=options.logfile)
+                             logfile=options.logfile,
+                             addons=options.addons)
         except Exception, e:
             if e.message.startswith(MOZRUNNER_BIN_NOT_FOUND):
                 print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()

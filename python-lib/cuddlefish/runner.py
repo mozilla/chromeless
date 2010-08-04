@@ -211,11 +211,15 @@ class XulrunnerAppRunner(mozrunner.Runner):
 
 def run_app(harness_root_dir, harness_options, xpts,
             app_type, binary=None, profiledir=None, verbose=False,
-            timeout=None, logfile=None):
+            timeout=None, logfile=None, addons=None):
     if binary:
         binary = os.path.expanduser(binary)
 
-    addons = []
+    if addons is None:
+        addons = []
+    else:
+        addons = list(addons)
+
     cmdargs = []
     preferences = {}
 
