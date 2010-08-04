@@ -161,8 +161,6 @@ function startApp(jQuery, window) {
         $(this).css({top: pos.top});
       });
     $("#sidenotes").append(newAsides);
-    newAsides.hide();
-    newAsides.fadeIn();
     newAsides.children().each(
       function() {
         $(this).width(width);
@@ -173,11 +171,26 @@ function startApp(jQuery, window) {
 
   var queuedContent = null;
 
-  function queueMainContent(query) {
+  function queueMainContent(query, onDone) {
     queuedContent = query;
-    $("#sidenotes").empty();
-    $("#right-column").empty().append(query);
-    query.hide();
+    scrollToTop(function () {
+      $("#main-content").fadeOut(100, function () {
+        $("#sidenotes").empty();
+        $("#right-column").empty().append(query);
+        onDone();
+      });
+    });
+  }
+
+  function scrollToTop(onDone) {
+    var interval = window.setInterval(function () {
+      if (window.scrollY == 0) {
+        window.clearInterval(interval);
+        onDone();
+      }
+      else
+        window.scrollBy(0, -25);
+    }, 10);
   }
 
   function showMainContent(query, url) {
@@ -188,7 +201,7 @@ function startApp(jQuery, window) {
     else
       // TODO: This actually just results in a 404.
       $("#view-source").attr("href", "");
-    query.fadeIn();
+    $("#main-content").fadeIn(400);
     fixInternalLinkTargets(query);
     showSidenotes(query);
     queuedContent = null;
@@ -201,12 +214,12 @@ function startApp(jQuery, window) {
     var json_filename = "docs/" + moduleName + ".md.json";
 
     entry.find(".name").text(moduleName);
-    queueMainContent(entry);
-    renderPkgAPI(pkg, source_filename, json_filename, entry.find(".docs"),
-                 function(please_display) {
-                   if (please_display)
+    queueMainContent(entry, function () {
+      renderPkgAPI(pkg, source_filename, json_filename, entry.find(".docs"),
+                   function(please_display) {
                      showMainContent(entry, pkgFileUrl(pkg, source_filename));
-                 });
+                   });
+    });
   }
 
   function listModules(pkg, entry) {
@@ -263,13 +276,14 @@ function startApp(jQuery, window) {
 
     listModules(pkg, entry);
 
-    queueMainContent(entry);
-    getPkgFile(pkg, filename, markdownToHtml,
-               function(html) {
-                 if (html)
-                   entry.find(".docs").html(html);
-                 showMainContent(entry, pkgFileUrl(pkg, filename));
-               });
+    queueMainContent(entry, function () {
+      getPkgFile(pkg, filename, markdownToHtml,
+                 function(html) {
+                   if (html)
+                     entry.find(".docs").html(html);
+                   showMainContent(entry, pkgFileUrl(pkg, filename));
+                 });
+    });
   }
 
   function onPackageError(req) {
@@ -322,19 +336,20 @@ function startApp(jQuery, window) {
     var url = "md/dev-guide/" + name + ".md";
 
     entry.find(".name").text($("#dev-guide-toc #" + name).text());
-    queueMainContent(entry);
-    var options = {
-      url: url,
-      dataType: "text",
-      success: function(text) {
-        entry.find(".docs").html(markdownToHtml(text));
-        showMainContent(entry, url);
-      },
-      error: function(text) {
-        showMainContent(entry);
-      }
-    };
-    jQuery.ajax(options);
+    queueMainContent(entry, function () {
+      var options = {
+        url: url,
+        dataType: "text",
+        success: function(text) {
+          entry.find(".docs").html(markdownToHtml(text));
+          showMainContent(entry, url);
+        },
+        error: function(text) {
+          showMainContent(entry);
+        }
+      };
+      jQuery.ajax(options);
+    });
   }
 
   function linkDeveloperGuide() {
