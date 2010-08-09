@@ -106,6 +106,8 @@ var TestRunner = exports.TestRunner = function TestRunner(options) {
 };
 
 TestRunner.prototype = {
+  toString: function toString() "[object TestRunner]",
+
   DEFAULT_PAUSE_TIMEOUT: 10000,
 
   _logTestFailed: function _logTestFailed(why) {
