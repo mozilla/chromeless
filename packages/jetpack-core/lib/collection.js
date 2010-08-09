@@ -82,8 +82,9 @@ function Collection(array) {
    * they were added.
    */
   this.__iterator__ = function Collection___iterator__() {
-    for (let i = 0; i < array.length; i++)
-      yield array[i];
+    let items = array.slice();
+    for (let i = 0; i < items.length; i++)
+      yield items[i];
   };
 
   /**

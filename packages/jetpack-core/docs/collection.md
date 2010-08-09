@@ -37,6 +37,10 @@ order they were added.  For example, the following code...
     2
     3
 
+Iteration proceeds over a copy of the collection made before iteration begins,
+so it is safe to mutate the collection during iteration; doing so does not
+affect the results of the iteration.
+
 ### Members ###
 
 <api name="length">
