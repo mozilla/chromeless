@@ -193,7 +193,6 @@
    exports.Loader.prototype = {
      _makeRequire: function _makeRequire(rootDir) {
        var self = this;
-
        return function require(module) {
          if (module == "chrome") {
            var chrome = { Cc: Components.classes,
@@ -222,6 +221,8 @@
            sandbox.defineProperty('require', self._makeRequire(path));
            sandbox.evaluate("var exports = {};");
            self.modules[path] = sandbox.getProperty("exports");
+           if ('es5' !== module)
+             sandbox.evaluate('require("es5").init(Object, Array, Function)');
            sandbox.evaluate(options);
          }
          return self.modules[path];
