@@ -47,6 +47,7 @@ import zipfile
 import optparse
 import killableprocess
 import subprocess
+import pkg_resources
 from xml.etree import ElementTree
 from distutils import dir_util
 from time import sleep
@@ -62,9 +63,6 @@ logger = logging.getLogger(__name__)
 # Use dir_util for copy/rm operations because shutil is all kinds of broken
 copytree = dir_util.copy_tree
 rmtree = dir_util.remove_tree
-
-if sys.platform != 'win32':
-    import pwd
 
 def findInPath(fileName, path=os.environ['PATH']):
     dirs = path.split(os.pathsep)
@@ -143,12 +141,8 @@ def kill_process_by_name(name):
                 if len(get_pids(name)) is not 0:
                     logger.error('Could not kill process')
 
-def NaN(str):
-    try: int(str); return False;
-    except: return True
-
 def makedirs(name):
-    # from errno import EEXIST
+
     head, tail = os.path.split(name)
     if not tail:
         head, tail = os.path.split(head)
@@ -167,24 +161,29 @@ def makedirs(name):
 class Profile(object):
     """Handles all operations regarding profile. Created new profiles, installs extensions,
     sets preferences and handles cleanup."""
-    def __init__(self, binary=None, profile=None, create_new=True, addons=[], preferences={}):
-        self.addons_installed = []
-        self.profile = profile
-        self.binary = binary
-        self.create_new = create_new
-        self.addons = addons
-        if not hasattr(self, 'preferences'):
-            self.preferences = preferences
-        else:
-            self.preferences = copy.copy(self.preferences)
-            self.preferences.update(preferences)
 
-        if profile is not None and create_new is True:
-            raise Exception('You cannot set the profie location if you want mozrunner to create a new one for you.')
-        if create_new is False and profile is None:
-            raise Exception('If you set create_new to False you must provide the location of the profile you would like to run')
-        if create_new is True:
+    def __init__(self, binary=None, profile=None, addons=None,
+                 preferences=None):
+
+        self.binary = binary
+
+        self.create_new = not(bool(profile))
+        if profile:
+            self.profile = profile
+        else:
             self.profile = self.create_new_profile(self.binary)
+
+        self.addons_installed = []
+        self.addons = addons
+
+        ### set preferences from class preferences
+        prefereneces = preferences or {}
+        if hasattr(self.__class__, 'preferences'):
+            self.preferences = self.__class__.preferences.copy()
+        else:
+            self.preferences = {}
+        self.preferences.update(preferences)
+
         for addon in addons:
             self.install_addon(addon)
 
@@ -193,10 +192,6 @@ class Profile(object):
     def create_new_profile(self, binary):
         """Create a new clean profile in tmp which is a simple empty folder"""
         profile = tempfile.mkdtemp(suffix='.mozrunner')
-        if os.path.exists(profile) is True:
-            rmtree(profile)
-        makedirs(profile)
-
         return profile
 
     def install_addon(self, addon):
@@ -212,7 +207,7 @@ class Profile(object):
                     if not os.path.isdir(os.path.dirname(os.path.join(tmpdir, name))):
                         makedirs(os.path.dirname(os.path.join(tmpdir, name)))
                     data = compressed_file.read(name)
-                    f = open(os.path.join(tmpdir, name), 'w')
+                    f = open(os.path.join(tmpdir, name), 'wb')
                     f.write(data) ; f.close()
             addon = tmpdir
 
@@ -290,20 +285,29 @@ class Profile(object):
 
 class FirefoxProfile(Profile):
     """Specialized Profile subclass for Firefox"""
-    preferences = {'app.update.enabled' : False,
-                   'extensions.update.enabled'    : False,
-                   'extensions.update.notifyUser' : False,
-                   'browser.shell.checkDefaultBrowser' : False,
-                   'browser.tabs.warnOnClose' : False,
-                   'browser.warnOnQuit': False,
+    preferences = {# Don't automatically update the application
+                   'app.update.enabled' : False,
+                   # Don't restore the last open set of tabs if the browser has crashed
                    'browser.sessionstore.resume_from_crash': False,
+                   # Don't check for the default web browser
+                   'browser.shell.checkDefaultBrowser' : False,
+                   # Don't warn on exit when multiple tabs are open
+                   'browser.tabs.warnOnClose' : False,
+                   # Don't warn when exiting the browser
+                   'browser.warnOnQuit': False,
+                   # Don't install global add-ons
+                   'extensions.enabledScopes' : 0,
+                   # Don't automatically update add-ons
+                   'extensions.update.enabled'    : False,
+                   # Don't open a dialog to show available add-on updates
+                   'extensions.update.notifyUser' : False,
                    }
 
     @property
     def names(self):
         if sys.platform == 'darwin':
             return ['firefox', 'minefield', 'shiretoko']
-        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
+        if (sys.platform == 'linux2') or (sys.platform in ('sunos5', 'solaris')):
             return ['firefox', 'mozilla-firefox', 'iceweasel']
         if os.name == 'nt' or sys.platform == 'cygwin':
             return ['firefox']
@@ -349,10 +353,25 @@ class Runner(object):
     def find_binary(self):
         """Finds the binary for self.names if one was not provided."""
         binary = None
-        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
+        if sys.platform in ('linux2', 'sunos5', 'solaris'):
             for name in reversed(self.names):
                 binary = findInPath(name)
         elif os.name == 'nt' or sys.platform == 'cygwin':
+
+            # find the default executable from the windows registry
+            try:
+                # assumes self.app_name is defined, as it should be for
+                # implementors
+                import _winreg
+                app_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, r"Software\Mozilla\Mozilla %s" % self.app_name)
+                version, _type = _winreg.QueryValueEx(app_key, "CurrentVersion")
+                version_key = _winreg.OpenKey(app_key, version + r"\Main")
+                path, _ = _winreg.QueryValueEx(version_key, "PathToExe")
+                return path
+            except: # XXX not sure what type of exception this should be
+                pass
+
+            # search for the binary in the path            
             for name in reversed(self.names):
                 binary = findInPath(name)
                 if sys.platform == 'cygwin':
@@ -389,6 +408,28 @@ class Runner(object):
     def command(self):
         """Returns the command list to run."""
         return [self.binary, '-profile', self.profile.profile]
+
+    def get_repositoryInfo(self):
+        """Read repository information from application.ini and platform.ini."""
+        import ConfigParser
+
+        config = ConfigParser.RawConfigParser()
+        dirname = os.path.dirname(self.binary)
+        repository = { }
+
+        for entry in [['application', 'App'], ['platform', 'Build']]:
+            (file, section) = entry
+            config.read(os.path.join(dirname, '%s.ini' % file))
+
+            for entry in [['SourceRepository', 'repository'], ['SourceStamp', 'changeset']]:
+                (key, id) = entry
+
+                try:
+                    repository['%s_%s' % (file, id)] = config.get(section, key);
+                except:
+                    repository['%s_%s' % (file, id)] = None
+
+        return repository
 
     def start(self):
         """Run self.command in the proper environment."""
@@ -429,19 +470,22 @@ class Runner(object):
 class FirefoxRunner(Runner):
     """Specialized Runner subclass for running Firefox."""
 
+    app_name = 'Firefox'
     profile_class = FirefoxProfile
 
     @property
     def names(self):
         if sys.platform == 'darwin':
             return ['firefox', 'minefield', 'shiretoko']
-        if (sys.platform == 'linux2') or (sys.platform == "solaris"):
+        if (sys.platform == 'linux2') or (sys.platform in ('sunos5', 'solaris')):
             return ['firefox', 'mozilla-firefox', 'iceweasel']
         if os.name == 'nt' or sys.platform == 'cygwin':
             return ['firefox']
 
 class ThunderbirdRunner(Runner):
     """Specialized Runner subclass for running Thunderbird"""
+
+    app_name = 'Thunderbird'
     profile_class = ThunderbirdProfile
 
     names = ["thunderbird", "shredder"]
@@ -451,39 +495,60 @@ class CLI(object):
 
     runner_class = FirefoxRunner
     profile_class = FirefoxProfile
+    module = "mozrunner"
 
     parser_options = {("-b", "--binary",): dict(dest="binary", help="Binary path.",
                                                 metavar=None, default=None),
                       ('-p', "--profile",): dict(dest="profile", help="Profile path.",
                                                  metavar=None, default=None),
-                      ('-a', "--addons",): dict(dest="addons",
+                      ('-a', "--addons",): dict(dest="addons", 
                                                 help="Addons paths to install.",
                                                 metavar=None, default=None),
-                      ("-n", "--no-new-profile",): dict(dest="create_new",
-                                                        action="store_false",
-                                                        help="Do not create new profile.",
-                                                        metavar="MOZRUNNER_NEW_PROFILE",
-                                                        default=True ),
+                      ("--info",): dict(dest="info", default=False,
+                                        action="store_true",
+                                        help="Print module information")
                      }
 
     def __init__(self):
         """ Setup command line parser and parse arguments """
-        self.parser = optparse.OptionParser()
+        self.metadata = self.get_metadata_from_egg()
+        self.parser = optparse.OptionParser(version="%prog " + self.metadata["Version"])
         for names, opts in self.parser_options.items():
             self.parser.add_option(*names, **opts)
         (self.options, self.args) = self.parser.parse_args()
 
+        if self.options.info:
+            self.print_metadata()
+            sys.exit(0)
+            
+        # XXX should use action='append' instead of rolling our own
         try:
             self.addons = self.options.addons.split(',')
         except:
             self.addons = []
+            
+    def get_metadata_from_egg(self):
+        ret = {}
+        dist = pkg_resources.get_distribution(self.module)
+        if dist.has_metadata("PKG-INFO"):
+            for line in dist.get_metadata_lines("PKG-INFO"):
+                key, value = line.split(':', 1)
+                ret[key] = value
+        if dist.has_metadata("requires.txt"):
+            ret["Dependencies"] = "\n" + dist.get_metadata("requires.txt")    
+        return ret
+        
+    def print_metadata(self, data=("Name", "Version", "Summary", "Home-page", 
+                                   "Author", "Author-email", "License", "Platform", "Dependencies")):
+        for key in data:
+            if key in self.metadata:
+                print key + ": " + self.metadata[key]
 
     def create_runner(self):
         """ Get the runner object """
         runner = self.get_runner(binary=self.options.binary)
         profile = self.get_profile(binary=runner.binary,
                                    profile=self.options.profile,
-                                   create_new=self.options.create_new,
                                    addons=self.addons)
         runner.profile = profile
         return runner
@@ -493,10 +558,11 @@ class CLI(object):
         the profile instance returned from self.get_profile()."""
         return self.runner_class(binary, profile)
 
-    def get_profile(self, binary=None, profile=None, create_new=None, addons=[],
-                    preferences={}):
+    def get_profile(self, binary=None, profile=None, addons=None, preferences=None):
         """Returns the profile instance for the given command line arguments."""
-        return self.profile_class(binary, profile, create_new, addons, preferences)
+        addons = addons or []
+        preferences = preferences or {}
+        return self.profile_class(binary, profile, addons, preferences)
 
     def run(self):
         runner = self.create_runner()

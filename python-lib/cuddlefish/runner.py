@@ -280,11 +280,9 @@ def run_app(harness_root_dir, harness_options, xpts,
 
     popen_kwargs = {}
     profile = None
-    create_new = profiledir is None
 
     profile = profile_class(addons=addons,
                             profile=profiledir,
-                            create_new=create_new,
                             preferences=preferences)
     runner = runner_class(profile=profile,
                           binary=binary,

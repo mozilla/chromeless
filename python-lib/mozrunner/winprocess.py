@@ -36,7 +36,6 @@
 
 from ctypes import c_void_p, POINTER, sizeof, Structure, windll, WinError, WINFUNCTYPE
 from ctypes.wintypes import BOOL, BYTE, DWORD, HANDLE, LPCWSTR, LPWSTR, UINT, WORD
-from subprocess import SW_HIDE
 from qijo import QueryInformationJobObject
 
 LPVOID = c_void_p
@@ -115,6 +114,8 @@ class STARTUPINFO(Structure):
                 ("hStdError", HANDLE)
                 ]
 LPSTARTUPINFO = POINTER(STARTUPINFO)
+
+SW_HIDE                 = 0
 
 STARTF_USESHOWWINDOW    = 0x01
 STARTF_USESIZE          = 0x02
