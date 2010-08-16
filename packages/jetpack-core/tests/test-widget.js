@@ -290,6 +290,48 @@ exports.testConstructor = function(test) {
         }
       }
     })));
+    
+    // test tooltip
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "text widget",
+      content: "oh yeah",
+      tooltip: "foo",
+      onReady: function(e) {
+        test.assertEqual(this.tooltip, "foo", "tooltip matches");
+        widgets.remove(this)
+        doneTest();
+      }
+    })));
+    
+    // test tooltip fallback to label
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "fallback",
+      content: "oh yeah",
+      onReady: function(e) {
+        test.assertEqual(this.tooltip, this.label, "tooltip fallbacks to label");
+        widgets.remove(this)
+        doneTest();
+      }
+    })));
+
+    // test updating widget tooltip
+    let updated = false;
+    tests.push(function() testSingleWidget(widgets.Widget({
+      label: "tooltip update test widget",
+      tooltip: "foo",
+      content: "<div id='me'>foo</div>",
+      onReady: function(e) {
+        if (!updated) {
+          this.tooltip = "bar";
+          updated = true;
+        }
+        else {
+          test.assertEqual(this.tooltip, "bar", "tooltip gets updated");
+          widgets.remove(this);
+          doneTest();
+        }
+      }
+    })));
 
     // test multiple windows
     tests.push(function() {

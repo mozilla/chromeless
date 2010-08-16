@@ -84,6 +84,9 @@ function Widget(options) {
       ok: function (v) v.length > 0,
       msg: "The widget must have a non-empty label property."
     },
+    tooltip: {
+      is: ["null", "undefined", "string"],
+    },
     image: {
       is: ["null", "undefined", "string"],
     },
@@ -125,6 +128,12 @@ function Widget(options) {
   this.__defineSetter__("width", function(width) {
     options.width = width;
     browserManager.updateItem(self, "width", width);
+  });
+
+  this.__defineGetter__("tooltip", function() options.tooltip || options.label);
+  this.__defineSetter__("tooltip", function(text) {
+    options.tooltip = text;
+    browserManager.updateItem(self, "tooltip", text);
   });
 
   if (options.image) {
@@ -384,6 +393,9 @@ BrowserWindow.prototype = {
           item.node.style.minWidth = value + "px";
           item.node.querySelector("iframe").style.width = value + "px";
           break;
+        case "tooltip":
+          item.node.setAttribute("tooltiptext", value);
+          break;
       }
     }
   },
@@ -396,7 +408,7 @@ BrowserWindow.prototype = {
     let id = "widget: " + guid;
     node.setAttribute("id", id);
     node.setAttribute("label", widget.label);
-    node.setAttribute("tooltiptext", widget.label);
+    node.setAttribute("tooltiptext", widget.tooltip);
 
     // TODO move into a stylesheet
     node.setAttribute("style", [
