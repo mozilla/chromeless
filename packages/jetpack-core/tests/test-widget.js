@@ -1,3 +1,4 @@
+const {Cc,Ci} = require("chrome");
 
 exports.testConstructor = function(test) {
 
@@ -374,6 +375,65 @@ exports.testConstructor = function(test) {
     doneTest();
   }});
 };
+
+exports.testPanelWidget = function testPanelWidget(test) {
+  let widgets = require("widget");
+  let widget1 = widgets.Widget({
+    label: "panel widget 1",
+    content: "<div id='me'>foo</div>",
+    onLoad: function(e) {
+      sendMouseEvent({type:"click"}, "me", e.target.defaultView);
+    },
+    panel: require("panel").Panel({
+      content: "data:text/html,<body>Look ma, a panel!</body>",
+      onShow: function() {
+        widgets.remove(widget1);
+        test.pass("panel displayed on click");
+        test.done();
+      }
+    })
+  });
+  widgets.add(widget1);
+
+  test.assertRaises(
+    function() {
+      widgets.Widget({
+        label: "panel widget 2",
+        panel: {}
+      });
+    },
+    "The option \"panel\" must be one of the following types: null, undefined, object",
+    "widget.panel must be a Panel object"
+  );
+
+  let onClickCalled = false;
+  let widget3 = widgets.Widget({
+    label: "panel widget 3",
+    content: "<div id='me'>foo</div>",
+    onLoad: function(e) {
+      sendMouseEvent({type:"click"}, "me", e.target.defaultView);
+    },
+    onClick: function() {
+      onClickCalled = true;
+      this.panel.show();
+    },
+    panel: require("panel").Panel({
+      content: "data:text/html,<body>Look ma, a panel!</body>",
+      onShow: function() {
+        test.assert(
+          onClickCalled,
+          "onClick called on click for widget with both panel and onClick"
+        );
+        widgets.remove(widget3);
+        test.done();
+      }
+    })
+  });
+  widgets.add(widget3);
+
+  test.waitUntilDone();
+};
+
 
 /******************* helpers *********************/
 

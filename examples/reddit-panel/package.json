@@ -1,0 +1,9 @@
+{
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1", 
+    "name": "reddit-panel",
+    "contributors": [],
+    "author": "Myk Melez",
+    "version": "0.7pre",
+    "keywords": [],
+    "description": "Displays Reddit in a panel."
+}

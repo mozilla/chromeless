@@ -63,6 +63,19 @@ the following keys.  If any option is invalid, an exception is thrown.
     </td>
   </tr>
   <tr>
+    <td><tt>panel</tt></td>
+    <td>
+      A Panel to open when the user clicks on the widget.  See the `panel`
+      module for more information about the `Panel` objects to which this
+      option can be set and the `reddit-panel` example add-on for an example
+      of using this option.
+      
+      Note: if you also specify an `onClick` callback function, it will be
+      called instead of the panel being opened.  However, you can then show
+      the panel from the `onClick` callback function by calling `panel.show()`.
+    </td>
+  </tr>
+  <tr>
     <td><tt>width</tt></td>
     <td>
       Width in pixels of the widget. This property can be updated after

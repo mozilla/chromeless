@@ -69,6 +69,7 @@ const apiutils = require("api-utils");
 const collection = require("collection");
 const errors = require("errors");
 const prefs = require("preferences-service");
+const panels = require("panel");
 
 // Expose public APIs for creating/adding/removing widgets
 exports.Widget = apiutils.publicConstructor(Widget);
@@ -91,6 +92,10 @@ function Widget(options) {
     },
     width:  {
       is: ["null", "undefined", "number"],
+    },
+    panel: {
+      is: ["null", "undefined", "object"],
+      ok: function(v) !v || v instanceof panels.Panel
     },
     onClick: {
       is: ["function", "array", "null", "undefined"],
@@ -137,6 +142,11 @@ function Widget(options) {
       browserManager.updateItem(self, "content", content);
     });
   }
+
+    this.__defineGetter__("panel", function() options.panel || undefined);
+    this.__defineSetter__("panel", function(panel) {
+      options.panel = panel;
+    });
 
   for (let method in EVENTS) {
     // create collection for the event as a widget property
@@ -202,6 +212,8 @@ let browserManager = {
       throw new Error("The widget " + item + " has already been added.");
     this.items.push(item);
     this.windows.forEach(function (w) w.addItems([item]));
+    if (item.panel)
+      panels.add(item.panel);
   },
 
   // Updates the content of an item registered with the manager,
@@ -222,6 +234,8 @@ let browserManager = {
                       "and therefore cannot be removed.");
     }
     this.items.splice(idx, 1);
+    if (item.panel)
+      panels.remove(item.panel);
     this.windows.forEach(function (w) w.removeItems([item]));
   },
 
@@ -522,6 +536,13 @@ BrowserWindow.prototype = {
       let handler = getHandlerForType(e.type);
       for (let callback in item.widget[handler])
         require("errors").catchAndLog(function(e) callback.apply(item.widget, [e]))(e);
+
+      // Special case for click events: if the widget doesn't have a click
+      // handler, but it does have a panel, display the panel.
+      if (e.type == "click" && item.widget[handler].length == 0 &&
+          item.widget.panel) {
+        item.widget.panel.show(item.node);
+      }
     };
 
     item.eventListeners = {};
