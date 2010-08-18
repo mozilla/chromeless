@@ -1,3 +1,7 @@
+<!-- contributed by Paul O’Shannessy [paul@oshannessy.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
+
 The `private-browsing` module allows you to access the private browsing service
 - detecting if it is active and adding callbacks for transitioning into and out
 of private browsing mode.
@@ -10,10 +14,12 @@ in a variable.
 
 ## Attributes ##
 
-<code>private-browsing.**active**</code>
-
+<api name="active">
+@property {boolean}
 This is a boolean. You can read this attribute to determine if private browsing
-mode is active. You can also set the attribute to enter or exit private browsing.
+mode is active. You can also set the attribute to enter or exit private
+browsing.
+</api>
 
     // If private browsing is active, do something
     if (pb.active)
@@ -28,16 +34,18 @@ mode is active. You can also set the attribute to enter or exit private browsing
 
 ## Callbacks ##
 
-Transitioning into or out of private browsing mode causes a set of callbacks to be triggered.
-The first callback happens before the transition actually starts. From this
-callback, you can cancel the transition. The next callback happens immediately
-after the mode has been transitioned. The third gets called after the browser
-has restored the session. These will be explained in more detail below.
+Transitioning into or out of private browsing mode causes a set of callbacks to
+be triggered. The first callback happens before the transition actually starts.
+From this callback, you can cancel the transition. The next callback happens
+immediately after the mode has been transitioned. The third gets called after
+the browser has restored the session. These will be explained in more detail
+below.
 
 
 ### Adding and Removing Callback Functions ###
 
-The callbacks are stored as `collection`s, so there are a number of ways to access them.
+The callbacks are stored as `collection`s, so there are a number of ways to
+access them.
 
     // Define our callback function
     function onStartCallback () { /* do something */ }
@@ -64,48 +72,57 @@ The callbacks are stored as `collection`s, so there are a number of ways to acce
 
 ### Available Callbacks ###
 
-<code>private-browsing.**onBeforeStart**(*cancel*)</code>
-
+<api name="onBeforeStart">
+@property {collection}
 Each `onBeforeStart` callback is called when something triggers the browser to
-enter private browsing mode. **`cancel`** is a one-time-use function that can be
+enter private browsing mode. *`cancel`* is a one-time-use function that can be
 called if your code would like to prevent the browser from entering private
-browsing. Calling `cancel` from outside of your callback will have no effect.
+browsing. Calling *`cancel`* from outside of your callback has no effect.
+</api>
 
     pb.onBeforeStart = function (cancel) {
       // Do something and realize you need to prevent private browsing...
       cancel();
     }
 
-<code>private-browsing.**onStart**()</code>
-
+<api name="onStart">
+@property {collection}
 Each `onStart` callback is called when the browser has actually entered private
 browsing mode. This only happens if nothing has cancelled the transition
 (which can be done by you or other extensions).
+</api>
 
-<code>private-browsing.**onAfterStart**()</code>
-
+<api name="onAfterStart">
+@property {collection}
 Each `onAfterStart` callback is called after the browser has fully transitioned
 into private browsing. While the other callbacks will be called synchronously,
 this callback is asynchronous and will happen only after the private browsing
 session has been loaded.
+</api>
 
-<code>private-browsing.**onBeforeStop**(*cancel*)</code>
-
+<api name="onBeforeStop">
+@property {collection}
 Each `onBeforeStop` callback is called when something triggers the browser to
-leave private browsing mode. Just like `onAfterStart`, *`cancel`* is a one-time-use
-function that can be used to cancel the transition from private browsing mode.
+leave private browsing mode. Just like `onAfterStart`, *`cancel`* is a
+one-time-use function that can be used to cancel the transition from private
+browsing mode.
+</api>
 
-<code>private-browsing.**onStop**()</code>
-
+<api name="onStop">
+@property {collection}
 Each `onStop` callback is called when the browser has actually left private
 browsing mode. This only happens if nothing has cancelled the transition
 (which can be done by you or other extensions).
+</api>
 
-<code>private-browsing.**onAfterStop**()</code>
+<api name="onAfterStop">
+@property {collection}
 Each `onAfterStop` callback is called after the browser has fully transitioned
 out of private browsing. While the other callbacks will be called synchronously,
 this callback is asynchronous and will happen only after the browsing session
 has been restored.
+</api>
+
 
 
 ## Supported Applications ##
