@@ -1,3 +1,7 @@
+<!-- contributed by Atul Varma [atul@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
+
 The `traceback` module contains functionality similar to
 Python's [traceback] module.
 
@@ -26,22 +30,38 @@ element thus represents a stack frame and has the following keys:
 
 ## Functions ##
 
-<code>traceback.**fromException**(*exception*)</code>
+<api name="fromException">
+@method
+  Attempts to extract the traceback from *`exception`*.
 
-Attempts to extract the traceback from *exception*, returning the
-JSON representation of the traceback or `null` if no traceback
-could be extracted.
+@returns {traceback}
+  JSON representation of the traceback or `null` if not found.
 
-<code>traceback.**get**()</code>
+@param exception {exception}
+  exception where exception is an `nsIException`.
+</api>
 
-Returns the JSON representation of the stack at the point that this
-function is called.
+See [nsIException] for more information.
 
-<code>traceback.**format**([*tbOrException*])</code>
+[nsIException]: https://developer.mozilla.org/en/NsIException
 
+<api name="get">
+@method
+
+@returns {JSON}
+  Returns the JSON representation of the stack at the point that this
+  function is called.
+</api>
+
+<api name="format">
+@method
 Given a JSON representation of the stack or an exception instance,
 returns a formatted plain text representation of it, similar to
 Python's formatted stack tracebacks.  If no argument is provided, the
 stack at the point this function is called is used.
+
+@param [tbOrException] {object}
+</api>
+
 
   [traceback]: http://docs.python.org/library/traceback.html
