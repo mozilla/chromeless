@@ -54,7 +54,7 @@ exports.notify = function notifications_notify(options) {
     }
   };
   gAlertServ.showAlertNotification(valOpts.iconURL, valOpts.title,
-                                   valOpts.text, false, valOpts.data,
+                                   valOpts.text, !!clickObserver, valOpts.data,
                                    clickObserver);
 };
 
