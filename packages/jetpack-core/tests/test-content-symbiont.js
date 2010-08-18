@@ -41,7 +41,7 @@ exports.testContentSymbiont = function(test) {
                      "There is one contentScriptURL, as specified in options.");
     test.assertEqual(
       [i for each (i in contentSymbiont.contentScriptURL)][0],
-      "resource://jetpack-core-jetpack-core-data/test-content-symbiont.js",
+      self.data.url("test-content-symbiont.js"),
       "The contentScriptURL's value is as specified in options."
     );
 
