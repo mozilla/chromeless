@@ -220,9 +220,12 @@
              sandbox.defineProperty(name, self.globals[name]);
            sandbox.defineProperty('require', self._makeRequire(path));
            sandbox.evaluate("var exports = {};");
+           let ES5 = self.modules.es5;
+           if (ES5) {
+             let { Object, Array, Function } = sandbox.globalScope;
+             ES5.init(Object, Array, Function);
+           }
            self.modules[path] = sandbox.getProperty("exports");
-           if ('es5' !== module)
-             sandbox.evaluate('require("es5").init(Object, Array, Function)');
            sandbox.evaluate(options);
          }
          return self.modules[path];

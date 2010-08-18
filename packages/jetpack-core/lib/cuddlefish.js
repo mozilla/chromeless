@@ -126,6 +126,8 @@
      if (!globals.memory)
        globals.memory = loader.require("memory");
 
+     modules['es5'] = loader.require('es5');
+
      loader.console = globals.console;
      loader.memory = globals.memory;
      loader.unload = unloadLoader;
