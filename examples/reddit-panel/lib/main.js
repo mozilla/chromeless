@@ -8,7 +8,7 @@ widgets.add(widgets.Widget({
   panel: panels.Panel({
     width: 240,
     height: 320,
-    content: "http://www.reddit.com/.mobile?keep_extension=True",
+    contentURL: "http://www.reddit.com/.mobile?keep_extension=True",
     contentScriptURL: [data.url("jquery-1.4.2.min.js"), data.url("panel.js")],
     contentScriptWhen: "ready",
     onMessage: function(message, callback) {

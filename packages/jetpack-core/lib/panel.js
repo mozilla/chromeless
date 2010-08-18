@@ -50,6 +50,7 @@ const collection = require("collection");
 const hiddenFrames = require("hidden-frame");
 const errors = require("errors");
 const contentSymbionts = require("content-symbiont");
+const URL = require("url").URL;
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const DEFAULT_WIDTH = 320;
@@ -59,20 +60,6 @@ xpcom.utils.defineLazyServiceGetter(this,
                                     "windowMediator",
                                     "@mozilla.org/appshell/window-mediator;1",
                                     "nsIWindowMediator");
-
-function coerceToURL(content) {
-  if (!content)
-    return "about:blank";
-
-  try {
-    url.URL(content);
-  }
-  catch(ex) {
-    content = "data:text/html," + content;
-  }
-
-  return content;
-}
 
 exports.Panel = apiUtils.publicConstructor(Panel);
 
@@ -90,9 +77,20 @@ function Panel(options) {
   let heightReq = {
     is: ["number", "undefined"]
   };
-  let contentReq = {
-    is: ["undefined", "string"],
-    msg: "The content option must be a string of HTML or a URL."
+  let contentURLReq = {
+    map: function (v) typeof v == "undefined" ? v : URL(v),
+    ok: function (v) {
+      if (typeof v != "undefined") {
+        try {
+          URL(v);
+        }
+        catch(ex) {
+          return false;
+        }
+      }
+      return true;
+    },
+    msg: "The contentURL option must be a URL."
   };
   let onShowReq = {
     is: ["undefined", "function", "array"],
@@ -119,21 +117,22 @@ function Panel(options) {
   // contentSymbionts.mixInto.
   for each (let [key, val] in Iterator(apiUtils.validateOptions(options,
                               { width: widthReq, height: heightReq,
-                                content: contentReq, onShow: onShowReq,
+                                contentURL: contentURLReq, onShow: onShowReq,
                                 onHide: onHideReq }))) {
     if (typeof(val) != "undefined")
       options[key] = val;
   };
 
-  /* Public API: panel.content */
-  this.__defineGetter__("content", function () options.content || undefined);
-  this.__defineSetter__("content", function (newValue) {
-    options.content = apiUtils.validateOptions({ content: newValue },
-                                               { content: contentReq }).
-                      content;
+  /* Public API: panel.contentURL */
+  this.__defineGetter__("contentURL", function () options.contentURL ||
+                                                  undefined);
+  this.__defineSetter__("contentURL", function (newValue) {
+    options.contentURL = apiUtils.validateOptions({ contentURL: newValue },
+                                                  { contentURL: contentURLReq })
+                                 .contentURL;
     let entry = cache.filter(function (v) v.panel === self)[0];
     if (entry)
-      entry.hiddenFrame.element.setAttribute("src", coerceToURL(newValue));
+      entry.hiddenFrame.element.setAttribute("src", newValue);
   });
 
   /* Public API: panel.allow */
@@ -264,7 +263,7 @@ exports.add = function add(panel) {
       this.element.addEventListener("DOMContentLoaded", onContentReady, true,
                                   true);
 
-      this.element.setAttribute("src", panel.content);
+      this.element.setAttribute("src", panel.contentURL);
     }
   }));
 

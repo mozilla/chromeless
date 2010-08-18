@@ -37,6 +37,16 @@ scripts via an asynchronous message passing API.
 Examples
 --------
 
+Create and show a simple panel with content from the `data/` directory:
+
+    const panels = require("panel");
+    const data = require("self").data;
+    let panel = panels.add(panels.Panel({
+      contentURL: data.url("foo.html")
+    }));
+    
+    panel.show();
+
 The following code creates a widget that opens a panel containing the mobile
 version of Reddit.  The panel has an associated content script (see below)
 that intercepts clicks on the titles of stories and passes their URLs to the
@@ -53,7 +63,7 @@ want to read in a new tab by clicking on the stories' titles.
       panel: panels.Panel({
         width: 240,
         height: 320,
-        content: "http://www.reddit.com/.mobile?keep_extension=True",
+        contentURL: "http://www.reddit.com/.mobile?keep_extension=True",
         contentScriptURL: [data.url("jquery-1.4.2.min.js"),
                            data.url("panel.js")],
         contentScriptWhen: "ready",
@@ -101,8 +111,8 @@ Creates a panel.
     The width of the panel in pixels. Optional.
   @prop [height] {number}
     The height of the panel in pixels. Optional.
-  @prop content {string}
-    The content to load into the panel. Either a string of HTML or a URL.
+  @prop [contentURL] {URL,string}
+    The URL of the content to load in the panel.
   @prop [allow] {object}
     Permissions for the content, with the following keys:
     @prop [script] {boolean}
@@ -158,9 +168,9 @@ The height of the panel in pixels.
 The width of the panel in pixels.
 </api>
 
-<api name="content">
-@property {string}
-The content to load in the page.  Either a string of HTML or a URL.
+<api name="contentURL">
+@property {URL}
+The URL of the content loaded in the panel.
 </api>
 
 <api name="allow">
