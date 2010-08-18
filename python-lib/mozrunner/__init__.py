@@ -47,7 +47,6 @@ import zipfile
 import optparse
 import killableprocess
 import subprocess
-import pkg_resources
 from xml.etree import ElementTree
 from distutils import dir_util
 from time import sleep
@@ -528,6 +527,7 @@ class CLI(object):
             self.addons = []
             
     def get_metadata_from_egg(self):
+        import pkg_resources
         ret = {}
         dist = pkg_resources.get_distribution(self.module)
         if dist.has_metadata("PKG-INFO"):
