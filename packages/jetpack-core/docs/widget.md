@@ -1,3 +1,6 @@
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
 The `widget` module provides a consistent, unified way for extensions to
 expose their user-interface in a way that blends in well with the host
 application.
@@ -6,148 +9,114 @@ The widgets are displayed on a horizontal bar above the browser status
 bar. Expect major changes to the look and feel of the bar, as well as
 the location of it, in subsequent releases.
 
-The widget bar can be shown and hidden via the control+shift+U keyboard
-shortcut (or cmd+shift+U if on Mac).
+The widget bar can be shown and hidden via the Control+Shift+U keyboard
+shortcut (or Cmd+Shift+U if on Mac).
 
 ## Extended UI
 
 Currently only the small widget view in the bar is supported.
 Subsequent releases will allow authors to specify a larger panel
 for displaying rich content. You may hook up extended UI via the
-supported events, however keep in mind that direct access to the
+supported events; however, keep in mind that access to the
 browser's XUL window DOM, directly or through events, may break
 in the very near future, likely in the 0.7pre release.
 
-## Permanent vs Transient Widgets
+## Permanent vs. Transient Widgets
 
 In subsequent releases there may be support for ideas such as "active"
-vs "inactive" widgets, or "pinned" widgets, or time-contextual widgets.
+vs. "inactive" widgets, or "pinned" widgets, or time-contextual widgets.
 
 Currently the widget author is in charge of managing their widget's
 visibility.
 
 ## Constructors ##
 
-<tt>widget.**Widget**(*options*)</tt>
+<api name="Widget">
+@constructor {options}
+  Creates a new widget.
 
-Creates a new widget. *options* is an object with
-the following keys.  If any option is invalid, an exception is thrown.
+@param options {object}
+  An object with the following keys:
 
-<table>
-  <tr>
-    <td><tt>label</tt></td>
-    <td>
-      A required string description of the <tt>Widget</tt> used for
-      accessibility, title bars, error reporting.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>content</tt></td>
-    <td>
-      An optional string value containing the displayed content of the <tt>Widget</tt>.
-      It may contain raw HTML content, or a URL to Web content, or a URL to an image.
-      
-      Widgets must either have a <tt>content</tt> property or an <tt>image</tt> property.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>image</tt></td>
-    <td>
-      An optional string URL of an image from your package to use
-      as the displayed content of the <tt>Widget</tt>.
+  @prop label {string}
+    A required string description of the widget used for accessibility,
+    title bars, and error reporting.
 
-      See the `self` module for directions on where in your package to store
-      your static data files.
+  @prop [content] {string}
+    An optional string value containing the displayed content of the widget.
+    It may contain raw HTML content, or a URL to Web content, or a URL to an
+    image.  Widgets must either have a `content` property or an `image`
+    property.
 
-      Widgets must either have a <tt>content</tt> property or an <tt>image</tt> property.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>panel</tt></td>
-    <td>
-      A Panel to open when the user clicks on the widget.  See the `panel`
-      module for more information about the `Panel` objects to which this
-      option can be set and the `reddit-panel` example add-on for an example
-      of using this option.
-      
-      Note: if you also specify an `onClick` callback function, it will be
-      called instead of the panel being opened.  However, you can then show
-      the panel from the `onClick` callback function by calling `panel.show()`.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>width</tt></td>
-    <td>
-      Width in pixels of the widget. This property can be updated after
-      the widget has been created, to resize it.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>onClick</tt></td>
-    <td>
-      An optional function to be called when the <tt>Widget</tt> is clicked.
-      It is called as <tt>onClick(<em>event</em>)</tt>. <em>event</em> is the 
-      standard DOM event object.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>onLoad</tt></td>
-    <td>
-      An optional function to be called when <tt>Widget</tt> content
-      is loaded. If the <tt>Widget</tt>'s content is HTML
-      then the <tt>onReady</tt> event is recommended, as it provides
-      earlier access.
-      
-      It is called as <tt>onLoad(<em>event</em>)</tt>. <em>event</em>
-      is the standard DOM event object.
-    </td>
-  </tr> 
-  <tr>
-    <td><tt>onMouseover</tt></td>
-    <td>
-      An optional function to be called when the user passes the mouse
-      over the <tt>Widget</tt>.
-      
-      It is called as <tt>onClick(<em>event</em>)</tt>. <em>event</em>
-      is the standard DOM event object.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>onMouseout</tt></td>
-    <td>
-      An optional function to be called when the mouse is no longer
-      over the <tt>Widget</tt>.
-      
-      It is called as <tt>onClick(<em>event</em>)</tt>. <em>event</em>
-      is the standard DOM event object.
-    </td>
-  </tr>
-  <tr>
-    <td><tt>onReady</tt></td>
-    <td>
-      An optional function to be called when <tt>Widget</tt> content
-      that is HTML is loaded. If the <tt>Widget</tt>'s content is an image
-      then use the <tt>onLoad</tt> event instead.
-      
-      It is called as <tt>onReady(<em>event</em>)</tt>. <em>event</em>
-      is the standard DOM event object.
-    </td>
-  </tr> 
-</table>
+  @prop [image] {string}
+    An optional string URL of an image from your package to use as the displayed
+    content of the widget.  See the [`self`](#module/jetpack-core/self) module
+    for directions on where in your package to store your static data files.
+    Widgets must either have a `content` property or an `image` property.
+
+  @prop panel {panel}
+    A `Panel` to open when the user clicks on the widget.  See the
+    [`panel`](#module/jetpack-core/panel) module for more information about the
+    `Panel` objects to which this option can be set and the `reddit-panel`
+    example add-on for an example of using this option.  Note: If you also
+    specify an `onClick` callback function, it will be called instead of the
+    panel being opened.  However, you can then show the panel from the `onClick`
+    callback function by calling `panel.show()`.
+
+  @prop [width] {integer}
+    Optional width in pixels of the widget. This property can be updated after
+    the widget has been created, to resize it. If not given, a default width is
+    used.
+
+  @prop [onClick] {callback}
+    An optional function to be called when the widget is clicked. It is called
+    as `onClick(event)`. `event` is the standard DOM event object.
+
+  @prop [onLoad] {callback}
+    An optional function to be called when the widget's content is loaded. If
+    the content is HTML then the `onReady` event is recommended, as it provides
+    earlier access. It is called as `onLoad(event)`. `event` is the standard DOM
+    event object.
+
+  @prop [onMouseover] {callback}
+    An optional function to be called when the user passes the mouse over the
+    widget. It is called as `onClick(event)`. `event` is the standard DOM event
+    object.
+
+  @prop [onMouseout] {callback}
+    An optional function to be called when the mouse is no longer over the
+    widget. It is called as `onClick(event)`. `event` is the standard DOM event
+    object.
+
+  @prop [onReady] {callback}
+    An optional function to be called when widget content that is HTML is
+    loaded. If the widget's content is an image then use the `onLoad` event
+    instead. It is called as `onReady(event)`. `event` is the standard DOM event
+    object.
+</api>
 
 ## Functions ##
 
-<tt>widget.**add**(*Widget*)</tt>
+<api name="add">
+@function
+  Adds a widget to the bar.
 
-Adds a widget to the bar.
+@param widget {Widget}
+  Widget to be added.
+</api>
 
-<tt>widget.**remove**(*Widget*)</tt>
 
-Removes a widget from the bar.
+<api name="remove">
+@function
+  Removes a widget from the bar.
+
+@param Widget {Widget}
+  Widget to be removed.
+</api>
 
 ## Examples ##
 
-    const widgets = require("widget");
+    var widgets = require("widget");
 
     // A basic click-able image widget.
     widgets.add(widgets.Widget({
