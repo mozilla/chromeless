@@ -12,15 +12,6 @@ the location of it, in subsequent releases.
 The widget bar can be shown and hidden via the Control+Shift+U keyboard
 shortcut (or Cmd+Shift+U if on Mac).
 
-## Extended UI
-
-Currently only the small widget view in the bar is supported.
-Subsequent releases will allow authors to specify a larger panel
-for displaying rich content. You may hook up extended UI via the
-supported events; however, keep in mind that access to the
-browser's XUL window DOM, directly or through events, may break
-in the very near future, likely in the 0.7pre release.
-
 ## Permanent vs. Transient Widgets
 
 In subsequent releases there may be support for ideas such as "active"
