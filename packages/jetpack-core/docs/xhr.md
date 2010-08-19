@@ -1,18 +1,30 @@
-The `xhr` module provides access to `XMLHttpRequest`
-functionality, also known as AJAX.
+<!-- contributed by Atul Varma [atul@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
 
-## Exports ##
+The `xhr` module provides access to `XMLHttpRequest` functionality, also known
+as AJAX.
 
-<code>xhr.**XMLHttpRequest**()</code>
+## Constructors ##
 
-Creates an `XMLHttpRequest`. This is a constructor, so its use
-should always be preceded by the `new` operator. For more information,
-see the MDC page on [Using XMLHttpRequest].
+<api name="XMLHttpRequest">
+@constructor
+  Creates an `XMLHttpRequest`. This is a constructor, so its use should always
+  be preceded by the `new` operator.  For more information about
+  `XMLHttpRequest` objects, see the MDC page on
+  [Using XMLHttpRequest](https://developer.mozilla.org/En/Using_XMLHttpRequest)
+  and the Limitations section below.
+</api>
 
-<code>xhr.**getRequestCount**()</code>
+## Functions ##
 
-Returns the number of `XMLHttpRequest` objects that are alive
-(i.e., currently active or about to be).
+<api name="getRequestCount">
+@function
+  Returns the number of `XMLHttpRequest` objects that are alive (i.e., currently
+  active or about to be).
+@returns {integer}
+  The number of live `XMLHttpRequest` objects.
+</api>
+
 
 ## Limitations ##
 
@@ -78,5 +90,3 @@ extension's packaged, read-only resources.
 Finally, we need to also consider attenuating http/https requests such
 that they're "sandboxed" and don't communicate potentially sensitive
 cookie information.
-
-  [Using XMLHttpRequest]: https://developer.mozilla.org/En/Using_XMLHttpRequest
