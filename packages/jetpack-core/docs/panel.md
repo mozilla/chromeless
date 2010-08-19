@@ -27,7 +27,7 @@ chrome elements, i.e. parts of the host application interface, and content
 elements, i.e. parts of a web page in an application tab.  Panels that are
 anchored to an element should have an arrow that points from the panel to the
 element, but that has not yet been implemented.  The work to implement it is
-tracked in [bug 554937](https://bugzilla.mozilla.org/show_bug.cgi?id=554937).
+tracked in bug 554937.
 
 Panels have associated content scripts, which are JavaScript scripts that have
 access to the content loaded into the panels.  Programs can specify one or more
