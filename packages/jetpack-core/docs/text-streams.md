@@ -53,7 +53,9 @@ TextReader Objects
   exception is thrown.
 @param [numChars] {number}
   The number of characters to read.  If not given, the remainder of the stream
-  is read.  If the stream is at the end, the empty string is returned.
+  is read.
+@returns {string}
+  The string read.  If the stream is at the end, the empty string is returned.
 </api>
 
 
