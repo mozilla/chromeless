@@ -155,7 +155,7 @@ Item Constructors
   @prop [data] {string}
     An optional arbitrary value to associate with the item.  It must be either a
     string or an object that implements `toString()`.
-  @prop [onClick] {callback}
+  @prop [onClick] {function}
     An optional function that will be called when the Item is clicked.  It's
     called as `onClick(contextObj, item)`.  `contextObj` is an object describing
     the context in which the context menu was invoked; see Examining Contexts
@@ -174,10 +174,10 @@ Item Constructors
   @prop label {string}
     The item's label.  It must either be a string or an object that implements
     `toString()`.
-  @prop [items] {string}
+  @prop items {array}
     An array of menu items that the menu will contain.  Each must be an `Item`,
     `Menu`, or `Separator`.
-  @prop [onClick] {callback}
+  @prop [onClick] {function}
     An optional function that will be called when any of the menu's `Item`
     descendants is clicked. (The `onClick`s of descendants are invoked first, in
     a bottom-up, bubbling manner.)  It is called as
