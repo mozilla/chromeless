@@ -45,8 +45,8 @@ visibility.
     for directions on where in your package to store your static data files.
     Widgets must either have a `content` property or an `image` property.
 
-  @prop panel {panel}
-    A `Panel` to open when the user clicks on the widget.  See the
+  @prop [panel] {panel}
+    An optional `Panel` to open when the user clicks on the widget.  See the
     [`panel`](#module/jetpack-core/panel) module for more information about the
     `Panel` objects to which this option can be set and the `reddit-panel`
     example add-on for an example of using this option.  Note: If you also
@@ -84,6 +84,10 @@ visibility.
     loaded. If the widget's content is an image then use the `onLoad` event
     instead. It is called as `onReady(event)`. `event` is the standard DOM event
     object.
+
+  @prop [tooltip] {string}
+    Optional text to show when the user's mouse hovers over the widget.  If not
+    given, the `label` is used.
 </api>
 
 ## Functions ##
