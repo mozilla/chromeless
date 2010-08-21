@@ -56,25 +56,16 @@ stored since the last time you were under quota will not be persisted.  You
 should not let that happen.
 
 To listen for quota notifications, register a listener with the module's
-`onOverQuota` collection.  A single listener may be registered by assigning a
-function:
+`onOverQuota` collection:
 
-    simpleStorage.onOverQuota = function () { /* ... */ };
+    function myOnOverQuotaListener() {
+      console.log("Uh oh.");
+    }
+    simpleStorage.onOverQuota.add(myOnOverQuotaListener);
 
-Multiple listeners may be registered by assigning an array of functions:
+Listeners can also be unregistered:
 
-    simpleStorage.onOverQuota = [ function () {}, function () {} ];
-
-You can add listeners:
-
-    simpleStorage.onOverQuota.add(function () {});
-    simpleStorage.onOverQuota.add([ function () {}, function () {} ]);
-
-And remove them:
-
-    function myListener() {}
-    simpleStorage.onOverQuota.remove(myListener);
-    simpleStorage.onOverQuota.remove([ myListener, anotherListener ]);
+    simpleStorage.onOverQuota.remove(myOnOverQuotaListener);
 
 To find out how much of your quota you're using, check the module's `quotaUsage`
 property.  It indicates the percentage of quota your storage occupies.  If
@@ -86,10 +77,10 @@ storage until your `quotaUsage` is less than or equal to 1.  Which particular
 data you remove is up to you.  For example:
 
     simpleStorage.storage = [ /* some long array */ ];
-    simpleStorage.onOverQuota = function () {
+    simpleStorage.onOverQuota.add(function () {
       while (simpleStorage.quotaUsage > 1)
         simpleStorage.storage.pop();
-    };
+    });
 
 
 Private Browsing
@@ -130,19 +121,24 @@ follow its guidance on best practices and policies.
 Reference
 ---------
 
-<code>simpleStorage.**storage**</code>
+<api name="storage">
+@property {object}
+  A persistent object private to the extension.  Properties with array, boolean,
+  number, object, null, and string values will be persisted.  The `storage`
+  property itself may also be set to a value of one of these types or a new
+  object.
+</api>
 
-A persistent object private to the extension.  Properties with array, boolean,
-number, object, null, and string values will be persisted.  The `storage`
-property itself may also be set to a value of one of these types.
+<api name="onOverQuota">
+@property {collection}
+  A collection of listeners that will be notified when the storage goes over
+  quota.  Each is a function.
+</api>
 
-<code>simpleStorage.**onOverQuota**</code>
-
-A collection of listeners that will be notified when the storage goes over
-quota.  Each is a function.
-
-<code>simpleStorage.**quotaUsage**</code>
-
-A number in the range [0, Infinity) that indicates the percentage of quota
-occupied by storage.  A value in the range [0, 1] indicates that the storage is
-within quota.  A value greater than 1 indicates that the storage exceeds quota.
+<api name="quotaUsage">
+@property {number}
+  A number in the range [0, Infinity) that indicates the percentage of quota
+  occupied by storage.  A value in the range [0, 1] indicates that the storage
+  is within quota.  A value greater than 1 indicates that the storage exceeds
+  quota.
+</api>
