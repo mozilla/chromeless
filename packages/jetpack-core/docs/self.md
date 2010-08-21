@@ -38,11 +38,6 @@ data that can be displayed directly in a content frame, use `data.url(NAME)`.
 @returns {string}
 </api>
 
-<span class="aside">
-The 0.7 SDK release does not have the Panel API yet. Watch 
-[JEP 103](https://wiki.mozilla.org/Labs/Jetpack/Reboot/JEP/103) for updates.
-</span>
-
 <api name="data.url">
 @method
 The `data.url(NAME)` method returns a URL instance that points at an embedded
@@ -50,8 +45,14 @@ data file. It is most useful for data that can be displayed directly in a
 content frame. The URL instance can be passed to a content frame constructor,
 such as the Panel:
 
-    let p = Panel({frame: {content: self.data.url("status.html")}});
-    p.show()
+    var self = require("self");
+    var panels = require("panel");
+    var myPanel = panels.Panel({
+      contentURL: self.data.url("my-panel-content.html")
+    });
+    panels.add(myPanel);
+    myPanel.show();
+
 @param name {string} The filename to be read, relative to the 
   package's `data` directory. Each package that uses the `self` module
   will see its own `data` directory.
