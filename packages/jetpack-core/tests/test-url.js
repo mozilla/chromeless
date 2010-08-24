@@ -62,8 +62,8 @@ exports.testToFilename = function(test) {
     "url.toFilename() on nonexistent resources should throw"
   );
 
-  test.assertMatches(url.toFilename("resource://gre/modules/"),
-                     /.*modules$/,
+  test.assertMatches(url.toFilename(__url__),
+                     /.*test-url\.js$/,
                      "url.toFilename() on resource: URIs should work");
 
   test.assertRaises(
