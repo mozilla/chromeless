@@ -32,8 +32,6 @@ tests.testShowHidePanel = function(test) {
 };
 
 tests.testContentURLOption = function(test) {
-  test.waitUntilDone();
-
   const URL_STRING = "http://www.mozilla.org/";
   const HTML_CONTENT = "<html><title>Test</title><p>This is a test.</p></html>";
 
