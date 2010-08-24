@@ -10,22 +10,26 @@ const ERRORS = {
   STREAM_CLOSED: /^The stream is closed/
 };
 
+var myurl = __url__;
+var mydir = myurl.slice(0, -("test-file.js".length));
+var otherdir = mydir + "interoperablejs-read-only/";
+
 exports.testDirName = function(test) {
-  var aDir = url.toFilename("resource://gre/modules/");
+  var aDir = url.toFilename(otherdir);
   test.assertEqual(file.dirname(aDir),
-                   aDir.slice(0, aDir.lastIndexOf("modules")-1),
+                   aDir.slice(0, aDir.lastIndexOf("interoperablejs-read-only")-1),
                    "file.dirname() of dir should return parent dir");
 
-  aDir = url.toFilename("resource://gre/modules/XPCOMUtils.jsm");
+  aDir = url.toFilename(myurl);
   test.assertEqual(file.dirname(aDir),
-                   aDir.slice(0, aDir.lastIndexOf("XPCOM")-1),
+                   aDir.slice(0, aDir.lastIndexOf("test-file")-1),
                    "file.dirname() of file should return its dir");
 };
 
 exports.testList = function(test) {
-  var list = file.list(url.toFilename("resource://gre/modules/"));
+  var list = file.list(url.toFilename(otherdir));
   var found = [true for each (name in list)
-                    if (name == "XPCOMUtils.jsm")];
+                    if (name == "README.txt")];
   if (found.length > 1)
     test.fail("a dir can't contain two files of the same name!");
   test.assertEqual(found[0], true, "file.list() should work");
@@ -37,7 +41,7 @@ exports.testList = function(test) {
   );
 
   test.assertRaises(
-    function() { file.list(url.toFilename("resource://gre/foo/")); },
+    function() { file.list(url.toFilename(mydir + "foo/")); },
     ERRORS.FILE_NOT_FOUND,
     "file.list() on nonexistent dir should raise error"
   );
@@ -56,17 +60,17 @@ exports.testRead = function(test) {
   );
 
   test.assertRaises(
-   function() { file.read(url.toFilename("resource://gre/modules/")); },
+   function() { file.read(url.toFilename(otherdir)); },
    ERRORS.NOT_A_FILE,
    "file.read() on dir should raise error"
   );
 };
 
 exports.testJoin = function(test) {
-  var filename = url.toFilename("resource://gre/modules/XPCOMUtils.jsm");
+  var filename = url.toFilename(myurl);
   var baseDir = file.dirname(filename);
 
-  test.assertEqual(file.join(baseDir, "XPCOMUtils.jsm"),
+  test.assertEqual(file.join(baseDir, "test-file.js"),
                    filename,
                    "file.join() should work");
 };
