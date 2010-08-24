@@ -149,8 +149,14 @@ exports.add = function JP_SDK_Frame_add(frame) {
     frame.__defineGetter__("element", function () element);
 
     // Notify consumers that the frame is ready.
-    for (let handler in frame.onReady)
-      errors.catchAndLog(function () handler.call(frame))();
+    function onReadyListener(event) {
+      element.removeEventListener("DOMContentLoaded", onReadyListener, false);
+      if (event.target == element.contentDocument) {
+        for (let handler in frame.onReady)
+          errors.catchAndLog(function () handler.call(frame))();
+      }
+    }
+    element.addEventListener("DOMContentLoaded", onReadyListener, false);
 
     cache.push({
       frame: frame,
