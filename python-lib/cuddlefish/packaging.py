@@ -255,7 +255,7 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
         add_section_to_build(dep_cfg, "data", is_data=True)
         if include_tests and include_dep_tests:
             add_section_to_build(dep_cfg, "tests", is_code=True)
-        if "loader" in dep_cfg:
+        if ("loader" in dep_cfg) and ("loader" not in build):
             build.loader = "resource://%s-%s" % (prefix + dep,
                                                  dep_cfg.loader)
 
