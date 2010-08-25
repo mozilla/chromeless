@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source ./bin/activate
+if [ type -P xvfb-run ]
+then
+  xvfb-run cfx $*
+else
+  cfx $*
+fi  
+deactivate
