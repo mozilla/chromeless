@@ -129,6 +129,12 @@ parser_groups = Bunch(
     tests=Bunch(
         name="Testing Options",
         options={
+            ("", "--test-runner-pkg",): dict(dest="test_runner_pkg",
+                                             help=("name of package "
+                                                   "containing test runner "
+                                                   "program (default is "
+                                                   "test-harness)"),
+                                             default="test-harness"),
             ("-d", "--dep-tests",): dict(dest="dep_tests",
                                          help="include tests for all deps",
                                          action="store_true",
@@ -469,7 +475,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     targets = [target]
     if not use_main:
         timeout = TEST_RUN_TIMEOUT
-        targets.append("test-harness")
+        targets.append(options.test_runner_pkg)
 
     if options.extra_packages:
         targets.extend(options.extra_packages.split(","))
