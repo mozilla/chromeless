@@ -37,7 +37,7 @@
 var obsvc = require("observer-service");
 var {Cc,Ci} = require("chrome");
 
-function runTests(iterations, filter, verbose, rootPaths, quit, print) {
+function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, print) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
@@ -62,6 +62,7 @@ function runTests(iterations, filter, verbose, rootPaths, quit, print) {
 
   harness.runTests({iterations: iterations,
                     filter: filter,
+                    profileMemory: profileMemory,
                     verbose: verbose,
                     rootPaths: rootPaths,
                     print: print,
@@ -100,8 +101,9 @@ exports.main = function main(options, callbacks) {
     if (!testsStarted) {
       testsStarted = true;
       runTests(options.iterations, options.filter,
-               options.verbose, options.rootPaths,
-               callbacks.quit, callbacks.print);
+               options.profileMemory, options.verbose,
+               options.rootPaths, callbacks.quit,
+               callbacks.print);
     }
   }
 

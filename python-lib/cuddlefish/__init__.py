@@ -147,6 +147,11 @@ parser_groups = Bunch(
                                       help="only run tests that match regexp",
                                       metavar=None,
                                       default=None),
+            ("-m", "--profile-memory",): dict(dest="profileMemory",
+                                              help="profile memory usage (default is true)",
+                                              type="int",
+                                              action="store",
+                                              default=1)
             }
         ),
     )
@@ -519,7 +524,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         harness_options['main'] = target_cfg.get('main')
     else:
         harness_options['main'] = "run-tests"
-        inherited_options.extend(['iterations', 'filter'])
+        inherited_options.extend(['iterations', 'filter', 'profileMemory'])
 
     for option in inherited_options:
         harness_options[option] = getattr(options, option)

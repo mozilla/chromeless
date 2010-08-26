@@ -58,6 +58,9 @@ var iterationsLeft;
 // Only tests in files whose names match this regexp filter will be run.
 var filter;
 
+// Whether to report memory profiling information.
+var profileMemory;
+
 // Information on memory profiler binary component (optional).
 var profiler;
 
@@ -224,8 +227,10 @@ function cleanup() {
                            "module global scope: " + name);
     sandbox.memory.track(sandbox, "Cuddlefish Loader");
 
-    gWeakrefInfo = [{ weakref: info.weakref, bin: info.bin }
-                    for each (info in sandbox.memory.getObjects())];
+    if (profileMemory) {
+      gWeakrefInfo = [{ weakref: info.weakref, bin: info.bin }
+                      for each (info in sandbox.memory.getObjects())];
+    }
 
     sandbox.unload();
 
@@ -259,7 +264,9 @@ function nextIteration(tests) {
   if (tests) {
     results.passed += tests.passed;
     results.failed += tests.failed;
-    reportMemoryUsage();
+
+    if (profileMemory)
+      reportMemoryUsage();
     
     let testRun = [];
     for each (let test in tests.testRunSummary) {
@@ -323,6 +330,7 @@ function TestRunnerConsole(base, options) {
 var runTests = exports.runTests = function runTests(options) {
   iterationsLeft = options.iterations;
   filter = options.filter;
+  profileMemory = options.profileMemory;
   onDone = options.onDone;
   print = options.print;
 
@@ -333,16 +341,18 @@ var runTests = exports.runTests = function runTests(options) {
     var ptc = require("plain-text-console");
     var url = require("url");
 
-    try {
-      var nsjetpack = require("nsjetpack");
-      profiler = {
-        binary: nsjetpack.get(),
-        scriptUrl: packaging.getURLForData("profiler.js")
-      };
+    if (options.profileMemory) {
+      try {
+        var nsjetpack = require("nsjetpack");
+        profiler = {
+          binary: nsjetpack.get(),
+          scriptUrl: packaging.getURLForData("profiler.js")
+        };
 
-      profiler.scriptPath = url.toFilename(profiler.scriptUrl);
-      profiler.script = require("file").read(profiler.scriptPath);
-    } catch (e) {}
+        profiler.scriptPath = url.toFilename(profiler.scriptUrl);
+        profiler.script = require("file").read(profiler.scriptPath);
+      } catch (e) {}
+    }
 
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
