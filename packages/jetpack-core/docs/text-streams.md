@@ -28,8 +28,8 @@ Constructors
   The backing stream, an [`nsIOutputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).
   It must already be opened.
 @param [charset] {string}
-  `outputStream` is expected to be in the character encoding named by this
-  value.  If not specified, "UTF-8" is assumed.  See [`nsICharsetConverterManager.idl`](http://mxr.mozilla.org/mozilla-central/source/intl/uconv/idl/nsICharsetConverterManager.idl)
+  Text will be written to `outputStream` using the character encoding named by
+  this value.  If not specified, "UTF-8" is assumed.  See [`nsICharsetConverterManager.idl`](http://mxr.mozilla.org/mozilla-central/source/intl/uconv/idl/nsICharsetConverterManager.idl)
   for documentation on how to determine other valid values for this.
 </api>
 
