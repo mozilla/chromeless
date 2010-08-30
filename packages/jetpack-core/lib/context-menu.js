@@ -717,7 +717,7 @@ function ContextMenuPopup(popupElt, window) {
     if (event.type === "command") {
       this.__proto__.handleEvent.call(this, event);
     }
-    else if (event.type === "popupshowing") {
+    else if (event.type === "popupshowing" && event.target === popupElt) {
       try {
         // Show and hide items.  Set a "jetpackContextCurrent" property on the
         // DOM elements to signal which of our items match the current context.
