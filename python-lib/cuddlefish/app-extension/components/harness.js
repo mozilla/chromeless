@@ -191,6 +191,25 @@ function buildHarnessService(rootFileSpec, dump, logError,
   // modules loaded within our loader.
 
   function Packaging() {
+    // TODO: This "restructuring" of options.manifest isn't ideal; we
+    // options.manifest should be structured like this already from
+    // the cfx side.
+    var packages = {};
+
+    options.manifest.forEach(
+      function(entry) {
+        var packageName = entry[0];
+        var moduleName = entry[1];
+        var info = {
+          dependencies: entry[2],
+          needsChrome: entry[3]
+        };
+        if (!(packageName in packages))
+          packages[packageName] = {};
+        packages[packageName][moduleName] = info;
+      });
+
+    this.__packages = packages;
   }
 
   Packaging.prototype = {
@@ -218,17 +237,34 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
     bundleID: options.bundleID,
 
+    getModuleInfo: function getModuleInfo(path) {
+      var uri = ioSvc.newURI(path, null, null);
+      var info = {
+        // TODO: It's weird that we're duplicating logic here with
+        // a crude regexp, and it might not be the right one, either.
+        name: uri.path.match(/^\/(.*)\.js$/)[1],
+        packageName: options.resourcePackages[uri.host]
+      };
+      if (info.packageName in options.packageData)
+        info.packageData = options.packageData[info.packageName];
+      if (info.name in this.__packages[info.packageName]) {
+        var manifest = this.__packages[info.packageName][info.name];
+        info.dependencies = manifest.dependencies;
+        info.needsChrome = manifest.needsChrome;
+      }
+      return info;
+    },
+
     // TODO: This has been superseded by require('self').getURL() and
     // should be deprecated.
     getURLForData: function getURLForData(path) {
       var traceback = this.__loader.require("traceback");
       var callerInfo = traceback.get().slice(-2)[0];
-      var url = this.__loader.require("url");
-      var info = url.URL(callerInfo.filename);
-      var pkgName = options.resourcePackages[info.host];
-      if (pkgName in options.packageData)
-        return url.URL(path, options.packageData[pkgName]).toString();
-      else
+      var info = this.getModuleInfo(callerInfo.filename);
+      if ('packageData' in info) {
+        var url = this.__loader.require("url");
+        return url.URL(path, info.packageData).toString();
+      } else
         throw new Error("No data for package " + pkgName);
     },
 

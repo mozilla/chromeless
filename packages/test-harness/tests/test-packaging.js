@@ -32,3 +32,27 @@ exports.testPackaging = function(test) {
   test.assertEqual(file.read(sample), "this is sample data.\r\n",
 		   "packaging data should be available");
 };
+
+exports.testPackagingGetModuleInfo = function(test) {
+  var loader = require("cuddlefish").parentLoader;
+  var runTestsUrl = loader.fs.resolveModule(null, 'run-tests');
+  var info = packaging.getModuleInfo(runTestsUrl);
+  test.assertEqual(info.name, 'run-tests',
+                   'info.name works');
+  test.assertEqual(info.packageName, 'test-harness',
+                   'info.packageName works');
+  test.assertEqual(info.packageData, packaging.getURLForData(""),
+                   'info.packageData works');
+  test.assert(Array.isArray(info.dependencies),
+              'info.dependencies is an Array');
+  test.assert(info.dependencies.length > 0,
+              'module "run-tests" has dependencies');
+  test.assert(info.needsChrome,
+              'module "run-tests" needs chrome');
+
+  var myInfo = packaging.getModuleInfo(__url__);
+  test.assert(!('dependencies' in myInfo),
+              'modules that are tests do not contain dependency info');
+  test.assert(!('needsChrome' in myInfo),
+              'modules that are tests do not contain needsChrome info');
+};
