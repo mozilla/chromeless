@@ -1,15 +1,30 @@
 import os
 import xml.dom.minidom
-import cStringIO as StringIO
+import StringIO
 
 RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 EM_NS = "http://www.mozilla.org/2004/em-rdf#"
 
 class RDF(object):
     def __str__(self):
+        # real files have an .encoding attribute and use it when you
+        # write() unicode into them: they read()/write() unicode and
+        # put encoded bytes in the backend file. StringIO objects
+        # read()/write() unicode and put unicode in the backing store,
+        # so we must encode the output of getvalue() to get a
+        # bytestring. (cStringIO objects are weirder: they effectively
+        # have .encoding hardwired to "ascii" and put only bytes in
+        # the backing store, so we can't use them here).
+        #
+        # The encoding= argument to dom.writexml() merely sets the XML header's
+        # encoding= attribute. It still writes unencoded unicode to the output file,
+        # so we have to encode it for real afterwards.
+        #
+        # Also see: https://bugzilla.mozilla.org/show_bug.cgi?id=567660
+
         buf = StringIO.StringIO()
         self.dom.writexml(buf, encoding="utf-8")
-        return buf.getvalue()
+        return buf.getvalue().encode('utf-8')
 
 class RDFUpdate(RDF):
     def __init__(self):
