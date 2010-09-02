@@ -1,3 +1,14 @@
+var beetFs = {
+  resolveModule: function(root, path) {
+    if (path == "beets")
+      return path;
+  },
+  getFile: function(path) {
+    return {contents: ('print("hi from ' + path + '");' +
+                       ' exports.beets = 5;')};
+  }
+};
+
 (function(global) {
    const {Cc,Ci,Cu} = require("chrome");
 
@@ -52,17 +63,6 @@
      var output = [];
 
      function outPrint(msg) { output.push(msg); }
-
-     var beetFs = {
-       resolveModule: function(root, path) {
-         if (path == "beets")
-           return path;
-       },
-       getFile: function(path) {
-         return {contents: ('print("hi from ' + path + '");' +
-                            ' exports.beets = 5;')};
-       }
-     };
 
      var loader = new SecurableModule.Loader({fs: beetFs,
                                               globals: {print: outPrint}});
@@ -289,4 +289,112 @@ exports.testUtf8 = function (test) {
   // If str is not in readStr, then str and therefore this file were not decoded
   // from UTF-8 by the loader.
   test.assert(readStr.indexOf(str) >= 0, "Loader should treat files as UTF-8");
+};
+
+exports.testGetModuleExports = function (test) {
+  var sm = require("securable-module");
+
+  function myGetModuleExports(basePath, module) {
+    if (module == "foo")
+      return {bar: 1};
+    return null;
+  }
+
+  var loader = new sm.Loader({getModuleExports: myGetModuleExports,
+                              fs: beetFs,
+                              globals: {print: function() {}}});
+
+  test.assertEqual(loader.require("foo").bar, 1,
+                   "getModuleExports() works");
+  test.assertEqual(loader.require("beets").beets, 5,
+                   "loader falls through to fs when getModuleExports() " +
+                   "returns null");
+};
+
+exports.testModifyModuleSandbox = function (test) {
+  var sm = require("securable-module");
+  var out;
+
+  function modifyModuleSandbox(sandbox, options) {
+    sandbox.defineProperty("print", function() { out = options.contents; });
+  }
+
+  var loader = new sm.Loader({modifyModuleSandbox: modifyModuleSandbox,
+                              globals: {print: function() {}},
+                              fs: beetFs});
+
+  loader.require("beets");
+  test.assertEqual(out,
+                   "print(\"hi from beets\"); exports.beets = 5;",
+                   "testModifyModuleSandbox() mods override globals");
+};
+
+exports.testSecurityPolicy = function (test) {
+  var sm = require("securable-module");
+  var lines = [];
+  var expectedLines = [];
+  var allowImport = false;
+  var allowEval = false;
+
+  var secpol = {
+    allowImport: function(loader, basePath, module, exports) {
+      if (loader != this.expectLoader)
+        test.fail("loader != this.expectLoader");
+      if (module == "beets" && exports.beets != 5)
+        test.fail("exports passed to maybeBlockImport are not valid");
+      if (!allowImport)
+        return false;
+      lines.push('allowing import of ' + module + ' from ' +
+                 basePath);
+      return true;
+    },
+    allowEval: function(loader, basePath, module, options) {
+      if (loader != this.expectLoader)
+        test.fail("loader != this.expectLoader");
+      if (!allowEval)
+        return false;
+      lines.push('allowing eval of ' + options.contents.length +
+                 ' chars for module ' + module + ' from ' + basePath);
+      return true;
+    }
+  };
+
+  function myGetModuleExports(basePath, module) {
+    if (module == "foo")
+      return {bar: 1};
+    return null;
+  }
+
+  var loader = new sm.Loader({getModuleExports: myGetModuleExports,
+                              fs: beetFs,
+                              securityPolicy: secpol,
+                              globals: {print: function() {}}});
+  secpol.expectLoader = loader;
+
+  test.assertRaises(function() { loader.require('beets'); },
+                    /access denied to execute module: beets/);
+  test.assertRaises(function() { loader.require('foo'); },
+                    /access denied to import module: foo/);
+
+  allowEval = true;
+
+  test.assertEqual(lines.length, 0);
+  expectedLines = ["allowing eval of 42 chars for module beets from null"];
+  test.assertRaises(function() { loader.require('beets'); },
+                    /access denied to import module: beets/);
+  test.assertEqual(JSON.stringify(lines), JSON.stringify(expectedLines));
+
+  allowImport = true;
+
+  lines = [];
+  expectedLines = ["allowing import of beets from null"];
+  if (loader.require('beets').beets != 5)
+    test.fail("require() does not work as expected.");
+  test.assertEqual(JSON.stringify(lines), JSON.stringify(expectedLines));
+
+  lines = [];
+  expectedLines = ["allowing import of foo from null"];
+  if (loader.require('foo').bar != 1)
+    test.fail("require() does not work as expected.");
+  test.assertEqual(JSON.stringify(lines), JSON.stringify(expectedLines));
 };

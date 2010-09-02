@@ -178,57 +178,66 @@
        options.sandboxFactory = new exports.SandboxFactory(
          options.defaultPrincipal
        );
-     if (options.modules === undefined)
-       options.modules = {};
+     if ('modules' in options)
+       throw new Error('options.modules is no longer supported');
      if (options.globals === undefined)
        options.globals = {};
 
      this.fs = options.fs;
      this.sandboxFactory = options.sandboxFactory;
      this.sandboxes = {};
-     this.modules = options.modules;
+     this.modules = {};
      this.globals = options.globals;
+     this.getModuleExports = options.getModuleExports;
+     this.modifyModuleSandbox = options.modifyModuleSandbox;
+     this.securityPolicy = options.securityPolicy;
    };
 
    exports.Loader.prototype = {
-     _makeRequire: function _makeRequire(rootDir) {
+     _makeRequire: function _makeRequire(basePath) {
        var self = this;
+
        return function require(module) {
-         if (module == "chrome") {
-           var chrome = { Cc: Components.classes,
-                          Ci: Components.interfaces,
-                          Cu: Components.utils,
-                          Cr: Components.results,
-                          Cm: Components.manager,
-                          components: Components
-                        };
-           return chrome;
-         }
+         var exports;
 
-         var path = self.fs.resolveModule(rootDir, module);
-         if (!path)
-           throw new Error('Module "' + module + '" not found');
-         if (!(path in self.modules)) {
-           var options = self.fs.getFile(path);
-           if (options.filename === undefined)
-             options.filename = path;
+         if (self.getModuleExports)
+           exports = self.getModuleExports(basePath, module);
 
-           var exports = {};
-           var sandbox = self.sandboxFactory.createSandbox(options);
-           self.sandboxes[path] = sandbox;
-           for (name in self.globals)
-             sandbox.defineProperty(name, self.globals[name]);
-           sandbox.defineProperty('require', self._makeRequire(path));
-           sandbox.evaluate("var exports = {};");
-           let ES5 = self.modules.es5;
-           if (ES5) {
-             let { Object, Array, Function } = sandbox.globalScope;
-             ES5.init(Object, Array, Function);
+         if (!exports) {
+           var path = self.fs.resolveModule(basePath, module);
+           if (!path)
+             throw new Error('Module "' + module + '" not found');
+           if (!(path in self.modules)) {
+             var options = self.fs.getFile(path);
+             if (options.filename === undefined)
+               options.filename = path;
+
+             if (self.securityPolicy &&
+                 !self.securityPolicy.allowEval(self, basePath, module,
+                                                options))
+               throw new Error("access denied to execute module: " +
+                               module);
+
+             var sandbox = self.sandboxFactory.createSandbox(options);
+             self.sandboxes[path] = sandbox;
+             for (name in self.globals)
+               sandbox.defineProperty(name, self.globals[name]);
+             sandbox.defineProperty('require', self._makeRequire(path));
+             sandbox.evaluate("var exports = {};");
+             self.modules[path] = sandbox.getProperty("exports");
+             if (self.modifyModuleSandbox)
+               self.modifyModuleSandbox(sandbox, options);
+             sandbox.evaluate(options);
            }
-           self.modules[path] = sandbox.getProperty("exports");
-           sandbox.evaluate(options);
+           exports = self.modules[path];
          }
-         return self.modules[path];
+
+         if (self.securityPolicy &&
+             !self.securityPolicy.allowImport(self, basePath, module,
+                                              exports))
+           throw new Error("access denied to import module: " + module);
+
+         return exports;
        };
      },
 

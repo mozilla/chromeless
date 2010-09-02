@@ -162,7 +162,7 @@ function reportMemoryUsage() {
     for (url in sandbox.sandboxes)
       namedObjects[url] = sandbox.sandboxes[url].globalScope;
 
-    var parentSandbox = require("cuddlefish").parentLoader;
+    var parentSandbox = require("parent-loader");
     for (url in parentSandbox.sandboxes)
       namedObjects["(harness) " + url] = parentSandbox.sandboxes[url].globalScope;
 

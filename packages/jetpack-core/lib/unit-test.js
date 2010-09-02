@@ -85,19 +85,6 @@ TestFinder.prototype = {
   }
 };
 
-function FakeModuleFs(modules) {
-  this.resolveModule = function resolveModule(base, path) {
-      if (path in modules)
-        return path;
-      return null;
-  };
-
-  this.getFile = function getFile(path) {
-    throw new Error("FakeModuleFs.getFile() should never be called on '" +
-                    path + "'");
-  };
-}
-
 var TestRunner = exports.TestRunner = function TestRunner(options) {
   memory.track(this);
   this.passed = 0;
@@ -124,15 +111,18 @@ TestRunner.prototype = {
 
     var Cuddlefish = require("cuddlefish");
 
+    options.fs = require("parent-loader").fs;
+
     if ("moduleOverrides" in options) {
-      var securableModule = require("securable-module");
-      var fses = [new FakeModuleFs(options.moduleOverrides),
-                  Cuddlefish.parentLoader.fs];
-      options.fs = new securableModule.CompositeFileSystem(fses);
-      options.modules = options.moduleOverrides;
+      var moduleOverrides = options.moduleOverrides;
       delete options.moduleOverrides;
-    } else
-      options.fs = Cuddlefish.parentLoader.fs;
+      function getModuleExports(basePath, module) {
+        if (module in moduleOverrides)
+          return moduleOverrides[module];
+        return null;
+      }
+      options.getModuleExports = getModuleExports;
+    }
 
     return new Cuddlefish.Loader(options);
   },

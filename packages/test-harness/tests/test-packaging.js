@@ -34,7 +34,7 @@ exports.testPackaging = function(test) {
 };
 
 exports.testPackagingGetModuleInfo = function(test) {
-  var loader = require("cuddlefish").parentLoader;
+  var loader = require("parent-loader");
   var runTestsUrl = loader.fs.resolveModule(null, 'run-tests');
   var info = packaging.getModuleInfo(runTestsUrl);
   test.assertEqual(info.name, 'run-tests',
