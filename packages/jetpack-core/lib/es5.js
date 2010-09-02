@@ -305,9 +305,9 @@ function getOwnPropertyDescriptor(object, name) {
  *    })(object.__iterator__);
  */
 function defineProperty(object, name, descriptor) {
-  if ('object' != typeof object)
+  if ('object' !== typeof object && 'function' !== typeof object)
     throw new TypeError('Object prototype may only be an Object or null.');
-  if (descriptor && 'object' != typeof descriptor)
+  if (descriptor && 'object' !== typeof descriptor)
     throw new TypeError('Property descriptor list must be an Object.');
 
   if ('value' in descriptor) { // if it's property
@@ -323,6 +323,7 @@ function defineProperty(object, name, descriptor) {
       // temporary removing proto to avoid inherited getter / setter
       let proto = object.__proto__;
       object.__proto__ = PROTO;
+      delete object[name];
       object[name] = descriptor.value;
       object.__proto__ = proto;
     }

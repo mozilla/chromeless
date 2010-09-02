@@ -577,4 +577,44 @@ exports['test:custom enumerator'] = function(test) {
     ),
     'must contain all the non-enumerables'
   );
-}
+};
+
+exports['test:create must override inherited properties'] =
+function(test) {
+  let fixture = Object.create({ get test() 'boom' }, {
+    'test': { value: 'yei' }
+  });
+  test.assertEqual(
+    'yei',
+    fixture.test,
+    'getter must be overridden'
+  );
+  test.assert(
+    'value' in Object.getOwnPropertyDescriptor(fixture, 'test'),
+    'must be a value not a getter'
+  );
+};
+
+exports['test:defineProperty must override configurable properties'] =
+function(test) {
+  let fixture = { get test() 'boom' };
+  Object.defineProperty(fixture, 'test', { value: 'yei' });
+  test.assertEqual(
+    'yei',
+    fixture.test,
+    'getter must be overridden'
+  );
+  test.assert(
+    'value' in Object.getOwnPropertyDescriptor(fixture, 'test'),
+    'must be a value not a getter'
+  );
+};
+
+exports['test:defineProperty on function'] = function(test) {
+  function object() {};
+  Object.defineProperty(object, 'get', {
+      get: function() 'getter'
+  });
+  test.assertEqual('getter', object.get, 'must be getter from descriptor');
+};
+
