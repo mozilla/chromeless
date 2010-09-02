@@ -503,4 +503,78 @@ exports['test:non-enumerable properties'] = function(test) {
     keys(fixture2).length,
     'must not contain non enumerable inherited properties'
   );
+};
+
+exports['test:exception in the loop should not break objects iterator'] =
+function(test) {
+  let fixture = Object.create({ a: 1, get b() { throw 'boom' } }, {
+    _c: { value: 3 }
+  });
+  try {
+    for (let key in fixture)
+      fixture[key];
+  }
+  catch(e) {}
+  test.assertEqual(
+    2,
+    keys(fixture).length,
+    'should have two enumerable properties'
+  )
+};
+
+exports['test:iteration over keys / values'] = function(test) {
+  let keys = [];
+  let values = [];
+  let fixture = Object.create({ a: 1, b: 2, c: 3 }, { _d: { value: 4 }});
+
+  for (let key in fixture) keys.push(key);
+  test.assertEqual(
+    true,
+    containsSameElements(['a', 'b', 'c'], keys),
+    'for iteration should return enumerable property keys'
+  );
+
+  for each(let value in fixture) values.push(value);
+  test.assertEqual(
+    true,
+    containsSameElements([1, 2, 3], values),
+    'for each iteration should return enumerable property values'
+  )
+};
+
+exports['test:for each with Iterator function'] = function(test) {
+  let fixture = Object.create({}, {
+    a: { value: 1, enumerable: true },
+    b: { value: 2 },
+    c: { value: 3, enumerable: true }
+  });
+  let keys = [],
+      values = [];
+  for each (let [key, value] in Iterator(fixture)) {
+    keys.push(key);
+    values.push(value);
+  }
+
+  test.assertEqual(2, keys.length);
+  test.assertEqual(2, values.length);
+  test.assertEqual('a', keys[0]);
+  test.assertEqual(1, values[0]);
+  test.assertEqual('c', keys[1]);
+  test.assertEqual(3, values[1]);
+}
+
+exports['test:custom enumerator'] = function(test) {
+  let fixture = Object.create({ inherited: false }, {
+    toString: { value: Object.prototype.toString },
+    __iterator__: { value: function() { yield  'foo'; } },
+    enumerableOne: { value: 'test', enumerable: true }
+  });
+
+  test.assert(
+    containsSameElements(
+      ['toString', '__iterator__', 'enumerableOne'],
+      Object.getOwnPropertyNames(fixture)
+    ),
+    'must contain all the non-enumerables'
+  );
 }

@@ -35,7 +35,6 @@
  * ***** END LICENSE BLOCK ***** */
 
 const // local shortcuts
-  ITERATOR = Object.prototype.__iterator__,
   hasOwn = Object.prototype.hasOwnProperty,
   getGetter = Object.prototype.__lookupGetter__,
   getSetter = Object.prototype.__lookupSetter__,
@@ -69,7 +68,8 @@ function _guid(object, force) {
   let guid = object[ID];
   if (!guid && force) {
     guid = object[ID] = ++ GUID;
-    object.__iterator__ = __iterator__;
+    if (!('__iterator__' in object))
+      defineIterator(object);
   }
   return guid || null
 }
@@ -110,35 +110,32 @@ function IsMutated(name, invert) {
 }
 
 /**
- * Custom iterator that is assigned to all the objects that have non
- * enumerable properties. Iterator looks into object descriptors in order to
- * check weather or not properties are enumerable.
+ * Defines custom `__iterator__` that wraps original `__iterator__` & uses
+ * locar object despriptor registry to iterate only on enumerable properties.
+ * '__iterator__' getter is used as a proxy to an iterator, what allows
+ * it to determine whether or not `Iterator` wrapper is used.
  * @see https://developer.mozilla.org/en/New_in_JavaScript_1.7#Iterators
  */
-function iterator() {
-  // disabling iterator so that we can normally iterate over object
-  let __iterator__ = this.__iterator__;
-  this.__iterator__ = ITERATOR;
-  for (let key in this) {
-    if (key === ID || '__iterator__' === key) continue;
-    let descriptor = getPropertyDescriptor(this, key);
-    if (descriptor && false === descriptor.enumerable) continue;
-    yield key;
+function defineIterator(object) {
+  let onKeyValue = false,
+      ITERATOR = { __iterator__: undefined };
+  function iterator(onKeys) {
+    ITERATOR.__proto__ = this;
+    for (let key in ITERATOR) {
+      if (key === ID || '__iterator__' === key)
+        continue;
+      let descriptor = getPropertyDescriptor(this, key);
+      if (descriptor && false === descriptor.enumerable)
+        continue;
+      yield onKeyValue ? [key, this[key]] : onKeys ? key : this[key];
+    }
   }
-  this.__iterator__ = __iterator__;
-}
-
-/**
- * Custom iterator that emulates default enumeration behavior except that
- * it skips __es5_guid__ property.
- * @see https://developer.mozilla.org/en/New_in_JavaScript_1.7#Iterators
- */
-function __iterator__() {
-  // disabling iterator so that we can normally iterate over object
-  let iterator = this.__iterator__;
-  this.__iterator__ = ITERATOR;
-  for (let key in this) if (ID !== key && '__iterator__' !== key) yield key;
-  this.__iterator__ = iterator;
+  setGetter.call(object, '__iterator__', function __es5iterator__() {
+    let caller = __es5iterator__.caller;
+    onKeyValue = caller && 'Iterator' === caller.name;
+    return iterator;
+  });
+  setSetter.call(object, '__iterator__', function(value) iterator = value);
 }
 
 /**
@@ -154,9 +151,11 @@ function getPropertyDescriptor(object, name) {
   let descriptor = getOwnPropertyDescriptor(object, name);
   if (!descriptor) {
     let proto = object.__proto__;
-    if (proto) descriptor = getPropertyDescriptor(proto, name);
+    if (proto)
+      descriptor = getPropertyDescriptor(proto, name);
   }
-  if (descriptor && ('value' in descriptor)) descriptor.value = object[name];
+  if (descriptor && ('value' in descriptor))
+    descriptor.value = object[name];
   return descriptor;
 }
 
@@ -217,26 +216,35 @@ let isExtensible = exports.isExtensible = IsMutated('inextensible', true);
 /** ES5 15.2.3.14 */
 function keys(object) {
   let result = [];
-  for (let name in object) if (hasOwn.call(object, name)) result.push(name);
+  for (let name in object) {
+    if (hasOwn.call(object, name))
+      result.push(name);
+  }
   return result;
 }
 
 /** ES5 15.2.3.4 */
 function getOwnPropertyNames(object) {
-  let iterator = object.__iterator__;
-  object.__iterator__ = ITERATOR;
+  let ITERATOR = { __proto__: object, __iterator__: undefined };
   let result = [];
-  for (let name in object) {
-    if (hasOwn.call(object, name) && ID !== name && '__iterator__' !== name)
-      result.push(name);
+  for (let name in ITERATOR) {
+    if (hasOwn.call(object, name) && ID !== name) {
+      let skip = false;
+      if ('__iterator__' === name) {
+        let iteratror = getGetter.call(object, '__iterator__');
+        skip = iteratror && '__es5iterator__' === iteratror.name;
+      }
+      if (!skip)
+        result.push(name);
+    }
   }
-  object.__iterator__ = iterator;
   return result;
 }
 
 /** ES5 15.2.3.3 */
 function getOwnPropertyDescriptor(object, name) {
-  if (!hasOwn.call(object, name)) return undefined;
+  if (!hasOwn.call(object, name))
+    return undefined;
   let descriptor = {
     configurable: true,
     enumerable: true
@@ -325,22 +333,24 @@ function defineProperty(object, name, descriptor) {
         + 'with getter or setter.');
     let get = descriptor.get, hasGet = (typeof get == "function"),
         set = descriptor.set, hasSet = (typeof set == "function");
-    if (hasGet) setGetter.call(object, name, get);
-    if (hasSet) setSetter.call(object, name, descriptor.set);
+    if (hasGet)
+      setGetter.call(object, name, get);
+    if (hasSet)
+      setSetter.call(object, name, descriptor.set);
     // should throw if only getter is assigned
-    else if (hasGet) setSetter.call(object, name, noSetter);
+    else if (hasGet)
+      setSetter.call(object, name, noSetter);
   }
   // registering descriptor
   let guid = _guid(object, true);
   let ObjectRegistry = DESCRIPTORS[guid] || (DESCRIPTORS[guid] = {});
   let registry = ObjectRegistry[name] || (ObjectRegistry[name] = {});
-  if ('writable' in descriptor) registry.writable = !!descriptor.writable;
+  if ('writable' in descriptor)
+    registry.writable = !!descriptor.writable;
   let enumerable = registry.enumerable =
     'enumerable' in descriptor ? !!descriptor.enumerable : false;
   registry.configurable =
     'configurable' in descriptor ? !!descriptor.configurable : false;
-  // if has non-enumerable overriding iterator with one that will omit those
-  if (!enumerable) object.__iterator__ = iterator;
   return object;
 }
 
@@ -350,10 +360,9 @@ function defineProperty(object, name, descriptor) {
  * @see #defineProperty
  */
 function defineProperties(object, descriptor) {
-  for (let name in descriptor) {
-    if (hasOwn.call(descriptor, name))
-      defineProperty(object, name, descriptor[name]);
-  }
+  let names = getOwnPropertyNames(descriptor);
+  for each (let name in names)
+    defineProperty(object, name, descriptor[name]);
   return object;
 }
 
@@ -367,9 +376,18 @@ function create(proto, descriptor) {
     throw new TypeError(
       'typeof prototype[' + (typeof proto) + '] != "object"'
     );
-  let object = { __proto__: proto };
+  let inheritsIterator = (
+    (!descriptor || !('__iterator__' in descriptor))
+    && proto && '__iterator__' in proto
+  );
+  let object = {};
+  if (inheritsIterator)
+    object.__iterator__ = undefined;
   if (typeof descriptor !== "undefined")
     defineProperties(object, descriptor);
+  if (inheritsIterator)
+    delete object.__iterator__;
+  object.__proto__ = proto;
   return object;
 }
 
@@ -506,27 +524,40 @@ function bind(that) {
  */
 exports.init = function init(Object, Array, Function) {
   if (Array) {
-    if (!Array.isArray) Array.isArray = isArray;
+    if (!Array.isArray)
+      Array.isArray = isArray;
   }
   if (Object) {
-    if (!Object.seal) Object.seal = seal;
-    if (!Object.freeze) Object.freeze = freeze;
+    if (!Object.seal)
+      Object.seal = seal;
+    if (!Object.freeze)
+      Object.freeze = freeze;
     if (!Object.preventExtensions)
       Object.preventExtensions = preventExtensions;
-    if (!Object.isSealed) Object.isSealed = isSealed;
-    if (!Object.isFrozen) Object.isFrozen = isFrozen;
-    if (!Object.isExtensible) Object.isExtensible = isExtensible;
-    if (!Object.keys) Object.keys = keys;
-    if (!Object.getPrototypeOf) Object.getPrototypeOf = getPrototypeOf;
+    if (!Object.isSealed)
+      Object.isSealed = isSealed;
+    if (!Object.isFrozen)
+      Object.isFrozen = isFrozen;
+    if (!Object.isExtensible)
+      Object.isExtensible = isExtensible;
+    if (!Object.keys)
+      Object.keys = keys;
+    if (!Object.getPrototypeOf)
+      Object.getPrototypeOf = getPrototypeOf;
     if (!Object.getOwnPropertyNames)
       Object.getOwnPropertyNames = getOwnPropertyNames;
     if (!Object.getOwnPropertyDescriptor)
       Object.getOwnPropertyDescriptor = getOwnPropertyDescriptor;
-    if (!Object.defineProperty) Object.defineProperty = defineProperty;
-    if (!Object.defineProperties) Object.defineProperties = defineProperties;
-    if (!Object.create) Object.create = create;
+    if (!Object.defineProperty)
+      Object.defineProperty = defineProperty;
+    if (!Object.defineProperties)
+      Object.defineProperties = defineProperties;
+    if (!Object.create)
+      Object.create = create;
   }
   if (Function) {
-    if (!Function.prototype.bind) Function.prototype.bind = bind;
+    if (!Function.prototype.bind)
+      Function.prototype.bind = bind;
   }
 };
+exports.init(Object, Array, Function);
