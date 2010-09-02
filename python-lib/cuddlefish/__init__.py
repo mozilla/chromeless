@@ -147,11 +147,14 @@ parser_groups = Bunch(
                                       help="only run tests that match regexp",
                                       metavar=None,
                                       default=None),
+            # TODO: This should default to true once our memory debugging
+            # issues are resolved; see bug 592774.
             ("-m", "--profile-memory",): dict(dest="profileMemory",
-                                              help="profile memory usage (default is true)",
+                                              help=("profile memory usage "
+                                                    "(default is false)"),
                                               type="int",
                                               action="store",
-                                              default=1)
+                                              default=0)
             }
         ),
     )
