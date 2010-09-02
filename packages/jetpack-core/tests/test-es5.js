@@ -426,9 +426,11 @@ exports['test:create'] = function(test) {
 }
 
 exports['test:bind this'] = function(test) {
-  let object = { test: function foo() this }
-  object.test.prototype = { constructor: object.test, test: 'uoau'}
-  let func = object.test.bind(object)
+  if (isNative(Function.prototype.bind))
+    return test.pass('No need to test native implementation');
+  let object = { test: function foo() this };
+  object.test.prototype = { constructor: object.test, test: 'uoau'};
+  let func = object.test.bind(object);
   test.assertEqual(
     object,
     func(),
@@ -457,6 +459,8 @@ exports['test:bind this'] = function(test) {
   );
 }
 exports['test:bind arguments'] = function(test) {
+  if (isNative(Function.prototype.bind))
+    return test.pass('No need to test native implementation');
   let object = {};
   function sum(a, b, c, d) this.value = a + b + c + d;
   let func = sum.bind(object, 1, 2);
