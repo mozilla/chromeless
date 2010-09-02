@@ -39,7 +39,7 @@ Options for how and where to open the new tab.
 An optional parameter whose key can be set in `options`.
 If true, the tab is opened in a new window. Default is false.
 
-@prop [openInBackground] {boolean}
+@prop [inBackground] {boolean}
 An optional parameter whose key can be set in `options`.
 If true, the tab is opened adjacent to the active tab, but not
 switched to. Default is false.
@@ -58,7 +58,7 @@ this function.
 
     const tabBrowser = require("tab-browser");
     tabBrowser.addTab("http://google.com", {
-      openInBackground: true
+      inBackground: true
     });
 
     const tabBrowser = require("tab-browser");

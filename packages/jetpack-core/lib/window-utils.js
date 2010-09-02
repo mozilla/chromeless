@@ -135,6 +135,25 @@ exports.closeOnUnload = function closeOnUnload(window) {
   gDocsToClose.push(window.document);
 };
 
+exports.__defineGetter__("activeWindow", function() {
+  return Cc["@mozilla.org/appshell/window-mediator;1"]
+         .getService(Ci.nsIWindowMediator)
+         .getMostRecentWindow(null);
+});
+exports.__defineSetter__("activeWindow", function(window) {
+  try {
+    window.focus();
+  }
+  catch (e) { }
+});
+
+exports.__defineGetter__("activeBrowserWindow", function() {
+  return Cc["@mozilla.org/appshell/window-mediator;1"]
+         .getService(Ci.nsIWindowMediator)
+         .getMostRecentWindow("navigator:browser");
+});
+
+
 require("unload").when(
   function() {
     gDocsToClose.slice().forEach(

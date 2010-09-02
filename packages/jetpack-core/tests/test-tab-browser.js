@@ -76,6 +76,22 @@ function closeBrowserWindow(window, callback) {
   }, 0);
 }
 
+// Helper for opening two windows at once
+function openTwoWindows(callback) {
+  openBrowserWindow(function (window1) {
+    openBrowserWindow(function (window2) {
+      callback(window1, window2);
+    });
+  });
+}
+
+// Helper for closing two windows at once
+function closeTwoWindows(window1, window2, callback) {
+  closeBrowserWindow(window1, function() {
+    closeBrowserWindow(window2, callback);
+  });
+}
+
 exports.testAddTab = function(test) {
   test.waitUntilDone();
   openBrowserWindow(function(window, browser) {
@@ -261,9 +277,188 @@ exports.testActiveTab = function(test) {
       onLoad: function(e) {
         let tabIndex = browser.getBrowserIndexForDocument(e.target);
         test.assertEqual(browser.tabContainer.getItemAtIndex(tabIndex), tabBrowser.activeTab, "activeTab element matches");
-        closeBrowserWindow(browserWindow, function() {
-          test.done();
+        
+        tabBrowser.addTab(url, {
+          inBackground: true,
+          onLoad: function() {
+            test.assertEqual(browser.tabContainer.getItemAtIndex(tabIndex), tabBrowser.activeTab, "activeTab element matches");
+            closeBrowserWindow(browserWindow, function() test.done());
+          }
         });
+      }
+    });
+  });
+};
+
+// TabModule tests
+exports.testEventsAndLengthStayInModule = function(test) {
+  test.waitUntilDone();
+  let TabModule = require("tab-browser").TabModule;
+  let tabs = require("tabs");
+
+  openTwoWindows(function(window1, window2) {
+    let startingTabs = tabs.length;
+    let tm1 = new TabModule(window1);
+    let tm2 = new TabModule(window2);
+    
+    let counter1 = 0, counter2 = 0;
+    let counterTabs = 0;
+    tm1.onOpen = function() ++counter1;
+    tm2.onOpen = function() ++counter2;
+    tabs.onOpen = function() ++counterTabs;
+
+    let url = "data:text/html,default";
+    tm1.open(url);
+    tm1.open(url);
+
+    tm2.open(url);
+    tm2.open(url);
+    tm2.open({
+      url: url,
+      onOpen: function() {
+        test.assertEqual(counter1, 2, "Correct number of events fired from window 1");
+        test.assertEqual(counter2, 3, "Correct number of events fired from window 2");
+        test.assertEqual(counterTabs, 5, "Correct number of events fired from all windows");
+        test.assertEqual(tm1.length, 3, "Correct number of tabs in window 1");
+        test.assertEqual(tm2.length, 4, "Correct number of tabs in window 2");
+        test.assertEqual(tabs.length, 5 + startingTabs, "Correct number of tabs in all windows");
+        closeTwoWindows(window1, window2, function() test.done());
+      }
+    });
+  });
+}
+
+exports.testTabModuleActiveTab_getterAndSetter = function(test) {
+  test.waitUntilDone();
+  let TabModule = require("tab-browser").TabModule;
+
+  openTwoWindows(function(window1, window2) {
+    let tm1 = new TabModule(window1);
+    let tm2 = new TabModule(window2);
+
+    let tab1 = null;
+    tm1.open({
+      url: "data:text/html,<title>window1,tab1</title>",
+      onOpen: function(tab) tab1 = tab,
+    });
+    tm1.open("data:text/html,<title>window1,tab2</title>");
+
+    tm1.onActivate = function() {
+      tm1.onActivate.remove(arguments.callee);
+      require("timer").setTimeout(function() {
+        test.assertEqual(tm1.activeTab.title, "window1,tab1", "activeTab setter works");
+        closeTwoWindows(window1, window2, function() test.done());
+      }, 1000);
+    }
+
+    tm2.open("data:text/html,<title>window2,tab1</title>");
+    tm2.open({
+      url: "data:text/html,<title>window2,tab2</title>",
+      onOpen: function(tab4) {
+        test.assertEqual(tm1.activeTab.title, "window1,tab2", "Correct active tab on window 1");
+        test.assertEqual(tm2.activeTab.title, "window2,tab2", "Correct active tab on window 2");
+
+        tm1.activeTab = tab1;
+        tm1.activeTab = tab4; // Setting activeTab from another window should have no effect
+      }
+    });
+  });
+}
+
+// test tabs iterator
+exports.testTabModuleTabsIterator = function(test) {
+  test.waitUntilDone();
+  let TabModule = require("tab-browser").TabModule;
+
+  openBrowserWindow(function(window) {
+    let tm1 = new TabModule(window);
+    let url = "data:text/html,default";
+    tm1.open(url);
+    tm1.open(url);
+    tm1.open({
+      url: url,
+      onOpen: function(tab) {
+        let count = 0;
+        for each (let t in tm1) count++;
+        test.assertEqual(count, 4, "iterated tab count matches");
+        test.assertEqual(count, tm1.length, "length tab count matches");
+        closeBrowserWindow(window, function() test.done());
+      }
+    });
+  });
+};
+
+// inNewWindow parameter is ignored on single-window modules
+exports.testTabModuleCantOpenInNewWindow = function(test) {
+  test.waitUntilDone();
+  let TabModule = require("tab-browser").TabModule;
+
+  openBrowserWindow(function(window) {
+    let tm = new TabModule(window);
+    let url = "data:text/html,default";
+    tm.open({
+      url: url,
+      inNewWindow: true,
+      onOpen: function() {
+        test.assertEqual(tm.length, 2, "Tab was open on same window");
+        closeBrowserWindow(window, function() test.done());
+      }
+    });
+  });
+};
+
+// Test that having two modules attached to the same
+// window won't duplicate events fired on each module
+exports.testModuleListenersDontInteract = function(test) {
+  test.waitUntilDone();
+  let TabModule = require("tab-browser").TabModule;
+
+  openBrowserWindow(function(window) {
+    let tm1 = new TabModule(window);
+    let tm2 = new TabModule(window);
+
+    let url = "data:text/html,foo";
+    let eventCount = 0, eventModule1 = 0, eventModule2 = 0;
+
+    
+    let listener1 = function() {
+      // this should be called twice: when tab is open and when
+      // the url location is changed
+      eventCount++;
+      eventModule1++;
+    }
+    tm1.onReady = listener1;
+
+    tm2.open({
+      url: "about:blank",
+      onOpen: function(tab) {
+        // add listener via property assignment
+        let listener2 = function() {
+          eventCount++;
+          eventModule2++;
+        };
+        tab.onReady = listener2;
+
+        // add listener via collection add
+        let listener3 = function() {
+          eventCount++;
+          eventModule2++;
+        };
+        tab.onReady.add(listener3);
+
+        tab.location = url;
+
+        require("timer").setTimeout(function() {
+          // if this never occurs, the test'll timeout and fail.
+          test.assertEqual(eventCount, 4, "Correct global number of events");
+          test.assertEqual(eventModule1, 2, "Correct number of events on module 1");
+          test.assertEqual(eventModule2, 2, "Correct number of events on module 2");
+
+          tm1.onReady.remove(listener1);
+          tab.onReady.remove(listener2);
+          tab.onReady.remove(listener3);
+          closeBrowserWindow(window, function() test.done());
+        }, 1000);
       }
     });
   });

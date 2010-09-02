@@ -100,3 +100,63 @@ exports.testWindowWatcher = function(test) {
   myWindow = makeEmptyWindow();
   test.waitUntilDone(5000);
 };
+
+exports.testActiveWindow = function(test) {
+  test.waitUntilDone(5000);
+
+  let testRunnerWindow = Cc["@mozilla.org/appshell/window-mediator;1"]
+                         .getService(Ci.nsIWindowMediator)
+                         .getMostRecentWindow(null);
+  let browserWindow =  Cc["@mozilla.org/appshell/window-mediator;1"]
+                      .getService(Ci.nsIWindowMediator)
+                      .getMostRecentWindow("navigator:browser");
+
+  test.assertEqual(windowUtils.activeWindow, testRunnerWindow,
+                    "Test runner is the active window.");
+
+  test.assertEqual(windowUtils.activeBrowserWindow, browserWindow,
+                    "Browser window is the active browser window.");
+
+
+  let testSteps = [
+    function() {
+      windowUtils.activeWindow = browserWindow;
+    },
+    function() {
+      test.assertEqual(windowUtils.activeWindow, browserWindow,
+                       "Correct active window [1]");
+      windowUtils.activeWindow = testRunnerWindow;
+    },
+    function() {
+      test.assertEqual(windowUtils.activeWindow, testRunnerWindow,
+                       "Correct active window [2]");
+      test.assertEqual(windowUtils.activeBrowserWindow, browserWindow,
+                       "Correct active browser window [3]");
+      windowUtils.activeWindow = browserWindow;
+    },
+    function() {
+      test.assertEqual(windowUtils.activeWindow, browserWindow,
+                       "Correct active window [4]");
+      windowUtils.activeWindow = testRunnerWindow;
+    },
+    function() {
+      test.assertEqual(windowUtils.activeWindow, testRunnerWindow,
+                       "Correct active window [5]");
+      test.assertEqual(windowUtils.activeBrowserWindow, browserWindow,
+                       "Correct active browser window [6]");
+      testRunnerWindow = null;
+      browserWindow = null;
+      test.done()
+    }
+  ];
+
+  let nextTest = function() {
+    let func = testSteps.shift();
+    if (func) {
+      func();
+      timer.setTimeout(nextTest, 500);
+    }
+  }
+
+  nextTest();
+}

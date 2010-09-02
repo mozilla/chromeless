@@ -111,13 +111,14 @@ exports.testTabProperties = function(test) {
   });
 };
 
-// test tabs iterator
-exports.testTabsIterator= function(test) {
+// test tabs iterator and length property
+exports.testTabsIteratorAndLength = function(test) {
   test.waitUntilDone();
   openBrowserWindow(function(window, browser) {
     let tabs = require("tabs");
     let startCount = 0;
     for each (let t in tabs) startCount++;
+    test.assertEqual(startCount, tabs.length, "length property is correct");
     let url = "data:text/html,default";
     tabs.open(url);
     tabs.open(url);
@@ -127,6 +128,7 @@ exports.testTabsIterator= function(test) {
         let count = 0;
         for each (let t in tabs) count++;
         test.assertEqual(count, startCount + 3, "iterated tab count matches");
+        test.assertEqual(startCount + 3, tabs.length, "iterated tab count matches length property");
         closeBrowserWindow(window, function() test.done());
       }
     });
@@ -534,7 +536,7 @@ exports.testPerTabEvents = function(test) {
 
         tab.location = url;
 
-        require("timer").setInterval(function() {
+        require("timer").setTimeout(function() {
           // if this never occurs, the test'll timeout and fail.
           if (eventCount == 2)
             test.pass("both listeners notified");
