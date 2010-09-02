@@ -105,6 +105,10 @@ let tabConstructor = apiUtils.publicConstructor(function(element) {
   this.move = function(index) {
     win.gBrowser.moveTabTo(element, index);
   };
+  
+  this.__defineGetter__("isPinned", function() element.pinned);
+  this.pin = function() win.gBrowser.pinTab(element);
+  this.unpin = function() win.gBrowser.unpinTab(element);
 
   // Set up the event handlers
   let tab = this;
@@ -192,6 +196,9 @@ function open(options) {
     inBackground: {
       is: ["undefined", "boolean"]
     },
+    isPinned: {
+      is: ["undefined", "boolean"]
+    },
     onOpen: {
       is: ["undefined", "function"]
     }
@@ -225,6 +232,10 @@ function openURLInNewWindow(options) {
       }, true);
     };
   }
+  if (options.isPinned) {
+    addTabOptions.isPinned = true;
+  }
+  
   tabBrowser.addTab(options.url.toString(), addTabOptions);
 }
 
@@ -233,6 +244,8 @@ function openURLInNewTab(options, window) {
   let tabEl = window.gBrowser.addTab(options.url.toString());
   if (!options.inBackground)
     window.gBrowser.selectedTab = tabEl;
+  if(options.isPinned)
+    window.gBrowser.pinTab(tabEl);
   if (options.onOpen) {
     let tabBrowser = window.gBrowser.getBrowserForTab(tabEl);
     tabBrowser.addEventListener("load", function(e) {

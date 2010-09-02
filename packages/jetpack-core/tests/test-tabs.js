@@ -212,6 +212,42 @@ exports.testOpen = function(test) {
   });
 };
 
+// open pinned tab
+exports.testOpenPinned = function(test) {
+  test.waitUntilDone();
+  openBrowserWindow(function(window, browser) {
+    let tabs = require("tabs");
+    let url = "data:text/html,default";
+    tabs.open({
+      url: url,
+      isPinned: true,
+      onOpen: function(tab) {
+        test.assertEqual(tab.isPinned, true, "The new tab is pinned");
+        closeBrowserWindow(window, function() test.done());
+      }
+    });
+  });
+};
+
+// pin/unpin opened tab
+exports.testPinUnpin = function(test) {
+  test.waitUntilDone();
+  openBrowserWindow(function(window, browser) {
+    let tabs = require("tabs");
+    let url = "data:text/html,default";
+    tabs.open({
+      url: url,
+      onOpen: function(tab) {
+        tab.pin();
+        test.assertEqual(tab.isPinned, true, "The tab was pinned correctly");
+        tab.unpin();
+        test.assertEqual(tab.isPinned, false, "The tab was unpinned correctly");
+        closeBrowserWindow(window, function() test.done());
+      }
+    });
+  });
+};
+
 // open tab in background
 exports.testInBackground = function(test) {
   test.waitUntilDone();

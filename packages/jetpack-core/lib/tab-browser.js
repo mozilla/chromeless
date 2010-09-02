@@ -100,6 +100,9 @@ exports.addTab = function addTab(url, options) {
     },
     onLoad: {
       is: ["undefined", "null", "function"]
+    },
+    isPinned: {
+      is: ["undefined", "boolean"]
     }
   });
 
@@ -108,6 +111,11 @@ exports.addTab = function addTab(url, options) {
   var win = wm.getMostRecentWindow("navigator:browser");
   if (!win || options.inNewWindow) {
     openBrowserWindow(function(e) {
+      if(options.isPinned) {
+        //get the active tab in the recently created window
+        let mainWindow = e.target.defaultView;
+        mainWindow.gBrowser.pinTab(mainWindow.gBrowser.selectedTab);
+      }
       require("errors").catchAndLog(function(e) options.onLoad(e))(e);
     }, options.url);
   } else {
