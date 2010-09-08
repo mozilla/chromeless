@@ -235,11 +235,9 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                 build.resourcePackages[name] = cfg.name
                 build.resources[name] = dirname
                 resource_url = 'resource://%s/' % name
+
                 if is_code:
                     build.rootPaths.insert(0, resource_url)
-                if is_data:
-                    build.packageData[cfg.name] = resource_url
-                if section == "lib":
                     from manifest import scan_package
                     pkg_manifest, problems = scan_package(cfg.name, dirname)
                     if problems:
@@ -248,6 +246,8 @@ def generate_build_for_target(pkg_cfg, target, deps, prefix='',
                         raise BadChromeMarkerError()
                     manifest.extend(pkg_manifest)
 
+                if is_data:
+                    build.packageData[cfg.name] = resource_url
 
     def add_dep_to_build(dep):
         dep_cfg = pkg_cfg.packages[dep]

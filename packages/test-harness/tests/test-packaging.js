@@ -51,8 +51,8 @@ exports.testPackagingGetModuleInfo = function(test) {
               'module "run-tests" needs chrome');
 
   var myInfo = packaging.getModuleInfo(__url__);
-  test.assert(!('dependencies' in myInfo),
-              'modules that are tests do not contain dependency info');
-  test.assert(!('needsChrome' in myInfo),
-              'modules that are tests do not contain needsChrome info');
+  test.assert('dependencies' in myInfo,
+              'modules that are tests contain dependency info');
+  test.assert(myInfo.needsChrome,
+              'modules that are tests contain needsChrome info');
 };
