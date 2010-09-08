@@ -20,6 +20,7 @@
  * Contributor(s):
  *   Atul Varma <atul@mozilla.com>
  *   Drew Willcoxon <adw@mozilla.com>
+ *   Irakli Gozalishvili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -42,11 +43,12 @@ var timerClass = Cc["@mozilla.org/timer;1"];
 var nextID = 1;
 var timers = {};
 
-function TimerCallback(callback, timerID, repeating) {
+function TimerCallback(repeating, timerID, callback, params) {
   memory.track(this);
   this._callback = callback;
   this._timerID = timerID;
   this._repeating = repeating;
+  this._params = params;
   this.QueryInterface = xpcom.utils.generateQI([Ci.nsITimerCallback]);
 };
 
@@ -55,7 +57,7 @@ TimerCallback.prototype = {
     try {
       if (!this._repeating)
         delete timers[this._timerID];
-      this._callback.apply(null, []);
+      this._callback.apply(null, this._params);
     } catch (e) {
       console.exception(e);
     }
@@ -63,7 +65,7 @@ TimerCallback.prototype = {
 };
 
 var setTimeout = exports.setTimeout = function setTimeout(callback, delay) {
-  return makeTimer(callback, delay, false);
+  return makeTimer(false, callback, delay, Array.slice(arguments, 2));
 };
 
 var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
@@ -71,14 +73,14 @@ var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
 };
 
 var setInterval = exports.setInterval = function setInterval(callback, delay) {
-  return makeTimer(callback, delay, true);
+  return makeTimer(true, callback, delay, Array.slice(arguments, 2));
 };
 
 var clearInterval = exports.clearInterval = function clearInterval(timerID) {
   cancelTimer(timerID);
 };
 
-function makeTimer(callback, delay, repeating) {
+function makeTimer(repeating, callback, delay, params) {
   var timer = timerClass.createInstance(Ci.nsITimer);
 
   memory.track(timer, "nsITimer");
@@ -86,10 +88,11 @@ function makeTimer(callback, delay, repeating) {
   var timerID = nextID++;
   timers[timerID] = timer;
 
-  timer.initWithCallback(new TimerCallback(callback, timerID, repeating),
-                         delay,
-                         repeating ? timer.TYPE_REPEATING_SLACK :
-                                     timer.TYPE_ONE_SHOT);
+  timer.initWithCallback(
+    new TimerCallback(repeating, timerID, callback, params),
+    delay || 0,
+    repeating ? timer.TYPE_REPEATING_SLACK : timer.TYPE_ONE_SHOT
+  );
   return timerID;
 }
 
@@ -106,3 +109,4 @@ require("unload").when(
     var timerIDs = [timerID for (timerID in timers)];
     timerIDs.forEach(function(timerID) { cancelTimer(timerID); });
   });
+

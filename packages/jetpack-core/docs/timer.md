@@ -1,12 +1,14 @@
 <!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
 <!-- contributed by Atul Varma [atul@mozilla.com]  -->
 <!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+<!-- contributed by Irakli Gozalishvil [gozala@mozilla.com] -->
 
 The `timer` module provides access to web-like timing functionality.
 
 <api name="setTimeout">
 @method
-  Schedules `callback` to be called in `ms` milliseconds.
+  Schedules `callback` to be called in `ms` milliseconds. Any additional
+  arguments are passed straight through to the callback.
 @returns {integer}
   An ID that can later be used to undo this scheduling, if `callback` hasn't yet
   been called.
@@ -26,7 +28,8 @@ The `timer` module provides access to web-like timing functionality.
 
 <api name="setInterval">
 @method
-  Schedules `callback` to be called repeatedly every `ms` milliseconds.
+  Schedules `callback` to be called repeatedly every `ms` milliseconds. Any
+  additional arguments are passed straight through to the callback.
 @returns {integer}
   An ID that can later be used to unschedule the callback.
 @param callback {callback}
@@ -42,3 +45,4 @@ The `timer` module provides access to web-like timing functionality.
 @param ID {integer}
   An ID returned from `setInterval()`.
 </api>
+
