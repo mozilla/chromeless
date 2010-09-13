@@ -34,6 +34,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// We don't actually use chrome directly, but we do access the 
+// filesystem and scan it to dynamically import modules, so
+// we put this here to tell the module loader to give us
+// permission to require() whatever we want.
+require("chrome");
+
 var timer = require("timer");
 var file = require("file");
 

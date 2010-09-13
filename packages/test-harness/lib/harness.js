@@ -362,6 +362,7 @@ var runTests = exports.runTests = function runTests(options) {
 
     sandbox = new cuddlefish.Loader({console: console,
                                      globals: globals,
+                                     packaging: packaging,
                                      __proto__: options});
     nextIteration();
   } catch (e) {

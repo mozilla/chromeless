@@ -108,6 +108,53 @@
      sandbox.defineProperty("__url__", filename);
    }
 
+   function makeManifestChecker(packaging) {
+     var mc = {
+       _allow: function _allow(loader, basePath, module) {
+         if (!basePath) {
+           return true; /* top-level import */
+         }
+         let mi = packaging.getModuleInfo(basePath);
+         if (mi.needsChrome)
+           /* The module requires chrome, it can import whatever it 
+            * wants. */
+           return true;
+         if (!mi.dependencies) {
+           /* the parent isn't in the manifest: we know nothing about it */
+         } else {
+           for (var i = 0; i < mi.dependencies.length; i++) {
+             let dep = mi.dependencies[i];
+             if (module == dep)
+               return true; /* they're on the list: allow the require() */
+           }
+         }
+         loader.console.warn("undeclared require(" + module + 
+                             ") called from " + basePath);
+         //return false;  // enable this in 0.9
+         return true;
+       },
+       allowEval: function allowEval(loader, basePath, module, options) {
+         return this._allow(loader, basePath, module);
+       },
+
+       allowImport: function allowImport(loader, basePath, module, exports) {
+         /* allowEval catches everything except "magic" modules like
+            "chrome", which are checked here */
+         if (module == "chrome") {
+           let mi = packaging.getModuleInfo(basePath);
+           if (mi.needsChrome)
+             return true; /* chrome is on the list, allow it */
+           loader.console.warn("undeclared require(chrome) called from " +
+                               basePath);
+           //return false;  // enable this in 0.9
+           return true;
+         }
+         return this._allow(loader, basePath, module);
+       }
+     };
+     return mc;
+   }
+
    var Loader = exports.Loader = function Loader(options) {
      var globals = {};
 
@@ -125,12 +172,17 @@
 
      var getModuleExports = makeGetModuleExports(options.getModuleExports);
 
+     var manifestChecker = undefined;
+     if (options.packaging)
+       manifestChecker = makeManifestChecker(options.packaging);
+
      var loaderOptions = {rootPath: options.rootPath,
                           rootPaths: options.rootPaths,
                           fs: options.fs,
                           defaultPrincipal: "system",
                           globals: globals,
                           modifyModuleSandbox: modifyModuleSandbox,
+                          securityPolicy: manifestChecker,
                           getModuleExports: getModuleExports};
 
      var loader = new securableModule.Loader(loaderOptions);

@@ -118,6 +118,21 @@ class Chrome(unittest.TestCase):
         self.failUnlessEqual(problems, False)
         self.failUnlessEqual(err, [])
 
+        mod = """let c = require('chrome');"""
+        requires, chrome, problems, err = scan2(mod)
+        self.failUnlessEqual(requires, [])
+        self.failUnlessEqual(chrome, True)
+        self.failUnlessEqual(problems, False)
+        self.failUnlessEqual(err, [])
+
+        mod = """var foo = require('foo');
+        let c = require('chrome');"""
+        requires, chrome, problems, err = scan2(mod)
+        self.failUnlessEqual(requires, ["foo"])
+        self.failUnlessEqual(chrome, True)
+        self.failUnlessEqual(problems, False)
+        self.failUnlessEqual(err, [])
+
 class BadChrome(unittest.TestCase):
     def test_bad_alias(self):
         # using Components.* gets you a warning. If it looks like you're

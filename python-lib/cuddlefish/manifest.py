@@ -33,10 +33,12 @@ You must enable it with:
 CHROME_ALIASES = ["Cc", "Ci", "Cu", "Cr", "Cm"]
 
 def scan_chrome(fn, lines, stderr):
-    if fn.endswith("cuddlefish.js") or fn.endswith("securable-module.js"):
+    filename = os.path.basename(fn)
+    if filename == "cuddlefish.js" or filename == "securable-module.js":
         return False, False # these are the loader
     problems = False
-    asks_for_chrome = set()
+    asks_for_chrome = set() # Cc,Ci in: var {Cc,Ci} = require("chrome")
+    asks_for_all_chrome = False # e.g.: var c = require("chrome")
     uses_chrome = set()
     uses_components = False
     uses_chrome_at = []
@@ -57,6 +59,8 @@ def scan_chrome(fn, lines, stderr):
                 for alias in CHROME_ALIASES:
                     if alias in line:
                         asks_for_chrome.add(alias)
+                if not asks_for_chrome:
+                    asks_for_all_chrome = True
         alias_in_this_line = False
         for wanted in CHROME_ALIASES:
             if re.search(r'\b'+wanted+r'\b', line):
@@ -83,7 +87,8 @@ def scan_chrome(fn, lines, stderr):
             uses.append("components")
         needed = ",".join(uses)
         print >>stderr, '  const {%s} = require("chrome");' % needed
-    return bool(asks_for_chrome), problems
+    wants_chrome = bool(asks_for_chrome) or asks_for_all_chrome
+    return wants_chrome, problems
 
 def scan_module(fn, lines, stderr=sys.stderr):
     # barfs on /\s+/ in context-menu.js

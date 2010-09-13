@@ -1,3 +1,7 @@
+const {Cc,Ci,Cu} = require("chrome");
+
+const COMPONENTS_DOT_CLASSES = "Com" + "ponents.classes";
+
 var beetFs = {
   resolveModule: function(root, path) {
     if (path == "beets")
@@ -10,8 +14,6 @@ var beetFs = {
 };
 
 (function(global) {
-   const {Cc,Ci,Cu} = require("chrome");
-
    var exports = new Object();
 
    var ios = Cc['@mozilla.org/network/io-service;1']
@@ -147,7 +149,7 @@ var beetFs = {
 
      loader = new SecurableModule.Loader({fs: {}});
      try {
-       loader.runScript({contents: 'Components.classes'});
+       loader.runScript({contents: COMPONENTS_DOT_CLASSES});
        log("modules shouldn't have chrome privileges by default.",
            "fail");
      } catch (e) {
@@ -176,7 +178,7 @@ var beetFs = {
        {fs: {},
         defaultPrincipal: "system"
        });
-     loader.runScript({contents: 'Components.classes'});
+     loader.runScript({contents: COMPONENTS_DOT_CLASSES});
      log("modules should be able to have chrome privileges.", "pass");
 
      // Test the way LocalFileSystem infers root directories.
