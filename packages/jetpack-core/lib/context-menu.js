@@ -479,9 +479,11 @@ BrowserWindow.prototype = {
   // ancestors matches selector.
   _popupNodeMatchingSelector: function BW__popupNodeMatchingSelector(selector) {
     let cursor = this.doc.popupNode;
-    while (cursor && !(cursor instanceof Ci.nsIDOMHTMLHtmlElement)) {
+    while (cursor) {
       if (cursor.mozMatchesSelector(selector))
         return cursor;
+      if (cursor instanceof Ci.nsIDOMHTMLHtmlElement)
+        break;
       cursor = cursor.parentNode;
     }
     return null;
