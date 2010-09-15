@@ -23,6 +23,7 @@
  * Contributor(s):
  *   Felipe Gomes <felipc@gmail.com> (Original Author)
  *   Myk Melez <myk@mozilla.org>
+ *   Irakli Gozalishvili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,12 +38,14 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
-const apiUtils = require("api-utils");
-const collection = require("collection");
-const errors = require("errors");
-const frames = require("hidden-frame");
-const contentSymbionts = require("content-symbiont");
+const { Symbiont } = require("content");
+const { Trait } = require("traits");
+const { Registry } = require('utils/registry');
+
+const ERR_ADD_BEFORE_POST =
+  'You have to add the page before you can send a message to it.';
 
 if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
   throw new Error([
@@ -53,146 +56,67 @@ if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
   ].join(""));
 }
 
-exports.Page = apiUtils.publicConstructor(Page);
+const Page = Trait.compose(
+  Symbiont.resolve({
+    constructor: '_initSymbiont',
+    _onInit: '_onInitSymbiont',
+    postMessage: '_postMessage'
+  }),
+  {
+    _frame: Trait.required,
+    _initFrame: Trait.required,
 
-/**
- * A cache of active pages.  Each entry contains two properties, page and frame,
- * which represent the page and its underlying hidden frame, respectively.
- */
-let cache = [];
+    constructor: function Page(options) {
+      let { contentURL, contentScriptURL, contentScript, contentScriptWhen,
+        allow, onMessage, onError, onReady
+      } = options || {};
 
-function getFrame(page) {
-  let entry = cache.filter(function (v) v.page === page)[0];
-  return entry ? entry.frame : undefined;
-}
+      this.contentURL = contentURL || 'about:blank';
+      if (contentScriptWhen)
+        this.contentScriptWhen = contentScriptWhen;
+      if (contentScriptURL)
+        this.contentScriptURL = contentScriptURL;
+      if (contentScript)
+        this.contentScript = contentScript;
+      if (allow)
+        this.allow = allow;
+      if (onError)
+        this.on('error', onError);
+      if (onMessage)
+        this.on('message', onMessage);
+      if (onReady)
+        this.on('ready', onReady);
 
-function coerceToURL(content) {
-  if (!content)
-    return "about:blank";
-
-  try {
-    url.URL(content);
-  }
-  catch(ex) {
-    content = "data:text/html," + content;
-  }
-
-  return content;
-}
-
-function Page(options) {
-  options = options || {};
-  let self = this;
-
-  contentSymbionts.mixInto(this, options);
-
-  // We define this independently of the main validateOptions call so we can
-  // reuse it when checking values passed to the setter after construction.
-  let contentReq = {
-    is: ["undefined", "string"],
-    msg: "The content option must be a string of HTML or a URL."
-  };
-
-  // Validate page-specific options without filtering those validated by
-  // contentSymbionts.mixInto.
-  for each (let [key, val] in Iterator(apiUtils.validateOptions(options,
-                              { content: contentReq }))) {
-    if (typeof(val) != "undefined")
-      options[key] = val;
-  };
-
-  /* Public API: page.content */
-  this.__defineGetter__("content", function () options.content || undefined);
-  this.__defineSetter__("content", function (newValue) {
-    options.content = apiUtils.validateOptions({ content: newValue },
-                                               { content: contentReq }).
-                      content;
-    let frame = getFrame(self);
-    if (frame)
-      frame.element.setAttribute("src", coerceToURL(newValue));
-  });
-
-  /* Public API: page.allow */
-  options.allow = options.allow || {};
-  this.__defineGetter__("allow", function () {
-    return {
-      get script() {
-        if ("allow" in options && "script" in options.allow)
-          return options.allow.script;
-        return true;
-      },
-      set script(newValue) {
-        options.allow.script = !!newValue;
-        let frame = getFrame(self);
-        if (frame)
-          frame.element.docShell.allowJavascript = !!newValue;
-      }
+      this.on('propertyChange', this._onChange.bind(this));
+      PageRegistry.on('add', this._onRegister.bind(this));
+      PageRegistry.on('remove', this._onUnregister.bind(this));
+    },
+    postMessage: function postMessage() {
+      if (!PageRegistry.has(this))
+        throw new Error(ERR_ADD_BEFORE_POST);
+    },
+    _onChange: function _onChange(e) {
+      if ('contentURL' in e)
+        this._initFrame(this._frame);
+    },
+    _onInit: function _onInit() {
+      this._onInitSymbiont();
+      this._emit('ready', this._public);
+    },
+    _onRegister: function _onRegister(page) {
+      if (page == this._public)
+        this._initSymbiont();
+    },
+    _onUnregister: function _onUnregister(page) {
+      if (page == this._public)
+        this._destructor();
     }
-  });
-  this.__defineSetter__("allow", function (newValue) {
-    if ("script" in newValue)
-      self.allow.script = !!newValue.script;
-  });
+  }
+);
+exports.Page = function(options) Page(options);
+exports.Page.prototype = Page.prototype;
 
-  /* Public API: page.sendMessage() */
-  this.sendMessage = function sendMessage(message, callback) {
-    let frame = getFrame(self);
-    if (frame)
-      return frame.sendMessage(message, callback);
-    else
-      throw new Error("You have to add the page before you can send " +
-                      "a message to it.");
-  };
-
-  this.toString = function toString() "[object Page]";
-}
-
-exports.add = function JP_SDK_Page_Worker_add(page) {
-  if (!(page instanceof Page))
-    throw new Error("The object to be added must be a Page Worker instance.");
-
-  let frame = frames.add(frames.HiddenFrame({
-    onReady: function() {
-      this.element.docShell.allowJavascript = page.allow.script;
-      this.element.setAttribute("src", coerceToURL(page.content));
-
-      // The object that runs content scripts provided by the consumer
-      // in the context of the content loaded in the page worker.
-      contentSymbionts.ContentSymbiont({
-        // this.element is a reference to the actual <xul:iframe> DOM element.
-        frame: this.element,
-        contentScriptURL: [c for (c in page.contentScriptURL)],
-        contentScript: [c for (c in page.contentScript)],
-        contentScriptWhen: page.contentScriptWhen,
-        onMessage: function onMessage(message, cb) {
-          for (let handler in page.onMessage) {
-            errors.catchAndLog(function () handler.call(page, message, cb))();
-          }
-        },
-        globalName: "pageWorker"
-      });
-    }
-  }));
-
-  cache.push({ page: page, frame: frame });
-
-  return page;
-}
-
-exports.remove = function remove(page) {
-  if (!(page instanceof Page))
-    throw new Error("The object to be removed must be a PageWorker.");
-
-  let entry = cache.filter(function (v) v.page === page)[0];
-  if (!entry)
-    return;
-
-  frames.remove(entry.frame);
-  cache.splice(cache.indexOf(entry), 1);
-}
-
-require("unload").when(function () {
-  for each (let entry in cache.slice())
-    exports.remove(entry.page);
-});
+const PageRegistry = Registry(Page);
+exports.add = PageRegistry.add;
+exports.remove = PageRegistry.remove;
 

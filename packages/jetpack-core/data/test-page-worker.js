@@ -1,12 +1,12 @@
 function testLoadContentPage() {
   // get title directly
-  pageWorker.sendMessage(["assertEqual", document.title, "Page Worker test",
+  postMessage(["assertEqual", document.title, "Page Worker test",
                          "Correct page title accessed directly"]);
 
   // get <p> directly
   let p = document.getElementById("paragraph");
-  pageWorker.sendMessage(["assert", !!p, "<p> can be accessed directly"]);
-  pageWorker.sendMessage(["assertEqual", p.firstChild.nodeValue,
+  postMessage(["assert", !!p, "<p> can be accessed directly"]);
+  postMessage(["assertEqual", p.firstChild.nodeValue,
                          "Lorem ipsum dolor sit amet.",
                          "Correct text node expected"]);
 
@@ -18,10 +18,10 @@ function testLoadContentPage() {
 
   // Check back the modification
   div = document.getElementById("block");
-  pageWorker.sendMessage(["assert", !!div, "<div> can be accessed directly"]);
-  pageWorker.sendMessage(["assertEqual", div.firstChild.nodeValue,
+  postMessage(["assert", !!div, "<div> can be accessed directly"]);
+  postMessage(["assertEqual", div.firstChild.nodeValue,
                          "Test text created", "Correct text node expected"]);
-  pageWorker.sendMessage(["done"]);
+  postMessage(["done"]);
 }
 
 window.addEventListener("DOMContentLoaded", testLoadContentPage, true);

@@ -30,15 +30,13 @@ Constructors
 @param [options] {object}
   The *`options`* parameter is optional, and if given it should be an object
   with any of the following keys:
-  @prop [content] {string}
-    A string which represents the initial content of the Page Worker. It can
-    be either a URL to be loaded or a piece of HTML code to be used as the
-    content for the page.
-  @prop [onReady] {function,array}
-    A function callback or an array of functions that will be called when
-    the DOM on the page is ready. This can be used to know when your
-    Page Worker instance is ready to be used, and also whenever the page
-    is reloaded or another page is loaded in its place.
+  @prop [contentURL] {URL,string}
+    The URL of the content to load in the panel.
+  @prop [onReady] {function}
+    A function callback that will be called when the DOM on the page is ready.
+    This can be used to know when your Page Worker instance is ready to be used,
+    and also whenever the page is reloaded or another page is loaded in its
+    place.
   @prop [allow] {object}
     An object with keys to configure the permissions of the Page Worker.
     The boolean key `script` controls if scripts from the page
@@ -86,11 +84,9 @@ Page Objects
 by calling `add()`, Page Worker instances have the following properties:
 
 
-<api name="content">
-@property {string}
-  A string which represents the content of the Page Worker. It can
-  be either a URL to be loaded or a piece of HTML code to be used as the
-  content for the page.
+<api name="contentURL">
+@property {URL}
+The URL of the content loaded.
 </api>
 
 <api name="allow">
@@ -120,19 +116,75 @@ the window object for the page has been created, and "ready", which loads
 them once the DOM content of the page has been loaded.
 </api>
 
-<api name="onMessage">
-@property {array}
-Functions to call when a content script sends the page worker a message.
-</api>
-
-<api name="sendMessage">
+<api name="postMessage">
 @method
 Send a message to the content scripts.
 @param message {string,number,object,array,boolean}
 The message to send.  Must be stringifiable to JSON.
-@param [callback] {function}
-A function the content scripts can call to respond to the message.  Optional.
 </api>
+
+<api name="on">
+@method
+Registers an event `listener` that will be called when events of
+specified `type` are emitted.
+
+If the `listener` is already registered for this `type`, a call to this
+method has no effect.
+
+If the event listener is being registered while an event is being processed,
+the event listener is not called during the current emit.
+
+@param type {String}
+  The type of event.
+
+@param listener {Function}
+  The listener function that processes the event.
+</api>
+
+Example:
+
+    var page = require("page-worker").PageWorker({
+      contentURL: 'http://mozilla.org'
+    });
+    page.on('message', function onMessage(message) {
+      console.log(message);
+    })
+
+<api name="removeListener">
+@method
+Unregisters an event `listener` for the specified event `type`.
+
+If the `listener` is not registered for this `type`, a call to this
+method has no effect.
+
+If an event listener is removed while an event is being processed, it is
+still triggered by the current emit. After it is removed, the event listener
+is never invoked again (unless registered again for future processing).
+
+@param type {String}
+  The type of event.
+@param listener {Function}
+  The listener function that processes the event.
+</api>
+
+Events
+------
+Content workers may emit following types of events:
+
+####"message"####
+Event allows the page worker to receive messages from the content scripts.
+Calling `postMessage` function from the one of the content scripts will
+asynchronously emit 'message' event on the worker. 
+
+####"error"####
+Event allows the page worker to react on an uncaught runtime script error
+that occurs in one of the content scripts.
+
+####"ready"####
+
+Event is emitted when the DOM on the page is ready. This can be used to know
+when your Page Worker instance is ready to be used, and also whenever the page
+is reloaded or another page is loaded in its place.
 
 Examples
 --------
@@ -148,14 +200,14 @@ to the program:
 
     var script = "var elements = document.querySelectorAll('h2 > span'); " +
                  "for (var i = 0; i < elements.length; i++) { " +
-                 "  program.sendmessage(elements[i].textContent) " +
+                 "  postMessage(elements[i].textContent) " +
                  "}";
 
 Finally, create a page pointed to Wikipedia and add it to the page workers:
 
     var page = pageWorkers.Page({
-      content: "http://en.wikipedia.org/wiki/Internet",
-      script: script,
+      contentURL: "http://en.wikipedia.org/wiki/Internet",
+      contentScript: script,
       contentScriptWhen: "ready",
       onMessage: function(message) {
         console.log(message);
