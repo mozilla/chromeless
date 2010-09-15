@@ -622,3 +622,14 @@ exports['test:defineProperty on function'] = function(test) {
   test.assertEqual('getter', object.get, 'must be getter from descriptor');
 };
 
+exports['test: frozen objects with non-enumerable property in stirct mode'] =
+function(test) {
+  let fixture = Object.freeze(Object.create({}, { test: { value: 'boom!' } }));
+  try {
+    for each (let key in fixture)
+      key;
+    test.pass('frozen object must be enumerable in "strict mode"');
+  } catch(e) {
+    test.fail('frozen objects should not throw when they are enumerated');
+  }
+}

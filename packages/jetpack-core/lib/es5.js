@@ -131,8 +131,11 @@ function defineIterator(object) {
     }
   }
   setGetter.call(object, '__iterator__', function __es5iterator__() {
-    let caller = __es5iterator__.caller;
-    onKeyValue = caller && 'Iterator' === caller.name;
+    let stack = Error().stack.split(/\n/);
+    onKeyValue = (
+      stack[2].indexOf('Iterator(') == 0 || // native implementation of bind
+      stack[3].indexOf('Iterator(') == 0    // custom implementation of bind
+    );
     return iterator;
   });
   setSetter.call(object, '__iterator__', function(value) iterator = value);
