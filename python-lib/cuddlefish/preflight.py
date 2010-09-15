@@ -83,6 +83,8 @@ def programid_to_jid(programid):
     return jid
 
 def check_for_privkey(keydir, jid, stderr):
+    if jid.startswith("jid0-anonymous-"):
+        return None
     keypath = os.path.join(keydir, jid)
     if not os.path.isfile(keypath):
         msg = """\
@@ -92,13 +94,17 @@ But I don't have a corresponding private key in:
   %(keypath)s
 
 If you are the original developer of this package and have recently copied
-the source code from a different machine to this one, you need to copy the
+the source code from a different machine to this one, you should copy the
 private key into the file named above.
 
 Otherwise, if you are a new developer who has made a copy of an existing
 package to use as a starting point, you need to remove the 'id' property
 from package.json, so that we can generate a new id and keypair. This will
 disassociate our new package from the old one.
+
+If you're collaborating on the same addon with a team, make sure at least
+one person on the team has the private key. In the future, you may not
+be able to distribute your addon without it.
 """
         print >>stderr, msg % {"jid": jid, "keypath": keypath}
         return None
@@ -128,7 +134,8 @@ disassociate our new package from the old one.
         raise ValueError("invalid keydata: public-key mismatch")
     return sk
 
-def preflight_config(target_cfg, filename, stderr=sys.stderr, keydir=None):
+def preflight_config(target_cfg, filename, stderr=sys.stderr, keydir=None,
+                     err_if_privkey_not_found=True):
     # check the top-level package.json for missing keys. We generate anything
     # that we can, and ask the user for the rest.
     if keydir is None:
@@ -153,7 +160,7 @@ def preflight_config(target_cfg, filename, stderr=sys.stderr, keydir=None):
     # publish it without replacing the JID
 
     sk = check_for_privkey(keydir, config["id"], stderr)
-    if not sk:
+    if not sk and err_if_privkey_not_found:
         return False, False
 
     if modified:

@@ -440,9 +440,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command in ('xpi', 'run'):
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
-            config_was_ok, modified = preflight_config(target_cfg,
-                                                       target_cfg_json,
-                                                       keydir=options.keydir)
+            config_was_ok, modified = preflight_config(
+                target_cfg,
+                target_cfg_json,
+                keydir=options.keydir,
+                err_if_privkey_not_found=False
+                )
             if not config_was_ok:
                 if modified:
                     # we need to re-read package.json . The safest approach
