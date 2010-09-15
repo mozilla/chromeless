@@ -1,3 +1,5 @@
+"use strict";
+
 const {Cc,Ci} = require("chrome");
 
 /**
@@ -33,15 +35,15 @@ exports.testPageMod = function testPageMod(test, testURL, pageModOptions,
   var newTab = tabBrowser.addTab(testURL);
   tabBrowser.selectedTab = newTab;
   var b = tabBrowser.getBrowserForTab(newTab);
-  
+
   function onPageLoad() {
     b.removeEventListener("load", onPageLoad, true);
-    
-    testCallback(b.contentWindow);
-    pageMods.forEach(function(mod) {pageMod.remove(mod)});
-    // XXX leaks reported if we don't close the tab?
-    tabBrowser.removeTab(newTab);
-    test.done();
+    testCallback(b.contentWindow.wrappedJSObject, function done() {
+      pageMods.forEach(function(mod) {pageMod.remove(mod)});
+      // XXX leaks reported if we don't close the tab?
+      tabBrowser.removeTab(newTab);
+      test.done();
+    });
   }
   b.addEventListener("load", onPageLoad, true);
 }

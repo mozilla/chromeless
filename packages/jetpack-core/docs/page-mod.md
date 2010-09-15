@@ -1,5 +1,6 @@
 <!-- contributed by Nickolay Ponomarev [asqueella@gmail.com] -->
 <!-- contributed by Myk Melez [myk@mozilla.org] -->
+<!-- contributed by Irakli Gozalishvil [gozala@mozilla.com] -->
 
 The `page-mod` module provides an easy way to run scripts in the context of
 a given set of pages.
@@ -24,21 +25,49 @@ Add content to a variety of pages:
       include: ["*.example.com",
                 "http://example.org/a/specific/url",
                 "http://example.info/*"],
-      onStart: function(wrappedWindow) {
-        // this runs each time a new content document starts loading, but
-        // before the page starts loading, so we can't interact with the
-        // page's DOM here yet.
-        wrappedWindow.wrappedJSObject.newExposedProperty = 1;
-      },
-      onReady: function(wrappedWindow) {
-        // at this point we can work with the DOM
-        wrappedWindow.document.body.innerHTML = "<h1>Page Mods!</h1>";
-      }
+      // This runs each time a new content document starts loading, but
+      // before the page starts loading, so we can't interact with the
+      // page's DOM here yet.
+      contentScript: 'window.newExposedProperty = 1;'
     }));
 
-Note: currently, it is necessary to access the `wrappedJSObject` of window
-and document objects in order to set properties on them that the web page
-can access.  We are working to remove this restriction.
+    // If you want to work with the DOM, then you should set `contentScriptWhen`
+    // to `'ready'`.
+    var pageMod = require("page-mod");
+    pageMod.add(new pageMod.PageMod({
+      include: ["*.example.com",
+                "http://example.org/a/specific/url",
+                "http://example.info/*"],
+      contentScriptWhen: 'ready',
+      contentScript: 'document.body.innerHTML = "<h1>Page Mods!</h1>";'
+    }));
+
+    // You can also pass messages between content scripts and the program.
+    var pageMod = require("page-mod");
+    var myPageMod = pageMod.add({
+      include: [
+        '*.example.com',
+        'http://example.org/a/specific/url',
+        'http://example.info/*'
+      ],
+      contentScriptWhen: 'ready',
+      contentScript: 'onMessage = function onMessage() {' +
+                     ' postMessage("My current location is: "' +
+                                  '+ window.location);' +
+                     '};'
+      ,
+      onOpen: function onOpen(worker, mod) {
+        // you can handle errors that occur in the content scripts
+        // by adding listener to the error events
+        worker.on('error', function(error) {
+          console.error(error.message);
+        });
+        worker.on('message', function(data) {
+          console.log(data);
+        });
+        worker.postMessage('Worker, what is your location ?');
+      }
+    });
 
 Reference
 ---------
@@ -64,24 +93,43 @@ Creates a page mod.
       <dt>http://example.com/test</dt>
         <dd>the single specified URL</dd>
     </dl>
+  @prop [contentScriptURL] {string,array}
+    The URLs of content scripts to load.  Content scripts specified by this
+    option are loaded *before* those specified by the `contentScript` option.
+    Optional.
+  @prop [contentScript] {string,array}
+    The texts of content scripts to load.  Content scripts specified by this
+    option are loaded *after* those specified by the `contentScriptURL` option.
+    Optional.
+  @prop [contentScriptWhen] {string}
+    When to load the content scripts.  Optional.
+    Possible values are "start" (default), which loads them as soon as
+    the window object for the page has been created, and "ready", which loads
+    them once the DOM content of the page has been loaded.
+  @prop [onAttach] {function}
+    A function to call when the page mod attaches content scripts to
+    a matching page.
 
-  @prop [onStart] {function,array}
-    Functions to call when a matching page starts loading.
+    Function will be called with two arguments:
 
-  @prop [onReady] {function,array}
-    Functions to call when a matching page's DOM is ready.
+    1. An object implementing [web worker] interface, that can be used
+    for communication with a content scripts (See examples section for more
+    details).
+    [web worker]:http://www.w3.org/TR/workers/#worker
+    2. `this` `PageMod`.
 </api>
 
 <api name="add">
 @function
 Register a page mod, activating it for the pages to which it applies.
-@param page mod {PageMod} the page mod to add
+@param pageMod {PageMod,Object}
+The page mod to add, or options for a page mod to create and then add.
 </api>
 
 <api name="remove">
 @function
 Unregister a page mod, deactivating it.
-@param page mod {PageMod} the page mod to remove
+@param pageMod {PageMod} the page mod to remove.
 </api>
 
 PageMod
@@ -90,8 +138,8 @@ PageMod
 `PageMod` objects represent page mods.
 
 <api name="include">
-@property {Collection}
-The pages to which the page mod should apply.  An collection of rules matching
+@property {List}
+The pages to which the page mod should apply.  A [List] of rules matching
 the URLs of pages.  Add rules to the collection by calling its `add` method
 and remove them by calling its `remove` method.  There are four kinds of rules:
 <dl>
@@ -107,18 +155,7 @@ and remove them by calling its `remove` method.  There are four kinds of rules:
   <dt>http://example.com/test</dt>
     <dd>the single specified URL</dd>
 </dl>
+
+[List]:https://jetpack.mozillalabs.com/sdk/latest/docs/#module/jetpack-core/list
 </api>
 
-<api name="onStart">
-@property {Collection}
-Functions to call when a matching page starts loading.
-Add functions to the collection by calling its `add` method
-and remove them by calling its `remove` method.
-</api>
-
-<api name="onReady">
-@property {Collection}
-Functions to call when a matching page's DOM is ready.
-Add functions to the collection by calling its `add` method
-and remove them by calling its `remove` method.
-</api>

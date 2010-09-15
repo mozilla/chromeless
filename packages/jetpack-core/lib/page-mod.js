@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  *   Nickolay Ponomarev <asqueella@gmail.com> (Original Author)
+ *   Irakli Gozalishvili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,194 +36,166 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
-const os = require("observer-service");
-const apiUtils = require("api-utils");
-const unload = require("unload");
-const errors = require("errors");
-const collection = require("collection");
+const observers = require("observer-service");
+const { Worker, Loader } = require('content');
+const { EventEmitter } = require('events');
+const { List } = require('list');
+const { Registry } = require('utils/registry');
+
+const ON_CONTENT = 'content-document-global-created',
+      ON_READY = 'DOMContentLoaded',
+
+      ERR_INCLUDE = 'The PageMod must have a string or array `include` option.';
+// rules registry
+const RULES = {};
+
+const Rules = EventEmitter.resolve({ toString: null }).compose(List, {
+  add: function() Array.slice(arguments).forEach(function onAdd(rule) {
+    if (this._has(rule)) return;
+    // registering rule to the rules registry
+    if (!(rule in RULES))
+      RULES[rule] = URLRule(rule);
+    this._add(rule);
+    this._emit('add', rule);
+  }.bind(this)),
+  remove: function() Array.slice(arguments).forEach(function onRemove(rule) {
+    if (!this._has(rule)) return;
+    this._remove(rule);
+    this._emit('remove', rule);
+  }.bind(this)),
+});
 
 /**
  * PageMod constructor (exported below).
  * @constructor
  */
-var PageMod = function(opts) {
-  opts = apiUtils.validateOptions(opts, {
-    "include": {
-      is: ["array", "string"],
-      ok: function(value) {
-        try {
-          if (typeof value == "string") {
-            parseURLRule(value);
-          }
-          else {
-            for each (rule in value)
-              parseURLRule(rule);
-          }
-        }
-        catch(ex) {
-          return false;
-        }
-        return true;
-      },
-      msg: "The page mod must have a string or array 'include' option."
-    },
-    "onStart": {is: ["function", "array", "null", "undefined"]},
-    "onReady": {is: ["function", "array", "null", "undefined"]}
-  });
+const PageMod = Loader.compose(EventEmitter, {
+  on: EventEmitter.required,
+  _listeners: EventEmitter.required,
+  contentScript: Loader.required,
+  contentScriptURL: Loader.required,
+  contentScriptWhen: Loader.required,
+  include: null,
+  constructor: function PageMod(options) {
+    this._onAttach = this._onAttach.bind(this);
+    this._onReady = this._onReady.bind(this);
+    this._onContent = this._onContent.bind(this);
+    let {
+      onOpen, onError, include,
+      contentScript, contentScriptURL, contentScriptWhen
+    } = options || {};
 
-  collection.addCollectionProperty(this, "include");
+    if (contentScript)
+      this.contentScript = contentScript;
+    if (contentScriptURL)
+      this.contentScriptURL = contentScriptURL;
+    if (contentScriptWhen)
+      this.contentScriptWhen = contentScriptWhen;
+    if (onOpen)
+      this.on('attach', onOpen);
+    if (onError)
+      this.on('error', onError);
 
-  // We don't store the parsed versions of the rules, only the raw rules,
-  // since the parsed rules are private to this implementation, but there isn't
-  // an obvious way to make them available to the code that uses them below.
-  //
-  // If we were to replace the lexical scope model for hiding private properties
-  // with the Traits model for this module, we would be able to fix this.
-  this.include = opts.include;
-
-  collection.addCollectionProperty(this, "onStart");
-  collection.addCollectionProperty(this, "onReady");
-
-  var self = this;
-  function addScripts(opts, key) {
-    if (typeof opts[key] == "function") {
-      self[key] = [opts[key]];
-    } else if (opts[key]) {
-      self[key] = opts[key].filter(function(item) {
-        if (typeof item != "function") {
-          throw new Error("PageMod: an item in the options['" + key +
-                          "'] array is not a function: " + item);
-        }
-        return true;
-      });
+    let rules = this.include = Rules();
+    rules.on('add', this._onRuleAdd = this._onRuleAdd.bind(this));
+    rules.on('remove', this._onRuleRemove = this._onRuleRemove.bind(this));
+    try {
+      if (Array.isArray(rules))
+        rules.add.apply(null, include);
+      else if (rules)
+        rules.add(include);
     }
+    catch(e) {
+      throw new Error(ERR_INCLUDE)
+    }
+
+    this.on('error', this._onUncaughtError = this._onUncaughtError.bind(this));
+  },
+  _onContent: function _onContent(window) {
+    if (!pageModManager.has(this))
+      return; // not registered yet
+    if ('ready' == this.contentScriptWhen)
+      window.addEventListener(ON_READY, this._onReady , false);
+    else
+      this._onAttach(window);
+  },
+  _onReady: function _onReady(event) {
+    let window = event.target.defaultView;
+    window.removeEventListener(ON_READY, this._onReady, false);
+    this._onAttach(window);
+  },
+  _onAttach: function _onAttach(window) {
+    this._emit('attach', Worker({
+      window: window.wrappedJSObject,
+      contentScript: this.contentScript,
+      contentScriptURL: this.contentScriptURL,
+      onError: this._onUncaughtError
+    }), this._public);
+  },
+  _onRuleAdd: function _onRuleAdd(url) {
+    pageModManager.on(url, this._onContent);
+  },
+  _onRuleRemove: function _onRuleRemove(url) {
+    pageModManager.off(url, this._onContent);
+  },
+  _onUncaughtError: function _onUncaughtError(e) {
+    if (this._listeners('error').length == 1)
+      console.error(e.message, e.fileName, e.lineNumber, e.stack);
   }
-  addScripts(opts, "onStart");
-  addScripts(opts, "onReady");
-};
+});
+exports.PageMod = function(options) PageMod(options)
+exports.PageMod.prototype = PageMod.prototype;
 
-/**
- * A private object keeping the list of active page mods and is registered as
- * an observer for the content-document-global-created notification.
- *
- * Mods are (un)registered via exported add()/remove() functions.
- */
-var pageModManager = {
-  registeredPageMods: [],
-
-  _initialized: false,
-  init: function() {
-    this._initialized = true;
-    os.add("content-document-global-created", this.onContentGlobalCreated, this);
-    unload.when(function() {
-      os.remove("content-document-global-created", this.onContentGlobalCreated, this);
-    });
+const PageModManager = Registry.resolve({
+  constructor: '_init',
+  _destructor: '_registryDestructor'
+}).compose({
+  constructor: function PageModRegistry(constructor) {
+    this._init(PageMod);
+    observers.add(
+      ON_CONTENT, this._onContentWindow = this._onContentWindow.bind(this)
+    );
   },
-
-  /**
-   * Makes the page mod run on any subsequent matching pages loaded in the
-   * browser. Does not run the mods on already loaded pages.
-   * @param pageMod {PageMod}
-   */
-  register: function(pageMod) {
-    if (!this._initialized) pageModManager.init();
-    if (this.registeredPageMods.filter(function(item) item.pageMod === pageMod).length > 0) {
-      throw new Error("Trying to add a page mod that has already been added.");
+  _destructor: function _destructor() {
+    observers.remove(ON_CONTENT, this._onContentWindow);
+    for each (rule in RULES) {
+      this._removeAllListeners(rule);
+      delete RULES[rule];
     }
-    if (!(pageMod instanceof PageMod)) {
-      throw new Error("Trying to add an object that's not a PageMod instance.")
+    this._registryDestructor();
+  },
+  _onContentWindow: function _onContentWindow(window) {
+    let { location: { port, protocol } } = window, host;
+    // exception is thrown if `hostname` is accessed on 'about:*' urls in FF 3.*
+    try { host = window.location.hostname } catch(e) { }
+    let href = '' + window.location;
+    for (let rule in RULES) {
+      let { anyWebPage, exactURL, domain, urlPrefix } = RULES[rule];
+      if (
+        (anyWebPage && protocol && protocol.match(/^(https?|ftp):$/)) ||
+        (exactURL && exactURL == href) ||
+        (
+          domain && host &&
+          host.lastIndexOf(domain) == host.length - domain.length
+        ) ||
+        (urlPrefix && href && 0 == href.indexOf(urlPrefix))
+      )
+        this._emit(rule, window);
     }
-    this.registeredPageMods.push({
-      pageMod: pageMod,
-      includeRules: [parseURLRule(rule) for each (rule in pageMod.include)]
-    });
   },
-
-  /**
-   * Removes the page mod from the list of registered mods. This makes the
-   * mod to not run on any subsequently loaded pages, but does not undo the
-   * mod's effects on already loaded pages.
-   */
-  unregister: function(pageMod) {
-    var index = -1, self = this;
-    this.registeredPageMods.forEach(function(item, i) {
-      if (self.registeredPageMods[i].pageMod === pageMod)
-        index = i;
-    });
-
-    if (index == -1) {
-      throw new Error("Trying to remove a page mod, that has not been added.");
-    }
-    this.registeredPageMods.splice(index, 1);
-  },
-
-  /**
-   * Tests the location against multiple rules and returns |true| when the
-   * location matches at least one rule.
-   * @param includeRules an array of rules, as returned from parseURLRule()
-   * @param location {Location} the location to match the rules against.
-   *        https://developer.mozilla.org/En/DOM/Window.location
-   */
-  _rulesMatchURL: function(includeRules, location) {
-    return includeRules.some(function(rule) {
-      var result = false;
-      if (rule.anyWebPage && location.protocol.match(/^(https?|ftp):$/)) {
-        result = true;
-      } else if (rule.exactURL && rule.exactURL == location.toString()) {
-        result = true;
-      } else if (rule.domain) {
-        try {
-          var host = location.hostname;
-          if (host.lastIndexOf(rule.domain) == (host.length - rule.domain.length))
-            result = true;
-        } catch(err) {/* ignore exceptions, they can happen eg. for 'about:'*/}
-      } else if (rule.urlPrefix
-                 && location.toString().indexOf(rule.urlPrefix) == 0) {
-        result = true;
-      }
-      //console.debug("    PageMod: rule " + rule.toSource() +
-      //              (result ? " matched " : " did not match ") +
-      //              "<" + location.toString() + ">");
-      return result;
-    });
-  },
-
-  _runRegisteredCallbacks: function(pageMod, key, wrappedWindow) {
-    for each (fn in pageMod[key]) {
-      errors.catchAndLog(fn)(wrappedWindow);
-    };
-  },
-
-  /**
-   * A "content-document-global-created" observer notification listener. Runs
-   * whenever a new global object is created in content (e.g. new tab opened,
-   * navigation [except when a page is loaded from the bfcache], for frames
-   * inside a page, blank pages).
-   */
-  onContentGlobalCreated: function(wrappedWindow, topic, data) {
-    var self = this;
-    //console.debug("--> PageMod running on page: <" +
-    //              wrappedWindow.location.toString() + ">");
-    self.registeredPageMods.forEach(function({pageMod, includeRules}) {
-      if (self._rulesMatchURL(includeRules, wrappedWindow.location)) {
-        if ("onStart" in pageMod) {
-          self._runRegisteredCallbacks(pageMod, "onStart", wrappedWindow);
-        }
-        if ("onReady" in pageMod) {
-          function DOMReady(event) {
-            wrappedWindow.removeEventListener("DOMContentLoaded", DOMReady, false);
-            self._runRegisteredCallbacks(pageMod, "onReady", wrappedWindow);
-          }
-          wrappedWindow.addEventListener("DOMContentLoaded", DOMReady, false);
-        }
-      }
-    });
-    //console.debug("<-- All PageMods finished for page: <" +
-    //              wrappedWindow.location.toString() + ">");
+  off: function off(topic, listener) {
+    this.removeListener(topic, listener);
+    if (!this._listeners(topic).length)
+      delete RULES[topic];
   }
-};
+});
+const pageModManager = PageModManager();
 
+
+exports.add = pageModManager.add;
+exports.remove = pageModManager.remove;
 /**
  * Parses a string, possibly containing the wildcard character ('*') to
  * create URL-matching rule. Supported input strings with the rules they
@@ -235,7 +208,7 @@ var pageModManager = {
  * @param url {string} a string representing a rule that matches URLs
  * @returns {object} a object representing a rule that matches URLs
  */
-function parseURLRule(url) {
+function URLRule(url) {
   var rule;
 
   var firstWildcardPosition = url.indexOf("*");
@@ -243,7 +216,7 @@ function parseURLRule(url) {
   if (firstWildcardPosition != lastWildcardPosition) {
     throw new Error("There can be at most one '*' character in a wildcard.");
   }
-  
+
   if (firstWildcardPosition == 0) {
     if (url.length == 1)
       rule = { anyWebPage: true };
@@ -276,7 +249,3 @@ function parseURLRule(url) {
   return rule;
 };
 
-
-exports.PageMod = apiUtils.publicConstructor(PageMod);
-exports.add = function(pageMod) pageModManager.register(pageMod);
-exports.remove = function(pageMod) pageModManager.unregister(pageMod);
