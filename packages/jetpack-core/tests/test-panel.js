@@ -1,10 +1,13 @@
+let panels = require('panel');
+
+
 let URL = require("url").URL;
 let tests = {}, panels, Panel;
 
 tests.testPanel = function(test) {
   test.waitUntilDone();
   let panel = panels.add(Panel({
-    contentScript: "panel.sendMessage('')",
+    contentScript: "postMessage('')",
     onMessage: function (message) {
       test.pass("The panel was loaded.");
       test.done();
@@ -15,7 +18,7 @@ tests.testPanel = function(test) {
 tests.testShowHidePanel = function(test) {
   test.waitUntilDone();
   let panel = panels.add(Panel({
-    contentScript: "panel.sendMessage('')",
+    contentScript: "postMessage('')",
     contentScriptWhen: "ready",
     onMessage: function (message) {
       panel.show();
@@ -58,12 +61,12 @@ tests.testContentURLOption = function(test) {
   }
   
   let (panel = Panel({})) {
-    test.assert(typeof panel.contentURL == "undefined",
+    test.assert(panel.contentURL == null,
                 "contentURL is undefined.");
   }
 
   test.assertRaises(function () Panel({ contentURL: "foo" }),
-                    "The contentURL option must be a URL.",
+                    "The `contentURL` option must be a URL.",
                     "Panel throws an exception if contentURL is not a URL.");
 };
 
@@ -91,3 +94,4 @@ else {
     test.pass("The panel module is not supported on this app.");
   }
 }
+

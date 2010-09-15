@@ -1,4 +1,5 @@
 <!-- contributed by Myk Melez [myk@mozilla.org] -->
+<!-- contributed by Irakli Gozalishvili [gozala@mozilla.com] -->
 
 The `panel` module creates floating modal "popup dialogs" that appear on top of
 web content and browser chrome and persist until dismissed by users or programs.
@@ -67,7 +68,7 @@ want to read in a new tab by clicking on the stories' titles.
         contentScriptURL: [data.url("jquery-1.4.2.min.js"),
                            data.url("panel.js")],
         contentScriptWhen: "ready",
-        onMessage: function(message, callback) {
+        onMessage: function(message) {
           require("tab-browser").addTab(message);
         }
       })
@@ -78,22 +79,22 @@ which was also loaded as a content script, to interact with the DOM of the page.
 
     $(window).click(function (event) {
       var t = event.target;
-    
+      
       // Don't intercept the click if it isn't on a link.
       if (t.nodeName != "A")
         return;
-    
+      
       // Don't intercept the click if it was on one of the links in the header
       // or next/previous footer, since those links should load in the panel
       // itself.
       if ($(t).parents('#header').length || $(t).parents('.nextprev').length)
         return;
-    
+      
       // Intercept the click, passing it to the addon, which will load it in
       // a tab.
       event.stopPropagation();
       event.preventDefault();
-      program.sendMessage(t.toString());
+      postMessage(t.toString());
     });
 
 See the `examples/reddit-panel` directory for the complete example (including

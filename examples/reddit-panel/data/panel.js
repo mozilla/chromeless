@@ -22,5 +22,5 @@ $(window).click(function (event) {
   // Intercept the click, passing it to the addon, which will load it in a tab.
   event.stopPropagation();
   event.preventDefault();
-  panel.sendMessage(t.toString());
+  postMessage(t.toString());
 });

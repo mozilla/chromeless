@@ -11,7 +11,7 @@ widgets.add(widgets.Widget({
     contentURL: "http://www.reddit.com/.mobile?keep_extension=True",
     contentScriptURL: [data.url("jquery-1.4.2.min.js"), data.url("panel.js")],
     contentScriptWhen: "ready",
-    onMessage: function(message, callback) {
+    onMessage: function(message) {
       require("tab-browser").addTab(message);
     }
   })
