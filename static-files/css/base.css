@@ -76,6 +76,12 @@ h1 {
     font-weight: bold;
 }
 
+#more-packages {
+    font-size: 8pt;
+    color: gray;
+    cursor: pointer;
+}
+  
 .package-entry {
     color: gray;
     padding-bottom: 1em;

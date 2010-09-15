@@ -2,6 +2,7 @@
     "name": "nsjetpack",
     "description": "Jetpack binary component.",
     "author": "Atul Varma (http://toolness.com/)",
+    "keywords": ["jetpack-low-level"],
     "dependencies": ["jetpack-core"],
     "lib": ["lib"],
     "tests": ["tests"],

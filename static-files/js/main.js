@@ -305,8 +305,11 @@ function startApp(jQuery, window) {
       sortedPackages.push(name);
     sortedPackages.sort();
     var entries = $("<div></div>");
-    $("#left-column").append(entries);
+    var lowLevelEntries = $("<div></div>");
+    $("#package-reference").after(entries);
+    $("#more-packages").after(lowLevelEntries);
     entries.hide();
+    lowLevelEntries.hide();
     sortedPackages.forEach(
       function(name) {
         var pkg = packages[name];
@@ -316,9 +319,18 @@ function startApp(jQuery, window) {
         entry.find(".description").text(pkg.description);
 
         listModules(pkg, entry);
-        entries.append(entry);
+
+        if ('keywords' in pkg && pkg.keywords.indexOf &&
+            pkg.keywords.indexOf('jetpack-low-level') != -1)
+          lowLevelEntries.append(entry);
+        else
+          entries.append(entry);
       });
     entries.fadeIn();
+    $("#more-packages").one('click', function() {
+      $(this).hide();
+      lowLevelEntries.slideDown();
+    });
     finalizeSetup();
   }
 
