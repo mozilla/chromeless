@@ -101,14 +101,18 @@ def scan_module(fn, lines, stderr=sys.stderr):
 def scan_package(pkg_name, dirname, stderr=sys.stderr):
     manifest = []
     has_problems = False
-    for fn in [fn for fn in os.listdir(dirname) if fn.endswith(".js")]:
-        modname = fn[:-len(".js")]
-        absfn = os.path.join(dirname, fn)
-        lines = open(absfn).readlines()
-        requires, chrome, problems = scan_module(absfn, lines, stderr)
-        manifest.append( (pkg_name, modname, requires, chrome) )
-        if problems:
-            has_problems = True
+    for dirpath, dirnames, filenames in os.walk(dirname):
+        for fn in [fn for fn in filenames if fn.endswith(".js")]:
+            modname = os.path.splitext(fn)[0]
+            reldir = os.path.relpath(dirpath, dirname)
+            if reldir != ".":
+                modname = "/".join(reldir.split(os.sep) + [modname])
+            absfn = os.path.join(dirpath, fn)
+            lines = open(absfn).readlines()
+            requires, chrome, problems = scan_module(absfn, lines, stderr)
+            manifest.append( (pkg_name, modname, requires, chrome) )
+            if problems:
+                has_problems = True
     return manifest, has_problems
 
 if __name__ == '__main__':

@@ -181,6 +181,15 @@ class BadChrome(unittest.TestCase):
         self.failUnless('const {Cc,Ci,Cu} = require("chrome");' in err, err)
 
 class Package(unittest.TestCase):
+    def test_bug_596573(self):
+        jp_tests = "packages/jetpack-core/tests"
+        manifest, has_problems = scan_package("tests", jp_tests)
+        found = [modname
+                 for pkgname, modname, deps, needschrome in manifest
+                 if modname == "interoperablejs-read-only/compliance/" +
+                               "nested/a/b/c/d"]
+        self.failUnless(len(found) == 1)
+        
     def test_jetpack_core(self):
         # this has a side-effect of asserting that all the SDK's jetpack-core
         # modules are clean.
