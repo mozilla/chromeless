@@ -135,3 +135,46 @@ exports['test:adding same listener'] = function(test) {
  );
 }
 
+exports['test:errors are reported if listener throws'] = function(test) {
+  let e = new EventEmitter(),
+      reported = false;
+  e.on('error', function(e) reported = true)
+  e.on('boom', function() { throw new Error('Boom!') });
+  e.emit('boom', 3);
+  test.assert(reported, 'error should be reported through event');
+};
+
+exports['test:rethrowing unhandeld erros on emit'] = function(test) {
+  let e = new EventEmitter(),
+      reported = false;
+  e.on('boom', function() { throw new Error('Boom!') });
+  test.assertRaises(function() {
+    e.emit('boom', 3);
+  }, 'Boom!', 'should rethrow unhandled error');
+  test.assertRaises(function() {
+    e.emit('error', new Error('Oops!'));
+  }, 'Oops!', 'should throw unhandled errors');
+};
+
+exports['test:throw on unhandeld exceptions'] = function(test) {
+  let e = new EventEmitter(),
+      reported = false;
+  e.on('boom', function() { throw new Error('Boom!') });
+  test.assertRaises(function() {
+    e.emit('boom', 3);
+  }, 'Boom!', 'should rethrow unhandled error');
+  test.assertRaises(function() {
+    e.emit('error', new Error('Oops!'));
+  }, 'Oops!', 'should throw unhandled errors');
+};
+
+exports['test:throw on unhandled error events'] = function(test) {
+  let e = new EventEmitter(),
+      reported = false;
+  test.assertRaises(function() {
+    e.emit('error', 'Oops!');
+  },
+  'An error event was dispatched for which there was no listener.:\nOops!',
+  'should throw unhandled errors');
+};
+
