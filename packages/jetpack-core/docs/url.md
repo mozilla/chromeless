@@ -52,7 +52,8 @@ The `url` module provides functionality for the parsing and retrieving of URLs.
 
 ## URL Objects ##
 
-Objects created by the `URL` constructor have the following properties:
+Objects created by the `URL` constructor have the following properties and
+methods:
 
 <api name="scheme">
 @property {string}
@@ -77,4 +78,11 @@ Objects created by the `URL` constructor have the following properties:
 <api name="path">
 @property {string}
   The path component of the URL.
+</api>
+
+<api name="toString">
+@method
+  Returns a string representation of the URL.
+@returns {string}
+  The URL as a string.
 </api>
