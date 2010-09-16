@@ -4,7 +4,7 @@ exports.testConstructor = function(test) {
 
   const tabBrowser = require("tab-browser");
 
-  test.waitUntilDone();
+  test.waitUntilDone(30000);
 
   tabBrowser.addTab("about:blank", { inNewWindow: true, onLoad: function(e) {
     const widgets = require("widget");

@@ -64,6 +64,8 @@ exports.testOnOpenOnCloseListeners = function(test) {
   test.waitUntilDone();
   let windows = require("windows").browserWindows;
 
+  test.assertEqual(windows.length, 1, "Only one window open");
+
   let received = {
     listener1: false,
     listener2: false,
@@ -160,13 +162,18 @@ exports.testWindowTabsObject = function(test) {
 exports.testActiveWindow = function(test) {
   let windows = require("windows").browserWindows;
 
+  // API window objects
+  let window2, window3;
+
+  // Raw window objects
+  let nonBrowserWindow, rawWindow2, rawWindow3;
+
   // Find the first non-browser window: probably the test runner window
-  let nonBrowserWindow = null;
-  let enum = Cc["@mozilla.org/appshell/window-mediator;1"]
-             .getService(Ci.nsIWindowMediator)
-             .getEnumerator("");
-  while (enum.hasMoreElements()) {
-    let win = enum.getNext();
+  let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+             .getService(Ci.nsIWindowMediator);
+  let winEnum = wm.getEnumerator("");
+  while (winEnum.hasMoreElements()) {
+    let win = winEnum.getNext();
     if (win.document.documentElement.getAttribute("windowtype") != "navigator:browser") {
       nonBrowserWindow = win;
       break;
@@ -179,7 +186,6 @@ exports.testActiveWindow = function(test) {
 
   test.waitUntilDone();
 
-  let window2, window3;
   let testSteps = [
     function() {
       test.assertEqual(windows.length, 3, "Correct number of browser windows");
@@ -188,22 +194,26 @@ exports.testActiveWindow = function(test) {
         count++;
       test.assertEqual(count, 3, "Correct number of windows returned by iterator");
 
+      rawWindow2.focus();
+      continueAfterFocus(rawWindow2);
+    },
+    function() {
       nonBrowserWindow.focus();
+      continueAfterFocus(nonBrowserWindow);
     },
     function() {
       test.assertEqual(windows.activeWindow, null, "Non-browser windows aren't handled by this module");
       windows.activeWindow = window2;
+      continueAfterFocus(rawWindow2);
     },
     function() {
       test.assertEqual(windows.activeWindow.title, window2.title, "Correct active window - 2");
       windows.activeWindow = window3;
+      continueAfterFocus(rawWindow3);
     },
     function() {
       test.assertEqual(windows.activeWindow.title, window3.title, "Correct active window - 3");
       windows.activeWindow = nonBrowserWindow;
-    },
-    function() {
-      test.assertEqual(windows.activeWindow.title, window3.title, "Non-browser windows aren't handled by this module");
       finishTest();
     }
   ];
@@ -212,10 +222,13 @@ exports.testActiveWindow = function(test) {
     url: "data:text/html,<title>window 2</title>",
     onOpen: function(window) {
       window2 = window;
+      rawWindow2 = wm.getMostRecentWindow("navigator:browser");
+
       windows.openWindow({
         url: "data:text/html,<title>window 3</title>",
         onOpen: function(window) {
           window3 = window;
+          rawWindow3 = wm.getMostRecentWindow("navigator:browser");
           nextStep();
         }
       });
@@ -225,8 +238,35 @@ exports.testActiveWindow = function(test) {
   function nextStep() {
     if (testSteps.length > 0) {
       testSteps.shift()();
-      require("timer").setTimeout(nextStep, 500);
     }
+  }
+
+  function continueAfterFocus(targetWindow) {
+
+    // Based on SimpleTest.waitForFocus
+    var fm = Cc["@mozilla.org/focus-manager;1"].
+             getService(Ci.nsIFocusManager);
+
+    var childTargetWindow = {};
+    fm.getFocusedElementForWindow(targetWindow, true, childTargetWindow);
+    childTargetWindow = childTargetWindow.value;
+
+    var focusedChildWindow = {};
+    if (fm.activeWindow) {
+      fm.getFocusedElementForWindow(fm.activeWindow, true, focusedChildWindow);
+      focusedChildWindow = focusedChildWindow.value;
+    }
+
+    var focused = (focusedChildWindow == childTargetWindow);
+    if (focused) {
+      nextStep();
+    } else {
+      childTargetWindow.addEventListener("focus", function focusListener() {
+        childTargetWindow.removeEventListener("focus", focusListener, true);
+        nextStep();
+      }, true);
+    }
+
   }
 
   function finishTest() {

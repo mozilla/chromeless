@@ -121,11 +121,13 @@ exports.testActiveWindow = function(test) {
   let testSteps = [
     function() {
       windowUtils.activeWindow = browserWindow;
+      continueAfterFocus(browserWindow);
     },
     function() {
       test.assertEqual(windowUtils.activeWindow, browserWindow,
                        "Correct active window [1]");
       windowUtils.activeWindow = testRunnerWindow;
+      continueAfterFocus(testRunnerWindow);
     },
     function() {
       test.assertEqual(windowUtils.activeWindow, testRunnerWindow,
@@ -133,11 +135,13 @@ exports.testActiveWindow = function(test) {
       test.assertEqual(windowUtils.activeBrowserWindow, browserWindow,
                        "Correct active browser window [3]");
       windowUtils.activeWindow = browserWindow;
+      continueAfterFocus(browserWindow);
     },
     function() {
       test.assertEqual(windowUtils.activeWindow, browserWindow,
                        "Correct active window [4]");
       windowUtils.activeWindow = testRunnerWindow;
+      continueAfterFocus(testRunnerWindow);
     },
     function() {
       test.assertEqual(windowUtils.activeWindow, testRunnerWindow,
@@ -154,8 +158,35 @@ exports.testActiveWindow = function(test) {
     let func = testSteps.shift();
     if (func) {
       func();
-      timer.setTimeout(nextTest, 500);
     }
+  }
+
+  function continueAfterFocus(targetWindow) {
+
+    // Based on SimpleTest.waitForFocus
+    var fm = Cc["@mozilla.org/focus-manager;1"].
+             getService(Ci.nsIFocusManager);
+
+    var childTargetWindow = {};
+    fm.getFocusedElementForWindow(targetWindow, true, childTargetWindow);
+    childTargetWindow = childTargetWindow.value;
+
+    var focusedChildWindow = {};
+    if (fm.activeWindow) {
+      fm.getFocusedElementForWindow(fm.activeWindow, true, focusedChildWindow);
+      focusedChildWindow = focusedChildWindow.value;
+    }
+
+    var focused = (focusedChildWindow == childTargetWindow);
+    if (focused) {
+      nextTest();
+    } else {
+      childTargetWindow.addEventListener("focus", function focusListener() {
+        childTargetWindow.removeEventListener("focus", focusListener, true);
+        nextTest();
+      }, true);
+    }
+
   }
 
   nextTest();
