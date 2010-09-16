@@ -584,6 +584,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
+            options.profiledir = os.path.abspath(options.profiledir)
 
         if options.addons is not None:
             options.addons = options.addons.split(",")
