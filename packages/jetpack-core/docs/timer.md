@@ -32,7 +32,7 @@ The `timer` module provides access to web-like timing functionality.
   additional arguments are passed straight through to the callback.
 @returns {integer}
   An ID that can later be used to unschedule the callback.
-@param callback {callback}
+@param callback {function}
   Function to be called.
 @param ms {integer}
   Interval in milliseconds at which the function will be called.
