@@ -35,7 +35,7 @@ tests.testShowHidePanel = function(test) {
 };
 
 tests.testContentURLOption = function(test) {
-  const URL_STRING = "http://www.mozilla.org/";
+  const URL_STRING = "about:buildconfig";
   const HTML_CONTENT = "<html><title>Test</title><p>This is a test.</p></html>";
 
   let (panel = Panel({ contentURL: URL_STRING })) {

@@ -113,7 +113,7 @@ exports["test:communication with worker global scope"] = function(test) {
 exports['test:pageWorker'] = function(test) {
   test.waitUntilDone();
   let worker =  Symbiont({
-    contentURL: 'http://www.mozilla.com/en-US/',
+    contentURL: 'about:buildconfig',
     contentScript: 'new ' + function WorkerScope() {
       self.on('message', function(data) {
         if (data.valid)
