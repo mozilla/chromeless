@@ -83,7 +83,7 @@ def programid_to_jid(programid):
     return jid
 
 def check_for_privkey(keydir, jid, stderr):
-    if jid.startswith("jid0-anonymous-"):
+    if jid.startswith("anonid0-"):
         return None
     keypath = os.path.join(keydir, jid)
     if not os.path.isfile(keypath):
