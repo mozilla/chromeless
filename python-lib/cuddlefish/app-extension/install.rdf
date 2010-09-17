@@ -7,6 +7,7 @@
     <em:version>1.0</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
+    <em:unpack>true</em:unpack>
 
     <!-- Target Application this extension can install into, 
          with minimum and maximum supported versions. For a list 

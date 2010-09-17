@@ -123,6 +123,7 @@ def gen_manifest(template_root_dir, target_cfg, bundle_id,
     manifest.set("em:creator",
                  target_cfg.get("author", ""))
     manifest.set("em:bootstrap", str(bootstrap).lower())
+    manifest.set("em:unpack", "true")
     if update_url:
         manifest.set("em:updateURL", update_url)
     else:
