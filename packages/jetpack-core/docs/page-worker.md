@@ -32,11 +32,6 @@ Constructors
   with any of the following keys:
   @prop [contentURL] {URL,string}
     The URL of the content to load in the panel.
-  @prop [onReady] {function}
-    A function callback that will be called when the DOM on the page is ready.
-    This can be used to know when your Page Worker instance is ready to be used,
-    and also whenever the page is reloaded or another page is loaded in its
-    place.
   @prop [allow] {object}
     An object with keys to configure the permissions of the Page Worker.
     The boolean key `script` controls if scripts from the page

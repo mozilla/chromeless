@@ -59,7 +59,6 @@ if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
 const Page = Trait.compose(
   Symbiont.resolve({
     constructor: '_initSymbiont',
-    _onInit: '_onInitSymbiont',
     postMessage: '_postMessage'
   }),
   {
@@ -84,8 +83,6 @@ const Page = Trait.compose(
         this.on('error', onError);
       if (onMessage)
         this.on('message', onMessage);
-      if (onReady)
-        this.on('ready', onReady);
 
       this.on('propertyChange', this._onChange.bind(this));
       PageRegistry.on('add', this._onRegister.bind(this));
@@ -98,10 +95,6 @@ const Page = Trait.compose(
     _onChange: function _onChange(e) {
       if ('contentURL' in e)
         this._initFrame(this._frame);
-    },
-    _onInit: function _onInit() {
-      this._onInitSymbiont();
-      this._emit('ready', this._public);
     },
     _onRegister: function _onRegister(page) {
       if (page == this._public)
