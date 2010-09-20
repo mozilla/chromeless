@@ -3,6 +3,7 @@ DEFAULT_FIREFOX_PREFS = {
     'extensions.checkCompatibility.4.0b': False,
     'browser.startup.homepage' : 'about:blank',
     'startup.homepage_welcome_url' : 'about:blank',
+    'devtools.errorconsole.enabled' : True
     }
 
 # When launching a temporary new Thunderbird profile, use these preferences.
