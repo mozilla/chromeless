@@ -51,9 +51,10 @@ const Registry = EventEmitter.compose({
     unload.when(this._destructor.bind(this));
   },
   _destructor: function _destructor() {
-    let _registry = this._registry.splice(0);
+    let _registry = this._registry.slice(0);
     for each (instance in _registry)
       this._emit('remove', instance);
+    this._registry.splice(0);
   },
   _onError: function _onError(e) {
     if (!this._listeners('error').length)
@@ -69,7 +70,7 @@ const Registry = EventEmitter.compose({
   add: function add(instance) {
     let { _constructor, _registry } = this; 
     if (!(instance instanceof _constructor))
-      instance = _constructor(instance);
+      instance = new _constructor(instance);
     if (0 > _registry.indexOf(instance)) {
       _registry.push(instance);
       this._emit('add', instance);
@@ -80,8 +81,8 @@ const Registry = EventEmitter.compose({
     let _registry = this._registry;
     let index = _registry.indexOf(instance)
     if (0 <= index) {
-      _registry.splice(index, 1);
       this._emit('remove', instance);
+      _registry.splice(index, 1);
     }
   }
 });

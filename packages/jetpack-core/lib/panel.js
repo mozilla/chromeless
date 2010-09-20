@@ -82,61 +82,79 @@ const Panel = Symbiont.resolve({
   removeListener: Symbiont.required,
   _destructor: Symbiont.required,
 
-  _isShown: false,
+  _inited: false,
 
-  _swapFrameLoaders: function _swapFrameLoaders() {
+  /**
+   * If set to `true` frame loaders between xul panel frame and
+   * hidden frame are swapped. If set to `false` frame loaders are
+   * set back to normal. Setting the value that was already set will
+   * have no effect.
+   */
+  set _frameLoadersSwapped(value) {
+    if (this.__frameLoadersSwapped == value) return;
     this._frame.QueryInterface(Ci.nsIFrameLoaderOwner)
       .swapFrameLoaders(this._viewFrame);
+    this.__frameLoadersSwapped = value;
   },
+  __frameLoadersSwapped: false,
+
   constructor: function Panel(options) {
     this._onShow = this._onShow.bind(this);
     this._onHide = this._onHide.bind(this);
-    let { onShow, onHide, width, height, content } = options || (options = {});
-    if (onShow)
-      this.on('show', onShow);
-    if (onHide)
-      this.on('hide', onHide);
-    if (width)
-      this.width = width;
-    if (height)
-      this.height = height;
-    // must throw if no content is specified
-    this.content = content;
+    PanelRegistry.on('add', this._onAdd.bind(this));
+    PanelRegistry.on('remove', this._onRemove.bind(this));
+    this.on('inited', this._onSymbiontInit.bind(this));
+
+    options = options || {};
+    if ('onShow' in options)
+      this.on('show', options.onShow);
+    if ('onHide' in options)
+      this.on('hide', options.onHide);
+    if ('width' in options)
+      this.width = options.width;
+    if ('height' in options)
+      this.height = options.height;
+    if ('contentURL' in options)
+      this.contentURL = options.contentURL;
+
     this._init(options);
   },
   _destructor: function _destructor() {
-    if (PanelRegistry.has(this))
-      this.hide();
-    this._symbiontDestructor();
+    PanelRegistry.remove(this._public);
     this._removeAllListeners('show');
-    this._removeAllListeners('hide');
+    // defer cleanup to be performed after panel gets hidden
+    this._xulPanel = null;
+    this._symbiontDestructor(this);
+    this._removeAllListeners(this, 'hide');
   },
+  /* Public API: Panel.width */
   get width() this._width,
   set width(value)
     this._width = valid({ $: value }, { $: validNumber }).$ || this._width,
   _width: 320,
+  /* Public API: Panel.height */
   get height() this._height,
   set height(value)
     this._height =  valid({ $: value }, { $: validNumber }).$ || this._height,
   _height: 240,
-
+  /* Public API: Panel.show */
   show: function show(anchor) {
     // do nothing if already open
     if (!PanelRegistry.has(this))
       throw new Error(ERR_ADD);
-    if (this._isShown) return;
-    this._isShown = true;
+
     anchor = anchor || null;
-
     let document = getWindow(anchor).document;
-    let xulPanel = this._xulPanel = document.createElementNS(XUL_NS, 'panel');
-    let frame = this._viewFrame = document.createElementNS(XUL_NS, 'iframe');
-    frame.setAttribute('type', 'content');
-    frame.setAttribute('flex', '1');
-    frame.setAttribute('transparent', 'transparent');
-    xulPanel.appendChild(frame);
-    document.getElementById("mainPopupSet").appendChild(xulPanel);
-
+    let xulPanel = this._xulPanel;
+    if (!xulPanel) {
+      xulPanel = this._xulPanel = document.createElementNS(XUL_NS, 'panel');
+      let frame = document.createElementNS(XUL_NS, 'iframe');
+      frame.setAttribute('type', 'content');
+      frame.setAttribute('flex', '1');
+      frame.setAttribute('transparent', 'transparent');
+      xulPanel.appendChild(frame);
+      document.getElementById("mainPopupSet").appendChild(xulPanel);
+    }
     let { width, height } = this, when = 'before_start', x, y;
     // Open the popup by the anchor.
     // TODO: make the XUL panel an arrow panel so it gets positioned
@@ -147,16 +165,15 @@ const Panel = Symbiont.resolve({
       y = document.documentElement.clientHeight / 2 - height / 2;
       when = null;
     }
-
-    xulPanel.addEventListener(ON_SHOW, this._onShow, false);
-    xulPanel.addEventListener(ON_HIDE, this._onHide, false);
     xulPanel.sizeTo(width, height);
     xulPanel.openPopup(anchor, when, x, y);
+    return this._public;
   },
-
+  /* Public API: Panel.hide */
   hide: function hide() {
     if (!PanelRegistry.has(this))
       throw new Error(ERR_ADD);
+
     // The popuphiding handler takes care of swapping back the frame loaders
     // and removing the XUL panel from the application window, we just have to
     // trigger it by hiding the popup.
@@ -167,45 +184,82 @@ const Panel = Symbiont.resolve({
     let xulPanel = this._xulPanel;
     if (xulPanel && "hidePopup" in xulPanel)
       xulPanel.hidePopup();
+    return this._public;
   },
   // While the panel is visible, this is the XUL <panel> we use to display it.
   // Otherwise, it's null.
-  _xulPanel: null,
+  // While the panel is visible, this is the XUL <panel> we use to display it.
+  // Otherwise, it's null.
+  get _xulPanel() this.__xulPanel,
+  set _xulPanel(value) {
+    let xulPanel = this.__xulPanel;
+    if (value === xulPanel) return;
+    if (xulPanel) {
+      xulPanel.removeEventListener(ON_HIDE, this._onHide, false);
+      xulPanel.removeEventListener(ON_SHOW, this._onShow, false);
+      xulPanel.parentNode.removeChild(xulPanel);
+    }
+    if (value) {
+      value.addEventListener(ON_HIDE, this._onHide, false);
+      value.addEventListener(ON_SHOW, this._onShow, false);
+    }
+    this.__xulPanel = value;
+  },
+  __xulPanel: null,
+  get _viewFrame() this.__xulPanel.children[0], 
   /**
-   * When the XUL panel becomes hidden, we swap frame loaders to move
-   * the content of the panel back to the hidden iframe where it is stored.
+   * When the XUL panel becomes hidden, we swap frame loaders back to move
+   * the content of the panel to the hidden frame & remove panel element.
    */
   _onHide: function _onHide() {
-    this._swapFrameLoaders();
-    xulPanel = this._xulPanel;
-    xulPanel.removeEventListener("popuphidden", this._onClose, false);
-    xulPanel.parentNode.removeChild(xulPanel);
-    this._isShown = false;
-    this._xulPanel = null;
-    this._viewFrame = null;
-
-    this._asyncEmit('hide', this._public);
+    try {
+      this._frameLoadersSwapped = false;
+      this._xulPanel = null;
+      this._emit('hide', this._public);
+    } catch(e) {
+      this._emit('error', e);
+    }
   },
+  /**
+   * When the XUL panel becomes shown, we swap frame loaders between panel
+   * frame and hidden frame to preserve state of the content dom.
+   */
   _onShow: function _onShow() {
-    if (!this._isShown) return;
-    let xulPanel = this._xulPanel;
-    xulPanel.removeEventListener("popupshown", this._onOpen, false);
-    this._swapFrameLoaders();
-
-    this._asyncEmit('show', this._public);
+    try {
+      if (!this._inited) // defer if not initialized yet
+        return this.on('inited', this._onShow.bind(this));
+      this._frameLoadersSwapped = true;
+      this._emit('show', this._public);
+    } catch(e) {
+      this._emit('error', e);
+    }
   },
+  /**
+   * Notification that panel was added.
+   */
   _onAdd: function _onAdd(self) {
-    if (self == this._public)
+    if (self == this._public && this._inited)
       this._onInit();
   },
+  /**
+   * Notification that panel was removed.
+   */
+  _onRemove: function _onRemove(self) {
+    if (self == this._public)
+        this.hide();
+  },
+  /**
+   * Notification that panel was fully initialized.
+   * This will be called another time when panel was added if it
+   * was initialized before.
+   */
   _onInit: function _onInit() {
-    // if not added yet no delay worker global scope creation
-    if (!PanelRegistry.has(this))
-      return PanelRegistry.on('add', this._onAdd.bind(this));
-
-    this._onSymbiontInit();
-    // maybe panel was loaded while frame got ready
-    this._onShow();
+    this._inited = true;
+    if (PanelRegistry.has(this)) {
+      // perform all deferred tasks like initSymbiont, show, hide ...
+      this._emit('inited');
+      this._removeAllListeners('inited');
+    }
   }
 });
 exports.Panel = function(options) Panel(options)

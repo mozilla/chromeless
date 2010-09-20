@@ -1,14 +1,13 @@
 let panels = require('panel');
-
-
+let { setTimeout } = require('timer');
 let URL = require("url").URL;
 let tests = {}, panels, Panel;
 
 tests.testPanel = function(test) {
-  test.waitUntilDone();
   let panel = panels.add(Panel({
     contentScript: "postMessage('')",
     onMessage: function (message) {
+      panels.remove(panel);
       test.pass("The panel was loaded.");
       test.done();
     }
@@ -16,7 +15,6 @@ tests.testPanel = function(test) {
 };
 
 tests.testShowHidePanel = function(test) {
-  test.waitUntilDone();
   let panel = panels.add(Panel({
     contentScript: "postMessage('')",
     contentScriptWhen: "ready",
@@ -28,10 +26,50 @@ tests.testShowHidePanel = function(test) {
       panel.hide();
     },
     onHide: function () {
+      panels.remove(panel);
       test.pass("The panel was hidden.");
       test.done();
     }
   }));
+};
+
+tests.testHideBeforeShow = function(test) {
+  let showCalled = false
+  let panel = panels.add(Panel({
+    onShow: function () {
+      showCalled = true;
+    },
+    onHide: function () {
+      test.assert(!showCalled, 'must not emit show if was hidden before');
+      test.done();
+    }
+  }));
+  panel.show();
+  panel.hide();
+};
+
+tests.testSeveralShowHides = function(test) {
+  let hideCalled = 0;
+  test.waitUntilDone();
+  let panel = panels.add(panels.Panel({
+    onShow: function () {
+      test.assertEqual(3, hideCalled, 'shold call only second show');
+      test.done();
+    },
+    onHide: function () {
+      hideCalled ++ ;
+    }
+  }));
+  panel.on('error', function(e) {
+    test.fail('error was emitted:' + e.message + '\n' + e.stack);
+  })
+  panel.show();
+  panel.hide(); // 1
+  panel.show();
+  panel.hide(); // 2
+  panel.show();
+  panel.hide(); // 3
+  panel.show();
 };
 
 tests.testContentURLOption = function(test) {
@@ -68,6 +106,33 @@ tests.testContentURLOption = function(test) {
   test.assertRaises(function () Panel({ contentURL: "foo" }),
                     "The `contentURL` option must be a URL.",
                     "Panel throws an exception if contentURL is not a URL.");
+
+  test.done();
+};
+
+tests['test:destruct before removed'] = function(test) {
+  let loader = new test.makeSandboxedLoader();
+  let panels = loader.require('panel');
+  let { Panel } = loader.findSandboxForModule("panel").globalScope;
+  let PanelShim = Panel.compose({ destructor: function() this._destructor() });
+  PanelShim.prototype = Panel.prototype;
+  
+  let isShowEmitted = false;
+
+  let panel = PanelShim({
+    onShow: function onShow() {
+      test.pass('shown was emitted');
+    },
+    onHide: function onHide() {
+      test.done();
+    }
+  });
+  panels.add(panel);
+  panel.on('error', function(e) {
+    test.fail('error emit was emitted:' + e.message + '\n'+ e.stack)
+  });
+  panel.show();
+  setTimeout(panel.destructor.bind(panel), 100);
 };
 
 let panelSupported = true;
@@ -86,12 +151,20 @@ catch(ex if ex.message == [
 }
 
 if (panelSupported) {
-  for (let test in tests)
-    exports[test] = tests[test];
+  for (let test in tests) {
+    let tester = tests[test];
+    exports[test] = function(test) {
+      test.waitUntilDone();
+      setTimeout(function() { // otherwise "running tests" dialog hides panel
+        tester(test);
+      }, 100);
+    };
+  }
 }
 else {
   exports.testPanelNotSupported = function(test) {
     test.pass("The panel module is not supported on this app.");
   }
 }
+
 

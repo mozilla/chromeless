@@ -427,7 +427,7 @@ exports.testPanelWidget = function testPanelWidget(test) {
       sendMouseEvent({type:"click"}, "me", e.target.defaultView);
     },
     panel: require("panel").Panel({
-      content: "data:text/html,<body>Look ma, a panel!</body>",
+      contentURL: "data:text/html,<body>Look ma, a panel!</body>",
       onShow: function() {
         widgets.remove(widget1);
         test.pass("panel displayed on click");
@@ -460,7 +460,7 @@ exports.testPanelWidget = function testPanelWidget(test) {
       this.panel.show();
     },
     panel: require("panel").Panel({
-      content: "data:text/html,<body>Look ma, a panel!</body>",
+      contentURL: "data:text/html,<body>Look ma, a panel!</body>",
       onShow: function() {
         test.assert(
           onClickCalled,

@@ -185,9 +185,10 @@ const WorkerGlobalScope = AsyncEventEmitter.compose({
     Object.defineProperties(sandbox, {
       onMessage: {
         get: function() publicAPI.onMesssage,
-        set: function(value) publicAPI.onMessage = value
+        set: function(value) publicAPI.onMessage = value,
+        configurable: true
       },
-      console: { value: console },
+      console: { value: console, configurable: true },
    });
     // Chain the global object for the sandbox to the global object for
     // the frame.  This supports JavaScript libraries like jQuery that depend
