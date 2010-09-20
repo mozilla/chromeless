@@ -82,29 +82,27 @@ const PageMod = Loader.compose(EventEmitter, {
     this._onAttach = this._onAttach.bind(this);
     this._onReady = this._onReady.bind(this);
     this._onContent = this._onContent.bind(this);
-    let {
-      onOpen, onError, include,
-      contentScript, contentScriptURL, contentScriptWhen
-    } = options || {};
+    options = options || {};
 
-    if (contentScript)
-      this.contentScript = contentScript;
-    if (contentScriptURL)
-      this.contentScriptURL = contentScriptURL;
-    if (contentScriptWhen)
-      this.contentScriptWhen = contentScriptWhen;
-    if (onOpen)
-      this.on('attach', onOpen);
-    if (onError)
-      this.on('error', onError);
+    if ('contentScript' in options)
+      this.contentScript = options.contentScript;
+    if ('contentScriptURL' in options)
+      this.contentScriptURL = options.contentScriptURL;
+    if ('contentScriptWhen' in options)
+      this.contentScriptWhen = options.contentScriptWhen;
+    if ('onOpen' in options)
+      this.on('attach', options.onOpen);
+    if ('onError' in options)
+      this.on('error', options.onError);
 
+    let include = options.include;
     let rules = this.include = Rules();
     rules.on('add', this._onRuleAdd = this._onRuleAdd.bind(this));
     rules.on('remove', this._onRuleRemove = this._onRuleRemove.bind(this));
     try {
-      if (Array.isArray(rules))
+      if (Array.isArray(include))
         rules.add.apply(null, include);
-      else if (rules)
+      else
         rules.add(include);
     }
     catch(e) {
@@ -167,12 +165,21 @@ const PageModManager = Registry.resolve({
     this._registryDestructor();
   },
   _onContentWindow: function _onContentWindow(window) {
-    let { location: { port, protocol } } = window, host;
+    let location = window.location,
+        port = ('port' in location) ? location.port : null,
+        protocol = ('protocol' in location) ? location.protocol : null,
+        href = '' + location,
+        host;
     // exception is thrown if `hostname` is accessed on 'about:*' urls in FF 3.*
-    try { host = window.location.hostname } catch(e) { }
-    let href = '' + window.location;
+    try { host = location.hostname } catch(e) { }
+
     for (let rule in RULES) {
-      let { anyWebPage, exactURL, domain, urlPrefix } = RULES[rule];
+      let r = RULES[rule],
+          anyWebPage = ('anyWebPage' in r) ? r.anyWebPage : null,
+          exactURL = ('exactURL' in r) ? r.exactURL : null,
+          domain = ('domain' in r) ? r.domain : null,
+          urlPrefix = ('urlPrefix' in r) ? r.urlPrefix : null;
+
       if (
         (anyWebPage && protocol && protocol.match(/^(https?|ftp):$/)) ||
         (exactURL && exactURL == href) ||

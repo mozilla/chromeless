@@ -215,7 +215,10 @@ const WorkerGlobalScope = AsyncEventEmitter.compose({
     // The order of `contentScriptURL` and `contentScript` evaluation is
     // intentional, so programs can load libraries like jQuery from script URLs
     // and use them in scripts.
-    let { contentScriptURL, contentScript } = port;
+    let contentScriptURL = ('contentScriptURL' in port) ? port.contentScriptURL
+          : null,
+        contentScript = ('contentScript' in port) ? port.contentScript : null;
+
     if (contentScriptURL) {
       if (Array.isArray(contentScriptURL))
         this._importScripts.apply(this, contentScriptURL);
@@ -313,20 +316,18 @@ const Worker = AsyncEventEmitter.compose({
   postMessage: postMessage,
 
   constructor: function Worker(options) {
-    let { contentScriptWhen, contentScriptURL, contentScript, window,
-        onMessage, onError
-    } = options || {};
+    options = options || {};
 
-    if (window)
-      this._window = window;
-    if (contentScriptURL)
-      this.contentScriptURL = contentScriptURL;
-    if (contentScript)
-      this.contentScript = contentScript;
-    if (onError)
-        this.on('error', onError);
-    if (onMessage)
-        this.on('message', onMessage);
+    if ('window' in options)
+      this._window = options.window;
+    if ('contentScriptURL' in options)
+      this.contentScriptURL = options.contentScriptURL;
+    if ('contentScript' in options)
+      this.contentScript = options.contentScript;
+    if ('onError' in options)
+        this.on('error', options.onError);
+    if ('onMessage' in options)
+        this.on('message', options.onMessage);
 
     unload.when(this._deconstructWorker.bind(this));
 

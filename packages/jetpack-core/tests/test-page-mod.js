@@ -162,7 +162,10 @@ exports.testRulesMatchURL = function(test) {
   function rulesMatchURL([rule], location) {
     ruleMatched = false;
     RULES.test = rule;
-    pageModManager.onContentWindow({ location: location });
+    pageModManager.onContentWindow({
+      location: 'string' == typeof location ? { toString: function() location }
+        : location
+    });
     return ruleMatched;
   }
   test.assert(rulesMatchURL([{anyWebPage: true}], {protocol:"http:"}),

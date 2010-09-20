@@ -66,23 +66,22 @@ const Page = Trait.compose(
     _initFrame: Trait.required,
 
     constructor: function Page(options) {
-      let { contentURL, contentScriptURL, contentScript, contentScriptWhen,
-        allow, onMessage, onError, onReady
-      } = options || {};
+      options = options || {};
 
-      this.contentURL = contentURL || 'about:blank';
-      if (contentScriptWhen)
-        this.contentScriptWhen = contentScriptWhen;
-      if (contentScriptURL)
-        this.contentScriptURL = contentScriptURL;
-      if (contentScript)
-        this.contentScript = contentScript;
-      if (allow)
-        this.allow = allow;
-      if (onError)
-        this.on('error', onError);
-      if (onMessage)
-        this.on('message', onMessage);
+      this.contentURL = 'contentURL' in options ? options.contentURL
+        : 'about:blank';
+      if ('contentScriptWhen' in options)
+        this.contentScriptWhen = options.contentScriptWhen;
+      if ('contentScriptURL' in options)
+        this.contentScriptURL = options.contentScriptURL;
+      if ('contentScript' in options)
+        this.contentScript = options.contentScript;
+      if ('allow' in options)
+        this.allow = options.allow;
+      if ('onError' in options)
+        this.on('error', options.onError);
+      if ('onMessage' in options)
+        this.on('message', options.onMessage);
 
       this.on('propertyChange', this._onChange.bind(this));
       PageRegistry.on('add', this._onRegister.bind(this));

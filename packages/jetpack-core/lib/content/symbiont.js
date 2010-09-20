@@ -69,26 +69,24 @@ const Symbiont = Worker.resolve({ constructor: '_onInit' }).compose({
    *    if frame is not provided hidden iframe will be created.
    */
   constructor: function Symbiont(options) {
-    let { contentURL, contentScriptURL, contentScript,
-      contentScriptWhen, allow, onMessage, onError, frame
-    } = options || {};
+    options = options || {};
 
-    if (contentURL)
-        this.contentURL = contentURL;
-    if (contentScriptWhen)
-      this.contentScriptWhen = contentScriptWhen;
-    if (contentScriptURL)
-      this.contentScriptURL = contentScriptURL;
-    if (contentScript)
-      this.contentScript = contentScript;
-    if (allow)
-      this.allow = allow;
-    if (onError)
-        this.on('error', onError);
-    if (onMessage)
-        this.on('message', onMessage);
-    if (frame) {
-      this._initFrame(frame);
+    if ('contentURL' in options)
+        this.contentURL = options.contentURL;
+    if ('contentScriptWhen' in options)
+      this.contentScriptWhen = options.contentScriptWhen;
+    if ('contentScriptURL' in options)
+      this.contentScriptURL = options.contentScriptURL;
+    if ('contentScript' in options)
+      this.contentScript = options.contentScript;
+    if ('allow' in options)
+      this.allow = options.allow;
+    if ('onError' in options)
+        this.on('error', options.onError);
+    if ('onMessage' in options)
+        this.on('message', options.onMessage);
+    if ('frame' in options) {
+      this._initFrame(options.frame);
     }
     else {
       let self = this;
