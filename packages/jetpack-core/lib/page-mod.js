@@ -90,8 +90,8 @@ const PageMod = Loader.compose(EventEmitter, {
       this.contentScriptURL = options.contentScriptURL;
     if ('contentScriptWhen' in options)
       this.contentScriptWhen = options.contentScriptWhen;
-    if ('onOpen' in options)
-      this.on('attach', options.onOpen);
+    if ('onAttach' in options)
+      this.on('attach', options.onAttach);
     if ('onError' in options)
       this.on('error', options.onError);
 

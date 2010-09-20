@@ -78,7 +78,7 @@ exports.testPageModIncludes = function(test) {
           window[msg] = true;
         }
       },
-      onOpen: function(worker, mod) {
+      onAttach: function(worker, mod) {
         worker.postMessage(mod.include[0]);
       }
     };
@@ -215,7 +215,7 @@ exports.testCommunication1 = function(test) {
           postMessage(document.body.getAttribute('JEP-107'));
         })
       },
-      onOpen: function(worker) {
+      onAttach: function(worker) {
         worker.on('error', function(e) {
           test.fail('Errors where reported');
         });
@@ -263,7 +263,7 @@ exports.testCommunication2 = function(test) {
           postMessage(window.test)
         }
       },
-      onOpen: function(worker) {
+      onAttach: function(worker) {
         worker.on('error', function(e) {
           test.fail('Errors where reported');
         });
