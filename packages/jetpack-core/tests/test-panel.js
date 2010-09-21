@@ -1,9 +1,9 @@
 let panels = require('panel');
-let { setTimeout } = require('timer');
 let URL = require("url").URL;
 let tests = {}, panels, Panel;
 
 tests.testPanel = function(test) {
+  test.waitUntilDone();
   let panel = panels.add(Panel({
     contentScript: "postMessage('')",
     onMessage: function (message) {
@@ -15,6 +15,7 @@ tests.testPanel = function(test) {
 };
 
 tests.testShowHidePanel = function(test) {
+  test.waitUntilDone();
   let panel = panels.add(Panel({
     contentScript: "postMessage('')",
     contentScriptWhen: "ready",
@@ -34,7 +35,8 @@ tests.testShowHidePanel = function(test) {
 };
 
 tests.testHideBeforeShow = function(test) {
-  let showCalled = false
+  test.waitUntilDone();
+  let showCalled = false;
   let panel = panels.add(Panel({
     onShow: function () {
       showCalled = true;
@@ -106,11 +108,10 @@ tests.testContentURLOption = function(test) {
   test.assertRaises(function () Panel({ contentURL: "foo" }),
                     "The `contentURL` option must be a URL.",
                     "Panel throws an exception if contentURL is not a URL.");
-
-  test.done();
 };
 
 tests['test:destruct before removed'] = function(test) {
+  test.waitUntilDone();
   let loader = new test.makeSandboxedLoader();
   let panels = loader.require('panel');
   let { Panel } = loader.findSandboxForModule("panel").globalScope;
@@ -122,6 +123,7 @@ tests['test:destruct before removed'] = function(test) {
   let panel = PanelShim({
     onShow: function onShow() {
       test.pass('shown was emitted');
+      panel.destructor();
     },
     onHide: function onHide() {
       test.done();
@@ -132,7 +134,6 @@ tests['test:destruct before removed'] = function(test) {
     test.fail('error emit was emitted:' + e.message + '\n'+ e.stack)
   });
   panel.show();
-  setTimeout(panel.destructor.bind(panel), 100);
 };
 
 let panelSupported = true;
@@ -151,15 +152,8 @@ catch(ex if ex.message == [
 }
 
 if (panelSupported) {
-  for (let test in tests) {
-    let tester = tests[test];
-    exports[test] = function(test) {
-      test.waitUntilDone();
-      setTimeout(function() { // otherwise "running tests" dialog hides panel
-        tester(test);
-      }, 100);
-    };
-  }
+  for (let test in tests)
+    exports[test] = tests[test];
 }
 else {
   exports.testPanelNotSupported = function(test) {

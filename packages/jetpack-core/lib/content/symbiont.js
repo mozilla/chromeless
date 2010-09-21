@@ -58,9 +58,9 @@ const Symbiont = Worker.resolve({ constructor: '_onInit' }).compose({
   _window: Worker.required,
   _onInit: Worker.required,
   /**
-   * Constructor requires all the `options` that where required by
-   * `require('content').Worker` with one difference that frame option is
-   * optional. If frame is not provided `contentURL` is expected.
+   * The constructor requires all the options that are required by
+   * `require('content').Worker` with the difference that the `frame` option
+   * is optional. If `frame` is not provided, `contentURL` is expected.
    * @param {Object} options
    * @param {String} options.contentURL
    *    URL of a content to load into `this._frame` and create worker for.
@@ -102,9 +102,9 @@ const Symbiont = Worker.resolve({ constructor: '_onInit' }).compose({
   _destructor: function _destructor() {
     // maybe we're unloaded before listeners where triggered
     if ('ready' === this.contentScriptWhen)
-      this._frame.removeEventListener(ON_READY, this._onContentLoaded, true);
+      this._frame.removeEventListener(ON_READY, this._onReady, true);
     else
-      observers.remove(ON_START, this._onContentGlobalCreated);
+      observers.remove(ON_START, this._onStart);
     this._frame = null;
   },
   /**
