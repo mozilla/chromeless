@@ -53,10 +53,6 @@ const EVENTS = {
   onMouseout: "mouseout",
   onReady: "DOMContentLoaded"};
 
-// Preference for UI visibility state
-const PREF_ADDON_BAR_HIDDEN = "jetpack.jetpack-core.widget.barIsHidden";
-const PREF_DEFAULT_ADDON_BAR_HIDDEN = false;
-
 if (!require("xul-app").is("Firefox")) {
   throw new Error([
     "The widget module currently supports only Firefox.  In the future ",
@@ -68,7 +64,6 @@ if (!require("xul-app").is("Firefox")) {
 const apiutils = require("api-utils");
 const collection = require("collection");
 const errors = require("errors");
-const prefs = require("preferences-service");
 const panels = require("panel");
 
 // Expose public APIs for creating/adding/removing widgets
@@ -124,7 +119,7 @@ function Widget(options) {
 
   this.__defineGetter__("label", function() options.label);
 
-  this.__defineGetter__("width", function() options.width || 24);
+  this.__defineGetter__("width", function() options.width || 16);
   this.__defineSetter__("width", function(width) {
     options.width = width;
     browserManager.updateItem(self, "width", width);
@@ -282,17 +277,6 @@ BrowserWindow.prototype = {
 
     // Add keypress listener
     this.window.addEventListener("keypress", this, false);
-
-    // Hook up pref observer for UI visibility state.
-    const prefsvc = Cc["@mozilla.org/preferences-service;1"].
-                    getService(Ci.nsIPrefBranch2);
-    prefsvc.addObserver(PREF_ADDON_BAR_HIDDEN, this, false);
-  },
-
-  // nsIObserver
-  observe: function BW_observe(s, t, d) {
-    let val = prefs.get(PREF_ADDON_BAR_HIDDEN, PREF_DEFAULT_ADDON_BAR_HIDDEN);
-    this.container.hidden = !!val;
   },
 
   // nsIDOMEventListener
@@ -319,12 +303,10 @@ BrowserWindow.prototype = {
 
   get container() {
     if (!this._container) {
-      // Bug 574688 replaces the status bar with the add-on bar. This code
-      // might be removed when that bug is resolved. It might stay, if we 
-      // want to support versions of Firefox that don't have the add-on bar.
+      // If being run in a version of Firefox <4, create a separate
+      // addon bar. TODO: just use the status bar?
       let container = this.doc.getElementById("addon-bar");
       if (!container) {
-
         let toolbox = this.doc.createElement("toolbox");
 
         // Share browser's palette.
@@ -341,12 +323,6 @@ BrowserWindow.prototype = {
         container.style.padding = "0px";
         container.style.margin = "0px";
 
-        // TODO: make part of toolbar infrastructure, so is controlled
-        // via the View menu instead of pref. (bug 579506)
-        container.hidden = require("preferences-service").
-                           get(PREF_ADDON_BAR_HIDDEN,
-                               PREF_DEFAULT_ADDON_BAR_HIDDEN);
-
         toolbox.appendChild(container);
 
         let statusbar = this.doc.getElementById("status-bar");
@@ -358,21 +334,15 @@ BrowserWindow.prototype = {
     return this._container;
   },
 
-  // Remove container
-  _removeContainer: function BW__removeContainer() {
-    if (this._container) {
-      let toolbar = this._container;
-      let toolbox = toolbar.parentNode;
-      toolbox.removeChild(toolbar);
-      toolbox.parentNode.removeChild(toolbox);
-      this._container = null;
-    }
+  // Hide container
+  _hideContainer: function BW__hideContainer() {
+    if (this._container)
+      this._container.collapsed = true;
   },
 
   // Update the visibility state for the addon bar.
   _onToggleUI: function BW__onToggleUI() {
-    this.container.hidden = !this.container.hidden;
-    prefs.set(PREF_ADDON_BAR_HIDDEN, this.container.hidden);
+    this.container.collapsed = !this.container.collapsed;
   },
 
   // Adds an array of items to the window.
@@ -412,7 +382,6 @@ BrowserWindow.prototype = {
 
     // TODO move into a stylesheet
     node.setAttribute("style", [
-        "min-height: 24px; max-height: 24px;",
         "overflow: hidden; margin: 5px; padding: 0px;",
         "border: 1px solid #71798F; -moz-box-shadow: 1px 1px 3px #71798F;",
         "-moz-border-radius: 3px;"
@@ -433,6 +402,9 @@ BrowserWindow.prototype = {
     this._fillItem(item);
 
     this._items.push(item);
+
+    if (this.container.collapsed)
+      this._onToggleUI();
   },
 
   // Initial population of a widget's content.
@@ -442,7 +414,7 @@ BrowserWindow.prototype = {
     iframe.setAttribute("type", "content");
     iframe.setAttribute("transparent", "transparent");
     iframe.style.overflow = "hidden";
-    iframe.style.height = "24px";
+    iframe.style.height = "16px";
     iframe.style.width = item.widget.width + "px";
     iframe.setAttribute("flex", "1");
     iframe.style.border = "none";
@@ -524,7 +496,7 @@ BrowserWindow.prototype = {
         // Force image content to size.
         // Add-on authors must size their images correctly.
         doc.body.firstElementChild.style.width = item.widget.width + "px";
-        doc.body.firstElementChild.style.height = "24px";
+        doc.body.firstElementChild.style.height = "16px";
       }
 
       // Allow all content to fill the box by default.
@@ -584,7 +556,7 @@ BrowserWindow.prototype = {
 
     // remove the add-on bar if no more items
     if (this._items.length == 0)
-      this._removeContainer();
+      this._hideContainer();
   },
 
   // Undoes all modifications to the window. The BrowserWindow
@@ -594,10 +566,6 @@ BrowserWindow.prototype = {
     let len = this._items.length;
     for (let i = 0; i < len; i++)
       this.removeItems([this._items[0].widget]);
-
-    const prefsvc = Cc["@mozilla.org/preferences-service;1"].
-                    getService(Ci.nsIPrefBranch2);
-    prefsvc.removeObserver(PREF_ADDON_BAR_HIDDEN, this);
 
     this.window.removeEventListener("keypress", this, false);
   }

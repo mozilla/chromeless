@@ -15,14 +15,16 @@ exports.testConstructor = function(test) {
 
     function container() doc.getElementById("addon-bar");
     function widgetCount() container() ? container().childNodes.length : 0;
+    let widgetStartCount = widgetCount();
     function widgetNode(index) container() ? container().childNodes[index] : null;
 
     // Test basic add/remove
     let w = widgets.Widget({ label: "foo", content: "bar" });
     widgets.add(w);
-    test.assertEqual(widgetCount(), 1, "panel has correct number of child elements after add");
+    test.assertEqual(widgetCount(), widgetStartCount + 1, "panel has correct number of child elements after add");
+
     widgets.remove(w);
-    test.assertEqual(widgetCount(), 0, "panel has correct number of child elements after remove");
+    test.assertEqual(widgetCount(), widgetStartCount, "panel has correct number of child elements after remove");
 
     // Test nothing
     test.assertRaises(
@@ -340,19 +342,20 @@ exports.testConstructor = function(test) {
         let doc = browserWindow.document;
         function container() doc.getElementById("addon-bar");
         function widgetCount2() container() ? container().childNodes.length : 0;
+        let widgetStartCount2 = widgetCount2();
 
         let w1 = widgets.Widget({label: "first widget", content: "first content"});
         testSingleWidget(w1);
-        test.assertEqual(widgetCount2(), 1, "2nd window has correct number of child elements after first add");
+        test.assertEqual(widgetCount2(), widgetStartCount2 + 1, "2nd window has correct number of child elements after first add");
 
         let w2 = widgets.Widget({label: "second widget", content: "second content"});
         testSingleWidget(w2);
-        test.assertEqual(widgetCount2(), 2, "2nd window has correct number of child elements after second add");
+        test.assertEqual(widgetCount2(), widgetStartCount2 + 2, "2nd window has correct number of child elements after second add");
 
         widgets.remove(w1);
-        test.assertEqual(widgetCount2(), 1, "2nd window has correct number of child elements after first remove");
+        test.assertEqual(widgetCount2(), widgetStartCount2 + 1, "2nd window has correct number of child elements after first remove");
         widgets.remove(w2);
-        test.assertEqual(widgetCount2(), 0, "2nd window has correct number of child elements after second remove");
+        test.assertEqual(widgetCount2(), widgetStartCount2, "2nd window has correct number of child elements after second remove");
 
         closeBrowserWindow(browserWindow, function() {
           doneTest();
@@ -360,7 +363,7 @@ exports.testConstructor = function(test) {
       }});
     });
 
-    // test the visibility pref and keyboard shortcut
+    // test the visibility keyboard shortcut
     tests.push(function() {
       // Test hide/show the widget bar
       function toggleUI() {
@@ -374,20 +377,15 @@ exports.testConstructor = function(test) {
         doc.dispatchEvent(keyEvent);
       }
 
-      // Get the value of the UI visibility pref
-      function prefVal() require("preferences-service").get("jetpack.jetpack-core.widget.barIsHidden");
-
-      test.assert(!container(), "UI does not exist when no widgets");
+      test.assert(container().collapsed, "UI is not visible when no widgets");
       let w = widgets.Widget({label: "foo", content: "bar"});
       widgets.add(w);
       test.assert(container(), "UI exists when widgets are added");
-      test.assertEqual(container().hidden, false, "UI is visible by default");
+      test.assertEqual(container().collapsed, false, "UI is visible by default");
       toggleUI(); 
-      test.assertEqual(prefVal(), true, "pref set to hide after toggle");
-      test.assertEqual(container().hidden, true, "keyboard shortcut hides UI when visible");
+      test.assertEqual(container().collapsed, true, "keyboard shortcut hides UI when visible");
       toggleUI(); 
-      test.assertEqual(prefVal(), false, "pref set to show after another toggle");
-      test.assertEqual(container().hidden, false, "keyboard shortcut shows UI when hidden");
+      test.assertEqual(container().collapsed, false, "keyboard shortcut shows UI when hidden");
       widgets.remove(w);
       doneTest();
     });
@@ -400,7 +398,7 @@ exports.testConstructor = function(test) {
       onReady: function(e) {
         test.assertEqual(this.width, 200);
 
-        let node = widgetNode(0);
+        let node = widgetNode(1);
         test.assertEqual(this.width, node.style.minWidth.replace("px", ""));
         test.assertEqual(this.width, node.firstElementChild.style.width.replace("px", ""));
 
