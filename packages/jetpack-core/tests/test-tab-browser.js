@@ -239,15 +239,9 @@ exports.testTabTracker = function(test) {
       tracked: 0,
       onTrack: function(tab) {
         this.tracked++;
-        if (this.tracked == 5)
-          closeBrowserWindow(browserWindow);
       },
       onUntrack: function(tab) {
         this.tracked--;
-        if (this.tracked == 1) {
-          tabTracker.unload();
-          test.done();
-        }
       }
     };
 
@@ -263,6 +257,10 @@ exports.testTabTracker = function(test) {
         test.assertEqual(delegate.tracked, ++tracked, "second tab tracked matched count");
         tabBrowser.addTab("data:text/html,3");
         test.assertEqual(delegate.tracked, ++tracked, "third tab tracked matched count");
+        closeBrowserWindow(browserWindow, function() {
+          tabTracker.unload();
+          test.done();
+        });
       }
     });
   });
