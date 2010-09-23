@@ -51,26 +51,25 @@ tests.testHideBeforeShow = function(test) {
 };
 
 tests.testSeveralShowHides = function(test) {
-  let hideCalled = 0;
   test.waitUntilDone();
+  let hideCalled = 0;
   let panel = panels.add(panels.Panel({
     onShow: function () {
-      test.assertEqual(3, hideCalled, 'shold call only second show');
-      test.done();
+      panel.hide();
     },
     onHide: function () {
-      hideCalled ++ ;
+      hideCalled++;
+      if (hideCalled < 3)
+        panel.show();
+      else {
+        test.pass("onHide called three times as expected");
+        test.done();
+      }
     }
   }));
   panel.on('error', function(e) {
     test.fail('error was emitted:' + e.message + '\n' + e.stack);
-  })
-  panel.show();
-  panel.hide(); // 1
-  panel.show();
-  panel.hide(); // 2
-  panel.show();
-  panel.hide(); // 3
+  });
   panel.show();
 };
 
