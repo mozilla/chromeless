@@ -166,9 +166,12 @@ distribution process further.
 ## To Be Continued... ##
 
 Right now, the Jetpack SDK is at an early stage of development.
-There's not too much to show. Be on the lookout for upcoming versions
-of the SDK, which will expand the built-in set of libraries, continue
-this tutorial and show you how to build other types of add-ons, as well
-as standalone applications!
+There's not too much to show, and if you run into trouble, you may
+want to check the [troubleshooting] guide.
+
+Be on the lookout for upcoming versions of the SDK, which will expand the
+built-in set of libraries, continue this tutorial and show you how to build
+other types of add-ons, as well as standalone applications!
 
   [Packaging]: #guide/packaging
+  [troubleshooting]: #guide/troubleshooting

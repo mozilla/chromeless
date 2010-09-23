@@ -73,34 +73,16 @@ things.
 
 Run this at your shell prompt:
 
-    cfx testall
+    cfx
 
-This should produce output that looks something like this:
+It should produce output whose first line looks something like this, followed by
+many lines of usage information:
 
-    Testing all available packages: test-harness, jetpack-core.
-    
-    ...........................................................
-    ...........................................................
-    ............................................
-    
-    Malloc bytes allocated (in use by application): 8872960
-    Malloc bytes mapped (not necessarily committed): 17653760
-    Malloc bytes committed (r/w) in default zone: 8882512
-    Malloc bytes allocated (in use) in default zone: 16605184
-    Tracked memory objects in testing sandbox: 2
+    Usage: cfx [options] [command]
 
-    162 of 162 tests passed.
-    OK
-    Total time: 1.511243 seconds
-    Program terminated successfully.
-
-**Note**: By default, running `cfx` with no special options will
-attempt to find Firefox in its most common location on your system and
-use it to perform the action you requested.  If you have multiple
-versions of Firefox on your system, however, or if you want to use
-Thunderbird or the XULRunner SDK, then you may have to use `cfx`'s
-`--app` and/or `--binary` command-line options. Run `cfx --help` for
-more information on this.
+This is the `cfx` command-line program.  It's your primary interface to the
+Jetpack SDK.  You use it to launch Firefox and test your add-on, package your
+add-on for distribution, view documentation, and run unit tests.
 
 Once you're ready, move on to the next section: [Packaging].
 
