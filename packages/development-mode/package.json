@@ -3,7 +3,7 @@
     "description": "Adds Jetpack SDK development functionality to a program.",
     "keywords": ["jetpack-low-level"],
     "author": "Atul Varma (http://toolness.com/)",
-    "version": "0.8pre",
+    "version": "0.8",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "main": "main",
     "dependencies": ["jetpack-core", "test-harness"],
