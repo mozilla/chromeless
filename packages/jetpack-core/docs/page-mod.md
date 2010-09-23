@@ -56,7 +56,7 @@ Add content to a variety of pages:
                                   '+ window.location);' +
                      '};'
       ,
-      onOpen: function onOpen(worker, mod) {
+      onAttach: function onAttach(worker, mod) {
         // you can handle errors that occur in the content scripts
         // by adding listener to the error events
         worker.on('error', function(error) {
