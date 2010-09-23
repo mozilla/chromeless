@@ -52,7 +52,7 @@ exports.testManifest = function(test) {
     }
   };
 
-  warnings = [];
+  var warnings = [];
   function checkWarnings(expected, msg) {
     test.assertEqual(JSON.stringify(warnings),
                      JSON.stringify(expected),
