@@ -160,6 +160,12 @@ exports.testWindowTabsObject = function(test) {
 }
 
 exports.testActiveWindow = function(test) {
+  const xulApp = require("xul-app");
+  if (xulApp.versionInRange(xulApp.platformVersion, "1.9.2", "1.9.2.*")) {
+    test.pass("This test is disabled on 3.6. For more information, see bug 598525");
+    return;
+  }
+
   let windows = require("windows").browserWindows;
 
   // API window objects
