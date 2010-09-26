@@ -3,6 +3,8 @@ import os
 import optparse
 import glob
 
+from copy import copy
+import simplejson as json
 from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 
@@ -65,6 +67,11 @@ parser_options = {
                               " default is ~/.jetpack/keys"),
                         metavar=None,
                         default=os.path.expanduser("~/.jetpack/keys")),
+    ("--static-args",): dict(dest="static_args",
+                             help="extra harness options as JSON",
+                             type="json",
+                             metavar=None,
+                             default="{}"),
     }
 
 parser_groups = Bunch(
@@ -170,9 +177,21 @@ def find_parent_package(cur_dir):
         cur_dir, tail = os.path.split(cur_dir)
     return None
 
+def check_json(option, opt, value):
+    try:
+        # Make sure value is JSON, but keep it JSON.
+        return json.dumps(json.loads(value))
+    except ValueError:
+        raise optparse.OptionValueError("Option %s must be JSON." % opt)
+
+class CfxOption(optparse.Option):
+    TYPES = optparse.Option.TYPES + ('json',)
+    TYPE_CHECKER = copy(optparse.Option.TYPE_CHECKER)
+    TYPE_CHECKER['json'] = check_json
+
 def parse_args(arguments, parser_options, usage, parser_groups=None,
                defaults=None):
-    parser = optparse.OptionParser(usage=usage.strip())
+    parser = optparse.OptionParser(usage=usage.strip(), option_class=CfxOption)
 
     for names, opts in parser_options.items():
         parser.add_option(*names, **opts)
@@ -520,6 +539,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             },
         'jetpackID': jid,
         'bundleID': bundle_id,
+        'staticArgs': options.static_args,
         }
 
     harness_options.update(build)
