@@ -218,9 +218,9 @@ class Profile(object):
         apps = desc.findall('.//{http://www.mozilla.org/2004/em-rdf#}targetApplication')
         for app in apps:
           desc.remove(app)
-        if desc and desc.attrib.has_key('{http://www.mozilla.org/2004/em-rdf#}id'):
+        if len(desc) and desc.attrib.has_key('{http://www.mozilla.org/2004/em-rdf#}id'):
             addon_id = desc.attrib['{http://www.mozilla.org/2004/em-rdf#}id']
-        elif desc and desc.find('.//{http://www.mozilla.org/2004/em-rdf#}id') is not None:
+        elif len(desc) and desc.find('.//{http://www.mozilla.org/2004/em-rdf#}id') is not None:
             addon_id = desc.find('.//{http://www.mozilla.org/2004/em-rdf#}id').text
         else:
             about = [e for e in tree.findall(
@@ -231,7 +231,7 @@ class Profile(object):
 
             x = e.find('.//{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description')
 
-            if len(about) is 0:
+            if len(about) == 0:
                 addon_element = tree.find('.//{http://www.mozilla.org/2004/em-rdf#}id')
                 addon_id = addon_element.text
             else:
