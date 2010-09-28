@@ -329,7 +329,7 @@ class Runner(object):
                  aggressively_kill=['crashreporter'], kp_kwargs={}):
         if binary is None:
             self.binary = self.find_binary()
-        elif sys.platform == 'darwin':
+        elif sys.platform == 'darwin' and binary.find('Contents/MacOS/') == -1:
             self.binary = os.path.join(binary, 'Contents/MacOS/%s-bin' % self.names[0])
         else:
             self.binary = binary
