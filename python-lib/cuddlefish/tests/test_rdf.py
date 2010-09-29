@@ -12,4 +12,4 @@ class RDFTests(unittest.TestCase):
         obj.dom = xml.dom.minidom.parseString(x)
         self.assertEqual(obj.dom.documentElement.firstChild.nodeValue,
                          u'\u2026')
-        self.assertEqual(str(obj), x)
+        self.assertEqual(str(obj).replace("\n",""), x.replace("\n",""))
