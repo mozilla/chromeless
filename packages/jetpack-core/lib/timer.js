@@ -21,6 +21,7 @@
  *   Atul Varma <atul@mozilla.com>
  *   Drew Willcoxon <adw@mozilla.com>
  *   Irakli Gozalishvili <gozala@mozilla.com>
+ *   Erik Vold <erikvvold@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -43,29 +44,50 @@ var timerClass = Cc["@mozilla.org/timer;1"];
 var nextID = 1;
 var timers = {};
 
-function TimerCallback(repeating, timerID, callback, params) {
-  memory.track(this);
+function TimerCallback(timerID, callback, params) {
   this._callback = callback;
-  this._timerID = timerID;
-  this._repeating = repeating;
   this._params = params;
-  this.QueryInterface = xpcom.utils.generateQI([Ci.nsITimerCallback]);
+};
+TimerCallback.prototype = {
+  QueryInterface : xpcom.utils.generateQI([Ci.nsITimerCallback])
 };
 
-TimerCallback.prototype = {
-  notify : function notify(timer) {
-    try {
-      if (!this._repeating)
-        delete timers[this._timerID];
-      this._callback.apply(null, this._params);
-    } catch (e) {
-      console.exception(e);
-    }
+function TimeoutCallback(timerID, callback, params) {
+  memory.track(this);
+  TimerCallback.apply(this, arguments)
+  this._timerID = timerID;
+};
+TimeoutCallback.prototype = new TimerCallback();
+TimeoutCallback.prototype.notify = function notifyOnTimeout(timer) {
+  try {
+    delete timers[this._timerID];
+    this._callback.apply(null, this._params);
+  } catch (e) {
+    console.exception(e);
   }
 };
 
+function IntervalCallback(timerID, callback, params) {
+  memory.track(this);
+  TimerCallback.apply(this, arguments)
+};
+IntervalCallback.prototype = new TimerCallback();
+IntervalCallback.prototype.notify = function notifyOnInterval() {
+  try {
+    this._callback.apply(null, this._params);
+  } catch (e) {
+    console.exception(e);
+  }
+};
+
+
 var setTimeout = exports.setTimeout = function setTimeout(callback, delay) {
-  return makeTimer(false, callback, delay, Array.slice(arguments, 2));
+  return makeTimer(
+    Ci.nsITimer.TYPE_ONE_SHOT,
+    callback,
+    TimeoutCallback,
+    delay,
+    Array.slice(arguments, 2));
 };
 
 var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
@@ -73,14 +95,19 @@ var clearTimeout = exports.clearTimeout = function clearTimeout(timerID) {
 };
 
 var setInterval = exports.setInterval = function setInterval(callback, delay) {
-  return makeTimer(true, callback, delay, Array.slice(arguments, 2));
+  return makeTimer(
+    Ci.nsITimer.TYPE_REPEATING_SLACK,
+    callback,
+    IntervalCallback,
+    delay,
+    Array.slice(arguments, 2));
 };
 
 var clearInterval = exports.clearInterval = function clearInterval(timerID) {
   cancelTimer(timerID);
 };
 
-function makeTimer(repeating, callback, delay, params) {
+function makeTimer(type, callback, callbackType, delay, params) {
   var timer = timerClass.createInstance(Ci.nsITimer);
 
   memory.track(timer, "nsITimer");
@@ -89,9 +116,9 @@ function makeTimer(repeating, callback, delay, params) {
   timers[timerID] = timer;
 
   timer.initWithCallback(
-    new TimerCallback(repeating, timerID, callback, params),
+    new callbackType(timerID, callback, params),
     delay || 0,
-    repeating ? timer.TYPE_REPEATING_SLACK : timer.TYPE_ONE_SHOT
+    type
   );
   return timerID;
 }
