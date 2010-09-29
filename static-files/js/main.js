@@ -341,6 +341,16 @@ function startApp(jQuery, window) {
     } else {
       window.setInterval(checkHash, CHECK_HASH_DELAY);
     }
+    
+    $('#hide-dev-guide-toc').click(function() {
+      if ($(this).text() == 'hide') {
+        $(this).text('show');
+        $('#dev-guide-toc').hide('fast');
+      } else {
+        $(this).text('hide');
+        $('#dev-guide-toc').show('fast');
+      }
+    });
   }
 
   function showGuideDetail(name) {

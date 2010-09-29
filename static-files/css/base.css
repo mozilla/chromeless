@@ -168,6 +168,23 @@ code em, code strong {
     margin-top: 0.25em;
 }
 
+#dev-guide-header:hover #hide-dev-guide-toc {
+    visibility: visible;
+}
+
+#hide-dev-guide-toc {
+    font-size: 0.6em;
+    padding: 0.05em 0.4em;
+    visibility: hidden;
+}
+
+#hide-dev-guide-toc:hover {
+    -moz-border-radius: 2em;
+    background: #555;
+    color: #fff;
+    cursor: pointer;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
