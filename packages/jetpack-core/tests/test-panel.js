@@ -34,6 +34,28 @@ tests.testShowHidePanel = function(test) {
   }));
 };
 
+tests.testResizePanel = function(test) {
+  test.waitUntilDone();
+  let panel = panels.add(Panel({
+    contentScript: "postMessage('')",
+    contentScriptWhen: "ready",
+    height: 10,
+    width: 10,
+    onMessage: function (message) {
+      panel.show();
+    },
+    onShow: function () {
+      panel.resize(100,100);
+      panel.hide();
+    },
+    onHide: function () {
+      test.assert((panel.width == 100) && (panel.height == 100),
+        "The panel was resized.");
+      test.done();
+    }
+  }));
+};
+
 tests.testHideBeforeShow = function(test) {
   test.waitUntilDone();
   let showCalled = false;

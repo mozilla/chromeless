@@ -228,3 +228,12 @@ primary application window.  Optional.
 @method
 Stop displaying the panel.
 </api>
+
+<api name="resize">
+@method
+Resizes the panel to its new dimensions.
+@param width {number}
+The new width of the panel in pixels.
+@param height {number}
+The new height of the panel in pixels.
+</api>

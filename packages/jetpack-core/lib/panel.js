@@ -186,6 +186,14 @@ const Panel = Symbiont.resolve({
       xulPanel.hidePopup();
     return this._public;
   },
+  
+  /* Public API: Panel.resize */
+  resize: function resize(width, height) {
+    this.width = width;
+    this.height = height;
+    this._xulPanel.sizeTo(width, height);
+  },
+  
   // While the panel is visible, this is the XUL <panel> we use to display it.
   // Otherwise, it's null.
   // While the panel is visible, this is the XUL <panel> we use to display it.
