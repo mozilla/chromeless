@@ -80,8 +80,11 @@ function selectAllDivs(window) {
 
 function primeTestCase(html, test, callback) {
   let tabBrowser = require("tab-browser");
+  let dataURL = "data:text/html," + encodeURI(html);
   let tracker = tabBrowser.whenContentLoaded(
     function(window) {
+      if (window.document.location.href != dataURL)
+        return;
       callback(window, test);
       timer.setTimeout(function() {
           tracker.unload();
@@ -91,7 +94,7 @@ function primeTestCase(html, test, callback) {
         ARB_DELAY);
     }
   );
-  tabBrowser.addTab("data:text/html," + html);
+  tabBrowser.addTab(dataURL);
 }
 
 const DIV1 = '<div id="foo">bar</div>';
