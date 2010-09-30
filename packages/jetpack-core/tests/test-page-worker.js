@@ -6,6 +6,7 @@ tests.testSimplePageCreation = function(test) {
 
   let page = new Page({
     contentScript: "postMessage(window.location.href)",
+    contentScriptWhen: "ready",
     onMessage: function (message) {
       test.assertEqual(message, "about:blank",
                        "Page Worker should start with a blank page by default");
@@ -80,12 +81,16 @@ tests.testConstructorAndDestructor = function(test) {
 
   let pagesReady = 0;
 
-  let page1 =
-    Pages.add(Pages.Page({ contentScript: "postMessage('')",
-                           onMessage: pageReady }));
-  let page2 =
-    Pages.add(Pages.Page({ contentScript: "postMessage('')",
-                           onMessage: pageReady }));
+  let page1 = Pages.add(Pages.Page({
+    contentScript:      "postMessage('')",
+    contentScriptWhen:  "ready",
+    onMessage:          pageReady
+  }));
+  let page2 = Pages.add(Pages.Page({
+    contentScript:      "postMessage('')",
+    contentScriptWhen:  "ready",
+    onMessage:          pageReady
+  }));
 
   if (page1 === page2)
     test.fail("Page 1 and page 2 should be different objects.");
@@ -116,6 +121,7 @@ tests.testAutoDestructor = function(test) {
 
   let page = Pages.add(Pages.Page({
     contentScript: "postMessage('')",
+    contentScriptWhen: "ready",
     onMessage: function() {
       loader.unload();
       test.assert(!global.PageRegistry.has(page), "Page correctly unloaded.");
@@ -209,6 +215,7 @@ tests.testOnMessageCallback = function(test) {
 
   Pages.add(Page({
     contentScript: "postMessage('')",
+    contentScriptWhen: "ready",
     onMessage: function() {
       test.pass("onMessage callback called");
       test.done();
@@ -222,6 +229,7 @@ tests.testMultipleOnMessageCallbacks = function(test) {
   let count = 0;
   let page = Pages.add(Page({
     contentScript: "postMessage('')",
+    contentScriptWhen: "ready",
     onMessage: function() count += 1
   }));
   page.on('message', function() count += 2);

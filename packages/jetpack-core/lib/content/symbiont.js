@@ -44,9 +44,13 @@ const { Loader } = require('./loader');
 const hiddenFrames = require("hidden-frame");
 const observers = require('observer-service');
 const unload = require("unload");
+const xulApp = require("xul-app");
 
-const ON_READY = 'DOMContentLoaded',
-      ON_START = 'content-document-global-created';
+const HAS_DOCUMENT_ELEMENT_INSERTED =
+        xulApp.versionInRange(xulApp.platformVersion, "2.0b6", "*");
+const ON_START = HAS_DOCUMENT_ELEMENT_INSERTED ? 'document-element-inserted' :
+                 'content-document-global-created';
+const ON_READY = 'DOMContentLoaded';
 
 /**
  * This trait is layered on top of `Worker` and in contrast to symbiont
@@ -100,11 +104,15 @@ const Symbiont = Worker.resolve({ constructor: '_onInit' }).compose({
     unload.when(this._destructor.bind(this));
   },
   _destructor: function _destructor() {
-    // maybe we're unloaded before listeners where triggered
+    // The frame might not have been initialized yet.
+    if (!this._frame)
+      return;
+
     if ('ready' === this.contentScriptWhen)
       this._frame.removeEventListener(ON_READY, this._onReady, true);
     else
       observers.remove(ON_START, this._onStart);
+
     this._frame = null;
   },
   /**
@@ -146,10 +154,9 @@ const Symbiont = Worker.resolve({ constructor: '_onInit' }).compose({
   /**
    * Creates port when the global object is created. Called if the value of
    * `contentScriptWhen` is "start".
-   * Note: this should wait until the document element has also been created,
-   * but there isn't currently a way to do that.  See bug 579764 for details.
    */
-  _onStart: function _onStart(window) {
+  _onStart: function _onStart(domObj) {
+    let window = HAS_DOCUMENT_ELEMENT_INSERTED ? domObj.defaultView : domObj;
     if (window == this._frame.contentWindow) {
       observers.remove(ON_START, this._onStart);
       this._window = window.wrappedJSObject;

@@ -152,6 +152,7 @@ exports.testParseURLRule = function(test) {
 exports.testRulesMatchURL = function(test) {
   let loader = test.makeSandboxedLoader();
   let pageMod = loader.require("page-mod");
+  let xulApp = require("xul-app");
   let { PageModManager, RULES } = loader.findSandboxForModule("page-mod").
                              globalScope;
   let pageModManager = PageModManager.compose({
@@ -162,10 +163,15 @@ exports.testRulesMatchURL = function(test) {
   function rulesMatchURL([rule], location) {
     ruleMatched = false;
     RULES.test = rule;
-    pageModManager.onContentWindow({
+
+    let window = {
       location: 'string' == typeof location ? { toString: function() location }
-        : location
-    });
+                                            : location
+    };
+    let domObj = xulApp.versionInRange(xulApp.platformVersion, "2.0b6", "*") ?
+                 { defaultView: window } : window;
+    pageModManager.onContentWindow(domObj);
+
     return ruleMatched;
   }
   test.assert(rulesMatchURL([{anyWebPage: true}], {protocol:"http:"}),

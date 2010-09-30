@@ -43,11 +43,20 @@ const { Worker, Loader } = require('content');
 const { EventEmitter } = require('events');
 const { List } = require('list');
 const { Registry } = require('utils/registry');
+const xulApp = require("xul-app");
 
-const ON_CONTENT = 'content-document-global-created',
-      ON_READY = 'DOMContentLoaded',
+// Whether or not the host application dispatches a document-element-inserted
+// notification when the document element is inserted into the DOM of a page.
+// The notification was added in Gecko 2.0b6, it's a better time to attach
+// scripts with contentScriptWhen "start" than content-document-global-created,
+// since libraries like jQuery assume the presence of the document element.
+const HAS_DOCUMENT_ELEMENT_INSERTED =
+        xulApp.versionInRange(xulApp.platformVersion, "2.0b6", "*");
+const ON_CONTENT = HAS_DOCUMENT_ELEMENT_INSERTED ? 'document-element-inserted' :
+                   'content-document-global-created';
+const ON_READY = 'DOMContentLoaded';
+const ERR_INCLUDE = 'The PageMod must have a string or array `include` option.';
 
-      ERR_INCLUDE = 'The PageMod must have a string or array `include` option.';
 // rules registry
 const RULES = {};
 
@@ -164,7 +173,8 @@ const PageModManager = Registry.resolve({
     }
     this._registryDestructor();
   },
-  _onContentWindow: function _onContentWindow(window) {
+  _onContentWindow: function _onContentWindow(domObj) {
+    let window = HAS_DOCUMENT_ELEMENT_INSERTED ? domObj.defaultView : domObj;
     let location = window.location,
         port = ('port' in location) ? location.port : null,
         protocol = ('protocol' in location) ? location.protocol : null,

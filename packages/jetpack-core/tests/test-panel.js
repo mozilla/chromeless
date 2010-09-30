@@ -5,6 +5,7 @@ let tests = {}, panels, Panel;
 tests.testPanel = function(test) {
   test.waitUntilDone();
   let panel = panels.add(Panel({
+    contentURL: "about:buildconfig",
     contentScript: "postMessage('')",
     onMessage: function (message) {
       panels.remove(panel);
@@ -76,6 +77,7 @@ tests.testSeveralShowHides = function(test) {
   test.waitUntilDone();
   let hideCalled = 0;
   let panel = panels.add(panels.Panel({
+    contentURL: "about:buildconfig",
     onShow: function () {
       panel.hide();
     },
@@ -142,6 +144,7 @@ tests['test:destruct before removed'] = function(test) {
   let isShowEmitted = false;
 
   let panel = PanelShim({
+    contentURL: "about:buildconfig",
     onShow: function onShow() {
       test.pass('shown was emitted');
       panel.destructor();

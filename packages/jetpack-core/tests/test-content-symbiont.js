@@ -135,3 +135,19 @@ exports['test:pageWorker'] = function(test) {
   });
 };
 
+exports["test:document element present on 'start'"] = function(test) {
+  test.waitUntilDone();
+  let xulApp = require("xul-app");
+  let worker = Symbiont({
+    contentURL: "about:buildconfig",
+    contentScript: "postMessage(!!document.documentElement)",
+    contentScriptWhen: "start",
+    onMessage: function(message) {
+      if (xulApp.versionInRange(xulApp.platformVersion, "2.0b6", "*"))
+        test.assert(message, "document element present on 'start'");
+      else
+        test.pass("document element not necessarily present on 'start'");
+      test.done();
+    }
+  });
+};
