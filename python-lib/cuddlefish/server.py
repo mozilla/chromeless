@@ -403,8 +403,10 @@ def generate_static_docs(env_root, tgz_filename):
 
         # TODO: This is a DRY violation from main.js. We should
         # really move the common logic/names to cuddlefish.packaging.
-        shutil.copyfile(os.path.join(src_dir, "README.md"),
-                        os.path.join(dest_dir, "README.md"))
+        src_readme = os.path.join(src_dir, "README.md")
+        if os.path.exists(src_readme):
+            shutil.copyfile(src_readme,
+                            os.path.join(dest_dir, "README.md"))
 
         docs_src_dir = os.path.join(src_dir, "docs")
         docs_dest_dir = os.path.join(dest_dir, "docs")
