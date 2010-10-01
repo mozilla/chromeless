@@ -53,9 +53,10 @@ parser_options = {
                                    default=None),
     ("-k", "--extra-packages",): dict(dest="extra_packages",
                                       help=("extra packages to include, "
-                                            "comma-separated"),
+                                            "comma-separated. Default is "
+                                            "'addon-kit'."),
                                       metavar=None,
-                                      default=None),
+                                      default="addon-kit"),
     ("-p", "--pkgdir",): dict(dest="pkgdir",
                               help=("package dir containing "
                                     "package.json; default is "
