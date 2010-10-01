@@ -149,7 +149,7 @@ const PageMod = Loader.compose(EventEmitter, {
   },
   _onUncaughtError: function _onUncaughtError(e) {
     if (this._listeners('error').length == 1)
-      console.error(e.message, e.fileName, e.lineNumber, e.stack);
+      console.exception(e);
   }
 });
 exports.PageMod = function(options) PageMod(options)
