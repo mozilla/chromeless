@@ -1,4 +1,5 @@
 <!-- contributed by Eric H. Jung [eric.jung@yahoo.com] -->
+<!-- contributed by Irakli Gozalishvili [gozala@mozilla.com] -->
 
 The `selection` module provides a means to get and set text and HTML selections
 in the current Firefox page.  It can also observe new selections.
@@ -39,34 +40,20 @@ Properties
   Ctrl+click-and-drag.)
 </api>
 
-<api name="onSelect">
-@property {collection}
-  A collection of selection listeners.  Each is a function that will be called
-  when a selection is made.  See Registering for Selection Notification below.
-</api>
-
-
 Registering for Selection Notifications
 ---------------------------------------
 
-To be notified when the user makes a selection, define one or more functions and
-add them to the `onSelect` collection. Each function will be called back after a
-selection is made.
-
-To add functions, pass them to `onSelect.add()`:
+To be notified when the user makes a selection, register listener on 'select'
+event. Each listener will be called after a selection is made.
 
     function myCallback() {
       console.log("A selection has been made.");
     }
     var selection = require("selection");
-    selection.onSelect.add(myCallback);
-    selection.onSelect.add([myCallback2, myCallback3]);
-
-To remove functions, pass them to `onSelect.remove()`:
-
-    selection.onSelect.remove(myCallback);
-    selection.onSelect.remove([myCallback2, myCallback3]);
-
+    selection.on('select', myCallback);
+    
+    // removing listeners
+    selection.removeListener('select', myCallback);
 
 Iterating Over Discontiguous Selections
 ---------------------------------------
@@ -97,6 +84,7 @@ Log the current discontiguous selections as HTML:
 Surround HTML selections with delimiters:
 
     var selection = require("selection");
-    selection.onSelect.add(function () {
+    selection.on('select', function (selection) {
       selection.html = "\\\" + selection.html + "///";
-    };
+    });
+

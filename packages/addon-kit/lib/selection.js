@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Eric H. Jung <eric.jung@yahoo.com>
+ *   Irakli Gozalishivili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -42,7 +43,9 @@ if (!require("xul-app").is("Firefox")) {
   ].join(""));
 }
 
-let {Ci} = require("chrome");
+let { Ci } = require("chrome"),
+    { setTimeout } = require("timer"),
+    { EventEmitter } = require('events');
 
 // The selection type HTML
 const HTML = 0x01;
@@ -225,8 +228,10 @@ let SelectionListenerManager = {
   QueryInterface: require("xpcom").utils.generateQI([Ci.nsISelectionListener]),
 
   // The collection of listeners wanting to be notified of selection changes
-  listeners: [],
-
+  listeners: EventEmitter.compose({
+    emit: function emit() this._emit.apply(this, arguments),
+    off: function() this._removeAllListeners.apply(this, arguments)
+  })(),
   /**
    * This is the nsISelectionListener implementation. This function is called
    * by Gecko when a selection is changed interactively.
@@ -245,14 +250,7 @@ let SelectionListenerManager = {
     if (!["SELECTALL", "KEYPRESS", "MOUSEUP"].some(function(type) reason &
       Ci.nsISelectionListener[type + "_REASON"]) || selection.toString() == "")
         return;
-
-    // Notify each listener immediately but don't block on them.
-    this.listeners.forEach(function(listener) {
-      require("timer").setTimeout(function() {
-        // Catch exceptions so that other listeners, if any, are still called.
-        require("errors").catchAndLog(function() listener.call(exports))();
-      }, 0);
-    });
+    setTimeout(this.listeners.emit, 0, 'select', exports)
   },
 
   /**
@@ -305,6 +303,8 @@ let SelectionListenerManager = {
     if (!window)
       return;
     this.removeSelectionListener(window);
+    this.listeners.off('error');
+    this.listeners.off('selection');
   },
 
   removeSelectionListener: function removeSelectionListener(window) {
@@ -329,6 +329,7 @@ let SelectionListenerManager = {
     browser.removeEventListener("unload", onUnload, true);
   }
 };
+SelectionListenerManager.listeners.on('error', console.error);
 
 /**
  * Install |SelectionListenerManager| as tab tracker in order to watch
@@ -344,12 +345,8 @@ exports.__iterator__ = function __iterator__() {
     yield new Selection(i);
 };
 
-/**
- * Exports the |onSelect| collection property, using
- * |SelectionListenerManager.listeners| as the backing array.
- */
-require("collection").addCollectionProperty(exports, "onSelect",
-  SelectionListenerManager.listeners);
+exports.on = SelectionListenerManager.listeners.on;
+exports.removeListener = SelectionListenerManager.listeners.removeListener;
 
 // Export the Selection singleton. Its rangeNumber is always zero.
 Selection.call(exports, 0);
