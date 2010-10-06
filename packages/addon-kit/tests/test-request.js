@@ -67,11 +67,12 @@ exports.testOptionsValidator = function(test) {
 // This is request to a file that exists
 exports.testStatus_200 = function (test) {
   test.waitUntilDone();
-  Request({
+  var req = Request({
     url: "http://playground.zpao.com/jetpack/request/text.php",
-    onComplete: function () {
-      test.assertEqual(this.response.status, 200);
-      test.assertEqual(this.response.statusText, "OK");
+    onComplete: function (response, request) {
+      test.assertEqual(req, request);
+      test.assertEqual(response.status, 200);
+      test.assertEqual(response.statusText, "OK");
       test.done();
     }
   }).get();
@@ -83,9 +84,9 @@ exports.testStatus_404 = function (test) {
   Request({
     // the following URL doesn't exist
     url: "http://playground.zpao.com/jetpack/request/nonexistent.php",
-    onComplete: function () {
-      test.assertEqual(this.response.status, 404);
-      test.assertEqual(this.response.statusText, "Not Found");
+    onComplete: function (response) {
+      test.assertEqual(response.status, 404);
+      test.assertEqual(response.statusText, "Not Found");
       test.done();
     }
   }).get();
@@ -96,9 +97,9 @@ exports.testSimpleXML = function (test) {
   Request({
     // File originally available at http://www.w3schools.com/xml/note.xml
     url: "http://playground.zpao.com/jetpack/request/note.xml",
-    onComplete: function () {
+    onComplete: function (response, request) {
       // response.xml should be a document, so lets use it
-      let xml = this.response.xml;
+      let xml = response.xml;
       let notes = xml.getElementsByTagName("note");
       // Notes should have length of 1
       test.assertEqual(notes.length, 1, "Should be 1 <note> in the XML");
@@ -123,8 +124,8 @@ exports.testSimpleText = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/text.php",
-    onComplete: function () {
-      test.assertEqual(this.response.text, "Look ma, no hands!\n");
+    onComplete: function (response) {
+      test.assertEqual(response.text, "Look ma, no hands!\n");
       test.done();
     }
   }).get();
@@ -135,8 +136,8 @@ exports.testKnownHeader = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/headers.php",
-    onComplete: function () {
-      test.assertEqual(this.response.headers["x-zpao-header"], "Jamba Juice");
+    onComplete: function (response) {
+      test.assertEqual(response.headers["x-zpao-header"], "Jamba Juice");
       test.done();
     }
   }).get();
@@ -152,9 +153,9 @@ exports.testKnownHeader = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/complex_headers.php",
-    onComplete: function () {
+    onComplete: function (response) {
       for (k in headers) {
-        test.assertEqual(this.response.headers[k], headers[k]);
+        test.assertEqual(response.headers[k], headers[k]);
       }
       test.done();
     }
@@ -165,8 +166,8 @@ exports.testContentTypeHeader = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/text.txt",
-    onComplete: function () {
-      test.assertEqual(this.response.headers["Content-Type"], "text/plain");
+    onComplete: function (response) {
+      test.assertEqual(response.headers["Content-Type"], "text/plain");
       test.done();
     }
   }).get();
@@ -176,8 +177,8 @@ exports.testSimpleJSON = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/json.php",
-    onComplete: function () {
-      assertDeepEqual(test, this.response.json, { foo: "bar" });
+    onComplete: function (response) {
+      assertDeepEqual(test, response.json, { foo: "bar" });
       test.done();
     }
   }).get();
@@ -187,8 +188,8 @@ exports.testInvalidJSON = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/invalid_json.php",
-    onComplete: function () {
-      test.assertEqual(this.response.json, null);
+    onComplete: function (response) {
+      test.assertEqual(response.json, null);
       test.done();
     }
   }).get();
@@ -198,12 +199,12 @@ exports.testGetWithParamsNotContent = function (test) {
   test.waitUntilDone();
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php?foo=bar",
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: "bar" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -214,12 +215,12 @@ exports.testGetWithContent = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: { foo: "bar" },
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: "bar" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -230,12 +231,12 @@ exports.testGetWithParamsAndContent = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php?foo=bar",
     content: { baz: "foo" },
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: "bar", baz: "foo" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -246,12 +247,12 @@ exports.testSimplePost = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: { foo: "bar" },
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": { foo: "bar" },
         "GET" : []
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).post();
@@ -262,12 +263,12 @@ exports.testEncodedContent = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: "foo=bar&baz=foo",
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: "bar", baz: "foo" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -278,12 +279,12 @@ exports.testEncodedContentWithSpaces = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: "foo=bar+hop!&baz=foo",
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: "bar hop!", baz: "foo" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -294,12 +295,12 @@ exports.testGetWithArray = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: { foo: [1, 2], baz: "foo" },
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
         "GET" : { foo: [1, 2], baz: "foo" }
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -310,12 +311,12 @@ exports.testGetWithNestedArray = function (test) {
   Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: { foo: [1, 2, [3, 4]], bar: "baz" },
-    onComplete: function () {
+    onComplete: function (response, request) {
       let expected = {
         "POST": [],
-        "GET" : this.content
+        "GET" : request.content
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();
@@ -323,7 +324,7 @@ exports.testGetWithNestedArray = function (test) {
 
 exports.testGetWithNestedArray = function (test) {
   test.waitUntilDone();
-  Request({
+  let request = Request({
     url: "http://playground.zpao.com/jetpack/request/getpost.php",
     content: {
       foo: [1, 2, {
@@ -332,12 +333,12 @@ exports.testGetWithNestedArray = function (test) {
       }],
       bar: "baz"
     },
-    onComplete: function () {
+    onComplete: function (response) {
       let expected = {
         "POST": [],
-        "GET" : this.content
+        "GET" : request.content
       };
-      assertDeepEqual(test, this.response.json, expected);
+      assertDeepEqual(test, response.json, expected);
       test.done();
     }
   }).get();

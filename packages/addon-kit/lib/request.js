@@ -40,14 +40,16 @@ const xhr = require("xhr");
 const errors = require("errors");
 const apiUtils = require("api-utils");
 
+// Ugly but will fix with: https://bugzilla.mozilla.org/show_bug.cgi?id=596248
+const EventEmitter = require('events').EventEmitter.compose({
+  constructor: function EventEmitter() this
+});
+
 // Instead of creating a new validator for each request, just make one and reuse it.
 const validator = new OptionsValidator({
   url: {
     //XXXzpao should probably verify that url is a valid url as well
     is:  ["string"]
-  },
-  onComplete: {
-    is:  ["function"],
   },
   headers: {
     map: function (v) v || {},
@@ -66,14 +68,15 @@ const validator = new OptionsValidator({
 const REUSE_ERROR = "This request object has been used already. You must " +
                     "create a new one to make a new request."
 
-exports.Request = apiUtils.publicConstructor(Request);
-
 function Request(options) {
-  const self = this;
+  const self = EventEmitter(),
+        _public = self._public;
   // request will hold the actual XHR object
   let request;
   let response;
 
+  if ('onComplete' in options)
+    self.on('complete', options.onComplete)
   options = validator.validateOptions(options);
 
   // function to prep the request since it's the same between GET and POST
@@ -110,7 +113,7 @@ function Request(options) {
       if (request.readyState == 4) {
         response = new Response(request);
         errors.catchAndLog(function () {
-          options.onComplete.call(self);
+          self._emit('complete', response, _public);
         })();
       }
     }
@@ -120,28 +123,30 @@ function Request(options) {
   }
 
   // Map these setters/getters to the options
-  ["url", "headers", "onComplete", "content", "contentType"].forEach(function (k) {
-    this.__defineGetter__(k, function () options[k]);
-    this.__defineSetter__(k, function (v) {
+  ["url", "headers", "content", "contentType"].forEach(function (k) {
+    _public.__defineGetter__(k, function () options[k]);
+    _public.__defineSetter__(k, function (v) {
       // This will automatically rethrow errors from apiUtils.validateOptions.
       return options[k] = validator.validateSingleOption(k, v);
     });
-  }, this);
+  });
 
   // response should be available as a getter
-  this.__defineGetter__("response", function () response);
+  _public.__defineGetter__("response", function () response);
 
-  this.get = function () {
+  _public.get = function () {
     makeRequest("GET");
     return this;
   };
 
-  this.post = function () {
+  _public.post = function () {
     makeRequest("POST");
     return this;
   };
 
+  return _public;
 }
+exports.Request = Request;
 
 // Converts an object of unordered key-vals to a string that can be passed
 // as part of a request

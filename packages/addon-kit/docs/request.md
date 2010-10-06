@@ -20,9 +20,8 @@ same-domain restriction that requests made in web pages are subject to.
 
     @prop onComplete {callback}
     This function will be called when the request has received a response. In
-    terms of XHR, when `readyState == 4`. The request object is available as
-    `this` inside the callback. So in order to use the response, you'll need to
-    access `this.response`
+    terms of XHR, when `readyState == 4`. The `responce` & `request` objects
+    are passed to the callback as an arguments.
 
     @prop [headers] {object}
     An unordered collection of name/value pairs representing headers to send
@@ -55,10 +54,6 @@ if given an invalid value.
 
 <api name="url">
 @property {string}
-</api>
-
-<api name="onComplete">
-@property {function}
 </api>
 
 <api name="headers">
@@ -137,8 +132,8 @@ The HTTP response headers represented as key/value pairs.
 
     var latestTweetRequest = Request({
       url: "http://api.twitter.com/1/statuses/public_timeline.json",
-      onComplete: function () {
-        var tweet = this.response.json[0];
+      onComplete: function (response) {
+        var tweet = response.json[0];
         console.log("User: " + tweet.user.screen_name);
         console.log("Tweet: " + tweet.text);
       }
@@ -146,8 +141,8 @@ The HTTP response headers represented as key/value pairs.
     // Be a good consumer and check for rate limiting before doing more.
     Request({
       url: "http://api.twitter.com/1/account/rate_limit_status.json",
-      onComplete: function () {
-        if (this.response.json.remaining_hits) {
+      onComplete: function (response) {
+        if (response.json.remaining_hits) {
           latestTweetRequest.get();
         } else {
           console.log("You have been rate limited!");
