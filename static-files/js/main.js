@@ -74,12 +74,8 @@ function startApp(jQuery, window) {
     query.find("a").each(
       function() {
         var href = $(this).attr("href");
-        if (href && href.length && href[0] == "#") {
+        if (href && href.length && href[0] == "#")
           $(this).attr("target", "_self");
-          $(this).click(function () {
-            shouldFadeAndScroll = true;
-          });
-        }
       });
   }
 
@@ -259,10 +255,7 @@ function startApp(jQuery, window) {
         $('<a target="_self"></a>')
           .attr("href", hash)
           .text(moduleName)
-          .appendTo(module)
-          .click(function () {
-            shouldFadeAndScroll = true;
-          });
+          .appendTo(module);
         modules.append(module);
         modules.append(document.createTextNode(' '));
       });
@@ -457,12 +450,10 @@ function startApp(jQuery, window) {
                success: processPackages,
                error: onPackageError});
 
-  $("#left-column").find("a").each(function () {
+  $("a[href]").live("click", function () {
     var href = $(this).attr("href");
-    if (href && href.length && href[0] == "#")
-      $(this).click(function () {
-        shouldFadeAndScroll = true;
-      });
+    if (href.length && href[0] == "#")
+      shouldFadeAndScroll = true;
   });
 }
 
