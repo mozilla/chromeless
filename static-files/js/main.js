@@ -3,6 +3,7 @@ function startApp(jQuery, window) {
   var document = window.document;
   var packages = null;
   var currentHash = "";
+  var shouldFadeAndScroll = true;
 
   const DEFAULT_HASH = "guide/getting-started";
   const IDLE_PING_DELAY = 500;
@@ -73,8 +74,12 @@ function startApp(jQuery, window) {
     query.find("a").each(
       function() {
         var href = $(this).attr("href");
-        if (href && href.length && href[0] == "#")
+        if (href && href.length && href[0] == "#") {
           $(this).attr("target", "_self");
+          $(this).click(function () {
+            shouldFadeAndScroll = true;
+          });
+        }
       });
   }
 
@@ -173,13 +178,20 @@ function startApp(jQuery, window) {
 
   function queueMainContent(query, onDone) {
     queuedContent = query;
-    scrollToTop(function () {
-      $("#main-content").fadeOut(100, function () {
-        $("#sidenotes").empty();
-        $("#right-column").empty().append(query);
-        onDone();
+    function doIt() {
+      $("#sidenotes").empty();
+      $("#right-column").empty().append(query);
+      onDone();
+    }
+    if (shouldFadeAndScroll) {
+      scrollToTop(function () {
+        $("#main-content").fadeOut(100, doIt);
       });
-    });
+    }
+    else {
+      $("#main-content").hide();
+      doIt();
+    }
   }
 
   function scrollToTop(onDone) {
@@ -189,7 +201,7 @@ function startApp(jQuery, window) {
         onDone();
       }
       else
-        window.scrollBy(0, -25);
+        window.scrollBy(0, -Math.max(window.scrollY / 10, 10));
     }, 10);
   }
 
@@ -201,7 +213,11 @@ function startApp(jQuery, window) {
     else
       // TODO: This actually just results in a 404.
       $("#view-source").attr("href", "");
-    $("#main-content").fadeIn(400);
+    if (shouldFadeAndScroll)
+      $("#main-content").fadeIn(400);
+    else
+      $("#main-content").show();
+    shouldFadeAndScroll = false;
     fixInternalLinkTargets(query);
     showSidenotes(query);
     queuedContent = null;
@@ -243,7 +259,10 @@ function startApp(jQuery, window) {
         $('<a target="_self"></a>')
           .attr("href", hash)
           .text(moduleName)
-          .appendTo(module);
+          .appendTo(module)
+          .click(function () {
+            shouldFadeAndScroll = true;
+          });
         modules.append(module);
         modules.append(document.createTextNode(' '));
       });
@@ -437,6 +456,14 @@ function startApp(jQuery, window) {
                dataType: "json",
                success: processPackages,
                error: onPackageError});
+
+  $("#left-column").find("a").each(function () {
+    var href = $(this).attr("href");
+    if (href && href.length && href[0] == "#")
+      $(this).click(function () {
+        shouldFadeAndScroll = true;
+      });
+  });
 }
 
 $(window).ready(function() { startApp(jQuery, window); });
