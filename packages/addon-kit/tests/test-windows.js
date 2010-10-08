@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Felipe Gomes <felipc@gmail.com> (Original author)
+ *   Irakli Gozalishvili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -44,21 +45,20 @@ exports.testOpenAndCloseWindow = function(test) {
 
   windows.openWindow({
     url: "data:text/html,<title>windows API test</title>",
-    onOpen: function(window) {
+    onReady: function(window) {
       test.pass("onOpen callback called");
       test.assert(window.title.indexOf("windows API test") != -1, "URL correctly loaded");
       test.assertEqual(window.tabs.length, 1, "Only one tab open");
       test.assertEqual(windows.length, 2, "Two windows open");
-
-      window.close(function() {
-        test.assertEqual(this.tabs.length, 0, "Tabs were cleared");
-        test.assertEqual(this.title, null, "Window title was cleared");
-        test.assertEqual(windows.length, 1, "Only one window open");
-        test.done();
-      });
+      window.close();
+    },
+    onClose: function(window) {
+      test.assertEqual(window.tabs.length, 0, "Tabs were cleared");
+      test.assertEqual(windows.length, 1, "Only one window open");
+      test.done();
     }
   });
-}
+};
 
 exports.testOnOpenOnCloseListeners = function(test) {
   test.waitUntilDone();
@@ -97,10 +97,10 @@ exports.testOnOpenOnCloseListeners = function(test) {
     received.listener4 = true;
   }
 
-  windows.onOpen.add(listener1);
-  windows.onOpen.add(listener2);
-  windows.onClose.add(listener3);
-  windows.onClose.add(listener4);
+  windows.on('open', listener1);
+  windows.on('open', listener2);
+  windows.on('close', listener3);
+  windows.on('close', listener4);
 
   function verify() {
     test.assert(received.listener1, "onOpen handler called");
@@ -108,10 +108,10 @@ exports.testOnOpenOnCloseListeners = function(test) {
     test.assert(received.listener3, "onClose handler called");
     test.assert(received.listener4, "onClose handler called");
 
-    windows.onOpen.remove(listener1);
-    windows.onOpen.remove(listener2);
-    windows.onClose.remove(listener3);
-    windows.onClose.remove(listener4);
+    windows.removeListener('open', listener1);
+    windows.removeListener('open', listener2);
+    windows.removeListener('close', listener3);
+    windows.removeListener('close', listener4);
     test.done();
   }
 
@@ -122,7 +122,7 @@ exports.testOnOpenOnCloseListeners = function(test) {
       window.close(verify);
     }
   });
-}
+};
 
 exports.testWindowTabsObject = function(test) {
   test.waitUntilDone();
@@ -130,7 +130,7 @@ exports.testWindowTabsObject = function(test) {
 
   windows.openWindow({
     url: "data:text/html,<title>tab 1</title>",
-    onOpen: function(window) {
+    onReady: function(window) {
       test.assertEqual(window.tabs.length, 1, "Only 1 tab open");
       for (let tab in window.tabs)
         test.assertEqual(tab.title, "tab 1", "Correct tab listing");
@@ -157,7 +157,7 @@ exports.testWindowTabsObject = function(test) {
       });
     }
   });
-}
+};
 
 exports.testActiveWindow = function(test) {
   const xulApp = require("xul-app");
@@ -226,13 +226,13 @@ exports.testActiveWindow = function(test) {
 
   windows.openWindow({
     url: "data:text/html,<title>window 2</title>",
-    onOpen: function(window) {
+    onReady: function(window) {
       window2 = window;
       rawWindow2 = wm.getMostRecentWindow("navigator:browser");
 
       windows.openWindow({
         url: "data:text/html,<title>window 3</title>",
-        onOpen: function(window) {
+        onReady: function(window) {
           window3 = window;
           rawWindow3 = wm.getMostRecentWindow("navigator:browser");
           nextStep();
@@ -282,8 +282,7 @@ exports.testActiveWindow = function(test) {
       });
     });
   }
-
-}
+};
 
 // If the module doesn't support the app we're being run in, require() will
 // throw.  In that case, remove all tests above from exports, and add one dummy

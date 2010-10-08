@@ -53,7 +53,7 @@ The set of open browser windows
 **Example**
 
     var windows = require("windows");
-    for each (window in windows.browserWindows) {
+    for each (var window in windows.browserWindows) {
       console.log(window.title);
     }
 
@@ -71,7 +71,7 @@ An object containing configurable options for how this window will be opened,
 as well as a callback for being notified when the window has fully opened.
 
 If the only option being used is `url`, then a bare string URL can be passed to
-`open` instead of specifying it as a property of the `options` object.
+`openWindow` instead of specifying it as a property of the `options` object.
 
 @prop url {string}
 String URL to be opened in the new window.
@@ -82,6 +82,13 @@ A callback function that is called when the window has opened. This does not
 mean that the URL content has loaded, only that the window itself is fully
 functional and its properties can be accessed. This is an optional property.
 
+@prop [onClose] {function}
+A callback function that is called when the window will be called.
+This is an optional property.
+
+@prop [onReady] {function}
+A callback function that is called when the URL content has loaded. This is an
+optional property.
 </api>
 
 **Example**
@@ -104,20 +111,13 @@ Events of browserWindows
 ------------------------
 
 Events representing common actions and state changes for windows.
-
-These properties are `collections`. Listeners can be registered by
-passing the callback to the properties' `add` method, and can be removed
-by passing the callback function to the properties' `remove` method.
-
 Listeners are passed the `window` object that triggered the event.
 
-<api name="onOpen">
-@property {collection}
+<api name="open">
 Called when a new window is opened.
 </api>
 
-<api name="onClose">
-@property {collection}
+<api name="close">
 Called when a window is closed.
 </api>
 
@@ -126,13 +126,13 @@ Called when a window is closed.
     var windows = require("windows").browserWindows;
 
     // listen for window openings via property assignment
-    windows.onOpen.add(function(window) {
+    windows.on('open', function(window) {
       myOpenWindows.push(window);
     });
 
     // modify the DOM of the page when ready,
     // by adding listener to the event collection.
-    windows.onClose.add(function(window) {
+    windows.on('close', function(window) {
       console.log("A window was closed.");
     });
 
@@ -156,6 +156,11 @@ has all the properties and methods of the `tabs` module.
 This property is read-only.
 </api>
 
+<api name="focus">
+@method
+Makes window active
+</api>
+
 <api name="close">
 @method 
 Close the window.
@@ -175,7 +180,7 @@ A function to be called when the window finishes its closing process.
                 " tabs.");
 
     // Print the title of all browser windows
-    for (var window in windows) {
+    for each (var window in windows) {
       console.log(window.title);
     }
 

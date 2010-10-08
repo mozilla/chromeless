@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Felipe Gomes <felipc@gmail.com> (Original author)
+ *   Irakli Gozalishvili <gozala@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -33,6 +34,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 if (!require("xul-app").is("Firefox")) {
   throw new Error([
@@ -42,231 +44,193 @@ if (!require("xul-app").is("Firefox")) {
   ].join(""));
 }
 
-const tabBrowser = require("tab-browser");
-const TabModule = tabBrowser.TabModule;
-const windowUtils = require("window-utils");
-const collection = require("collection");
-const apiUtils = require("api-utils");
-const errors = require("errors");
-const {Cc,Ci} = require("chrome");
+const { Cc, Ci } = require('chrome'),
+      { Trait } = require('traits'),
+      { List } = require('list'),
+      { EventEmitter } = require('events'),
+      { WindowTabs, WindowTabTracker } = require('windows/tabs'),
+      { WindowDom } = require('windows/dom'),
+      { WindowLoader } = require('windows/loader'),
+      { WindowTrackerTrait } = require('window-utils'),
+      // { Sidebars } = require('window/sidebars');
+      { utils } = require('xpcom'),
+      apiUtils = require('api-utils'),
+      unload = require('unload'),
 
-const events = [
-  "onOpen",
-  "onClose"
-];
+      WM = Cc['@mozilla.org/appshell/window-mediator;1'].
+        getService(Ci.nsIWindowMediator),
+
+      BROWSER = 'navigator:browser';
 
 /**
- * BrowserWindow
- *
- * Safe object representing a browser window
+ * Window trait composes safe wrappers for browser window that are I10S
+ * compatible.
  */
-function BrowserWindow(element) {
-  if (!isBrowserWindow(element))
-    throw new Error("Element is not a browser window");
+const BrowserWindowTrait = Trait.compose(
+  EventEmitter,
+  WindowDom.resolve({ close: '_close' }),
+  WindowTabs,
+  WindowTabTracker,
+  WindowLoader,
+  /* WindowSidebars, */
+  Trait.compose({
+    _emit: Trait.required,
+    _close: Trait.required,
+    /**
+     * Constructor returns wrapper of the specified chrome window.
+     * @param {nsIWindow} window
+     */
+    constructor: function BrowserWindow(options) {
+      // make sure we don't have unhandled errors
+      this.on('error', console.exception);
 
-  this.__defineGetter__("tabs", function() {
-    let tabs = new TabModule(element);
-    delete this.tabs;
-    this.__defineGetter__("tabs", function() tabs);
-    return tabs;
+      if ('onOpen' in options) this.on('open', options.onOpen);
+      if ('onClose' in options) this.on('close', options.onClose);
+      if ('onReady' in options) this.on('ready', options.onReady);
+      if ('params' in options) this._params = options.params;
+      if ('window' in options) this._window = options.window;
+      this._window; // need to invoke lazy getter.
+      return this;
+    },
+    _onLoad: function() {
+      try {
+        this._initWindowTabTracker();
+      } catch(e) {
+        this._emit('error', e)
+      }
+      this._emit('open', this._public);
+    },
+    _onReady: function() {
+      this._emit('ready', this._public);
+    },
+    _onUnload: function() {
+      this._emit('close', this._public);
+      // since window is closed we can destruct it
+      this._window = null;
+      this._removeAllListeners('close');
+      this._removeAllListeners('open');
+      this._removeAllListeners('ready');
+    },
+    close: function close(callback) {
+      // maybe we should deprecate this with message ?
+      if (callback) this.on('close', callback);
+      return this._close();
+    }
   })
-
-  this.__defineGetter__("title", function() element.document.title);
-
-  this.close = function(callback) {
-    if (callback)
-      windowMap.addCloseCallback(element, callback);
-
-    element.close();
-  }
-};
-
+);
 /**
- * windows.browserWindows.__iterator__
- * windows.browserWindows.length
- * windows.browserWindows.activeWindow
- * windows.browserWindows.openWindow
+ * Wrapper for `BrowserWindowTrait`. Creates new instance if wrapper for
+ * window doesn't exists yet. If wrapper already exists then returns it
+ * instead.
+ * @params {Object} options
+ *    Options that are passed to the the `BrowserWindowTrait`
+ * @returns {BrowserWindow}
+ * @see BrowserWindowTrait
  */
-exports.browserWindows = {
-  __iterator__: function() {
-    let winEnum = Cc["@mozilla.org/appshell/window-mediator;1"]
-               .getService(Ci.nsIWindowMediator)
-               .getEnumerator("navigator:browser");
-    while (winEnum.hasMoreElements())
-      yield windowMap.getWindowObject(winEnum.getNext());
-  },
-
-  get length() {
-    let count = 0;
-    let enum = Cc["@mozilla.org/appshell/window-mediator;1"]
-               .getService(Ci.nsIWindowMediator)
-               .getEnumerator("navigator:browser");
-    while (enum.hasMoreElements()) {
-      count++;
-      enum.getNext();
-    }
-
-    return count;
-  },
-
-  get activeWindow() {
-    return windowMap.getWindowObject(windowUtils.activeWindow);
-  },
-  set activeWindow(safeWindow) {
-    let element = windowMap.getWindowElement(safeWindow);
-    if (element)
-      windowUtils.activeWindow = element;
-  },
-
-  openWindow: function(options) {
-    if (typeof options === "string")
-      options = { url: options };
-
-    options = apiUtils.validateOptions(options, {
-      url: {
-        is: ["undefined", "string"]
-      },
-      onOpen: {
-        is: ["undefined", "function"]
-      }
-    });
-
-    if (!options.url)
-      options.url = "about:blank";
-
-    let addTabOptions = {
-      inNewWindow: true
-    };
-
-    if (options.onOpen) {
-      addTabOptions.onLoad = function(e) {
-        let win = e.target.defaultView;
-        let safeWindowObj = windowMap.create(win);
-        let tabEl = win.gBrowser.tabContainer.childNodes[0];
-        let tabBrowser = win.gBrowser.getBrowserForTab(tabEl);
-        tabBrowser.addEventListener("load", function(e) {
-          tabBrowser.removeEventListener("load", arguments.callee, true);
-          errors.catchAndLog(function(e) options.onOpen(e))(safeWindowObj);
-        }, true);
-      };
-    }
-    tabBrowser.addTab(options.url.toString(), addTabOptions);
+function BrowserWindow(options) {
+  let chromeWindow = options.window;
+  for each (let window in windows) {
+    if (chromeWindow == window._window)
+      return window._public
   }
-};
-
-
+  let window = BrowserWindowTrait(options);
+  windows.push(window);
+  return window._public;
+}
+// to have proper `instanceof` behavior will go away when #596248 is fixed.
+BrowserWindow.prototype = BrowserWindowTrait.prototype;
+exports.BrowserWindow = BrowserWindow
+const windows = [];
 /**
- * windows.browserWindows.onOpen, windows.browserWindows.onClose
+ * `BrowserWindows` trait is composed out of `List` trait and it represents
+ * "live" list of currently open browser windows. Instance mutates itself
+ * whenever new browser window gets opened / closed.
  */
-events.forEach(function(e) {
-  // create a collection for each event
-  collection.addCollectionProperty(exports.browserWindows, e);
-});
+// Very stupid to resolve all `toStrings` but this will be fixed by #596248
+const browserWindows = Trait.resolve({ toString: null }).compose(
+  List.resolve({ constructor: '_initList' }),
+  EventEmitter.resolve({ toString: null }),
+  WindowTrackerTrait.resolve({ constructor: '_initTracker', toString: null }),
+  Trait.compose({
+    _emit: Trait.required,
+    _add: Trait.required,
+    _remove: Trait.required,
 
-// Mapping between safeWindowObject <-> nsIDOMWindow element
-let windowMap = {
-  cache: [],
-  create: function(windowElement) {
-    let windowObject = this.getWindowObject(windowElement);
-    if (windowObject)
-      return windowObject;
+    // public API
 
-    try {
-      windowObject = new BrowserWindow(windowElement);
-    } catch (e if e.message == "Element is not a browser window") {
-      return null;
+    /**
+     * Constructor creates instance of `Windows` that represents live list of open
+     * windows.
+     */
+    constructor: function BrowserWindows() {
+      this._trackedWindows = [];
+      this._initList();
+      this._initTracker();
+      unload.when(this._destructor.bind(this));
+    },
+    _destructor: function _destructor() {
+      for each (window in this)
+        window.close();
+      this._removeAllListeners('open');
+      this._removeAllListeners('close');
+    },
+    /**
+     * This property represents currently active window.
+     * Property is non-enumerable, in order to preserve array like enumeration.
+     * @type {Window|null}
+     */
+    get activeWindow() {
+      let window = WM.getMostRecentWindow(null);
+      return this._isBrowser(window) ? BrowserWindow({ window: window }) : null;
+    },
+    set activeWindow(window) {
+      if (window instanceof BrowserWindow)
+        window.focus()
+    },
+    openWindow: function(options) {
+      if (typeof options === "string")
+        options = { url: options };
+
+      let url = apiUtils.validateOptions(options, {
+        url: { is: ["undefined", "string"] }
+      }).url || "about:blank";
+
+      return BrowserWindow(Object.create(options, {
+        params: { value: [ url ] }
+      }));
+    },
+    /**
+     * Returns true if specified window is a browser window.
+     * @param {nsIWindow} window
+     * @returns {Boolean}
+     */
+    _isBrowser: function _isBrowser(window)
+      BROWSER === window.document.documentElement.getAttribute("windowtype")
+    ,
+     /**
+      * Internal listener which is called whenever new window gets open.
+      * Creates wrapper and adds to this list.
+      * @param {nsIWindow} chromeWindow
+      */
+    _onTrack: function _onTrack(chromeWindow) {
+      if (!this._isBrowser(chromeWindow)) return;
+      let window = BrowserWindow({ window: chromeWindow });
+      this._add(window);
+      this._emit('open', window);
+    },
+    /**
+     * Internal listener which is called whenever window gets closed.
+     * Cleans up references and removes wrapper from this list.
+     * @param {nsIWindow} window
+     */
+    _onUntrack: function _onUntrack(chromeWindow) {
+      if (!this._isBrowser(chromeWindow)) return;
+      let window = BrowserWindow({ window: chromeWindow });
+      this._remove(window);
+      windows.splice(windows.indexOf(window), 1);
+      this._emit('close', window);
     }
+  }).resolve({ toString: null })
+)();
+exports.browserWindows = browserWindows;
 
-    this.cache.push({
-      windowObject: windowObject,
-      windowElement: windowElement
-    });
-    return windowObject;
-  },
-  destroy: function(windowObject) {
-    for each (let entry in this.cache) {
-      if (entry.windowObject == windowObject) {
-        delete windowObject.tabs;
-        windowObject.__defineGetter__("tabs", function() []);
-        delete windowObject.title;
-        windowObject.__defineGetter__("title", function() null);
-
-        if (entry.closeCallback) {
-          errors.catchAndLog(function() {
-            entry.closeCallback.call(windowObject);
-          })();
-          entry.closeCallback = null;
-        }
-
-        let index = this.cache.indexOf(entry);
-        this.cache.splice(index, 1);
-        return;
-      }
-    }
-  },
-  getWindowObject: function(windowElement) {
-    for each (let entry in this.cache)
-      if (windowElement == entry.windowElement)
-        return entry.windowObject;
-    
-    return null;
-  },
-  getWindowElement: function(windowObject) {
-    for each (let entry in this.cache)
-      if (windowObject == entry.windowObject)
-        return entry.windowElement;
-    
-    return null;
-  },
-  addCloseCallback: function(windowElement, callback) {
-    for each (let entry in this.cache) {
-      if (windowElement == entry.windowElement) {
-        entry.closeCallback = callback;
-        break;
-      }
-    }
-  }
-}
-
-// Listen for window notifications, calls the onOpen/onClose handlers
-// and update map of window objects
-let windowDelegate = {
-  onTrack: function(window) {
-    let safeWindowObj = windowMap.create(window);
-    if (!safeWindowObj)
-      return;
-    for (let callback in exports.browserWindows.onOpen) {
-      errors.catchAndLog(function(safeWindowObj) {
-        callback.call(exports.browserWindows, safeWindowObj);
-      })(safeWindowObj);
-    }
-  },
-  onUntrack: function(window) {
-    let safeWindowObj = windowMap.getWindowObject(window);
-    for (let callback in exports.browserWindows.onClose) {
-      errors.catchAndLog(function(safeWindowObj) {
-        callback.call(exports.browserWindows, safeWindowObj);
-      })(safeWindowObj);
-    }
-
-    windowMap.destroy(safeWindowObj);
-  }
-};
-let windowTracker = new windowUtils.WindowTracker(windowDelegate);
-
-
-function isBrowserWindow(window) {
-  try {
-    return window.document.documentElement
-           .getAttribute("windowtype") == "navigator:browser";
-  } catch (e) { }
-  return false;
-}
-
-function unload() {
-  windowMap.cache = null;
-  windowMap = null;
-  // Unregister tabs event listeners
-  events.forEach(function(e) exports.browserWindows[e] = []);
-}
-require("unload").ensure(this);

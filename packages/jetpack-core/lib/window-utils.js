@@ -41,6 +41,9 @@ var errors = require("errors");
 var gWindowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
                      .getService(Ci.nsIWindowWatcher);
 
+const { EventEmitter } = require('events'),
+      { Trait } = require('traits');
+
 /**
  * An iterator for XUL windows currently in the application.
  * 
@@ -116,6 +119,18 @@ WindowTracker.prototype = {
 };
 
 errors.catchAndLogProps(WindowTracker.prototype, ["handleEvent", "observe"]);
+
+const WindowTrackerTrait = Trait.compose({
+  _onTrack: Trait.required,
+  _onUntrack: Trait.required,
+  constructor: function WindowTrackerTrait() {
+    new WindowTracker({
+      onTrack: this._onTrack.bind(this),
+      onUntrack: this._onUntrack.bind(this)
+    });
+  }
+});
+exports.WindowTrackerTrait = WindowTrackerTrait;
 
 var gDocsToClose = [];
 
