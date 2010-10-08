@@ -50,7 +50,8 @@ exports.notify = function notifications_notify(options) {
   let clickObserver = !valOpts.onClick ? null : {
     observe: function notificationClickObserved(subject, topic, data) {
       if (topic === "alertclickcallback")
-        errors.catchAndLog(valOpts.onClick).call(options, valOpts.data);
+        errors.catchAndLog(valOpts.onClick).call(options, valOpts.data,
+                                                 options);
     }
   };
   gAlertServ.showAlertNotification(valOpts.iconURL, valOpts.title,
