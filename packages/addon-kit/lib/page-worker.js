@@ -87,9 +87,10 @@ const Page = Trait.compose(
       PageRegistry.on('add', this._onRegister.bind(this));
       PageRegistry.on('remove', this._onUnregister.bind(this));
     },
-    postMessage: function postMessage() {
+    postMessage: function postMessage(message) {
       if (!PageRegistry.has(this))
         throw new Error(ERR_ADD_BEFORE_POST);
+      this._postMessage(message);
     },
     _onChange: function _onChange(e) {
       if ('contentURL' in e)

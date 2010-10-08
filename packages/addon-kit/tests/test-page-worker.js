@@ -289,6 +289,26 @@ tests.testAllowScript = function(test) {
 
 }
 
+tests.testPingPong = function(test) {
+  test.waitUntilDone();
+  let page = Pages.add({
+    contentURL: 'data:text/html,ping-pong',
+    contentScript: 'onMessage = function(message) postMessage("pong");'
+      + 'postMessage("ready");'
+    ,
+    onMessage: function(message) {
+      if ('ready' == message) {
+        return page.postMessage('ping');
+      }
+      else {
+        test.assert(message, 'pong', 'Callback from contentScript');
+        test.done();
+      }
+    }
+  });
+};
+
+
 let pageWorkerSupported = true;
 
 try {
