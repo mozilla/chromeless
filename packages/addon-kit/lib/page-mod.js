@@ -44,6 +44,7 @@ const { EventEmitter } = require('events');
 const { List } = require('list');
 const { Registry } = require('utils/registry');
 const xulApp = require("xul-app");
+const { MatchPattern } = require('match-pattern');
 
 // Whether or not the host application dispatches a document-element-inserted
 // notification when the document element is inserted into the DOM of a page.
@@ -65,7 +66,7 @@ const Rules = EventEmitter.resolve({ toString: null }).compose(List, {
     if (this._has(rule)) return;
     // registering rule to the rules registry
     if (!(rule in RULES))
-      RULES[rule] = URLRule(rule);
+      RULES[rule] = new MatchPattern(rule);
     this._add(rule);
     this._emit('add', rule);
   }.bind(this)),
@@ -167,7 +168,7 @@ const PageModManager = Registry.resolve({
   },
   _destructor: function _destructor() {
     observers.remove(ON_CONTENT, this._onContentWindow);
-    for each (rule in RULES) {
+    for (let rule in RULES) {
       this._removeAllListeners(rule);
       delete RULES[rule];
     }
@@ -175,32 +176,9 @@ const PageModManager = Registry.resolve({
   },
   _onContentWindow: function _onContentWindow(domObj) {
     let window = HAS_DOCUMENT_ELEMENT_INSERTED ? domObj.defaultView : domObj;
-    let location = window.location,
-        port = ('port' in location) ? location.port : null,
-        protocol = ('protocol' in location) ? location.protocol : null,
-        href = '' + location,
-        host;
-    // exception is thrown if `hostname` is accessed on 'about:*' urls in FF 3.*
-    try { host = location.hostname } catch(e) { }
-
-    for (let rule in RULES) {
-      let r = RULES[rule],
-          anyWebPage = ('anyWebPage' in r) ? r.anyWebPage : null,
-          exactURL = ('exactURL' in r) ? r.exactURL : null,
-          domain = ('domain' in r) ? r.domain : null,
-          urlPrefix = ('urlPrefix' in r) ? r.urlPrefix : null;
-
-      if (
-        (anyWebPage && protocol && protocol.match(/^(https?|ftp):$/)) ||
-        (exactURL && exactURL == href) ||
-        (
-          domain && host &&
-          host.lastIndexOf(domain) == host.length - domain.length
-        ) ||
-        (urlPrefix && href && 0 == href.indexOf(urlPrefix))
-      )
+    for (let rule in RULES)
+      if (RULES[rule].test(window.document.URL))
         this._emit(rule, window);
-    }
   },
   off: function off(topic, listener) {
     this.removeListener(topic, listener);
@@ -213,56 +191,3 @@ const pageModManager = PageModManager();
 
 exports.add = pageModManager.add;
 exports.remove = pageModManager.remove;
-/**
- * Parses a string, possibly containing the wildcard character ('*') to
- * create URL-matching rule. Supported input strings with the rules they
- * create are listed below:
- *  1) * (a single asterisk) - any URL with the http(s) or ftp scheme
- *  2) *.domain.name - pages from the specified domain and all its subdomains,
- *                     regardless of their scheme.
- *  3) http://example.com/* - any URLs with the specified prefix.
- *  4) http://example.com/test - the single specified URL
- * @param url {string} a string representing a rule that matches URLs
- * @returns {object} a object representing a rule that matches URLs
- */
-function URLRule(url) {
-  var rule;
-
-  var firstWildcardPosition = url.indexOf("*");
-  var lastWildcardPosition = url.lastIndexOf("*");
-  if (firstWildcardPosition != lastWildcardPosition) {
-    throw new Error("There can be at most one '*' character in a wildcard.");
-  }
-
-  if (firstWildcardPosition == 0) {
-    if (url.length == 1)
-      rule = { anyWebPage: true };
-    else if (url[1] != ".")
-      throw new Error("Expected a *.<domain name> string, got: '" + url + "'.");
-    else
-      rule = { domain: url.substr(2) /* domain */ };
-  }
-  else {
-    if (url.indexOf(":") == -1) {
-      throw new Error("When not using *.example.org wildcard, the string " +
-                      "supplied is expected to be either an exact URL to " +
-                      "match or a URL prefix. The provided string ('" +
-                      url + "') is unlikely to match any pages.");
-    }
-
-    if (firstWildcardPosition == -1) {
-      rule = { exactURL: url };
-    }
-    else if (firstWildcardPosition == url.length - 1) {
-      rule = { urlPrefix: url.substr(0, url.length - 1) };
-    }
-    else {
-      throw new Error("The provided wildcard ('" + url + "') has a '*' in an " +
-                      "unexpected position. It is expected to be the first " +
-                      "or the last character in the wildcard.");
-    }
-  }
-
-  return rule;
-};
-

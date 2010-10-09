@@ -78,21 +78,10 @@ Creates a page mod.
 @param options {object}
   Options for the page mod, with the following keys:
   @prop include {string,array}
-    The pages to which the page mod should apply.  An rule or array of rules
-    matching the URLs of pages.  There are four kinds of rules:
-    <dl>
-      <dt>* (a single asterisk)</dt>
-        <dd>any URL with the http(s) or ftp scheme</dd>
-      <dt>*.domain.name</dt>
-        <dd>
-          pages from the specified domain and all its subdomains,
-          regardless of their scheme
-        </dd>
-      <dt>http://example.com/*</dt>
-        <dd>any URLs with the specified prefix</dd>
-      <dt>http://example.com/test</dt>
-        <dd>the single specified URL</dd>
-    </dl>
+    A match pattern string or an array of match pattern strings.  These define
+    the pages to which the page mod applies.  See the [match-pattern] module for
+    a description of match patterns.
+    [match-pattern]: #module/jetpack-core/match-pattern
   @prop [contentScriptURL] {string,array}
     The URLs of content scripts to load.  Content scripts specified by this
     option are loaded *before* those specified by the `contentScript` option.
@@ -139,23 +128,11 @@ PageMod
 
 <api name="include">
 @property {List}
-The pages to which the page mod should apply.  A [List] of rules matching
-the URLs of pages.  Add rules to the collection by calling its `add` method
-and remove them by calling its `remove` method.  There are four kinds of rules:
-<dl>
-  <dt>* (a single asterisk)</dt>
-    <dd>any URL with the http(s) or ftp scheme</dd>
-  <dt>*.domain.name</dt>
-    <dd>
-      pages from the specified domain and all its subdomains,
-      regardless of their scheme
-    </dd>
-  <dt>http://example.com/*</dt>
-    <dd>any URLs with the specified prefix</dd>
-  <dt>http://example.com/test</dt>
-    <dd>the single specified URL</dd>
-</dl>
+A [List] of match pattern strings.  These define the pages to which the page mod
+applies.  See the [match-pattern] module for a description of match patterns.
+Rules can be added to the list by calling its `add` method and removed by
+calling its `remove` method.
 
-[List]:https://jetpack.mozillalabs.com/sdk/latest/docs/#module/jetpack-core/list
+[List]: https://jetpack.mozillalabs.com/sdk/latest/docs/#module/jetpack-core/list
+[match-pattern]: #module/jetpack-core/match-pattern
 </api>
-
