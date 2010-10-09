@@ -47,7 +47,7 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 let hostFrame, hostDocument, hiddenWindow, isHostFrameReady = false;
 
-if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
+if (!require("xul-app").isOneOf(["Firefox", "Thunderbird", "Fennec"])) {
   throw new Error([
     "The hidden-frame module currently supports only Firefox and Thunderbird. ",
     "In the future, we would like it to support other applications, however. ",
