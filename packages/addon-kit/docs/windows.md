@@ -113,13 +113,11 @@ Events of browserWindows
 Events representing common actions and state changes for windows.
 Listeners are passed the `window` object that triggered the event.
 
-<api name="open">
+**open**  
 Called when a new window is opened.
-</api>
 
-<api name="close">
+**close**  
 Called when a window is closed.
-</api>
 
 **Examples**
 
