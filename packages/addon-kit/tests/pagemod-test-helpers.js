@@ -35,7 +35,7 @@ exports.testPageMod = function testPageMod(test, testURL, pageModOptions,
     var tabBrowser = browserWindow.gBrowser || browserWindow.Browser;
     var newTab = tabBrowser.addTab(testURL);
     tabBrowser.selectedTab = newTab;
-    var b = tabBrowser.getBrowserForTab(newTab);
+    var b = newTab.browser || tabBrowser.getBrowserForTab(newTab);
 
     function onPageLoad() {
       b.removeEventListener("load", onPageLoad, true);
