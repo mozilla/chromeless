@@ -176,6 +176,9 @@ const PageModManager = Registry.resolve({
   },
   _onContentWindow: function _onContentWindow(domObj) {
     let window = HAS_DOCUMENT_ELEMENT_INSERTED ? domObj.defaultView : domObj;
+    if (!window)
+      return;  // Could be about:blank
+
     for (let rule in RULES)
       if (RULES[rule].test(window.document.URL))
         this._emit(rule, window);
