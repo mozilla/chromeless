@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import os,sys
+
+# determine the directory where this script resides, from this, we'll
+# make lotsa assumptions
+script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+interface_directory = "packages/app-kit/data"
+ui_directory = os.path.join(script_dir, "ui")
+
+# now because this is a demo, and lloyd is an idiot, we'll just
+# symlink user interface files from ui into the bowels of packages
+# where the app-kit main file lives
+if os.path.lexists(interface_directory):
+    if not os.path.islink(interface_directory):
+        raise interface_directory + " exists and is not a symlink.  please remove that bugger"
+else:
+    os.symlink(ui_directory, interface_directory)
+
+# now let's run the cfx thingy and specify the app-kit main module
+# as our starting point
+os.system('bin/cfx -a xulrunner --static-args=\'{"path":"ui/index.html"}\' -p \'packages/app-kit\' run')
+

@@ -34,14 +34,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-console.log("hi mom!");
-
-const LAB_PROTOCOL = "cuddlefish";
-const LAB_HOST = "lab";
+const LAB_PROTOCOL = "app-kit";
+const LAB_HOST = "main";
 const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/index.html";
 
 // TODO: We want to localize this string.
-const LAB_TITLE = "Cuddlefish Lab";
+const LAB_TITLE = "Mozilla Application Kit";
 
 //var tabBrowser = require("tab-browser");
 var simpleFeature = require("simple-feature");
