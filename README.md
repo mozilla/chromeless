@@ -16,11 +16,15 @@ ultimate goal is to build your own browser using (mostly) standard web technolog
 
 ## What could go wrong?
 
-At present, the `run` script will look for xulrunner on your system
+In order to work, you probably should make sure you've got ffx 3.6.x
+on your system.
+
+**DETAILS**: At present, the `run` script will look for xulrunner on your system
 (or some other mozilla product that provides xulrunner).  If no such
 product exists, everything will come to a grinding halt.  At a future
 date, this repository may grow the ability to acquire and build the
-bits that it needs.
+bits that it needs.  There are problems with ffx 4 > b4 at present, so 
+if you're bleeding edge you'll need to downgrade.
 
 ## Hacking
 
