@@ -1,7 +1,0 @@
-syntax: glob
-*.pyc
-local.json
-*~
-*.DS_Store
-.hgignore
-_test_tmp
