@@ -15,7 +15,12 @@ python_lib_dir = os.path.join(cuddlefish_root, "python-lib")
 if python_lib_dir not in sys.path:
     sys.path.append(python_lib_dir)
 
-#
+# now export to env so sub-processes get it too
+if 'PYTHONPATH' not in os.environ:
+    os.environ['PYTHONPATH'] = python_lib_dir
+elif python_lib_dir not in os.environ['PYTHONPATH'].split(os.pathsep):
+    os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'].split(os.pathsep).append(python_lib_dir).join(os.pathsep)
+
 import cuddlefish
 
 if __name__ == '__main__':
