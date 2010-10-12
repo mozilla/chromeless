@@ -1,0 +1,63 @@
+body {
+    color: white;
+    background: black;
+}
+
+#container {
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+    width: 50em;
+    margin: 0 auto;
+}
+
+#content {
+    font-size: 10pt;
+    font-family: Palatino, Georgia, serif;
+}
+
+a {
+    color: white;
+}
+
+button {
+    color: white;
+    background: black;
+    border: 1px dotted gray;
+    font-family: Palatino, Georgia, serif;
+}
+
+button:hover {
+    background: gray;
+}
+
+button:focus {
+    border: 1px dotted white;
+}
+
+p {
+    color: gray;
+}
+
+h1, h2 {
+    font-weight: normal;
+}
+
+textarea {
+    background: black;
+    color: white;
+    border: 1pt dotted gray;
+    padding: 1em;
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}
+
+textarea:focus {
+    border: 1px dotted white;
+}
+
+pre {
+    padding-left: 1em;
+    padding-right: 1em;
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}

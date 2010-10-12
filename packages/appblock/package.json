@@ -1,0 +1,15 @@
+{
+    "version": "0.0.4", 
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1", 
+    "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>", 
+    "url": "http://hg.mozilla.org/users/avarma_mozilla.com/atul-packages/file/tip/packages/cuddlefish-lab", 
+    "description": "Play around with the Cuddlefish Minilib.", 
+    "dependencies": [
+        "jetpack-core", 
+        "misc"
+    ], 
+    "fullName": "Cuddlefish Lab", 
+    "main": "cuddlefish-lab", 
+    "id": "jid0-eyR2f5xqns5scVuFK2ehBNPKSFs", 
+    "name": "cuddlefish-lab"
+}
