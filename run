@@ -19,4 +19,4 @@ else:
 
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
-os.system('impl/bin/cfx -a xulrunner -p \'impl/packages/app-kit\' run')
+os.system('impl/bin/cfx -a xulrunner -p \'impl/packages/launcher\' run')
