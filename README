@@ -1,4 +1,4 @@
 This is the Chromeless Project 
 
-You can use run to get things started. It will try to call xulrunner, if not it will try to launch firefox in "xulrunner" mode --app. If you want to force Firefox execution, edit run script or call cfx manually, as run script does, and pass the parameter -b path_to_your_Firefox_browser
+You can use run to get things started. It will try to call xulrunner, if not it will try to launch firefox in "xulrunner" mode --app. If you want to force Firefox execution, edit run script or call cfx manually, as run script does, and pass the parameter -b path_to_your_Firefox_browser. If you are on Mac OS X, do not end this path with a slash
 
