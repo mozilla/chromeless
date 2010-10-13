@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Atul Varma <atul@mozilla.com>
+ *   Marcio Galli <mgalli@mgalli.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -34,9 +35,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const LAB_PROTOCOL = "app-kit";
+const LAB_PROTOCOL = "chromeless";
 const LAB_HOST = "main";
-const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/index.html";
+const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/";
 
 // TODO: We want to localize this string.
 const LAB_TITLE = "Mozilla Application Kit";
@@ -69,11 +70,16 @@ exports.main = function main(options) {
     };
   } else
     openLab = function openLabInWindow() {
+
+      var call = options.staticArgs;
+      console.log("Loading browser using ="+LAB_URL + call.browser);
+
       var contentWindow = require("content-window");
-      var window = new contentWindow.Window({url: LAB_URL,
+      var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
                                              height: 600,
                                              onStartLoad: injectLabVars});
+
     };
 
   if (simpleFeature.isAppSupported())

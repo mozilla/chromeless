@@ -1,10 +1,11 @@
 {
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1", 
-    "name": "app-kit", 
+    "name": "chromeless", 
     "contributors": [
         "Myk Melez (http://melez.com/) <myk@mozilla.org>", 
         "Daniel Aquino <mr.danielaquino@gmail.com>", 
-        "Lloyd Hilaiel <lloyd@mozilla.com"
+        "Lloyd Hilaiel <lloyd@mozilla.com>",
+        "Marcio Galli <mgalli@mgalli.com>"
     ], 
     "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>", 
     "version": "0.1", 
@@ -20,5 +21,5 @@
     ], 
     "main": "main", 
     "id": "jid0-VE0BAYsOX4sNiJGMMjrgl4kfM2w", 
-    "description": "Application development made easy."
+    "description": "Chromeless Browser Dev Kit based on Jetpack SDK. Application development made easy."
 }
