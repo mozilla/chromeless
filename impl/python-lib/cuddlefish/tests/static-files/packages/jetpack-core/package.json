@@ -1,0 +1,4 @@
+{
+  "description": "A foundational package that provides a CommonJS module loader implementation.",
+  "loader": "lib/loader.js"
+}

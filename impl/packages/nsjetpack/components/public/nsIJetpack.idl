@@ -1,0 +1,7 @@
+#include "nsISupports.idl"
+
+[scriptable, uuid(f238e377-66bc-4796-abad-803257b36a07)]
+interface nsIJetpack : nsISupports
+{
+  /* JSObject param */ void get();
+};

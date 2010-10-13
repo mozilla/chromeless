@@ -1,0 +1,314 @@
+#!/usr/bin/env python
+import os, signal, datetime, time, threading
+import urllib2
+import zipfile, tarfile
+import subprocess
+import stat
+import optparse
+import sys, re
+
+global fname
+global base_path, new_dir
+
+
+def define_parameters():
+  try:
+    #Take the current working directory
+    dir=subprocess.Popen('pwd', stdout=subprocess.PIPE, shell=True).communicate()
+    default_path=dir[0]
+    default_path.strip()
+    
+    # Setup command line parser
+    x=subprocess.Popen('cd ~; pwd', stdout=subprocess.PIPE, shell=True).communicate()
+    home=x[0]
+    home=home.strip()
+    
+    #The following are the parameters that can be used to pass a dynamic URL, a specific path or a binry. The binary is not used yet. It will be used in version 2.0
+    #If a dynamic path is to be mentioned, it should start with a '/'. For eg. "/Desktop"
+    parser = optparse.OptionParser()
+    parser.add_option('-u', '--url', dest = 'url', default='ftp://ftp.mozilla.org/pub/mozilla.org/labs/jetpack/jetpack-sdk-latest.zip')
+    parser.add_option('-p', '--path', dest = 'path', default=default_path)
+    parser.add_option('-b', '--binary', dest = 'binary', default='/Applications/Firefox.app')
+    (options, args) = parser.parse_args()
+    
+    #Get the URL from the parameter
+    link=options.url
+    #Set the base path for the user. If the user supplies the path, use the home variable as well. Else, take the default path of this script as the installation directory.
+    global base_path
+    if options.path!=default_path:
+      base_path=home+str(options.path).strip()+'/'
+    else:
+      base_path=str(options.path).strip()+'/'
+    print('Your Base path is ='+base_path)
+    
+    bin=options.binary #This assignment is not used in this program. It will be used in version 2 of this script.
+    ###if app or bin is empty, dont pass anything
+    
+    #Search for the .zip file or tarball file in the URL.
+    i=link.rfind('/')
+    global fname
+    fname=link[i+1:]
+    m=re.search('zip',fname,re.I)
+    n=re.search('gz',fname,re.I)
+    if m:
+      print 'zip file present in the URL.'
+      global zip,gz
+      zip=True;
+      gz=False;
+    elif n:
+      print 'gz file present in the URL'
+      gz=True;
+      zip=False;
+    else:
+      print 'zip/gz file not present. Check the URL.'
+      return
+    print("File name is ="+fname)
+    
+    #Join the base path and the zip/tar file name to crate a complete Local file path.
+    fpath = base_path+fname
+    print('Your local file path will be='+fpath)
+    #zipfilepath='/Users/moco/Desktop/'+fname
+    zipfilepath=base_path
+    #extractiondir='/Users/moco/Desktop/'
+    extractiondir=fpath
+    
+    #Call the download function to download the SDK from the URL to the local machine.
+    download(link,fpath,zip)
+    
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+
+def download(url,fpath,zip):
+  try:
+    #Start the download
+    print("Downloading...Please be patient!")
+    file = urllib2.urlopen(url)
+    output = open(fpath,'w')
+    output.write(file.read())
+    print('Download was successful.')
+    output.close()
+    
+    #Call the extract function to start the extraction process.
+    extract(base_path,fname)
+    
+  except ValueError: #Handles broken URL errors.
+    print 'The URL is ether broken or the file does not exist. Please enter the correct URL.'
+  except urllib2.URLError, e: # Handles the FTP errors
+    print '\nFTP URL not correct. Check again!'
+  except urllib2.HTTPError, e: # Handles the HTTP errors
+    print '\nFile not found on the Server!'
+  except IOError as (errno, strerror): #Handles file errors
+    print "I/O error - Check the destination path: {1}".format(errno, strerror)
+  except KeyboardInterrupt:
+    print('You cancelled the operation.')
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+    
+#Function to extract the downloaded zipfile.
+def extract(zipfilepath, extfile):
+  try:
+    #Timeout is set to 15 seconds. 
+    timeout=15
+    #change the directory to the location of the zip file.
+    os.chdir(zipfilepath)
+    
+    #Code for getting the folder name of Jetpack along with the version number.
+    if zip:
+      #print 'inside zip'
+      f=zipfile.ZipFile(extfile)
+      list=f.namelist()[0]
+      print('File List= ' + list)
+      temp_name=list.split('/')
+      print('Folder Name= ' +temp_name[0])
+      folder_name=temp_name[0]
+    elif gz:
+      #print 'inside gz'
+      f=tarfile.open(extfile)
+      list=f.getnames()[0]
+      temp_name=list.split('/')
+      print('Folder Name= ' +temp_name[0])
+      folder_name=temp_name[0]
+      
+    print ('Starting to Extract...')
+    
+    #Timeout code. The subprocess.popen exeutes the command and the thread waits for a timeout. If the process does not finish within the mentioned-
+    #timeout, the process is killed.
+    kill_check = threading.Event()
+    def kill_process(pid):
+      print '\nProcess Timedout. Killing the process. Please Rerun.'
+      os.kill(pid, signal.SIGKILL)
+      kill_check.set() # tell the main routine to kill. Used SIGKILL to hard kill the process.
+      return
+    
+    if zip:
+    #Call the command to unzip the downloaded file.
+      p=subprocess.Popen('unzip '+extfile, stdout=subprocess.PIPE, shell=True)
+      pid = p.pid
+    elif gz:
+    #Call the command to untar the downloaded file.
+      p=subprocess.Popen('tar -xf '+extfile, stdout=subprocess.PIPE, shell=True)
+      pid = p.pid
+
+    #Set a watch to check for process completion.
+    watch = threading.Timer(timeout, kill_process, args=(pid, ))
+    watch.start()
+    (stdout, stderr) = p.communicate()
+    watch.cancel() # if it's still waiting to run
+    success = not kill_check.isSet()
+    
+    #Abort process if process fails.
+    if not success:
+      return
+    #print 'after printing success'
+    kill_check.clear()
+    print('Unzip Successful.')
+    #Call the function to run the cfx commands
+    run_cmd(base_path,folder_name)
+  except OSError as (errno, strerror):
+    print 'O/S Error({0}) - {1}'.format(errno,strerror)
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+
+#Function to run the cfx testall comands and to make sure the SDK is not broken.
+def run_cmd(home_path,folder_name):
+  try:
+    timeout=150
+    global new_dir
+    new_dir=home_path+folder_name
+    os.chdir(new_dir)
+    print '\nStarting tests...'
+    #Timeout code. The subprocess.popen exeutes the command and the thread waits for a timeout. If the process does not finish within the mentioned-
+    #timeout, the process is killed.
+    kill_check = threading.Event()
+    def kill_process(pid):
+      print '\nProcess Timedout. Killing the process. Please Rerun.'
+      os.kill(pid, signal.SIGKILL)
+      kill_check.set() # tell the main routine to kill. Used SIGKILL to hard kill the process.
+      return
+    
+    #Set the path for the logs. They will be in the parent directory of the Jetpack SDK.
+    global base_path
+    log_path=base_path+'tests.log 2>&1'
+    #Subprocess call to set up the jetpack environment and to start the tests. Also sends the output to a log file.
+    p=subprocess.Popen('. bin/activate; cfx testall -a firefox> '+log_path, stdout=subprocess.PIPE, shell=True)
+    pid = p.pid
+    watch = threading.Timer(timeout, kill_process, args=(pid, ))
+    watch.start()
+    (stdout, stderr) = p.communicate()
+    watch.cancel() # if it's still waiting to run
+    success = not kill_check.isSet()
+    if not success:
+      return
+    kill_check.clear()
+    
+    if p.returncode!=0:
+        print('\nAll tests were not successful. Check the test-logs in the jetpack directory. Exiting the process.')
+        result_sdk()
+        return
+    else:
+        result_sdk()
+        print('\nAll tests were successful. Yay \o/ . Running a sample package test now...')
+    #Check the logs for any failure. 
+    #result_sdk(new_dir)
+    
+    #Call to check the tests for a sample xpi package.
+    package(new_dir)
+  
+  except OSError:
+    #will reach here if the jetpack 0.X directory doesnt exist
+    print 'O/S Error({0}) - {1}'.format(errno,strerror)
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+    
+def package(example_dir):
+  try:
+    timeout=20
+    
+    print '\nNow Running packaging tests...'
+    
+    kill_check = threading.Event()
+    def kill_process(pid):
+      print '\nProcess Timedout. Killing the process. Please Rerun.'
+      os.kill(pid, signal.SIGKILL)
+      kill_check.set() # tell the main routine to kill. Used SIGKILL to hard kill the process.
+      return
+    
+    #Set the path for the example logs. They will be in the parent directory of the Jetpack SDK.
+    global base_path
+    exlog_path=base_path+'test-example.log 2>&1'
+    #Subprocess call to test the sample example for packaging.
+    p=subprocess.Popen('. bin/activate; cfx -p examples/reading-data run -a firefox; cfx -p examples/reading-data run -a firefox > '+exlog_path, stdout=subprocess.PIPE, shell=True)
+    pid = p.pid
+    watch= threading.Timer(timeout, kill_process, args=(pid, ))
+    watch.start()
+    (stdout, stderr) = p.communicate()
+    watch.cancel() # if it's still waiting to run
+    success = not kill_check.isSet()
+    if not success:
+      return
+    kill_check.clear()
+    #ret_code=subprocess.call('source bin/activate; cfx -p examples/reading-data run -a firefox; cfx -p examples/reading-data run -a firefox > test-example.log 2>&1', stdout=subprocess.PIPE, shell=True)
+    
+    #print p.returncode
+
+    if p.returncode!=0:
+        print('\nSample tests were not executed correctly. Check the test-example log in jetpack diretory. Exiting the process.')
+        result_example()
+        return
+    else:
+        print('\nAll tests pass. The SDK is working! Yay \o/')
+        result_example()
+        
+  except OSError as (errno, strerror):
+    print 'O/S Error({0}) - {1}'.format(errno,strerror)
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+    
+def result_sdk():
+  try:
+    global base_path
+    log_dir=base_path+'tests.log'
+    f=open(log_dir,'r')
+    
+    #Search for the words 'FAIL' or 'warning' in the log. If found, report them.
+    err=re.search('FAIL',f.read(),re.I)
+    warn=re.search('warning:',f.read(),re.I)
+    if err or warn:
+      for line in open(log_dir):
+        n=re.search('\d+ of \d+ tests passed',line,re.I)
+        if n:
+          print n.group()
+      print ('\nOverall result - ' + str(err.group()) + '. Look at the test log at '+log_dir)
+    #else:
+      #print 'All tests passed.'
+      
+  except IOError as (errno, strerror):
+    print "I/O error({0}): {1}".format(errno, strerror)
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+    
+def result_example():
+  try:
+    global base_path
+    exlog_dir=base_path+'test-example.log'
+    f=open(exlog_dir,'r')
+    m=re.search('FAIL',f.read(),re.I)
+    if m:
+      for line in open(exlog_dir):
+        n=re.search('OK',line,re.I)
+        if n:
+          print n.group()
+      print ('\nOverall result - ' + str(m.group()) + '. Look at the example log at '+exlog_dir)
+    #else:
+      #print 'All tests passed.'
+  except IOError as (errno, strerror):
+      print "I/O error({0}): {1}".format(errno, strerror)
+  except:
+    print "Unexpected error:", sys.exc_info()[0]
+  
+#if __name__ == "__main__":
+#  main()
+#try:
+define_parameters()
+#except:
+#    print "Unexpected error in the beginning:", sys.exc_info()[0]

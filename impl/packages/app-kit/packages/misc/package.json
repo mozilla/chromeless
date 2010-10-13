@@ -1,0 +1,6 @@
+{
+    "name": "misc",
+    "description": "Miscellaneous Modules",
+    "author": "Atul Varma (http://toolness.com/)",
+    "dependencies": ["jetpack-core"]
+}

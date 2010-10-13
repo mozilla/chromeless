@@ -1,0 +1,16 @@
+DEPTH   = ../../../..
+topsrcdir = @top_srcdir@
+srcdir    = @srcdir@
+VPATH   = @srcdir@
+
+include $(DEPTH)/config/autoconf.mk
+
+MODULE = jetpack
+XPIDL_MODULE  = jetpack
+
+XPI_NAME = jetpack
+
+XPIDLSRCS = nsIJetpack.idl \
+            $(NULL)
+
+include $(topsrcdir)/config/rules.mk

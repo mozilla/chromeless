@@ -1,0 +1,72 @@
+[10:00am] mrbkap: The memory profiler is in C++
+[10:01am] mrbkap: So there's no reason to do the C struct "base class" trick.
+[10:01am] mrbkap: So you can do 'struct StringHashEntry : JSDHashEntryStub { ... }'
+[10:06am] mrbkap: If you call a JS_* function that doesn't say that it's infallible in its documentation, then it throws if it returns false.
+[10:07am] mrbkap: You shouldn't otherwise you'll cover up a more useful error message.
+[10:07am] mrbkap: The canonical name for JSClass * variables is clasp.
+[10:07am] mrbkap: (not classp)
+[10:08am] mrbkap: We normally try to avoid direct comparisons to NULL unless they're required to satisfy the type system.
+[10:08am] mrbkap: So instead of:  if (namedTargetObjects == NULL)
+[10:08am] mrbkap: You'd want if (namedTargetObjects)
+[10:11am] mrbkap: If JS_Enumerate returns null, you need to return false to propagate the error.
+[10:12am] mrbkap: The JS engine also avoids else after return.
+[10:14am] mrbkap:   if (obj != NULL)
+[10:14am] mrbkap:     if (!JS_DefineProperty(cx, info, objName,
+[10:14am] mrbkap:                           INT_TO_JSVAL(lookupIdForTarget(obj)),
+[10:14am] mrbkap:                           NULL, NULL, JSPROP_ENUMERATE))
+[10:14am] mrbkap:       return JS_FALSE;
+[10:14am] • mrbkap would robably write that as
+[10:14am] mrbkap: return obj && JS_DefineProperty(...);
+[10:14am] mrbkap: hm
+[10:14am] mrbkap: no
+[10:14am] mrbkap: return !obj || JS_DefineProperty(..)
+[10:17am] mrbkap: Some of this stuff is pure style, of course.
+[10:18am] mrbkap: So you can feel free to ignore stuff like "avoid else after return" in your own code.
+[10:19am] mrbkap:           // TODO: Is it OK to use this ID from a different JSRuntime?
+[10:19am] mrbkap: "no"
+[10:21am] atul: ahh poo
+[10:21am] atul: well, glad that's answered 
+[10:22am] mrbkap: Well, the problem is that a jsid is an interned name.
+[10:22am] mrbkap: (usually)
+[10:22am] mrbkap: Which means that it's a hashtable entry.
+[10:22am] atul: ah, and the hashtable is attached to a particular JSRuntiem?
+[10:23am] mrbkap: Right.
+[10:23am] mrbkap: So it'll compare false to all jsids in the other runtime.
+[10:24am] atul: one major one, which you'll prolly see a TODO for, is "how do i stop all of firefox's other JS threads while i'm profiling?" ... i tried investigating this 2 weeks ago and found that JS doesn't have a global interpreter lock like python does, which is super awesome, but it also gives me no idea re: how to make sure those threads don't alter the JS heap while we're profiling 
+[10:24am] atul: gotcha, that makes sense
+[10:24am] atul: hmm, mind if i copy-paste a bunch of what you're saying to a file in the repo or something, e.g. "mrbkap-code-review-comments.txt"?
+[10:24am] mrbkap: That's something that brendan or igor might have ideas about.
+[10:24am] mrbkap: Sure.
+[10:25am] atul: sweet, thanks
+[10:25am] mrbkap: I wasn't sure what the best way to get these comment to you was.
+[10:25am] atul: hehe irc is fine 
+[10:25am] atul: whatever's easiest for you really
+[10:25am] atul: i really appreciate the feedback.
+[10:25am] mrbkap:   ids = (JSObject **)PR_Malloc((currId) * sizeof(JSObject *));
+[10:25am] mrbkap:   if (ids == NULL) {
+[10:25am] mrbkap:     JS_ReportOutOfMemory(targetCx);
+[10:25am] mrbkap: Why not just use JS_malloc?
+[10:29am] mrbkap:   if (id > 0 && id < currId)
+[10:29am] mrbkap: brendan prefers number line order
+[10:29am] mrbkap: so 'if (0 < id && id < currId)'
+[10:31am] mrbkap: We also brace the consequent for an if statement if the condition is > 1 lines.
+[10:31am] mrbkap: line
+[10:31am] mrbkap: so
+[10:31am] mrbkap: if (a &&
+[10:31am] mrbkap:   b
+[10:31am] mrbkap: er
+[10:31am] mrbkap: if (a &&
+[10:32am] mrbkap:     b) {
+[10:32am] mrbkap:     one_line;
+[10:32am] mrbkap: } else {
+[10:32am] mrbkap:   one_line;
+[10:32am] mrbkap: }
+[10:33am] atul: ah, so JS_Malloc/PR_Malloc/nsIMemory/etc. is something i'm totally confused about re: which one to use when 
+[10:33am] atul: how do you decide which one to use?
+[10:34am] mrbkap: Well, it's a matter of choice, really.
+[10:35am] mrbkap: But, usually, in cases where you're JS_ReportOutOfMemory'ing, I think you want to use JS_malloc
+[10:35am] mrbkap: (if for no other reason than it reports OOM for you)
+[10:35am] mrbkap: But it also updates the malloc counter and notes the additional memory pressure.
+[10:38am] atul: oooooooh
+[10:38am] atul: nice!
+[10:38am] atul: very cool

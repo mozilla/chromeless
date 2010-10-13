@@ -1,0 +1,24 @@
+{
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1", 
+    "name": "app-kit", 
+    "contributors": [
+        "Myk Melez (http://melez.com/) <myk@mozilla.org>", 
+        "Daniel Aquino <mr.danielaquino@gmail.com>", 
+        "Lloyd Hilaiel <lloyd@mozilla.com"
+    ], 
+    "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>", 
+    "version": "0.1", 
+    "dependencies": [
+        "jetpack-core", 
+        "misc"
+    ], 
+    "keywords": [
+        "javascript", 
+        "engine", 
+        "platform", 
+        "xulrunner"
+    ], 
+    "main": "main", 
+    "id": "jid0-VE0BAYsOX4sNiJGMMjrgl4kfM2w", 
+    "description": "Application development made easy."
+}
