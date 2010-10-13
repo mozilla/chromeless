@@ -8,7 +8,9 @@ Library: jetpack-core, addon-kit
 
 Execution
 
-cfx run executes xulrunner or firefox in 'app' mode. You should check the python-lib/__init__.py and runner. The initial application, that is passed as initial point of execution to xulrunner||firefox, is located also under python-lib/app-extention ( for Firefox ) or python-lib/Test\ App ( for XUlrunner ). 
+cfx run executes xulrunner or firefox in 'app' mode. You should check the python-lib/__init__.py and runner. The initial application, that is passed as initial point of execution to xulrunner||firefox, is located also under python-lib/cuddlefish/app-extention ( for Firefox ). But if you are using Xulrunner in Mac OSX, then the Test\ App.app directory will be used instead the app-extension. Notice the Test\ App.app directory, has a symbolic link back to app-extension under python-lib/cuddlefish/. 
+
+
 
 
 
