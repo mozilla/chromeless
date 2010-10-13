@@ -42,7 +42,7 @@ and add some new ones that are.  If you are familiar with jetpack then
 you should be comfortable diving in and hacking on modules.
 
 NOTE: if you want to kick off the jetpack documentation server to
-inspect the modules included here, run `bin/cfx docs` and follow
+inspect the modules included here, run `impl/bin/cfx docs` and follow
 instructions.
 
 ## cred
