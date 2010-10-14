@@ -18,6 +18,7 @@ else:
     os.symlink(ui_directory, interface_directory)
 
 
+browserToLaunch = "test_require/index.html" 
 browserToLaunch = "first_browser/index.html" 
 try: 
    browserToLaunch = sys.argv[1]

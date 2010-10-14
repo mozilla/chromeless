@@ -14,6 +14,10 @@ ultimate goal is to build your own browser using (mostly) standard web technolog
 
 1. ./run
 
+or 
+
+2. ./run first_browser/index.html or ./run test_require/index.html
+
 ## What could go wrong?
 
 In order to work, you probably should make sure you've got ffx 3.6.x
