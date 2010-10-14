@@ -17,6 +17,15 @@ if os.path.lexists(interface_directory):
 else:
     os.symlink(ui_directory, interface_directory)
 
+
+browserToLaunch = "first_browser/index.html" 
+try: 
+   browserToLaunch = sys.argv[1]
+except: 
+   pass 
+
+print "Will open the browser script ="+ browserToLaunch
+
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
-os.system("impl/bin/cfx -a xulrunner --static-args {\\\"browser\\\":\\\"first_browser/index.html\\\"} -p \"impl/packages/chromeless\" run")
+os.system("impl/bin/cfx -a xulrunner --static-args {\\\"browser\\\":\\\""+ browserToLaunch+"\\\"} -p \"impl/packages/chromeless\" run")

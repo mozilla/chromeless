@@ -47,7 +47,12 @@ var simpleFeature = require("simple-feature");
 
 function injectLabVars(window) {
   window.wrappedJSObject.packaging = packaging;
+  window.wrappedJSObject.require = require;
 }
+
+function requireForBrowser( safe_module ) { 
+	return require;
+} 
 
 exports.main = function main(options) {
   var protocol = require("custom-protocol").register(LAB_PROTOCOL);
