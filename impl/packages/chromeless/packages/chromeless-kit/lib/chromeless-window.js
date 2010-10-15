@@ -5,10 +5,15 @@ var xpcom = require("xpcom");
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 var blankXul = ('<?xml version="1.0"?>' +
-                '<?xml-stylesheet href="chrome://global/skin/" ' +
-                '                 type="text/css"?>' +
-                '<window xmlns="' + xulNs + '">' +
+                '<?xml-stylesheet  ' +
+                '                 type="text/css"?> ' +
+                '<window style="margin:1em;background-color:transparent;" xmlns="' + xulNs + '">' +
                 '</window>');
+
+// Check the https://developer.mozilla.org/en/XUL/window#a-drawintitlebar for 
+// Notice the transparent background works, but the browser that is not transparent. If you add
+// margin:1em to the window, you will see tranparency working. 
+// Things like drawintitlebar, hidechrome 
 
 function Injector(browser, onStartLoad) {
   memory.track(this);
@@ -120,8 +125,10 @@ Window.prototype = {
     var browser = doc.createElement("browser");
     browser.setAttribute("disablehistory", "indeed");
     browser.setAttribute("type", "content");
+    browser.setAttribute("style", "background:none;background-color:transparent ! important");
     browser.setAttribute("flex", "1");
     doc.documentElement.appendChild(browser);
+	
     this._browser = browser;
     if (this.options.onStartLoad)
       this._injector = new Injector(browser,

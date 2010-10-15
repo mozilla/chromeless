@@ -11,7 +11,7 @@
     "version": "0.1", 
     "dependencies": [
         "jetpack-core", 
-        "misc"
+        "chromeless-kit"
     ], 
     "keywords": [
         "javascript", 

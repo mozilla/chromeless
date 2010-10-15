@@ -80,6 +80,9 @@ exports.main = function main(options) {
       console.log("Loading browser using ="+LAB_URL + call.browser);
 
       var contentWindow = require("content-window");
+      //var contentWindow = require("chromeless-window");
+
+     
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
                                              height: 600,
