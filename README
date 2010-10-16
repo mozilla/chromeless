@@ -6,4 +6,8 @@ Launch a browser script from the command line:
 
 ./impl/bin/cfx -a xulrunner -p impl/packages/chromeless/ run -b ~marciogalli/Desktop/Firefox3.6.1.app --static-args {\"browser\":\"first_browser/index.html\"}
 
+Launching with a specific template for the app
+
+./impl/bin/cfx -a xulrunner -p impl/packages/chromeless/ run -b ~marciogalli/Desktop/Firefox3.6.1.app -t ./template/app-extension/ --static-args {\"browser\":\"first_browser/index.html\"}
+
 
