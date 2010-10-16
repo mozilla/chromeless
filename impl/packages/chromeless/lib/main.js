@@ -59,6 +59,7 @@ exports.main = function main(options) {
 
   // TODO: Eventually we want to have this protocol not run
   // as the system principal.
+  //protocol.setHost(LAB_HOST, packaging.getURLForData("/")); // use this one if you want to prevent the outer browser 
   protocol.setHost(LAB_HOST, packaging.getURLForData("/"), "system");
 
   var openLab;
