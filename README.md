@@ -55,5 +55,3 @@ this repo is nothing all that novel or interesting, it's all just a remix
 based of the work of atul, myk, marcio, and the jetpack community.
 
 
-
-
