@@ -49,6 +49,9 @@ let hostFrame, hostDocument, hiddenWindow, isHostFrameReady = false;
 
 console.log(require("xul-app").name);
 
+/* This is pretty much the only change here. this works with Mac OSX but it may faill
+   with XULRunner on Windows or Linux based on https://bugzilla.mozilla.org/show_bug.cgi?id=546740#c42 
+*/
 /*
 if (!require("xul-app").isOneOf(["Firefox", "Thunderbird", "Fennec", "Chromeless"])) {
   throw new Error([
