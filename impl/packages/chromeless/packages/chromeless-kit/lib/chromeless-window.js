@@ -3,12 +3,12 @@ let {Cc, Ci} = require("chrome");
 var xpcom = require("xpcom");
 
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+var xhtmlNs = "http://www.w3.org/1999/xhtml";
 
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet  ' +
                 '                 type="text/css"?> ' +
-                '<window style="margin:1em;background-color:transparent;" xmlns="' + xulNs + '">' +
-                '</window>');
+                '<window style="margin:1em;background-color:transparent;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' );
 
 // Check the https://developer.mozilla.org/en/XUL/window#a-drawintitlebar for 
 // Notice the transparent background works, but the browser that is not transparent. If you add
@@ -91,7 +91,7 @@ function Window(options) {
   if (options.titleBar == false)
     features.push("titlebar=no");
 
-  var window = ww.openWindow(null, url, null, features.join(","), null);
+  var window = ww.openWindow(null, url + "<html:iframe src='"+options.url+"' transparent='true' style='background-color:none transparent'></html:iframe></window>", null, features.join(","), null);
 
   this._id = windows.push(this) - 1;
   this._window = window;
@@ -99,8 +99,9 @@ function Window(options) {
   this._injector = null;
   this.options = options;
 
-  window.addEventListener("close", this, false);
-  window.addEventListener("DOMContentLoaded", this, false);
+
+//  window.addEventListener("close", this, false);
+ // window.addEventListener("DOMContentLoaded", this, false);
 }
 
 Window.prototype = {
@@ -122,12 +123,21 @@ Window.prototype = {
     }
   },
   _makeBrowser: function(doc) {
+
+    var iframe = doc.createElementNS(this.xhtmlNs,"iframe");
+    iframe.setAttribute("transparent","true");
+    iframe.setAttribute("width","300");
+    iframe.setAttribute("height","300");
+    iframe.setAttribute("src","about:blank");
+    doc.documentElement.appendChild(iframe);
+
     var browser = doc.createElement("browser");
     browser.setAttribute("disablehistory", "indeed");
     browser.setAttribute("type", "content");
     browser.setAttribute("style", "background:none;background-color:transparent ! important");
     browser.setAttribute("flex", "1");
     doc.documentElement.appendChild(browser);
+
 	
     this._browser = browser;
     if (this.options.onStartLoad)

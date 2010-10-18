@@ -1,0 +1,28 @@
+<!-- Simple page which uses require Notice the require as injected by the Jetpack Application ( Chromeless ) that exists before this "browser" page exists --> 
+
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body>
+    <div id="browserHeader">
+      <button onclick="launchHiddenWorkerIframe()" >Launch a require("hidden-frame-xulrunner")</button>
+    </div>
+
+  
+<script>
+  function launchHiddenWorkerIframe() { 
+  var hiddenFrames = require("hidden-frame-xulrunner");
+  var hiddenFrame = hiddenFrames.add(hiddenFrames.HiddenFrame({
+    onReady: function() {
+    
+      this.element.contentWindow.location = "http://www.mozilla.org/";
+      var self = this;
+      this.element.addEventListener("DOMContentLoaded", function() {
+        alert(self.element.contentDocument.title);
+      }, true, true);
+    }
+  }));
+  } 
+  </script>
+</html>
