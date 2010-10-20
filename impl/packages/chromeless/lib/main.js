@@ -88,7 +88,7 @@ exports.main = function main(options) {
      
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
-                                             height: 600
+                                             height: 600,
                                              onStartLoad: injectLabVars});
 
       appWindow = window;
