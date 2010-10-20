@@ -40,15 +40,13 @@
 const {Cc, Ci} = require("chrome");
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
 exports.snapshot = function Snapshot(frame) {
 
   var window = frame.contentWindow;
-  var thumbnail = window.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+  var thumbnail = window.document.createElementNS(XHTML_NS, "canvas");
   thumbnail.mozOpaque = true;
-  
-console.log("marcio = "+frame.contentWindow);
-
   thumbnail.width = Math.ceil(window.screen.availWidth / 5.75);
   var aspectRatio = 0.5625; // 16:9
   thumbnail.height = Math.round(thumbnail.width * aspectRatio);
