@@ -307,7 +307,7 @@ class FirefoxProfile(Profile):
     @property
     def names(self):
         if sys.platform == 'darwin':
-            return ['firefox', 'minefield', 'shiretoko',]
+            return ['firefox', 'minefield', 'shiretoko']
         if (sys.platform == 'linux2') or (sys.platform in ('sunos5', 'solaris')):
             return ['firefox', 'mozilla-firefox', 'iceweasel']
         if os.name == 'nt' or sys.platform == 'cygwin':
