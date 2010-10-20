@@ -1,0 +1,118 @@
+<!-- This webpage controls the top level rendering of the browser.  it's
+     the first document that is loaded. and defines the look and feel of
+     the browser.  --> 
+
+<html>
+  <head>
+    <!-- What if the title of the top level document dictated the os level
+         process/application name? -->
+    <title>WebbyFox</title>
+
+<!-- we can use basic flexbox layout! -->
+    <style type="text/css" media="screen">
+
+body {
+  background-color: #999;
+  padding: 0;
+  margin: 0;
+}
+
+#browserHeader {
+  width: 100%;
+  text-align: center;
+  padding:10px;
+}
+
+#awesomeBox {
+  width: 60%;
+  font-size: 120%;
+  margin-right: 20px;
+}
+
+#browserContentArea {
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+  box-flex: 1;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+  border: 1px solid green;
+}
+
+#contentFrame {
+  border: 1px solid blue;
+  box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+#outer {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+  -moz-box-orient: vertical;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="outer">
+    <div id="browserHeader">
+      <form><input id="awesomeBox" type="text" /><input type="submit" value="go"/></form>
+<button onclick="shot()" >shot</button>
+    </div>
+    <div id="browserContentArea">
+      <!-- what if iframes were how the browser HTML embedded web content?
+           what if a new attribute were introduced which controlled priviledge
+           level of content loaded in an iframe? --> 
+      <iframe id="contentFrame" src="http://google.com/" privilege="content"></iframe>
+    </div>
+    </div>
+  </body>
+  <!-- Could the browser itself leverage a framework like YUI or jquery?
+       This shouldn't be that much different than slamming YUI into node.js
+       or jquery into jetpacks? -->
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+function shot() { 
+	try { 
+	var camera = require("canvas-proxy");
+
+	alert(camera); 
+	var shot = camera.snapshot(document.getElementById("contentFrame"));
+
+	var img = document.createElement("img");
+	document.body.appendChild(img);
+	img.src=shot.toDataURL("image/png");
+	alert(shot);
+	} catch (i) { alert(i) } 
+} 
+
+
+// the ready handler would run once the browser process was initialized?
+$(document).ready(function() {
+
+    $("#browserHeader > form").submit(function(e) {
+        // default can't really mean anything, can it?  
+        e.preventDefault();
+
+        // when the user hits the go button or hits enter in the
+        // awesome(bar|box) then this code is run?
+
+        var url = $.trim($("#awesomeBox").val());
+        $("#contentFrame").attr("src", url);
+
+
+    });
+});
+
+  </script>
+</html>
