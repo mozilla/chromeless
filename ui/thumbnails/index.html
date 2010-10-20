@@ -24,7 +24,6 @@ body {
 }
 
 #awesomeBox {
-  width: 60%;
   font-size: 120%;
   margin-right: 20px;
 }
@@ -37,16 +36,10 @@ body {
   display: -webkit-box;
   display: box;
   border: 1px solid green;
+  margin:1em;
+  margin-top:0;
 }
 
-#contentFrame {
-  border: 1px solid blue;
-  box-flex: 1;
-  -moz-box-flex: 1;
-  -webkit-box-flex: 1;
-  width: 100%;
-  height: 100%;
-}
 
 #outer {
   margin: 0;
@@ -60,19 +53,63 @@ body {
   box-orient: vertical;
 }
 
+.browser { 
+  border: 1px solid blue;
+  box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+  width: 100%;
+  height: 100%;
+} 
+
+.browser_selected { 
+  display:block;
+} 
+
+.browser_hidden { 
+  display:none;
+} 
+
+#thumbsNavigator { 
+	width:100%;
+	height:50px;
+	text-align:center;
+	overflow:hidden;
+} 
+
+.thumb { 
+  -moz-box-shadow: 5px 5px 5px black;
+    -moz-transform: matrix(1, -0.1, 0, 1, 0, 0);
+ -webkit-transform: matrix(1, -0.1, 0, 1, 0, 0);
+       -o-transform:matrix(1, -0.1, 0, 1, 0, 0);
+  width:80px; 
+  margin-top:10px;
+  margin-left:1em;
+} 
+
+.thumb_selected { 
+  -moz-box-shadow: 5px 5px 5px white, 10px 10px 10px blue;
+} 
+
     </style>
   </head>
   <body>
     <div id="outer">
     <div id="browserHeader">
-      <form><input id="awesomeBox" type="text" /><input type="submit" value="go"/></form>
-<button onclick="shot()" >shot</button>
+        <form>
+	<input id="awesomeBox" size="20" type="text" value="http://www.google.com" />
+	<input type="submit" id="buttonGo"  value="go"></input>
+	<button id="buttonNew" >New</button>
+	<button id="buttonPersist" >All</button>
+	</form>
+    </div>
+    <div id="thumbsNavigator">
+
     </div>
     <div id="browserContentArea">
       <!-- what if iframes were how the browser HTML embedded web content?
            what if a new attribute were introduced which controlled priviledge
            level of content loaded in an iframe? --> 
-      <iframe id="contentFrame" src="http://google.com/" privilege="content"></iframe>
     </div>
     </div>
   </body>
@@ -82,34 +119,83 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-function shot() { 
-	try { 
-	var camera = require("canvas-proxy");
+var currentBrowser = null; 
+var browserTabs = new Array();
 
-	alert(camera); 
-	var shot = camera.snapshot(document.getElementById("contentFrame"));
+// If you want to try different browser implementations, replace iframe with the 
+// correct DOM element. 
 
-	var img = document.createElement("img");
-	document.body.appendChild(img);
-	img.src=shot.toDataURL("image/png");
-	alert(shot);
-	} catch (i) { alert(i) } 
+function makeBrowser() { 
+  var browser = document.createElement("iframe");
+  $(browser).addClass("browser");
+  return browser;
 } 
 
+function selectBrowser(browserRef) { 
+  $(".browser").removeClass("browser_selected");
+  $(".browser").addClass("browser_hidden");
+  $(browserRef).removeClass("browser_hidden");
+  $(browserRef).addClass("browser_selected");
 
+  var refBrowserId = $(browserRef).attr("id");
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+  $("img.thumb").removeClass("thumb_selected");
+  $("#thumb_unique_"+uniqueId).addClass("thumb_selected");
+} 
+
+function canvasShot(browserRef, thumbImageRef) { 
+  if(!browserRef) browserRef = currentBrowser;
+  var camera = require("canvas-proxy");
+  var shot = camera.snapshot(browserRef);
+  thumbImageRef.width="100";
+  thumbImageRef.height="60";
+  thumbImageRef.src=shot.toDataURL("image/png");
+} 
+
+function newTab() { 
+  var newBrowser = makeBrowser();
+  browserTabs.push(newBrowser);
+  newBrowser.src="about:blank";
+  var uniqueId = Math.random();
+  newBrowser.setAttribute("id","browser_unique_"+uniqueId);
+  var img = document.createElement("img");
+  img.setAttribute("class","thumb");
+  img.width="1";
+  img.height="1";
+  img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
+  img.setAttribute("id","thumb_unique_"+uniqueId);
+  document.getElementById("thumbsNavigator").appendChild(img);
+  document.getElementById("browserContentArea").appendChild(newBrowser);
+  selectBrowser(newBrowser);
+  currentBrowser = newBrowser;
+
+} 
+
+function syncTabs(refBrowserId) { 
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+  canvasShot(document.getElementById(refBrowserId),document.getElementById("thumb_unique_"+uniqueId));
+} 
 // the ready handler would run once the browser process was initialized?
 $(document).ready(function() {
-
-    $("#browserHeader > form").submit(function(e) {
-        // default can't really mean anything, can it?  
-        e.preventDefault();
-
-        // when the user hits the go button or hits enter in the
-        // awesome(bar|box) then this code is run?
-
+    $("#browserHeader form").submit(function(e) {
+	if(browserTabs.length<1) { 
+          newTab();
+	} 
         var url = $.trim($("#awesomeBox").val());
-        $("#contentFrame").attr("src", url);
-
+        $(".browser_selected").attr("src", url);
+        browserUniqueId = $(".browser_selected").attr("id");
+        $(".browser_selected").attr("onload", "syncTabs('"+browserUniqueId+"')");
+        return false; 
+    });
+    $("#browserHeader #buttonNew").click(function(e) {
+        newTab();
+        $("#awesomeBox").val("");
+        $("#awesomeBox").focus();
+        return false; 
+    });
+    $("#browserHeader #buttonPersist").click(function(e) {
+        $(".browser").removeClass("browser_hidden");
+        return false; 
 
     });
 });
