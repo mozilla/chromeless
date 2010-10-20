@@ -121,7 +121,10 @@ class XulrunnerAppRunner(mozrunner.Runner):
 
     # This is a default, and will be overridden in the instance if
     # Firefox is used in XULRunner mode.
-    names = ['xulrunner']
+  
+    # We need to have 'firefox' in the name list, because sometimes 
+    # we launch xulrunner app from firefox app, -app mode
+    names = ['xulrunner','firefox']
 
     # Default location of XULRunner on OS X.
     __DARWIN_PATH = "/Library/Frameworks/XUL.framework/xulrunner-bin"

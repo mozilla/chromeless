@@ -45,6 +45,8 @@ const LAB_TITLE = "Mozilla Application Kit";
 //var tabBrowser = require("tab-browser");
 var simpleFeature = require("simple-feature");
 
+var appWindow = null; 
+
 function injectLabVars(window) {
   window.wrappedJSObject.packaging = packaging;
   window.wrappedJSObject.require = require;
@@ -86,8 +88,10 @@ exports.main = function main(options) {
      
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
-                                             height: 600,
+                                             height: 600
                                              onStartLoad: injectLabVars});
+
+      appWindow = window;
 
     };
 
@@ -98,3 +102,10 @@ exports.main = function main(options) {
     // voluntarily, so just open the lab now.
     openLab();
 };
+
+exports.onUnload = function (reason) {
+  console.log("Trying to kill app window");
+  appWindow.close();
+  
+};
+
