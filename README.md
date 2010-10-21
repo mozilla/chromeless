@@ -2,12 +2,12 @@
 
 *WARNING*: if you don't like caveats, leave now!
 
-*WARNING*: This repo highly experimental!  While the explanation that follows may suggest
+*WARNING*: This repo is highly experimental!  While the explanation that follows may suggest
 that this repository is actually meaningful, it is not.
 
 *WARNING*: This thing is osx/linux ONLY for now
 
-This repostiory is a remix of the [jetpack-sdk](http://github.com/mozillalabs/jetpack-sdk).  The
+This repository is a remix of the [jetpack-sdk](http://github.com/mozillalabs/jetpack-sdk).  The
 ultimate goal is to build your own browser using (mostly) standard web technologies.
 
 ## Getting Started
