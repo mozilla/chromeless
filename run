@@ -17,7 +17,7 @@ if os.path.lexists(interface_directory):
 else:
     os.symlink(ui_directory, interface_directory)
 
-browserToLaunch = "transparent/index.html" 
+browserToLaunch = "first_browser/index.html" 
 try: 
    browserToLaunch = sys.argv[1]
 except: 
