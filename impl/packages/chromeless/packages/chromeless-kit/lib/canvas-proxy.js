@@ -42,12 +42,19 @@ const {Cc, Ci} = require("chrome");
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
+
+/* This module should become more flexible so developer 
+   should be able to do various type of operations with canvas
+   over the browser references, to render in various sizes, 
+   and also to deal with the browser - send mouse and keyboard  
+   events */ 
+
 exports.snapshot = function Snapshot(frame) {
 
   var window = frame.contentWindow;
   var thumbnail = window.document.createElementNS(XHTML_NS, "canvas");
   thumbnail.mozOpaque = true;
-  thumbnail.width = Math.ceil(window.screen.availWidth / 5.75);
+  thumbnail.width = Math.ceil(window.screen.availWidth / 4.75);
   var aspectRatio = 0.5625; // 16:9
   thumbnail.height = Math.round(thumbnail.width * aspectRatio);
   var ctx = thumbnail.getContext("2d");
