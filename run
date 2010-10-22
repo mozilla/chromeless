@@ -1,6 +1,20 @@
 #!/usr/bin/env python
 
-import os,sys
+# A small script to invoke cfx from the jetpack platform with proper arguments.
+# accepts a single argument on the command line which is the path to the
+# "entry point HTML" - that which should be used as the browser's UI.
+
+import os,sys,re
+
+def findBrowserHTML(path):
+    # "ui" directory can be omitted, but we'll automatically append it to
+    # verify that file exists.
+    if not os.path.exists(path):
+        path = os.path.join("ui", path)
+    if os.path.isdir(path):
+        path = os.path.join(path, "index.html")
+    # the path we return must have ui omitted
+    return re.sub('^ui(?:[\\/])', '', path)
 
 # determine the directory where this script resides, from this, we'll
 # make lotsa assumptions
@@ -17,15 +31,16 @@ if os.path.lexists(interface_directory):
 else:
     os.symlink(ui_directory, interface_directory)
 
-browserToLaunch = "first_browser/index.html" 
-try: 
-   browserToLaunch = sys.argv[1]
-except: 
-   pass 
+# be flexible in handling the first argument
+browserToLaunch = "first_browser/index.html"
+try:
+    browserToLaunch = sys.argv[1]
+except:
+    pass
+browserToLaunch = findBrowserHTML(browserToLaunch)
 
-print "Will open the browser script ="+ browserToLaunch
-
-print "You can also try other scripts such as ./run thumbnails/index.html"
+print "Will open the browser html ="+ browserToLaunch
+print "You can also try other scripts such as ./run ui/thumbnails/index.html"
 
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point

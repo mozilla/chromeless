@@ -80,7 +80,7 @@ exports.main = function main(options) {
     openLab = function openLabInWindow() {
 
       var call = options.staticArgs;
-      console.log("Loading browser using ="+LAB_URL + call.browser);
+      console.log("Loading browser using = "+LAB_URL + call.browser);
 
       var contentWindow = require("content-window");
       //var contentWindow = require("chromeless-window");
