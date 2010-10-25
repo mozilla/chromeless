@@ -19,7 +19,9 @@ if python_lib_dir not in sys.path:
 if 'PYTHONPATH' not in os.environ:
     os.environ['PYTHONPATH'] = python_lib_dir
 elif python_lib_dir not in os.environ['PYTHONPATH'].split(os.pathsep):
-    os.environ['PYTHONPATH'] = os.environ['PYTHONPATH'].split(os.pathsep).append(python_lib_dir).join(os.pathsep)
+    paths = os.environ['PYTHONPATH'].split(os.pathsep)
+    paths.append(python_lib_dir)
+    os.environ['PYTHONPATH'] = os.pathsep.join(paths)
 
 import cuddlefish
 
