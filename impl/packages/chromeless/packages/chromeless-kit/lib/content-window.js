@@ -86,9 +86,19 @@ function Window(options) {
   if (options.titleBar == false)
     features.push("titlebar=no");
 
-  var window = ww.openWindow(null, url, null, features.join(","), null);
-  //var window = ww.openWindow(null, options.url, null, features.join(","), null);
+  /* Notice that we, so far, create this inline XUL window and we add 
+     a browser element to this. This is overboard, but it is like this  
+     because we took this code from atul which does some JS insertion in the 
+     HTML developer's page document - the options.url page passed */
 
+  /* We may revisit this and get rid of this initial window and simply 
+     open the window with the developer's HTML page instead, when we 
+     figure out how to inject the needed objects into the page */
+
+  // Enable this to test window with the developer's page instead
+  // var window = ww.openWindow(null, options.url, null, features.join(","), null);
+  var window = ww.openWindow(null, url, null, features.join(","), null);
+  
   this._id = windows.push(this) - 1;
   this._window = window;
   this._browser = null;
