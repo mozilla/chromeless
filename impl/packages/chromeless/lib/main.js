@@ -42,6 +42,7 @@ const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/";
 // TODO: We want to localize this string.
 const LAB_TITLE = "Mozilla Application Kit";
 
+// This is temporary, we are temporaily exposing this to the HTML developer browser, so we can continue to test the tabbrowser element and session store til we figure out and keep things things here in this main app context. Search for Ci, we current expose Ci to the developers HTML browser. 
 
 const {Ci,Cc} = require("chrome");
 
@@ -51,6 +52,9 @@ var simpleFeature = require("simple-feature");
 var appWindow = null; 
 
 function injectLabVars(window) {
+
+  /* This may go away - we expose a bunch of things in the developers HTML browser so far and we will revisit this, possibly keep the HTML browser safe and ask que HTML browser developer to message the upper app through a whitelisted require API */ 
+
   window.wrappedJSObject.packaging = packaging;
   window.wrappedJSObject.require = require;
   window.wrappedJSObject.Ci = Ci;
@@ -67,6 +71,12 @@ exports.main = function main(options) {
   // TODO: Eventually we want to have this protocol not run
   // as the system principal.
   //protocol.setHost(LAB_HOST, packaging.getURLForData("/")); // use this one if you want to prevent the outer browser 
+  
+  /* We will run the HTML browser page as system protocol. This is a 
+     chromeless:// protocol, which can access thre data directory, 
+     contents from the ui/yourapp/ directory and notice it uses 
+     'system' proviledges, so yes, it now can do anything! */
+
   protocol.setHost(LAB_HOST, packaging.getURLForData("/"), "system");
 
   var openLab;
@@ -87,11 +97,17 @@ exports.main = function main(options) {
       var call = options.staticArgs;
       console.log("Loading browser using = "+LAB_URL + call.browser);
 
-      var contentWindow = require("content-window");
+      /* We have some experimentation trying to launch the main window
+      with a transparent background */
       //var contentWindow = require("chromeless-window");
+      var contentWindow = require("content-window");
 
-     
       // check window and inject things directly not with a main window
+   
+      /* Page window height and width is fixed, it won't be 
+      and it also shoudl be smart, so HTML browser developer 
+      can change it when they set inner document width and height */
+
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
                                              height: 600,
