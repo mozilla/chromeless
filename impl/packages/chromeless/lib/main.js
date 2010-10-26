@@ -42,6 +42,9 @@ const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/";
 // TODO: We want to localize this string.
 const LAB_TITLE = "Mozilla Application Kit";
 
+
+const {Ci,Cc} = require("chrome");
+
 //var tabBrowser = require("tab-browser");
 var simpleFeature = require("simple-feature");
 
@@ -50,6 +53,8 @@ var appWindow = null;
 function injectLabVars(window) {
   window.wrappedJSObject.packaging = packaging;
   window.wrappedJSObject.require = require;
+  window.wrappedJSObject.Ci = Ci;
+  window.wrappedJSObject.Cc = Cc;
 }
 
 function requireForBrowser( safe_module ) { 
@@ -86,6 +91,7 @@ exports.main = function main(options) {
       //var contentWindow = require("chromeless-window");
 
      
+      // check window and inject things directly not with a main window
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
                                              height: 600,

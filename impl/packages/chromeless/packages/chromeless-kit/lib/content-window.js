@@ -87,6 +87,7 @@ function Window(options) {
     features.push("titlebar=no");
 
   var window = ww.openWindow(null, url, null, features.join(","), null);
+  //var window = ww.openWindow(null, options.url, null, features.join(","), null);
 
   this._id = windows.push(this) - 1;
   this._window = window;
