@@ -35,25 +35,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const LAB_PROTOCOL = "chromeless";
-const LAB_HOST = "main";
-const LAB_URL = LAB_PROTOCOL + "://" + LAB_HOST + "/";
-
-// TODO: We want to localize this string.
-const LAB_TITLE = "Mozilla Application Kit";
-
-// This is temporary, we are temporaily exposing this to the HTML developer browser, so we can continue to test the tabbrowser element and session store til we figure out and keep things things here in this main app context. Search for Ci, we current expose Ci to the developers HTML browser. 
+// This is temporary, we are temporaily exposing this to the HTML
+// developer browser, so we can continue to test the tabbrowser
+// element and session store til we figure out and keep things things
+// here in this main app context. Search for Ci, we current expose Ci
+// to the developers HTML browser.
 
 const {Ci,Cc} = require("chrome");
-
-//var tabBrowser = require("tab-browser");
-var simpleFeature = require("simple-feature");
 
 var appWindow = null; 
 
 function injectLabVars(window) {
 
-  /* This may go away - we expose a bunch of things in the developers HTML browser so far and we will revisit this, possibly keep the HTML browser safe and ask que HTML browser developer to message the upper app through a whitelisted require API */ 
+  /* This may go away - we expose a bunch of things in the developers
+   * HTML browser so far and we will revisit this, possibly keep the
+   * HTML browser safe and ask que HTML browser developer to message
+   * the upper app through a whitelisted require API */ 
 
   window.require = require;
   window.packaging = packaging;
@@ -68,62 +65,34 @@ function injectLabVars(window) {
   */
 }
 
-function requireForBrowser( safe_module ) { 
+function requireForBrowser( safe_module ) {
 	return require;
-} 
+}
 
 exports.main = function main(options) {
-  var protocol = require("custom-protocol").register(LAB_PROTOCOL);
+    var call = options.staticArgs;
 
-  // TODO: Eventually we want to have this protocol not run
-  // as the system principal.
-  //protocol.setHost(LAB_HOST, packaging.getURLForData("/")); // use this one if you want to prevent the outer browser 
-  
-  /* We will run the HTML browser page as system protocol. This is a 
-     chromeless:// protocol, which can access thre data directory, 
-     contents from the ui/yourapp/ directory and notice it uses 
-     'system' proviledges, so yes, it now can do anything! */
+    var contentWindow = require("content-window-nobrowser");
 
-  protocol.setHost(LAB_HOST, packaging.getURLForData("/"), "system");
+    // convert browser url into a file url
+    var startPage = require('url').fromFilename(call.browser)
 
-  var openLab;
+    console.log("Loading browser using = " + startPage);
 
-    openLab = function openLabInWindow() {
+    /* Page window height and width is fixed, it won't be and it also
+       should be smart, so HTML browser developer can change it when
+       they set inner document width and height */
 
-      var call = options.staticArgs;
-      console.log("Loading browser using = "+LAB_URL + call.browser);
-
-      /* We have some experimentation trying to launch the main window
-      with a transparent background */
-      //var contentWindow = require("chromeless-window");
-      var contentWindow = require("content-window-nobrowser");
-
-      /* Page window height and width is fixed, it won't be 
-      and it also shoudl be smart, so HTML browser developer 
-      can change it when they set inner document width and height */
-
-      // Uncomment this to launch Firefox from the Chromeless 
-      // var window = new contentWindow.Window({url: "chrome://browser/content/browser.xul",
-      var window = new contentWindow.Window({url: LAB_URL + call.browser,
-                                             width: 800,
-                                             height: 600,
-                                             onStartLoad: injectLabVars});
-
-      appWindow = window;
-
-    };
-
-  if (simpleFeature.isAppSupported())
-    simpleFeature.register(LAB_TITLE, openLab);
-  else
-    // No other way to allow the user to expose the functionality
-    // voluntarily, so just open the lab now.
-    openLab();
+    appWindow = new contentWindow.Window({
+        url: startPage,
+        width: 800,
+        height: 600,
+        onStartLoad: injectLabVars
+    });
 };
 
 exports.onUnload = function (reason) {
   console.log("Trying to kill app window");
   appWindow.close();
-  
 };
 
