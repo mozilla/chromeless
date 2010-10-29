@@ -102,12 +102,12 @@ exports.main = function main(options) {
       //var contentWindow = require("chromeless-window");
       var contentWindow = require("content-window");
 
-      // check window and inject things directly not with a main window
-   
       /* Page window height and width is fixed, it won't be 
       and it also shoudl be smart, so HTML browser developer 
       can change it when they set inner document width and height */
 
+      // Uncomment this to launch Firefox from the Chromeless 
+      // var window = new contentWindow.Window({url: "chrome://browser/content/browser.xul",
       var window = new contentWindow.Window({url: LAB_URL + call.browser,
                                              width: 800,
                                              height: 600,

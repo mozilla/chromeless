@@ -33,11 +33,12 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
+  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser");
  * ***** END LICENSE BLOCK ***** */
 
 #content {
-  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser");
   -moz-box-flex: 1;
+  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser");
   display: -moz-box;
   width:100%;
   height:500px;

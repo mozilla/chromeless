@@ -1,88 +1,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<!-- This example, different than others uses XHTML instead plain HTML --> 
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-      windowtype="navigator:browser"
-      titlepreface=""
-      titlemodifier=""
-      width="800"
-      height="600"
-      >
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" windowtype="navigator:browser" titlepreface="" titlemodifier="" width="800" height="600" >
 
   <head>
-    <!-- What if the title of the top level document dictated the os level
-         process/application name? -->
-    <title>WebbyFox</title>
-
-  <link rel="stylesheet" href="test.css"/>
   <link rel="stylesheet" href="chrome://browser/content/browser.css"/>
   <link rel="stylesheet" href="browser.css"/>
-  <link rel="stylesheet" href="chrome://browser/skin/"/>
-
-
-<!-- we can use basic flexbox layout! -->
-    <style type="text/css" media="screen">
-
-
-body {
-  background-color: #999;
-  padding: 0;
-  margin: 0;
-}
-
-#browserHeader {
-  width: 100%;
-  text-align: center;
-  padding:10px;
-}
-
-#awesomeBox {
-  width: 60%;
-  font-size: 120%;
-  margin-right: 20px;
-}
-
-#browserContentArea {
-  -moz-box-flex: 1;
-  -webkit-box-flex: 1;
-  box-flex: 1;
-  display: -moz-box;
-  display: -webkit-box;
-  display: box;
-  border: 1px solid green;
-}
-
-#outer {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: -moz-box;
-  display: -webkit-box;
-  display: box;
-  -moz-box-orient: vertical;
-  -webkit-box-orient: vertical;
-  box-orient: vertical;
-}
-
-    </style>
   </head>
   <body>
-    <div id="outer">
-    <div id="browserHeader">
-      <form><input id="awesomeBox" type="text" /><input type="submit" value="go"/></form>
-    </div>
-    <div id="browserContentArea">
-      <!-- this is totaly experimental. We have here is a tabbrowser element
-       which you can track it and learn, from the above the browser.css 
-       which uses XBL to associate with the XUL tab browser element --> 
 
-      <tabbrowser id="content" type="content-primary" />
+  <form><input id="awesomeBox" type="text" /><input type="button" onclick="launch();return false" value="go"/></form>
 
-    </div>
-    </div>
+  <tabbrowser id="content" type="content-primary" />
 
   <!-- hacks to make xul:tabbrowser work -->
   <xul:menubar style="display: none">
@@ -93,8 +21,6 @@ body {
       </xul:menupopup>
     </xul:menu>
   </xul:menubar>
-
-
 
 <script type="application/javascript">
     var XULBrowserWindow = {
@@ -113,38 +39,15 @@ body {
   </script>
 
 
-<!-- hack to make #sessionstore work -->
-  <div id="sidebar-box"></div>
-  <script type="application/javascript">function toggleSidebar() {}</script>
-
-
-
-  </body>
-  <!-- Could the browser itself leverage a framework like YUI or jquery?
-       This shouldn't be that much different than slamming YUI into node.js
-       or jquery into jetpacks? -->
-  <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-
-// the ready handler would run once the browser process was initialized?
-$(document).ready(function() {
-
-    $("#browserHeader > form").submit(function(e) {
-        // default can't really mean anything, can it?  
-        e.preventDefault();
-
-        // when the user hits the go button or hits enter in the
-        // awesome(bar|box) then this code is run?
-
-        var url = $.trim($("#awesomeBox").val());
-alert(document.getElementById("content"));
+    function launch() { 
         try { 
-        document.getElementById("content").addTab(url);
+        document.getElementById("content").addTab("http://www.google.com");
         } catch(i) { alert(i) } 
-
-    });
-});
+    } 
 
   </script>
+  </body>
+
 </html>
