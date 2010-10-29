@@ -1,3 +1,16 @@
+<!-- 
+
+About this sample: 
+
+We do not want to expose graphic / UI of tabbrowser. This case is here
+so that we can test the use of a XUL browser implementation that works
+in the scope of the XHTML file. What we want, in the moving forward, 
+is to have some sort of tabrowser = browser collection abstraction, 
+to let the HTML browser developer keep their multiple browser elements
+in the page and present or not tabs, organize the browsers in different 
+ways - higher flexibility. 
+
+--> 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" windowtype="navigator:browser" titlepreface="" titlemodifier="" width="800" height="600" >
@@ -8,7 +21,7 @@
   </head>
   <body>
 
-  <form><input id="awesomeBox" type="text" /><input type="button" onclick="launch();return false" value="go"/></form>
+  <form><input id="awesomeBox" type="text" value="http://www.google.com" /><input type="button" onclick="launch();return false" value="go"/></form>
 
   <tabbrowser id="content" type="content-primary" />
 
@@ -43,7 +56,8 @@
 
     function launch() { 
         try { 
-        document.getElementById("content").addTab("http://www.google.com");
+ 		var uri = document.getElementById("awesomeBox").value;
+        	document.getElementById("content").addTab(uri);
         } catch(i) { alert(i) } 
     } 
 

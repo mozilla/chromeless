@@ -33,7 +33,6 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
-  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser");
  * ***** END LICENSE BLOCK ***** */
 
 #content {
@@ -44,27 +43,4 @@
   height:500px;
 }
 
-/* The tabbrowser's tabpanels element uses this, which comes from global.css. */
-.plain {
-  -moz-appearance: none;
-  margin: 0 !important;
-  border: none;
-  padding: 0;
-}
-
-/* Hide the tabbrowser's built-in chrome. */
-.tab-drop-indicator-bar {
-  display: none;
-}
-.tabbrowser-strip {
-
-  /* 
-  visibility: hidden; Use this if you want to get rid of the tabs. 
-  But make sure you have proper infra-structure in place to be able 
-  to select tabs */
-  -moz-box-flex: 1;
-  display: -moz-box;
-  display: block;
-  position: absolute;
-}
 ~     
