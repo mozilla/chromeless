@@ -1,0 +1,12 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+
+  </head>
+  <body>
+    I'm the inner frame.  you've been pwned!
+    <script type="text/javascript">
+      if (top != self) top.location.replace(self.location.href);
+    </script>
+  </body>
+</html>
