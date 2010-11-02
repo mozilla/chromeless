@@ -1,0 +1,15 @@
+
+This is also from the components/nsSessionStore.js, it's here to give us 
+a hint on things we may need to address. One important use case is private
+browsing, but maybe other things are also important.
+
+// global notifications observed
+const OBSERVING = [
+  "domwindowopened", "domwindowclosed",
+  "quit-application-requested", "quit-application-granted",
+  "browser-lastwindow-close-granted",
+  "quit-application", "browser:purge-session-history",
+  "private-browsing", "browser:purge-domain-data",
+  "private-browsing-change-granted"
+];
+

@@ -59,14 +59,7 @@ const XHTML_NS ="http://www.w3.org/1999/xhtml";
  Interesting notes related to restoration of windows 
  http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/src/nsSessionStore.js#92
 
-  This service needs the gBrowser which is a reference to the 
-  tabbed browser; it also needs getBrowser = true/false check; 
-  and it will enter tabs collections to set/get properties 
- 
-  We want to trap, maintain a gBrowser abstraction
-  
 */
-
 
 let gSession = { 
  
@@ -81,15 +74,12 @@ let gSession = {
     this._sessionFile.append("sessionstore.js");
     this._sessionFileBackup.append("sessionstore.bak");
   },
- 
   addWindow: function aw(refWindow) { 
  	this.windows.push(refWindow); 
   }, 
-
   // Based on sss_saveState 
   // http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/src/nsSessionStore.js
   saveState: function ss() { 
-    
     // we acquire some session stuff here 
     // we will eventually loop through browsers 
     aStateObj = this.windows[0];
@@ -103,11 +93,11 @@ let gSession = {
     console.log("Will write data = "+stateString.data);
     console.log("Check your user profile for a sessionstore.js file");
     if (stateString.data)
-      this.__write(this._sessionFile, stateString.data);
+      this._writeToDisk(this._sessionFile, stateString.data);
 
   },
  
-  __write: function ww2(aFile, aData) { 
+  _writeToDisk: function writeToDisk(aFile, aData) { 
     var foStream = Cc["@mozilla.org/network/file-output-stream;1"].
                          createInstance(Ci.nsIFileOutputStream);
     foStream.init(aFile, 0x02 | 0x08 | 0x20, 0666, 0); 
@@ -115,9 +105,7 @@ let gSession = {
     converter.init(foStream, "UTF-8", 0, 0);
     converter.writeString(aData);
     converter.close(); // this closes foStream
-
   } ,
-
   _toJSONString: function sss_toJSONString(aJSObject) {
     let jsonString = JSON.stringify(aJSObject);
     if (/[\u2028\u2029]/.test(jsonString)) {
@@ -125,9 +113,7 @@ let gSession = {
     }
     return jsonString;
   },
-
   initSessionHistory: function _initSessionHistory(gBrowser) {
-    try { 
     gBrowser.webNavigation.sessionHistory = 
             Cc["@mozilla.org/browser/shistory;1"].
             createInstance(Ci.nsISHistory);
@@ -139,11 +125,7 @@ let gSession = {
     catch(ex) {
       console.log("Places database may be locked: " + ex);
     }
- 
-    } catch(i) { console.log(i) } 
   },
-
-
 } 
 
 __defineGetter__("NetUtil", function() {
