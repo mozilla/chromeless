@@ -31,10 +31,12 @@ history governance to it.
   <form><input id="awesomeBox" type="text" value="http://www.google.com" /><input type="button" onclick="launch();return false" value="go"/></form>
 
   <button onclick="init();return false">Init</button>
+  <button onclick="back();return false">Back</button>
+  <button onclick="forward();return false">Forward</button>
   <button onclick="save();return false">Save</button>
 
   <div style='width:100%;height:550px;'>
-  <browser id="content" src="http://www.google.com" flex="1" />
+  <browser id="content" type="content-primary" />
   </div>
 
   <!-- hacks to make xul:tabbrowser work -->
@@ -65,19 +67,25 @@ history governance to it.
 
   <script type="text/javascript">
 
-    var sessionStore = null ;
+    var sessionStore = null;
+    var historyControls = null; 
 
     function init() { 
-
+	historyControls = require("history");
 	sessionStore = require("session-store");
 	var browser = document.getElementById("content");
 	sessionStore.init(browser);
+        historyControls.init(browser);
     } 
-		
+    function back() { 
+        historyControls.back();
+    } 
+    function forward() { 
+        historyControls.forward();
+    } 
     function save() { 
 	sessionStore.save();
     } 
-
     function launch() { 
         try { 
  		var uri = document.getElementById("awesomeBox").value;

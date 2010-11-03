@@ -55,10 +55,17 @@ function injectLabVars(window) {
 
   /* This may go away - we expose a bunch of things in the developers HTML browser so far and we will revisit this, possibly keep the HTML browser safe and ask que HTML browser developer to message the upper app through a whitelisted require API */ 
 
+  window.require = require;
+  window.packaging = packaging;
+  window.Ci = Ci;
+  window.Cc = Cc;
+
+  /*
   window.wrappedJSObject.packaging = packaging;
   window.wrappedJSObject.require = require;
   window.wrappedJSObject.Ci = Ci;
   window.wrappedJSObject.Cc = Cc;
+  */
 }
 
 function requireForBrowser( safe_module ) { 
@@ -81,17 +88,6 @@ exports.main = function main(options) {
 
   var openLab;
 
-  if (require("xul-app").is("Firefox")) {
-    tabBrowser.whenContentLoaded(function(window) {
-      if (window.location == LAB_URL) {
-      injectLabVars(window);
-      require("window-utils").closeOnUnload(window);
-      }
-    });
-    openLab = function openLabInTab() {
-      tabBrowser.addTab(LAB_URL);
-    };
-  } else
     openLab = function openLabInWindow() {
 
       var call = options.staticArgs;
@@ -100,7 +96,7 @@ exports.main = function main(options) {
       /* We have some experimentation trying to launch the main window
       with a transparent background */
       //var contentWindow = require("chromeless-window");
-      var contentWindow = require("content-window");
+      var contentWindow = require("content-window-nobrowser");
 
       /* Page window height and width is fixed, it won't be 
       and it also shoudl be smart, so HTML browser developer 

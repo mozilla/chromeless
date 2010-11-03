@@ -113,18 +113,27 @@ let gSession = {
     }
     return jsonString;
   },
-  initSessionHistory: function _initSessionHistory(gBrowser) {
+  _initSessionHistory: function _initSessionHistory() {
+
+    // We will change this eventually. We so far have a whole 
+    // session history service associated with each browser
+    // due to fact we using tabbrowser
+    // gBrowser.selectedBrowser.webNavigation.sessionHistory;  
+
+    try { 
+    var gBrowser = this.windows[0];
+
     gBrowser.webNavigation.sessionHistory = 
             Cc["@mozilla.org/browser/shistory;1"].
             createInstance(Ci.nsISHistory);
     gBrowser.browsers[0].removeAttribute("disablehistory");
-    // enable global history
     try {
       gBrowser.docShell.QueryInterface(Ci.nsIDocShellHistory).useGlobalHistory = true;
     }
     catch(ex) {
       console.log("Places database may be locked: " + ex);
     }
+    } catch (i) { console.log(i) } 
   },
 } 
 
@@ -139,6 +148,7 @@ exports.init = function init(aBrowser) {
 	gSession.initSessionFile();
         console.log("Called setBroser");
 	gSession.addWindow(aBrowser);
+        gSession._initSessionHistory();
 }
 
 exports.save = function save() { 
