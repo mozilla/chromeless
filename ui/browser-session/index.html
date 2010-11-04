@@ -24,11 +24,13 @@ history governance to it.
      <!-- So far we insert the XBL binding from here, but in the upcoming 
      versions this could go away as we may insert the binding from the 
      chromeless main app level --> 
+
+     <!-- this insertion gives us a more richer browser implementation --> 
      <link rel="stylesheet" href="browser.css"/>
   </head>
   <body onload="" >
 
-  <form><input id="awesomeBox" type="text" value="http://www.google.com" /><input type="button" onclick="launch();return false" value="go"/></form>
+  <form><input id="awesomeBox" type="text" value="http://www.nytimes.com" /><input type="button" onclick="launch();return false" value="go"/></form>
 
   <button onclick="init();return false">Init</button>
   <button onclick="back();return false">Back</button>
