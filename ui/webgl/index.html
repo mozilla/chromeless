@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <title>WebGL Demo</title>
+
+    <!-- This demonstration is based in MDC samples, 
+    from https://developer.mozilla.org/samples/webgl/sample7/index.html 
+    plus with some fixes from http://www.peternitsch.net/demo/webgl_webcam/index.html notice that in MDC samples, November 1st 2010, WebGLFloatArray and 
+    WebGLUnsignedShortArray which were replaced by Float32Array and 
+    Uint16Array --> 
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <!-- this uses 3rd-party library http://sylvester.jcoglan.com/ --> 
+    <script src="sylvester.js" type="text/javascript"></script>
+
+    <script src="glutils.js" type="text/javascript"></script>
+    <script src="webgl-demo.js" type="text/javascript"></script>
+
+    <!-- Fragment shader program -->
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+
+      varying vec2 vTextureCoord;
+      
+      uniform sampler2D uSampler;
+      
+      void main(void) {
+        gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+      }
+    </script>
+    
+    <!-- Vertex shader program -->
+    
+    <script id="shader-vs" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+      attribute vec2 aTextureCoord;
+    
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+      
+      varying vec2 vTextureCoord;
+    
+      void main(void) {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vTextureCoord = aTextureCoord;
+      }
+    </script>
+  </head>
+  
+  <body onload="start()">
+    <canvas id="glcanvas" width="640" height="480">
+      Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+    </canvas>
+  </body>
+</html>
