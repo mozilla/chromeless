@@ -44,4 +44,4 @@ print "You can also try other scripts such as ./run ui/thumbnails/index.html"
 
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
-os.system("impl/bin/cfx -a xulrunner -t ./template/app-extension --static-args {\\\"browser\\\":\\\""+ browserToLaunch+"\\\"} -p \"impl/packages/chromeless\" run")
+os.system(sys.executable + " impl/bin/cfx -a xulrunner -t ./template/app-extension --static-args {\\\"browser\\\":\\\""+ browserToLaunch+"\\\"} -p \"impl/packages/chromeless\" run")
