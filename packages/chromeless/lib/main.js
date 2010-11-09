@@ -45,34 +45,15 @@ const {Ci,Cc} = require("chrome");
 
 var appWindow = null; 
 
-function injectLabVars(window) {
-
-  /* This may go away - we expose a bunch of things in the developers
-   * HTML browser so far and we will revisit this, possibly keep the
-   * HTML browser safe and ask que HTML browser developer to message
-   * the upper app through a whitelisted require API */ 
-
-  window.require = require;
-  window.packaging = packaging;
-  window.Ci = Ci;
-  window.Cc = Cc;
-
-  /*
-  window.wrappedJSObject.packaging = packaging;
-  window.wrappedJSObject.require = require;
-  window.wrappedJSObject.Ci = Ci;
-  window.wrappedJSObject.Cc = Cc;
-  */
-}
-
-function requireForBrowser( safe_module ) {
-	return require;
+function requireForBrowser(moduleName) {
+    console.log("browser HTML requires: " + moduleName);
+	return require(moduleName);
 }
 
 exports.main = function main(options) {
     var call = options.staticArgs;
 
-    var contentWindow = require("content-window-nobrowser");
+    var contentWindow = require("chromeless-sandbox-window");
 
     // convert browser url into a file url
     var startPage = require('url').fromFilename(call.browser)
@@ -87,7 +68,9 @@ exports.main = function main(options) {
         url: startPage,
         width: 800,
         height: 600,
-        onStartLoad: injectLabVars
+        injectProps : {
+            require: requireForBrowser
+        }
     });
 };
 
