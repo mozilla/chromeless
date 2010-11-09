@@ -266,7 +266,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
         var url = this.__loader.require("url");
         return url.URL(path, info.packageData).toString();
       } else
-        throw new Error("No data for package " + pkgName);
+        throw new Error("No data for package " + path);
     },
 
     createLoader: function createLoader() {
