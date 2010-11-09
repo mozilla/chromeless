@@ -9,24 +9,17 @@
     Uint16Array --> 
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
     <!-- this uses 3rd-party library http://sylvester.jcoglan.com/ --> 
     <script src="sylvester.js" type="text/javascript"></script>
-
     <script src="glutils.js" type="text/javascript"></script>
     <script src="webgl-demo.js" type="text/javascript"></script>
-
     <!-- Fragment shader program -->
-
     <script id="shader-fs" type="x-shader/x-fragment">
         #ifdef GL_ES
         precision highp float;
         #endif
-
       varying vec2 vTextureCoord;
-      
       uniform sampler2D uSampler;
-      
       void main(void) {
         gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
       }
@@ -37,50 +30,47 @@
     <script id="shader-vs" type="x-shader/x-vertex">
       attribute vec3 aVertexPosition;
       attribute vec2 aTextureCoord;
-    
       uniform mat4 uMVMatrix;
       uniform mat4 uPMatrix;
-      
       varying vec2 vTextureCoord;
-    
       void main(void) {
         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
         vTextureCoord = aTextureCoord;
       }
     </script>
-
     <script> 
-function launchHiddenWorkerIframe() { 
-  var hiddenFrames = require("hidden-frame-xulrunner");
-  var hiddenFrame = hiddenFrames.add(hiddenFrames.HiddenFrame({
-    onReady: function() {
-      this.element.contentWindow.location = "https://mozillalabs.com/";
-      var self = this;
-      this.element.addEventListener("DOMContentLoaded", function() {
-  try { 
-  var camera = require("canvas-proxy");
-  var shot = camera.snapshot(self.element);
-  thumbImageRef = new Image();
-  thumbImageRef.width="64";
-  thumbImageRef.height="64";
-  thumbImageRef.src=shot.toDataURL("image/png");
-  } catch (i) { alert(i) } 
+ 
+  gThumbImageRef = null; // This is being used by webgl-demo.js
 
-      }, true, true);
-    }
-  }));
+  function launchHiddenWorkerIframe() { 
+    var hiddenFrames = require("hidden-frame-xulrunner");
+    var hiddenFrame = hiddenFrames.add(hiddenFrames.HiddenFrame({
+      onReady: function() {
+        this.element.contentWindow.location = "https://mozillalabs.com/";
+        var self = this;
+        this.element.addEventListener("DOMContentLoaded", function() {
+          /* Notice that DOMContentLoaded is not ideal here, we want to 
+             render the page when all the inner DOM elements are also 
+             loaded. DOMContentLoaded is just about the raw view-source 
+             and won't include images in the page, so it will look bad */
+
+          try { 
+            var camera = require("canvas-proxy");
+            var shot = camera.snapshot(self.element);
+            gThumbImageRef = new Image();
+            gThumbImageRef.width="64";
+            gThumbImageRef.height="64";
+            gThumbImageRef.src=shot.toDataURL("image/png");
+          } catch (i) { alert(i) } 
+
+        }, true, true);
+      }
+    }));
   } 
-
-
-thumbImageRef = null;
-
- 	function prestart() { 
-
-
-launchHiddenWorkerIframe();
-		
-		start(); 
-	} 
+  function prestart() { 
+    launchHiddenWorkerIframe();
+    start(); 
+  } 
 
     </script>
   </head>
