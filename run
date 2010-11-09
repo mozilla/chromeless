@@ -68,7 +68,7 @@ import cuddlefish
 cuddlefish.run([
         "run",
         "-a", "xulrunner",
-        "-t", "./template/app-extension",
+        "-t", "./template",
         "--static-args", '{"browser":"'+ browserToLaunch+'"}',
         "-p", "impl/packages/chromeless"
         ])
