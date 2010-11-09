@@ -27,20 +27,20 @@ elif python_lib_dir not in os.environ['PYTHONPATH'].split(os.pathsep):
     os.environ['PYTHONPATH'] = os.pathsep.join(paths)
 
 def findBrowserHTML(path):
-    # "ui" directory can be omitted, but we'll automatically append it to
+    # "examples" directory can be omitted, but we'll automatically append it to
     # verify that file exists.
     if not os.path.exists(path):
-        path = os.path.join("ui", path)
+        path = os.path.join("examples", path)
     if os.path.isdir(path):
         path = os.path.join(path, "index.html")
-    # the path we return must have ui omitted
-    return re.sub('^ui(?:[\\/])', '', path)
+    # the path we return must have examples omitted
+    return re.sub('^examples(?:[\\/])', '', path)
 
 # determine the directory where this script resides, from this, we'll
 # make lotsa assumptions
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 interface_directory = "impl/packages/chromeless/data"
-ui_directory = os.path.join(script_dir, "ui")
+ui_directory = os.path.join(script_dir, "examples")
 
 # now because this is a demo, and lloyd is an idiot, we'll just
 # symlink user interface files from ui into the bowels of packages
@@ -60,7 +60,7 @@ except:
 browserToLaunch = findBrowserHTML(browserToLaunch)
 
 print("Will open the browser html = " + browserToLaunch)
-print("You can also try other scripts such as ./run ui/thumbnails/index.html")
+print("You can also try other scripts such as ./run examples/thumbnails/index.html")
 
 
 import cuddlefish
