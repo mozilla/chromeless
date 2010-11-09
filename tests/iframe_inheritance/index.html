@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+
+  </head>
+  <body >
+   <p>
+     This is a test to determine if functions accessible to the top level HTML entry point
+     are also available to children.
+   </p>
+
+   this is main page content...
+   <script type="text/javascript">
+      try {
+        window.require("url");
+        document.write("I can haz window.require()!");
+      } catch(e) {
+        document.write("NO window.require() for me: " + e);
+      }
+   </script>
+   <br>
+   <iframe src="inner-page.html" width="400" height="100" border="2" > 
+   </iframe>
+  </body>
+</html>
