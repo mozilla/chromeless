@@ -21,7 +21,7 @@ or pass an argument for the files located inside the `./ui` directory
 
 ## Background - Use of Addons SDK ( a.k.a. Jetpack SDK ) 
 
-This is a package and build system and the run script is based on the Mozilla Addon SDK ( http://github.com/mozilla/addon-sdk ). It uses cfx program to dynamically create a new profile, plus, it uses the ./template/app-extension and information fro the ./impl/packages/chromeless to build your application. When it builds, it calls firefox ( or XULRunner ) passing the application. 
+This is a package and build system and the run script is based on the Mozilla Addon SDK ( http://github.com/mozilla/addon-sdk ). It uses cfx program to dynamically create a new profile, plus, it uses the xulrunner template (under ./template) and information from the ./packages/chromeless to build your application. When it builds, it invokes XULRunner passing the application. 
 
 If you want to see the actual generated output and ship with XULRunner or to launch it directly from XULrunner, you need ( so far til we make it easier ) to call cfx using the "xpi" argument instead the "run" argument.  
 

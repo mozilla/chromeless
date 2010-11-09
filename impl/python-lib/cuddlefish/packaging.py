@@ -174,6 +174,9 @@ def build_config(root_dir, target_cfg):
                          if not dirname.startswith('.')]
 
         for path in package_paths:
+            # ignore non-directories
+            if not os.path.isdir(path):
+                continue
             pkgconfig = get_config_in_dir(path)
             if pkgconfig.name in packages:
                 otherpkg = packages[pkgconfig.name]

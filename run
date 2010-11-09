@@ -8,13 +8,13 @@ import os,sys,re
 
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
-cuddlefish_root = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "impl")
+cuddlefish_root = os.path.dirname(os.path.abspath(sys.argv[0]))
 
 if 'CUDDLEFISH_ROOT' not in os.environ:
     os.environ['CUDDLEFISH_ROOT'] = cuddlefish_root
 
 # add our own python-lib path to the python module search path.
-python_lib_dir = os.path.join(cuddlefish_root, "python-lib")
+python_lib_dir = os.path.join(cuddlefish_root, "impl", "python-lib")
 if python_lib_dir not in sys.path:
     sys.path.append(python_lib_dir)
 
@@ -39,7 +39,7 @@ def findBrowserHTML(path):
 # determine the directory where this script resides, from this, we'll
 # make lotsa assumptions
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-interface_directory = "impl/packages/chromeless/data"
+interface_directory = "packages/chromeless/data"
 ui_directory = os.path.join(script_dir, "examples")
 
 # now because this is a demo, and lloyd is an idiot, we'll just
@@ -70,5 +70,5 @@ cuddlefish.run([
         "-a", "xulrunner",
         "-t", "./template",
         "--static-args", '{"browser":"'+ browserToLaunch+'"}',
-        "-p", "impl/packages/chromeless"
+        "-p", "packages/chromeless"
         ])
