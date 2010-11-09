@@ -223,6 +223,21 @@ function initTextures() {
   cubeImage = new Image();
   cubeImage.onload = function() { handleTextureLoaded(cubeImage, cubeTexture); }
   cubeImage.src = "data:image/jpg;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAABGdBTUEAAFjH/EfgAgAAACBjSFJNAAB6JQAAgIMAAPn/AACA5gAAdS4AAOpfAAA6lwAAF29p5MQrAAABaElEQVR4nGL4f/w/SQgggBhI1QAQQDANR/7/P0aUBoAAAms4BtYAZOT/AKHWX/9P/Qehqf/+N/7+P+X3/5P//5+AagAIIJgGIEr99v/0fxA48/+/w5f/Du9BjId/QGTWb7gGgACCaQDyI9793/Dzf+vX/0Gf/jPc+M9w8T/Di/+Gb/9Xf/2f9RHuJIAAgmkAOsD32X/mp/8Z7v9nuPWf4dR/hkP/Gc79Z7j+n+n+/5zPcA0AAQTzNFDD4n//ve/8Zzz2nwGIDoM1gJHNlf9HEZ4GCCCYhtNgp6f9+u/z8D/bSbCGIyBke/V/z1+4B4AIIIBQNQBR/c//Pg/+M4I12F3/X/UbJIWkASCAMDQAUdDX/x63QartvoK4p1DiASCAYBpOImkAIu+H/+1vQdmoGgACCClpnELSANQf9h3EOI2uASCAkDScRHUYBJ0GiyNpAAggJA0nwIadRkUnUXwMRAABRHJqBQgwALsonvvjW7ZfAAAAAElFTkSuQmCC";
+  setTimeout("loopTexture()",2000);
+}
+
+function loopTexture() {
+
+	if(thumbImageRef != null) { 
+      gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
+      var video = thumbImageRef;
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+ 	} 
+      setTimeout("loopTexture()",300);
 }
 
 function handleTextureLoaded(image, texture) {

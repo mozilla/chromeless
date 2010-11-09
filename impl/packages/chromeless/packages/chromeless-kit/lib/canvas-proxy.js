@@ -54,14 +54,33 @@ exports.snapshot = function Snapshot(frame) {
   var window = frame.contentWindow;
   var thumbnail = window.document.createElementNS(XHTML_NS, "canvas");
   thumbnail.mozOpaque = true;
-  thumbnail.width = Math.ceil(window.screen.availWidth / 4.75);
-  var aspectRatio = 0.5625; // 16:9
-  thumbnail.height = Math.round(thumbnail.width * aspectRatio);
+  thumbnail.width=64;
+  thumbnail.height = 64;
   var ctx = thumbnail.getContext("2d");
-  var snippetWidth = window.innerWidth * .6;
+  var snippetWidth=320;
   var scale = thumbnail.width / snippetWidth;
+  var aspectRatio = 0.5625; // 16:9
+
   ctx.scale(scale, scale);
   ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWidth * aspectRatio, "rgb(255,255,255)");
   return thumbnail;
 
 }
+
+/* backup 
+  var window = frame.contentWindow;
+  var thumbnail = window.document.createElementNS(XHTML_NS, "canvas");
+  thumbnail.mozOpaque = true;
+  thumbnail.width = Math.ceil(window.screen.availWidth / 4.75);
+  var aspectRatio = 0.5625; // 16:9
+  thumbnail.height = Math.round(thumbnail.width * aspectRatio);
+  var ctx = thumbnail.getContext("2d");
+  
+  //var snippetWidth = window.innerWidth * .6;  var snippetWidth=64;
+  var scale = thumbnail.width / snippetWidth;
+  ctx.scale(scale, scale);
+  ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWi
+dth * aspectRatio, "rgb(255,255,255)");
+  return thumbnail;
+
+*/

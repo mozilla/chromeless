@@ -48,9 +48,44 @@
         vTextureCoord = aTextureCoord;
       }
     </script>
+
+    <script> 
+function launchHiddenWorkerIframe() { 
+  var hiddenFrames = require("hidden-frame-xulrunner");
+  var hiddenFrame = hiddenFrames.add(hiddenFrames.HiddenFrame({
+    onReady: function() {
+      this.element.contentWindow.location = "https://mozillalabs.com/";
+      var self = this;
+      this.element.addEventListener("DOMContentLoaded", function() {
+  try { 
+  var camera = require("canvas-proxy");
+  var shot = camera.snapshot(self.element);
+  thumbImageRef = new Image();
+  thumbImageRef.width="64";
+  thumbImageRef.height="64";
+  thumbImageRef.src=shot.toDataURL("image/png");
+  } catch (i) { alert(i) } 
+
+      }, true, true);
+    }
+  }));
+  } 
+
+
+thumbImageRef = null;
+
+ 	function prestart() { 
+
+
+launchHiddenWorkerIframe();
+		
+		start(); 
+	} 
+
+    </script>
   </head>
   
-  <body onload="start()">
+  <body onload="prestart()">
     <canvas id="glcanvas" width="640" height="480">
       Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>
