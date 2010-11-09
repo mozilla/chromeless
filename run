@@ -6,6 +6,26 @@
 
 import os,sys,re
 
+# set the cuddlefish "root directory" for this process if it's not already
+# set in the environment
+cuddlefish_root = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "impl")
+
+if 'CUDDLEFISH_ROOT' not in os.environ:
+    os.environ['CUDDLEFISH_ROOT'] = cuddlefish_root
+
+# add our own python-lib path to the python module search path.
+python_lib_dir = os.path.join(cuddlefish_root, "python-lib")
+if python_lib_dir not in sys.path:
+    sys.path.append(python_lib_dir)
+
+# now export to env so sub-processes get it too
+if 'PYTHONPATH' not in os.environ:
+    os.environ['PYTHONPATH'] = python_lib_dir
+elif python_lib_dir not in os.environ['PYTHONPATH'].split(os.pathsep):
+    paths = os.environ['PYTHONPATH'].split(os.pathsep)
+    paths.insert(0, python_lib_dir)
+    os.environ['PYTHONPATH'] = os.pathsep.join(paths)
+
 def findBrowserHTML(path):
     # "ui" directory can be omitted, but we'll automatically append it to
     # verify that file exists.
@@ -39,9 +59,16 @@ except:
     pass
 browserToLaunch = findBrowserHTML(browserToLaunch)
 
-print "Will open the browser html ="+ browserToLaunch
-print "You can also try other scripts such as ./run ui/thumbnails/index.html"
+print("Will open the browser html = " + browserToLaunch)
+print("You can also try other scripts such as ./run ui/thumbnails/index.html")
 
-# now let's run the cfx thingy and specify the app-kit main module
-# as our starting point
-os.system(sys.executable + " impl/bin/cfx -a xulrunner -t ./template/app-extension --static-args {\\\"browser\\\":\\\""+ browserToLaunch+"\\\"} -p \"impl/packages/chromeless\" run")
+
+import cuddlefish
+
+cuddlefish.run([
+        "run",
+        "-a", "xulrunner",
+        "-t", "./template/app-extension",
+        "--static-args", '{"browser":"'+ browserToLaunch+'"}',
+        "-p", "impl/packages/chromeless"
+        ])
