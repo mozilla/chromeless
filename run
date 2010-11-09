@@ -14,7 +14,7 @@ if 'CUDDLEFISH_ROOT' not in os.environ:
     os.environ['CUDDLEFISH_ROOT'] = cuddlefish_root
 
 # add our own python-lib path to the python module search path.
-python_lib_dir = os.path.join(cuddlefish_root, "impl", "python-lib")
+python_lib_dir = os.path.join(cuddlefish_root, "impl")
 if python_lib_dir not in sys.path:
     sys.path.append(python_lib_dir)
 
