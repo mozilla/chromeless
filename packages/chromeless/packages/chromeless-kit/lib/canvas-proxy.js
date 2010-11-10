@@ -60,10 +60,9 @@ exports.snapshot = function Snapshot(frame) {
   var snippetWidth=320;
   var scale = thumbnail.width / snippetWidth;
   var aspectRatio = 0.5625; // 16:9
-
   ctx.scale(scale, scale);
   ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWidth * aspectRatio, "rgb(255,255,255)");
-  return thumbnail;
+  return thumbnail.toDataURL("image/png");
 
 }
 

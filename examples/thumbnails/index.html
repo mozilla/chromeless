@@ -148,11 +148,9 @@ function canvasShot(browserRef, thumbImageRef) {
   try { 
 
   var camera = require("canvas-proxy");
-  var shot = camera.snapshot(browserRef);
   thumbImageRef.width="100";
   thumbImageRef.height="60";
-  thumbImageRef.src=shot.toDataURL("image/png");
-
+  thumbImageRef.src=camera.snapshot(browserRef);
   } catch (i) { 
     alert(i); 
   } 
@@ -184,13 +182,13 @@ function syncTabs(refBrowserId) {
 
 $(document).ready(function() {
     $("#browserHeader form").submit(function(e) {
-	if(browserTabs.length<1) { 
+       if(browserTabs.length<1) { 
           newTab();
-	} 
+       } 
         var url = $.trim($("#awesomeBox").val());
         $(".browser_selected").attr("src", url);
         browserUniqueId = $(".browser_selected").attr("id");
-        $(".browser_selected").attr("onload", "syncTabs('"+browserUniqueId+"')");
+        setTimeout(function() { syncTabs(browserUniqueId); }, 1000);
         return false; 
     });
     $("#browserHeader #buttonNew").click(function(e) {
