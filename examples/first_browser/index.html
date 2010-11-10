@@ -82,6 +82,11 @@ body {
   <script type="text/javascript">
 
 
+window.addEventListener("experimental-dom-loaded", function(e) {
+  console.log("child's dom has been loaded: " + e);
+}, false);
+
+
 // the ready handler would run once the browser process was initialized?
 $(document).ready(function() {
 

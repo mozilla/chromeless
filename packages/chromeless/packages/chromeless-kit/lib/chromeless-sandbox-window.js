@@ -16,11 +16,19 @@ observers.add("content-document-global-created", function(subject) {
     if (subject.window.top != subject.window.self) {
         if (isTopLevelWindow(subject.window.parent))
         {
+            // generate a custom event to indicate to top level HTML
+            // that the initial page load is complete (no scripts yet exectued)
+            var evt = subject.window.document.createEvent("Events");  
+            evt.initEvent("experimental-dom-loaded", true, false);
+            subject.window.dispatchEvent(evt);
+
+            // this is a top level iframe
             subject.window.top = subject.window.self;
             subject.window.parent = subject.window.self;
         }
         else
         {
+            // this is a frame nested underneat the top level frame  
             subject.window.top = subject.window.parent.top;
         }
     }
