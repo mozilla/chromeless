@@ -69,7 +69,10 @@ exports.main = function main(options) {
         width: 800,
         height: 600,
         injectProps : {
-            require: requireForBrowser
+            require: requireForBrowser,
+            console: {
+                log: function(x) { console.log(x); }
+            }
         }
     });
 };
@@ -78,4 +81,3 @@ exports.onUnload = function (reason) {
   console.log("Trying to kill app window");
   appWindow.close();
 };
-
