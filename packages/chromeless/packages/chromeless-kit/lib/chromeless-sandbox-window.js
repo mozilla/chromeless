@@ -12,15 +12,16 @@ function isTopLevelWindow(w) {
     return false;
 }
 
-observers.add("content-document-global-created", function(subject) {
+observers.add("content-document-global-created", function(subject, url) {
     if (subject.window.top != subject.window.self) {
         if (isTopLevelWindow(subject.window.parent))
         {
             // generate a custom event to indicate to top level HTML
             // that the initial page load is complete (no scripts yet exectued)
-            var evt = subject.window.document.createEvent("Events");  
+            var evt = subject.window.parent.document.createEvent("HTMLEvents");  
             evt.initEvent("experimental-dom-loaded", true, false);
-            subject.window.dispatchEvent(evt);
+            evt.url = subject.window.location.href;
+            subject.window.parent.dispatchEvent(evt);
 
             // this is a top level iframe
             subject.window.top = subject.window.self;

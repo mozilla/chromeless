@@ -82,8 +82,10 @@ body {
   <script type="text/javascript">
 
 
+// capture events when the a child iframe changes it's content,
+// use the .url property of the event to update the location bar
 window.addEventListener("experimental-dom-loaded", function(e) {
-  console.log("child's dom has been loaded: " + e);
+  $("#awesomeBox").val(e.url);
 }, false);
 
 
@@ -99,8 +101,6 @@ $(document).ready(function() {
 
         var url = $.trim($("#awesomeBox").val());
         $("#contentFrame").attr("src", url);
-
-
     });
 });
 
