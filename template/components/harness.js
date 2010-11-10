@@ -287,7 +287,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
   HarnessService.prototype = {
     get classDescription() {
       // This needs to be unique, lest we regress bug 554489.
-      return "Harness Service for " + options.bootstrap.contractID;
+      return "Harness_Service_for_" + options.bootstrap.contractID;
     },
 
     get contractID() { return options.bootstrap.contractID; },
@@ -405,10 +405,10 @@ function buildHarnessService(rootFileSpec, dump, logError,
         case "sessionstore-windows-restored": // Firefox
         case "xul-window-visible": // Thunderbird, Fennec
           obSvc.removeObserver(this, topic);
-          this.load(lifeCycleObserver192.loadReason || "startup");
+          this.load("startup");
           break;
         case "quit-application-granted":
-          this.unload(lifeCycleObserver192.unloadReason || "shutdown");
+          this.unload("shutdown");
           quit("OK");
           break;
         }
@@ -587,46 +587,21 @@ function getDefaults(rootFileSpec) {
           logError: logError};
 }
 
-// TODO: This doesn't actually work.  we must figure out
-// how to get the harness service running in this context
-// (included by xul content) rather than the component
-// context.
-try {
-    var rootFileSpec = Cc["@mozilla.org/file/local;1"]
-        .createInstance(Ci.nsILocalFile);
-    // XXX: need to get a path?
-    // why do things seem to work without a path?
-    // wtf? 
+dump ("evaluated\n");
+// This is used by XULRunner when running Gecko 2.0 or above.
+function NSGetFactory(classID) {
+ dump ("NSGetFactory for "+classID+"\n");
 
-    var defaults = getDefaults(rootFileSpec);
-    var HarnessService = buildHarnessService(rootFileSpec,
-                                             defaults.dump,
-                                             defaults.logError,
-                                             defaults.onQuit,
-                                             defaults.options);
+  var defaultsDir = Cc["@mozilla.org/file/directory_service;1"]
+                    .getService(Ci.nsIProperties)
+                    .get("DefRt", Ci.nsIFile);
+  var rootFileSpec = defaultsDir.parent;
+  var defaults = getDefaults(rootFileSpec);
 
-    var factory = HarnessService.prototype._xpcom_factory;
-    var proto = HarnessService.prototype;
-
-    // We want to keep this factory around for the lifetime of
-    // the addon so legacy code with access to Components can
-    // access the addon if needed.
-    var manager = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
-    manager.registerFactory(proto.classID,
-                            proto.classDescription,
-                            proto.contractID,
-                            factory);
-
-    var harnessService = factory.createInstance(null, Ci.nsISupports);
-    harnessService = harnessService.wrappedJSObject;
-
-    harnessService.load("startup");
-    gHarness = {
-        service: harnessService,
-        classID: proto.classID,
-        contractID: proto.contractID,
-        factory: factory
-    };
-} catch(e) {
-    dump(e);
+  var HarnessService = buildHarnessService(rootFileSpec,
+                                           defaults.dump,
+                                           defaults.logError,
+                                           defaults.onQuit,
+                                           defaults.options);
+  return HarnessService.prototype._xpcom_factory;
 }
