@@ -4,7 +4,7 @@
 import sys
 import os
 import platform
-import md5
+import hashlib
 import urllib
 import urlparse
 import zipfile
@@ -30,7 +30,7 @@ class Fetcher(object):
         got = ""
         try:
             with open(path, 'rb') as fp:
-                sig = md5.new()
+                sig = hashlib.md5()
                 while True:
                     chunk = fp.read(1024 * 16)
                     if not chunk: break
@@ -41,12 +41,9 @@ class Fetcher(object):
         return got == want
 
     def needs_fetch(self):
-        for path in self._config["sigs"]:
-            want = self._config["sigs"][path]
-            path = os.path.join(self._buildDir, path)
-            if (not self._md5_match(path, want)):
-                return True
-        return False
+        want = self._config["bin"]["sig"]
+        path = os.path.join(self._buildDir, self._config["bin"]["path"])
+        return not self._md5_match(path, want)
 
     def _check_build_dir(self, buildDir):
         if not os.path.isdir(buildDir):
@@ -98,6 +95,9 @@ class Fetcher(object):
             print ("")
         f.close()
         u.close()
+        if not self._md5_match(self._tarball, self._config['md5']):
+            os.remove(self._tarball)            
+            raise RuntimeError("download failure!  md5 mismatch!")
         return
 
     # unpack the tarball (or zipfile) into the build directory
@@ -113,6 +113,11 @@ class Fetcher(object):
             raise RuntimeError("zip extraction not yet implemented");
         else:
             raise RuntimeError("I don't know how to extract '" + os.path.basename(path) + "'")
+        # if after all that we still think we need to fetch the thing,
+        # that means unpacked bits don't match expected signatures.
+        # safest to purge them from disk and/or refuse to run
+        if self.needs_fetch():
+            raise RuntimeError("Signature mismatch in unpacked xulrunner contents.  Eep!")
         return
 
     def run(self, descriptor=sys.stdout):
