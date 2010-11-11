@@ -5,7 +5,6 @@
 # "entry point HTML" - that which should be used as the browser's UI.
 
 import os,sys
-import zipfile
 
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
