@@ -1,1 +1,1 @@
-from fetcher import Fetcher
+from _fetcher import Fetcher

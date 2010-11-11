@@ -1,71 +1,82 @@
 # The fetcher class is responsible for pulling down a platform appropriate
 # version of xulrunner and installing it into a build directory.
 
-import sys,os,platform,md5,urllib,urlparse,zipfile,tarfile,math
-from . import config
+import sys
+import os
+import platform
+import md5
+import urllib
+import urlparse
+import zipfile
+import tarfile
+import math
 
-class Fetcher():
+from . import _config
+
+class Fetcher(object):
     def __init__(self, buildDir):
         # ensure that the top level directory into which we'll install
         # xulrunner exists
-        self.__checkBuildDir(buildDir)
-        self.__buildDir = os.path.abspath(buildDir)
-        self.__system = platform.system() + "_" + platform.architecture()[0]
-        self.__config = config.getConfig(self.__system)
+        self._check_build_dir(buildDir)
+        self._buildDir = os.path.abspath(buildDir)
+        self._system = platform.system() + "_" + platform.architecture()[0]
+        self._config = _config.getConfig(self._system)
         # maybe we want to move this cache dir into a dot directory in the users
         # system?  would this be horrible, or helpful?
-        self.__cacheDir = os.path.join(self.__buildDir, "cache")
+        self._cacheDir = os.path.join(self._buildDir, "cache")
         return
 
-    def __md5Match(self, path, want):
+    def _md5_match(self, path, want):
         got = ""
         try:
-            f = open(path)
-            got = md5.new(f.read()).hexdigest()
-            f.close()
+            with open(path, 'rb') as fp:
+                sig = md5.new()
+                while True:
+                    chunk = fp.read(1024 * 16)
+                    if not chunk: break
+                    sig.update(chunk)
+                got = sig.hexdigest()
         except IOError:
             pass
         return got == want
 
-    def needsFetch(self):
-        for path in self.__config["sigs"]:
-            want = self.__config["sigs"][path]
-            path = os.path.join(self.__buildDir, path)
-            if (not self.__md5Match(path, want)):
+    def needs_fetch(self):
+        for path in self._config["sigs"]:
+            want = self._config["sigs"][path]
+            path = os.path.join(self._buildDir, path)
+            if (not self._md5_match(path, want)):
                 return True
         return False
 
-    def __checkBuildDir(self, buildDir):
-        if not os.path.exists(buildDir):
-            os.mkdir(buildDir)
+    def _check_build_dir(self, buildDir):
         if not os.path.isdir(buildDir):
-            raise RuntimeError(buildDir + " is not a directory (nor could I create it)")
+            os.mkdir(buildDir)
         return
 
-    def __print(self, descriptor, string):
+    def _print(self, descriptor, string):
         if descriptor != None:
             print >>descriptor, string
 
     # actually go out and fetch the tarball, store it under build/cache
-    def __fetch(self, descriptor = None):
-        url = self.__config["url"]
-        if not os.path.isdir(self.__cacheDir):
-            os.mkdir(self.__cacheDir)
-        self.__tarball = os.path.join(self.__cacheDir, os.path.basename(urlparse.urlparse(url).path))
+    def _fetch(self, descriptor = None):
+        url = self._config["url"]
+        if not os.path.isdir(self._cacheDir):
+            os.mkdir(self._cacheDir)
+        self._tarball = os.path.join(self._cacheDir, os.path.basename(urlparse.urlparse(url).path))
         # if the tarball has already been downloaded and md5 checks out, don't go fetch it
         # again.
-        if os.path.exists(self.__tarball):
-            if self.__md5Match(self.__tarball, self.__config['md5']):
-                return True
+        if os.path.exists(self._tarball):
+            if self._md5_match(self._tarball, self._config['md5']):
+                return
             else:
-                os.remove(self.__tarball)
+                os.remove(self._tarball)
         # now go fetch
         u = urllib.urlopen(url)
         size = int(u.info()['content-length'])
         rd = 0
-        self.__print(descriptor, "Fetching xulrunner, " + str(size) + " bytes from " + urlparse.urlparse(url).netloc)
-        f = open(self.__tarball, "w+")
-        self.__print(descriptor, "| 0%                                                               100% |")
+        self._print(descriptor, "Fetching xulrunner, " + str(size) + " bytes from " + urlparse.urlparse(url).netloc)
+        f = open(self._tarball, "wb+")
+        self._print(descriptor, "| 0%                                                               100% |")
         dots = 0
         while (True):
             d = u.read(1024 * 10)
@@ -87,17 +98,16 @@ class Fetcher():
             print ("")
         f.close()
         u.close()
-        return True
+        return
 
     # unpack the tarball (or zipfile) into the build directory
-    def __unpack(self,descriptor,path):
+    def _unpack(self,descriptor,path):
         if not os.path.isfile(path):
             raise RuntimeError("path doesn't exist, cannot unpack: " + path)
-        ext = os.path.splitext(path)[1]
-        if (any(map(lambda x: path.endswith(x), (".tgz",".tar.gz",".tbz2",".tar.bz2")))):
-            self.__print(descriptor, "extracting " + os.path.basename(path))
+        if (any(path.endswith(ext) for ext in (".tgz",".tar.gz",".tbz2",".tar.bz2"))):
+            self._print(descriptor, "extracting " + os.path.basename(path))
             tf = tarfile.open(path)
-            tf.extractall(self.__buildDir)
+            tf.extractall(self._buildDir)
             tf.close
         elif (path.endswith(".zip")):
             raise RuntimeError("zip extraction not yet implemented");
@@ -106,5 +116,5 @@ class Fetcher():
         return
 
     def run(self, descriptor=sys.stdout):
-        self.__fetch(descriptor)
-        self.__unpack(descriptor, self.__tarball)
+        self._fetch(descriptor)
+        self._unpack(descriptor, self._tarball)
