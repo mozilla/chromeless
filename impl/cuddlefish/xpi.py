@@ -11,8 +11,7 @@ def build_xpi(template_root_dir, manifest, xpi_name,
     zf.write('.install.rdf', 'install.rdf')
     os.remove('.install.rdf')
 
-    IGNORED_FILES = [".hgignore", "install.rdf", 
-                     "application.ini", xpi_name]
+    IGNORED_FILES = [".hgignore", "install.rdf", xpi_name]
     IGNORED_FILE_SUFFIXES = ["~"]
     IGNORED_DIRS = [".svn", ".hg", "defaults"]
 
