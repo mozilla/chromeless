@@ -5,6 +5,7 @@
 # "entry point HTML" - that which should be used as the browser's UI.
 
 import os,sys
+import zipfile
 
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
@@ -48,6 +49,13 @@ browserToLaunch = findBrowserHTML(browserToLaunch)
 print("Will open the browser html = " + browserToLaunch)
 print("You can also try other scripts such as ./run examples/thumbnails/index.html")
 
+executionMode = "run" 
+if sys.argv[2] == "package":
+    executionMode = "xulapp" 
+    print "Packaging your application for distribution or installation..."
+    print "Note: expect a chromeless.zip application generated in this directory; "
+    print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
+
 # throw an error message if we can't figure out what html file
 # is the browser's HTML entry point
 if not os.path.exists(browserToLaunch):
@@ -59,13 +67,17 @@ print "You can also try other scripts such as ./run ui/thumbnails/index.html"
 
 import cuddlefish
 
+
+
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
 cuddlefish.run([
-        "run",
+        executionMode,
         "-a", "xulrunner",
         "-t", "./template",
         "--static-args", '{"browser":"'+ browserToLaunch+'"}',
         "-p", "packages/chromeless"
         ])
+
+
 

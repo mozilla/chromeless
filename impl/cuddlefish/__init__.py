@@ -16,6 +16,7 @@ on your system. Please specify one using the -b/--binary option.
 
 UPDATE_RDF_FILENAME = "%s.update.rdf"
 XPI_FILENAME = "%s.xpi"
+XULAPP_FILENAME = "%s.zip"
 
 usage = """
 %prog [options] [command]
@@ -432,6 +433,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         sys.exit(0)
     elif command == "xpi":
         use_main = True
+    elif command == "xulapp":
+        use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
             target_cfg['tests'] = []
@@ -572,6 +575,31 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                              "Contents", "Resources")
         else:
             app_extension_dir = os.path.join(mydir, "app-extension")
+
+    if command == 'xulapp':
+        from cuddlefish.xulapp import build_xulapp
+        from cuddlefish.rdf import gen_manifest, RDFUpdate
+
+        manifest = gen_manifest(template_root_dir=app_extension_dir,
+                                target_cfg=target_cfg,
+                                bundle_id=bundle_id,
+                                update_url=options.update_url,
+                                bootstrap=True)
+
+        if options.update_link:
+            rdf_name = UPDATE_RDF_FILENAME % target_cfg.name
+            print "Exporting update description to %s." % rdf_name
+            update = RDFUpdate()
+            update.add(manifest, options.update_link)
+            open(rdf_name, "w").write(str(update))
+
+        xpi_name = XULAPP_FILENAME % target_cfg.name
+        print "Exporting XULRunner app to %s." % xpi_name
+        build_xulapp(template_root_dir=app_extension_dir,
+                  manifest=manifest,
+                  xpi_name=xpi_name,
+                  harness_options=harness_options,
+                  xpts=xpts)
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
