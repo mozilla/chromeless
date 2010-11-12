@@ -123,3 +123,6 @@ class Fetcher(object):
     def run(self, descriptor=sys.stdout):
         self._fetch(descriptor)
         self._unpack(descriptor, self._tarball)
+
+    def xulrunner_path(self):
+        return os.path.join(self._buildDir, self._config["bin"]["path"])

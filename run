@@ -13,6 +13,10 @@ cuddlefish_root = os.path.dirname(os.path.abspath(sys.argv[0]))
 if 'CUDDLEFISH_ROOT' not in os.environ:
     os.environ['CUDDLEFISH_ROOT'] = cuddlefish_root
 
+# set the "build directory", where we'll output built artifacts, download xulrunner,
+# etc.
+build_dir = os.path.join(cuddlefish_root, "build")
+
 # add our own python-lib path to the python module search path.
 python_lib_dir = os.path.join(cuddlefish_root, "impl")
 if python_lib_dir not in sys.path:
@@ -45,9 +49,6 @@ except:
     pass
 browserToLaunch = findBrowserHTML(browserToLaunch)
 
-print("Will open the browser html = " + browserToLaunch)
-print("You can also try other scripts such as ./run examples/thumbnails/index.html")
-
 executionMode = "run" 
 try: 
   if sys.argv[2] == "package":
@@ -64,18 +65,22 @@ if not os.path.exists(browserToLaunch):
     print >>sys.stderr, "can't find browser HTML (tried '"+browserToLaunch+"')"
     raise SystemExit(1)
 
-print "Will open the browser HTML = "+ browserToLaunch
-print "You can also try other scripts such as ./run ui/thumbnails/index.html"
+import mozfetcher
+f = mozfetcher.Fetcher(build_dir)
+if (f.needs_fetch()):
+    print "Missing prerequisites!  I must download xulrunner to run.  Doing so"
+    f.run()
+
+print "Using Browser HTML at '%s'" % browserToLaunch
 
 import cuddlefish
-
-
 
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
 cuddlefish.run([
         executionMode,
         "-a", "xulrunner",
+        "-b", f.xulrunner_path(),
         "-t", "./template",
         "--static-args", '{"browser":"'+ browserToLaunch+'"}',
         "-p", "packages/chromeless"
