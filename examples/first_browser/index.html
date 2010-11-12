@@ -82,11 +82,12 @@ body {
   <script type="text/javascript">
 
 
-// capture events when the a child iframe changes it's content,
-// use the .url property of the event to update the location bar
+// capture events when the a child iframe changes and
+// update the location bar
 window.addEventListener("experimental-dom-loaded", function(e) {
-  $("#awesomeBox").val(e.url);
-}, false);
+  // XXX: The event should include the full url as e.data or e.url...
+  $("#awesomeBox").val($("#contentFrame").attr('src'));
+}, false, true);
 
 
 // the ready handler would run once the browser process was initialized?

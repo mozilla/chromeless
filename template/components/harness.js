@@ -587,11 +587,8 @@ function getDefaults(rootFileSpec) {
           logError: logError};
 }
 
-dump ("evaluated\n");
 // This is used by XULRunner when running Gecko 2.0 or above.
 function NSGetFactory(classID) {
- dump ("NSGetFactory for "+classID+"\n");
-
   var defaultsDir = Cc["@mozilla.org/file/directory_service;1"]
                     .getService(Ci.nsIProperties)
                     .get("DefRt", Ci.nsIFile);
