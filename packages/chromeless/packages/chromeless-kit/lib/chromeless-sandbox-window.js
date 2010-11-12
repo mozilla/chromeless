@@ -20,7 +20,9 @@ observers.add("content-document-global-created", function(subject, url) {
             // that the initial page load is complete (no scripts yet exectued)
             var evt = subject.window.parent.document.createEvent("HTMLEvents");  
             evt.initEvent("experimental-dom-loaded", true, false);
-            // XXX: this data isn't making it from chrome (us) to content (browser HTML)
+            // XXX: this ad-hoc data isn't making it from chrome (us)
+            // to content (browser HTML) in 2.0b8pre.  is that a
+            // regression in gecko or a security feature?
             evt.url = subject.window.location.href;
             subject.window.parent.dispatchEvent(evt);
 
