@@ -106,11 +106,12 @@ class Fetcher(object):
             raise RuntimeError("path doesn't exist, cannot unpack: " + path)
         if (any(path.endswith(ext) for ext in (".tgz",".tar.gz",".tbz2",".tar.bz2"))):
             self._print(descriptor, "extracting " + os.path.basename(path))
-            tf = tarfile.open(path)
-            tf.extractall(self._buildDir)
-            tf.close
+            with tarfile.open(path) as f:
+                f.extractall(self._buildDir)
         elif (path.endswith(".zip")):
-            raise RuntimeError("zip extraction not yet implemented");
+            self._print(descriptor, "extracting " + os.path.basename(path))
+            with zipfile.ZipFile(path) as f:
+                f.extractall(self._buildDir)
         else:
             raise RuntimeError("I don't know how to extract '" + os.path.basename(path) + "'")
         # if after all that we still think we need to fetch the thing,

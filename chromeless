@@ -74,6 +74,7 @@ if (f.needs_fetch()):
 print "Using Browser HTML at '%s'" % browserToLaunch
 
 import cuddlefish
+import simplejson as json
 
 # now let's run the cfx thingy and specify the app-kit main module
 # as our starting point
@@ -82,7 +83,7 @@ cuddlefish.run([
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
         "-t", "./template",
-        "--static-args", '{"browser":"'+ browserToLaunch+'"}',
+        "--static-args", json.encode({"browser": browserToLaunch}),
         "-p", "packages/chromeless"
         ])
 

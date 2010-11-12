@@ -15,6 +15,14 @@ software = {
             "path": "xulrunner-sdk/bin/xulrunner-bin",
             "sig": "be5a6300da9e5cfc7973255e68f940af"
         }
+    },
+    ( "Windows_32bit", "Windows_64bit" ): {
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.win32.zip",
+        "md5": "318653c4952f0e6f0e58db0c548730f6",
+        "bin": {
+            "path": "xulrunner/xulrunner.exe",
+            "sig": "d0bba60461148617cc73cdf86e438198"
+        }
     }
 }
 
