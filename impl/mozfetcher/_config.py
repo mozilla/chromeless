@@ -1,7 +1,7 @@
 software = {
     "Linux_64bit": {
        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b8pre.en-US.linux-x86_64.tar.bz2",
-       "md5": "a51d73e008bdc583e01d03ecd7988f16",
+       "md5": "aa0c8705ba6d7ddbac00adfe130e37f8",
        "bin": {
            "path": "xulrunner/xulrunner",
            "sig": "6edae91d12aca0de126b7636d9f53468"
