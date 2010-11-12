@@ -4,18 +4,18 @@ The 'chromeless' project is an experiment into making it possible to build
 a web browser using only web technologies, like HTML, JavaScript, and CSS.
 
 The project is based on [addon-sdk (aka,
-"jetpack")](http://github.com/mozilla/addon-sdk),
+"jetpack")](http://github.com/mozilla/addon-sdk), and
 [xulrunner](https://developer.mozilla.org/en/xulrunner).
 
 ## Current State
 
 This project is *highly* experimental, rapidly changing, and probably
-highly insecure.  As the project matures, this notice will change.
+insecure.  As the project matures, this notice will change.
 
 ## Design Overview
 
 The main goal of chromeless is to explore authoring a browser interface
-in HTML.  So the chromeless "platform" provides tools to run a browser that looks
+in HTML.  The chromeless "platform" provides tools to run a browser that looks
 like a native application, but where all of the look and feel, and many of the
 behaviors are defined by HTML, CSS, and javascript provided by the developer.
 
