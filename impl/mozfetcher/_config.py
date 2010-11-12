@@ -12,8 +12,8 @@ software = {
         "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.mac-i386.sdk.tar.bz2",
         "md5": "133c4263a070d0d4ea26ca1f346b8e4a",
         "bin": {
-            "path": "xulrunner-sdk/bin/xulrunner",
-            "sig": "d73744c51f5655e803c0fe9ce3a88052"
+            "path": "xulrunner-sdk/bin/xulrunner-bin",
+            "sig": "be5a6300da9e5cfc7973255e68f940af"
         }
     }
 }
