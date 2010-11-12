@@ -23,7 +23,15 @@ software = {
             "path": "xulrunner/xulrunner.exe",
             "sig": "d0bba60461148617cc73cdf86e438198"
         }
-    }
+    },
+    "Linux_32bit": {
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.linux-i686.tar.bz2",
+        "md5": "64e11cb6c02d9a1d2932e3fb47080e1d",
+        "bin": {
+            "path": "xulrunner/xulrunner",
+            "sig": "daf246fc716772e9031938ee50d610cf"
+            }
+        },
 }
 
 def getConfig(platform):

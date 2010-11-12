@@ -27,22 +27,30 @@ class Fetcher(object):
         return
 
     def _md5_match(self, path, want):
-        got = ""
+        return self._calc_md5(path) == want
+
+    def _calc_md5(self, path):
         try:
-            with open(path, 'rb') as fp:
+            fp = open(path, 'rb')
+            try:
                 sig = hashlib.md5()
                 while True:
                     chunk = fp.read(1024 * 16)
                     if not chunk: break
                     sig.update(chunk)
-                got = sig.hexdigest()
+                return sig.hexdigest()
+            finally:
+                fp.close()
         except IOError:
-            pass
-        return got == want
+            return 'error'
 
     def needs_fetch(self):
         want = self._config["bin"]["sig"]
         path = os.path.join(self._buildDir, self._config["bin"]["path"])
+        if os.path.exists(path) and not want:
+            print 'No bin/sig setting for %s' % path
+            print 'Hash:'
+            print '  %s' % self._calc_md5(path)
         return not self._md5_match(path, want)
 
     def _check_build_dir(self, buildDir):
@@ -95,8 +103,11 @@ class Fetcher(object):
             print ("")
         f.close()
         u.close()
-        if not self._md5_match(self._tarball, self._config['md5']):
-            os.remove(self._tarball)            
+        if not self._config['md5']:
+            descriptor.write('No md5 listed in _config; for the record:\n')
+            descriptor.write('    %s\n' % self._calc_md5(self._tarball))
+        elif not self._md5_match(self._tarball, self._config['md5']):
+            os.remove(self._tarball)
             raise RuntimeError("download failure!  md5 mismatch!")
         return
 
@@ -106,12 +117,18 @@ class Fetcher(object):
             raise RuntimeError("path doesn't exist, cannot unpack: " + path)
         if (any(path.endswith(ext) for ext in (".tgz",".tar.gz",".tbz2",".tar.bz2"))):
             self._print(descriptor, "extracting " + os.path.basename(path))
-            with tarfile.open(path) as f:
+            f = tarfile.open(path)
+            try:
                 f.extractall(self._buildDir)
+            finally:
+                f.close()
         elif (path.endswith(".zip")):
             self._print(descriptor, "extracting " + os.path.basename(path))
-            with zipfile.ZipFile(path) as f:
+            f = zipfile.ZipFile(path)
+            try:
                 f.extractall(self._buildDir)
+            finally:
+                f.close()
         else:
             raise RuntimeError("I don't know how to extract '" + os.path.basename(path) + "'")
         # if after all that we still think we need to fetch the thing,
