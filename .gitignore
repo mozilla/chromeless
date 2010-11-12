@@ -4,3 +4,4 @@
 .DS_Store
 /.hgignore
 _test_tmp
+/build
