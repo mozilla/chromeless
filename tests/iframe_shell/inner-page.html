@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+
+  </head>
+  <body>
+    In iframe:<br/>
+    <script type="text/javascript">
+      try {
+        window.require("url");
+        document.write("<b>BAD</b>: I can haz window.require()!");
+      } catch(e) {
+        document.write("<b>GOOD</b>: NO window.require() for me!!");
+      }
+      document.write("<br/>");
+      if (window.top == window.self) {
+        document.write("<b>BAD</b>: I *think* I AM the top level document");
+      } else {
+        document.write("<b>GOOD</b>: I am aware that I'm embedded in something else");
+      }
+      document.write("<br/>");
+      if (window.top == window.parent) {
+        document.write("<b>GOOD</b>: I *think* my parent frame is the top level window");
+      } else {
+        document.write("<b>BAD</b>: I am aware that my parent is not the top level window");
+      }
+
+    </script>
+  </body>
+</html>

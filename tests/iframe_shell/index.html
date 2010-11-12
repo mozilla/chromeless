@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+
+  </head>
+  <body onload="start()" >
+   <p>
+     This is an initial example, an experimentation to track 
+     loading progress of an iframe. 
+   </p>
+   <script type="text/javascript">
+     function onload() { 
+
+      try {
+        var fr = require("iframe-as-browser").get(document.getElementById("browser"));
+        document.getElementById("browser").src="http://www.slashdot.org";
+      } catch(e) {
+	alert(e);
+      }
+    } 
+
+   </script>
+   <br>
+   <iframe id='browser' src="about:blank" width="400" height="400" border="2">
+   </iframe>
+  </body>
+</html>
