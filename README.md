@@ -35,8 +35,8 @@ This "browser HTML" is basically a normal webpage, but with several important di
 
 ## Prerequisites
 
-* OSX 10.5 and later, Windows XP and later, or probably a modern versions of linux (32 or 64 bit).  
-* python 2.5 - 2.999999 (3.0 is not supported)
+* OSX 10.5 and later, Windows XP and later, or probably a modern versions of linux (32 or 64 bit).
+* Python 2.5 - 2.7 (3 is not supported); Python 2.6 or 2.7 are recommended (testing isn't as thorough with 2.5).
 
 ## Getting Started
 
@@ -70,7 +70,7 @@ This will output a zip file which you can install using the --install-app flag t
 
 ## More Information
 
-Further documentation can be found inline in examples at the moment.  In the near future there
+Further documentation can be found inline in examples at the moment. In the near future there
 will be a tutorial and API documentation.
 
 You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
@@ -80,28 +80,28 @@ this project on our mailing list: `mozilla-labs@googlegroups.com`
 
 All files that are part of this project are covered by the following
 license, except where explicitly noted.
-    
+
     Version: MPL 1.1/GPL 2.0/LGPL 2.1
-    
-    The contents of this file are subject to the Mozilla Public License Version 
-    1.1 (the "License"); you may not use this file except in compliance with 
-    the License. You may obtain a copy of the License at 
+
+    The contents of this file are subject to the Mozilla Public License Version
+    1.1 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
     http://www.mozilla.org/MPL/
-    
+
     Software distributed under the License is distributed on an "AS IS" basis,
     WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
     for the specific language governing rights and limitations under the
     License.
-    
+
     The Original Code is chromeless.
-    
+
     The Initial Developer of the Original Code is the Mozilla Foundation.
 
     Portions created by the Initial Developer are Copyright (C) 2010
     the Initial Developer. All Rights Reserved.
-    
+
     Contributor(s):
-    
+
     Alternatively, the contents of this file may be used under the terms of
     either the GNU General Public License Version 2 or later (the "GPL"), or
     the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
