@@ -1,71 +1,80 @@
-# What?
+## Welcome To Chromeless!
 
-*WARNING*: if you don't like caveats, leave now!
+The 'chromeless' project is an experiment into making it possible to build
+a web browser using only web technologies, like HTML, JavaScript, and CSS.
 
-*WARNING*: This repo is highly experimental!  While the explanation that follows may suggest
-that this repository is actually meaningful, it is not.
+The project is based on [addon-sdk (aka,
+"jetpack")](http://github.com/mozilla/addon-sdk),
+[xulrunner](https://developer.mozilla.org/en/xulrunner).
 
-*WARNING*: This thing is osx/linux ONLY for now
+## Current State
 
-This repository is a remix of the [jetpack-sdk](http://github.com/mozillalabs/jetpack-sdk).  The
-ultimate goal is to build your own browser using (mostly) standard web technologies.
+This project is *highly* experimental, rapidly changing, and probably
+highly insecure.  As the project matures, this notice will change.
+
+## Design Overview
+
+The main goal of chromeless is to explore authoring a browser interface
+in HTML.  So the chromeless "platform" provides tools to run a browser that looks
+like a native application, but where all of the look and feel, and many of the
+behaviors are defined by HTML, CSS, and javascript provided by the developer.
+
+This "browser HTML" is basically a normal webpage, but with several important differences:
+
+  * The HTML file has access to a 'window.require()' function that it can use to
+    access new APIs that give it increased priviledges.
+
+  * (untrusted) Web content can be rendered inside iframes which are children of the
+    top level "browser HTML".  This content cannot tell its rendered inside an iframe,
+    and has no special access.
+
+  * Several new events and conventions are introduced.  For instance, the title of the
+    top level browser HTML is the name of the running process (not yet implemented),
+    new, non-standard events are available to the top level browser HTML which give it
+    a priviledged view (and control) over embedded web content.
+
+## Prerequisites
+
+* OSX 10.5 and later, Windows XP and later, or probably a modern versions of linux (32 or 64 bit).  
+* python 2.5 - 2.999999 (3.0 is not supported)
 
 ## Getting Started
 
-1. ./run
+The top level `chromeless` python script is capable of several things:
 
-or pass an argument with the path to the HTML file you want to use, for example: 
+  * running a browser when provided a path to 'browser HTML'
+  * packaging a browser as a xulrunner package, or a standalone exectuable (not yet implemented)
+  * running unit tests (not yet implemented)
+  * generating static documentation for all current APIs (not yet implemented)
 
-2. ./run examples/first_browser/index.html 
+To get started, you should clone this repository (or download a versioned snapshot) and run:
 
-## Use of Jetpack SDK and how to run directly with XULRunner
+    (win32) C:\xxx\chromeless> chromeless
+    (osx)   $ ./chromeless
 
-This is a package and build system and the run script is based on the Mozilla Addon SDK ( http://github.com/mozilla/addon-sdk ). It uses cfx program to dynamically create a new profile, plus, it uses the xulrunner template (under ./template) and information from the ./packages/chromeless to build your application. When it builds, it invokes XULRunner passing the application. 
+By default, the HTML files in `examples/first_browser` will be executed, and you'll see a very
+simple browser based on them.  You may also specify an alternate browser HTML on the command line:
 
-You can also use the `package` option to generate a ZIP file which is a installable XULRunner application. Example: 
+    (win32) C:\xxx\chromeless> chromeless examples\webgl
+    (osx)   $ ./chromeless examples/webgl
 
-3. ./run examples/first_browser/index.html package 
+From here, you can inspect the implementation of any of these samples, copy, modify and explore.
 
-It should generate a chromeless.zip file which you can install with: 
+Finally, it's possible to generate a ZIP package of your HTML browser which is an installable
+XULRunner application (danger, experimental):
 
-4. xulrunner --install-app full_path_to-chromeless.zip
+    (win32) C:\xxx\chromeless> chromeless examples\webgl package
+    (osx)   $ ./chromeless examples/webgl package
 
-## What could go wrong?
+This will output a zip file which you can install using the --install-app flag to xulrunner.
 
-In order to work, you probably should make sure you've got ffx 3.6.x
-on your system, or [XulRunner](https://developer.mozilla.org/en/XULRunner) installed. 
+## More Information
 
-**DETAILS**: At present, the `run` script will look for xulrunner on your system
-(or some other mozilla product that provides xulrunner).  If no such
-product exists, everything will come to a grinding halt.  At a future
-date, this repository may grow the ability to acquire and build the
-bits that it needs.  There are problems with ffx 4 > b4 at present, so 
-if you're bleeding edge you'll need to downgrade.
+Further documentation can be found inline in examples at the moment.  In the near future there
+will be a tutorial and API documentation.
 
-## Hacking
-
-Have a look at the ui/ directory.  This is web-like content that
-comprises the main view of the application. It will be rendered in an
-unadorned windows. Feel free to hack on it.
-
-## Deeper Hacking
-
-The content in UI is rendered by a "jetpack module" that lives in
-`packages/chromeless/lib/main.js`.  A trimmed down version of jetpack has been
-included inside this repository, and the theory is that we'll remove
-packages that aren't relevant to standalone application development,
-and add some new ones that are. If you are familiar with jetpack then
-you should be comfortable diving in and hacking on modules.
-
-NOTE: if you want to kick off the jetpack documentation server to
-inspect the modules included here, run `impl/bin/cfx docs` and follow
-instructions.
-
-## cred
-
-this repo is a remix of work by atul, myk, marcio, and the jetpack
-community.
-
+You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
+this project on our mailing list: `mozilla-labs@googlegroups.com`
 
 ## LICENSE
 
