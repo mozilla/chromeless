@@ -8,7 +8,8 @@
          process/application name? -->
     <title>WebbyFox</title>
 
-<!-- we can use basic flexbox layout! -->
+<!-- given that we're locked to a recent version of the gecko rendering engine,
+     we can use snazzy modern features like flexbox layout. -->
     <style type="text/css" media="screen">
 
 body {
@@ -20,32 +21,43 @@ body {
 #browserHeader {
   width: 100%;
   text-align: center;
-  padding:10px;
-}
-
-#awesomeBox {
-  width: 60%;
-  font-size: 120%;
-  margin-right: 20px;
+  padding:2px;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
 }
 
 #browserContentArea {
   -moz-box-flex: 1;
-  -webkit-box-flex: 1;
-  box-flex: 1;
   display: -moz-box;
-  display: -webkit-box;
-  display: box;
   border: 1px solid green;
 }
 
 #contentFrame {
   border: 1px solid blue;
-  box-flex: 1;
   -moz-box-flex: 1;
-  -webkit-box-flex: 1;
   width: 100%;
   height: 100%;
+}
+
+#browserHeader > div {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+#urlbox {
+  -moz-box-flex: 1;
+}
+
+#urlbox form {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+#urlinput {
+ width: 100%;
+ padding: 2px;
+ font-size: .8em;
 }
 
 #outer {
@@ -53,19 +65,18 @@ body {
   width: 100%;
   height: 100%;
   display: -moz-box;
-  display: -webkit-box;
-  display: box;
   -moz-box-orient: vertical;
-  -webkit-box-orient: vertical;
-  box-orient: vertical;
 }
-
     </style>
   </head>
   <body>
     <div id="outer">
     <div id="browserHeader">
-      <form><input id="awesomeBox" type="text" /><input type="submit" value="go"/></form>
+      <div><button id="back">&lt;&lt</button></div>
+      <div><button id="forward">&gt;</button></div>
+      <div><button id="reload">R</button></div>
+      <div id="urlbox"><form><input id="urlinput" type="text" /></form></div>
+      <div id="go"><button id="go">go</button></div>
     </div>
     <div id="browserContentArea">
       <!-- what if iframes were how the browser HTML embedded web content?
@@ -81,26 +92,51 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
+// in memory browser history, an array of urls
+var gHistory = [];
+// our current point in history
+var gCurrent = 0;
 
 // capture events when the a child iframe changes and update the location bar
 window.addEventListener("experimental-dom-loaded", function(e) {
-  $("#awesomeBox").val(e.url);
-}, false, true);
+  $("#urlinput").val(e.url);
 
+  // very rudimentary history management, if the url that has been loaded
+  // is not what is currently in history, let's append it, and reset
+  // the history pointer
+  if (e.url !== gHistory[gCurrent]) {
+    gHistory.push(e.url);
+    gCurrent = gHistory.length - 1; 
+  }
+}, false, true);
 
 // the ready handler would run once the browser process was initialized?
 $(document).ready(function() {
-
-    $("#browserHeader > form").submit(function(e) {
-        // default can't really mean anything, can it?  
-        e.preventDefault();
-
-        // when the user hits the go button or hits enter in the
-        // awesome(bar|box) then this code is run?
-
-        var url = $.trim($("#awesomeBox").val());
+    function navigate() {
+        // invoked when the user hits the go button or hits enter in url box
+        var url = $.trim($("#urlinput").val());
+        // if there's no protocol, let's add the likely one
+        if (url.indexOf("://") < 0) url = "http://" + url;
+        // trigger navigation
         $("#contentFrame").attr("src", url);
+    }
+
+    // both enter in the urlbox and clicking the go button do the same thing,
+    // navigate to the url specified
+    $("#urlbox > form").submit(function() { navigate(); return false; });
+    $("#go").click(function() { navigate(); });
+    // reload and go are equivalent.  desired?
+    $("#reload").click(function() { navigate(); });
+    $("#back").click(function() {
+      if (gCurrent == 0) return;
+      $("#contentFrame").attr("src", gHistory[--gCurrent]);
     });
+    $("#forward").click(function() {
+      if (!gHistory.length || gCurrent == gHistory.length - 1) return;
+      $("#contentFrame").attr("src", gHistory[++gCurrent]);
+    });
+
+
 });
 
   </script>
