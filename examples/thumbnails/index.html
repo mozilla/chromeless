@@ -20,12 +20,15 @@ body {
 #browserHeader {
   width: 100%;
   text-align: center;
-  padding:10px;
 }
 
+#browserHeader form { 
+   margin-bottom:5px;
+} 
 #awesomeBox {
   font-size: 120%;
   margin-right: 20px;
+  width:240px;
 }
 
 #browserContentArea {
@@ -71,24 +74,45 @@ body {
 } 
 
 #thumbsNavigator { 
-	width:100%;
-	height:55px;
-	text-align:center;
+	width:800px;
+	height:32px;
 	overflow:hidden;
 } 
 
-.thumb { 
-  -moz-box-shadow: 5px 5px 5px black;
-  width:100px; 
+/*
+	text-align:center;
     -moz-transform: matrix(1, -0.2, 0, 1, 0, 0);
  -webkit-transform: matrix(1, -0.2, 0, 1, 0, 0);
        -o-transform:matrix(1, -0.2, 0, 1, 0, 0);
+  width:100px; 
   margin-top:10px;
+*/
+.thumb { 
+  -moz-box-shadow: 5px 5px 5px black;
   margin-left:1em;
+    -moz-transition-property: width;
+    -moz-transition-duration: .5s;
+    -moz-transition-delay: .5s;
+    width:32px;
+} 
+/*
+*/
+
+.thumb:hover { 
+    -moz-transition-property: width;
+    -moz-transition-duration: .5s;
+    -moz-transition-delay: 0s;
+    width:240px;
 } 
 
 .thumb_selected { 
   -moz-box-shadow: 5px 5px 5px white, 10px 10px 10px blue;
+ -moz-transition-property: width;
+    -moz-transition-duration: .5s;
+    -moz-transition-delay: 0s;
+    width:240px;
+    height:90px;
+
 } 
 
     </style>
@@ -97,7 +121,7 @@ body {
     <div id="outer">
     <div id="browserHeader">
         <form>
-	<input id="awesomeBox" size="20" type="text" value="http://www.google.com" />
+	<input id="awesomeBox"  type="text" value="http://www.google.com" />
 	<input type="submit" id="buttonGo"  value="go"></input>
 	<button id="buttonNew" >New</button>
 	<button id="buttonPersist" >All</button>
@@ -116,16 +140,20 @@ body {
   <!-- Could the browser itself leverage a framework like YUI or jquery?
        This shouldn't be that much different than slamming YUI into node.js
        or jquery into jetpacks? -->
-  <script type="text/javascript" src="resource://jid0-ve0baysox4snijgmmjrgl4kfm2w-chromeless-data/thumbnails/jquery-min.js"></script>
+  <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
 var currentBrowser = null; 
 var browserTabs = new Array();
 
+var console = require("plain-text-console");
+dump =  new console.PlainTextConsole();
+
 // If you want to try different browser implementations, replace iframe with the 
 // correct DOM element. 
 
 function makeBrowser() { 
+  dump.log("browser");
   var browser = document.createElement("iframe");
   $(browser).addClass("browser");
   return browser;
@@ -157,6 +185,7 @@ function canvasShot(browserRef, thumbImageRef) {
 } 
 
 function newTab() { 
+  dump.log("!");
   var newBrowser = makeBrowser();
   browserTabs.push(newBrowser);
   newBrowser.src="about:blank";
@@ -190,8 +219,12 @@ $(document).ready(function() {
         browserUniqueId = $(".browser_selected").attr("id");
         setTimeout(function() { syncTabs(browserUniqueId); }, 1000);
         return false; 
+
     });
     $("#browserHeader #buttonNew").click(function(e) {
+
+dump.log("1");
+
         newTab();
         $("#awesomeBox").val("");
         $("#awesomeBox").focus();
