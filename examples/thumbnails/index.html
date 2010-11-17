@@ -79,7 +79,7 @@ body {
 	overflow:hidden;
 } 
 
-.thumb { 
+.thumb_img { 
    -moz-transition-property: width;
    -moz-transition-duration: .5s;
    -moz-transition-delay: .5s;
@@ -90,23 +90,22 @@ body {
    overflow:hidden;
 } 
 
-.thumb:hover { 
-    -moz-transition-property: width;
-    -moz-transition-duration: .5s;
-    -moz-transition-delay: 0s;
-    height:32px;
-    width:240px;
+.thumb_img:hover { 
+   -moz-transition-property: width;
+   -moz-transition-duration: .5s;
+   -moz-transition-delay: 0s;
+   height:32px;
+   width:240px;
 } 
 
 .thumb_selected { 
-    -moz-transition-property: opacity;
-    -moz-transition-duration: .5s;
-     opacity:1;
-    -moz-transition-delay: 0s;
-    width:240px;
-    height:40px;
+   -moz-transition-property: opacity;
+   -moz-transition-duration: .5s;
+    opacity:1;
+   -moz-transition-delay: 0s;
+   width:240px;
+   height:40px;
 } 
-
     </style>
   </head>
   <body>
@@ -186,19 +185,37 @@ function newTab() {
   browserTabs.push(newBrowser);
   newBrowser.src="about:blank";
   var uniqueId = Math.random();
-  newBrowser.setAttribute("id","browser_unique_"+uniqueId);
+  var browserUnique = "browser_unique_"+uniqueId;
+  
+  newBrowser.setAttribute("id",browserUnique);
+
+  // experimental onload to sync thumbnails, 
+  // we may need to send another events for the full onload 
+  // since this 'experimental-dom-loaded' is before scripts 
+  // and images.  
+  newBrowser.addEventListener("experimental-dom-loaded",function (e) { 
+      setTimeout(function() { syncTabs(browserUnique); }, 1000);
+  },true);
+
   var thumb = document.createElement("span");
+
   var img = document.createElement("img");
   thumb.setAttribute("class","thumb");
-  img.setAttribute("class","thumb");
+  img.setAttribute("class","thumb_img");
+
   img.width="60";
   img.height="60";
   img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
   thumb.setAttribute("id","thumb_unique_"+uniqueId);
   img.setAttribute("id","image_unique_"+uniqueId);
   thumb.appendChild(img);
+
+
   document.getElementById("thumbsNavigator").appendChild(thumb);
   document.getElementById("browserContentArea").appendChild(newBrowser);
+
+
+
   selectBrowser(newBrowser);
   currentBrowser = newBrowser;
 
@@ -211,18 +228,13 @@ function syncTabs(refBrowserId) {
 
 $(document).ready(function() {
     $("#browserHeader form").submit(function(e) {
-       if(browserTabs.length<1) { 
-          newTab();
-       } 
-        var url = $.trim($("#awesomeBox").val());
+       if(browserTabs.length<1) newTab();  
+       browserUniqueId = $(".browser_selected").attr("id");
+       var url = $.trim($("#awesomeBox").val());
         $(".browser_selected").attr("src", url);
-        browserUniqueId = $(".browser_selected").attr("id");
-        setTimeout(function() { syncTabs(browserUniqueId); }, 1000);
         return false; 
-
     });
     $("#browserHeader #buttonNew").click(function(e) {
-
         newTab();
         $("#awesomeBox").val("");
         $("#awesomeBox").focus();

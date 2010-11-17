@@ -24,7 +24,15 @@ observers.add("content-document-global-created", function(subject, url) {
             // to content (browser HTML) in 2.0b8pre.  is that a
             // regression in gecko or a security feature?
             evt.url = subject.window.location.href;
-            subject.window.parent.dispatchEvent(evt);
+            //evt.window = subject.window;
+
+            // This is a proposal for us to send the experimental-dom 
+            // event to the window instead the parent window. This would 
+            // allow us to capture the event from the upper iframe,
+            // which facilitates to keep track of what iframe content 
+            // was updated - helps with multi browser application case  
+            //subject.window.parent.dispatchEvent(evt);
+            subject.window.dispatchEvent(evt);
 
             // this is a top level iframe
             subject.window.top = subject.window.self;
