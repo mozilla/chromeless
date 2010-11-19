@@ -144,7 +144,6 @@ dump =  new console.PlainTextConsole();
 // correct DOM element. 
 
 function makeBrowser() { 
-  dump.log("browser");
   var browser = document.createElement("iframe");
   $(browser).addClass("browser");
   return browser;
@@ -183,7 +182,6 @@ function canvasShot(browserRef, thumbImageRef) {
 function newTab() { 
   var newBrowser = makeBrowser();
   browserTabs.push(newBrowser);
-  newBrowser.src="about:blank";
   var uniqueId = Math.random();
   var browserUnique = "browser_unique_"+uniqueId;
   
@@ -193,9 +191,15 @@ function newTab() {
   // we may need to send another events for the full onload 
   // since this 'experimental-dom-loaded' is before scripts 
   // and images.  
-  newBrowser.addEventListener("experimental-dom-loaded",function (e) { 
+
+try { 
+  require("iframe-as-browser").bind(newBrowser,document);
+
+} catch(i) { alert(i) } 
+  newBrowser.addEventListener("experimental-dom-load",function (e) { 
       setTimeout(function() { syncTabs(browserUnique); }, 1000);
   },true);
+
 
   var thumb = document.createElement("span");
 
@@ -210,11 +214,8 @@ function newTab() {
   img.setAttribute("id","image_unique_"+uniqueId);
   thumb.appendChild(img);
 
-
   document.getElementById("thumbsNavigator").appendChild(thumb);
   document.getElementById("browserContentArea").appendChild(newBrowser);
-
-
 
   selectBrowser(newBrowser);
   currentBrowser = newBrowser;

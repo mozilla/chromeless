@@ -40,14 +40,21 @@
 observers = require("observer-service");
 
 observers.add("content-document-global-created", function(subject, url) {
-    if ( byWindow[subject.window] ) {
+    //if ( byWindow[subject.window] ) {
+    for( frameKey in byElements ) { 
             // generate a custom event to indicate to top level HTML
+        try { 
+        if(subject.window == byElements[frameKey].iframeElement.contentWindow) { 
+
             // that the initial page load is complete (no scripts yet exectued)
-            var evt = byWindow[subject.window].refDocument.createEvent("HTMLEvents");
-            evt.initEvent("experimental-dom-document-load", true, false);
+            var evt = byElements[frameKey].refDocument.createEvent("HTMLEvents");
+            evt.initEvent("experimental-dom-load", true, false);
             evt.url = subject.window.location.href;
             subject.window.dispatchEvent(evt);
-    }
+        }
+ 
+        } catch(i) { console.log(i) } 
+    } 
 });
 
 const {Cc, Ci, Cr} = require("chrome");
@@ -56,6 +63,7 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
 var byWindow  = new Array();
+var byElements = new Array();
 
 /* The reason we need the parentDoc is because we need to dispatch 
    HTMLevents to the iframe, and in order to create the HTMLevents's   
@@ -72,7 +80,8 @@ var byWindow  = new Array();
 
 exports.bind = function enhanceIframe(frame, parentDoc) {
   // we keep track of this in case we need to clean things up
-  byWindow[frame.contentWindow]= { iframeElement:frame, refDocument: parentDoc }; 
+  byElements[frame]= { iframeElement:frame, refDocument: parentDoc }; 
+ // byWindow[frame.contentWindow]= { iframeElement:frame, refDocument: parentDoc }; 
 
   var window = frame.contentWindow;
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 

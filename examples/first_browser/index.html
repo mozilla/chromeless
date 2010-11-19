@@ -98,7 +98,7 @@ var gHistory = [];
 var gCurrent = 0;
 
 // capture events when the a child iframe changes and update the location bar
-window.addEventListener("experimental-dom-loaded", function(e) {
+window.addEventListener("experimental-dom-load", function(e) {
   $("#urlinput").val(e.url);
 
   // very rudimentary history management, if the url that has been loaded
