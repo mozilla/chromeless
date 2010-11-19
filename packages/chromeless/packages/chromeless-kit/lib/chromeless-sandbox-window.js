@@ -19,7 +19,7 @@ observers.add("content-document-global-created", function(subject, url) {
             // generate a custom event to indicate to top level HTML
             // that the initial page load is complete (no scripts yet exectued)
             var evt = subject.window.parent.document.createEvent("HTMLEvents");  
-            evt.initEvent("experimental-dom-loaded", true, false);
+            evt.initEvent("experimental-dom-load", true, false);
             // XXX: this ad-hoc data isn't making it from chrome (us)
             // to content (browser HTML) in 2.0b8pre.  is that a
             // regression in gecko or a security feature?
@@ -31,8 +31,8 @@ observers.add("content-document-global-created", function(subject, url) {
             // allow us to capture the event from the upper iframe,
             // which facilitates to keep track of what iframe content 
             // was updated - helps with multi browser application case  
-            //subject.window.parent.dispatchEvent(evt);
-            subject.window.dispatchEvent(evt);
+            subject.window.parent.dispatchEvent(evt);
+            //subject.window.dispatchEvent(evt);
 
             // this is a top level iframe
             subject.window.top = subject.window.self;
