@@ -42,45 +42,49 @@ const {Cc, Ci, Cr} = require("chrome");
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
-// http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
-
 var tagElementList = new Array();
 
-exports.bind = function enhanceIframe(frame, parentDoc) {
+/* The reason we need the parentDoc is because we need to dispatch 
+   HTMLevents to the iframe, and in order to create the HTMLevents's   
+   event, we need to use a document where the event target element
+   is contained. See further line: 
 
+     var evt = this.parentDocument.createEvent("HTMLEvents");
+
+   This normally would be okay using iframeRef.parent, however, 
+   if you check in chromeless-sandbox-window.js, you will see that 
+   we have hacked the inner iframes, at document loading time, 
+   and we make them all iframe.parent = iframe.self.  
+*/
+
+exports.bind = function enhanceIframe(frame, parentDoc) {
+  // we keep track of this in case we need to clean things up
   tagElementList.push(frame);
+
   var window = frame.contentWindow;
-  
+  // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
   var frameShell = frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                      .getInterface(Ci.nsIWebNavigation)
                      .QueryInterface(Ci.nsIDocShell);
-
   // chrome://global/content/bindings/browser.xml#browser
   var webProgress = frameShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebProgress);
-
   gBrowserStatusHandler = new nsBrowserStatusHandler();
   gBrowserStatusHandler.init(frame, parentDoc);
-
-  filter = Cc["@mozilla.org/appshell/component/browser-status-filter;1"]
+  var filter = Cc["@mozilla.org/appshell/component/browser-status-filter;1"]
           .createInstance(Ci.nsIWebProgress);
 
   webProgress.addProgressListener(filter,Ci.nsIWebProgress.NOTIFY_ALL);
   filter.addProgressListener(gBrowserStatusHandler, Ci.nsIWebProgress.NOTIFY_ALL);
-
-
-  console.log(webProgress);
-  console.log(frameShell);
-  console.log(window);
-
 }
 
-
 function nsBrowserStatusHandler() {
-
 }
 
 nsBrowserStatusHandler.prototype =
 {
+  iframeElement: null, 
+  parentDocument: null, 
+
   QueryInterface : function(aIID)
   {
     if (aIID.equals(Ci.nsIWebProgressListener) ||
@@ -104,8 +108,6 @@ nsBrowserStatusHandler.prototype =
         this.parentDocument = parentDocument;
   },
   
-  iframeElement: null, 
-  parentDocument: null, 
 
   destroy : function()
   {
@@ -151,14 +153,11 @@ nsBrowserStatusHandler.prototype =
     this.currentTotalProgress = aCurTotalProgress;
     this.maxTotalProgress     = aMaxTotalProgress;
     var percentage = parseInt((aCurTotalProgress/aMaxTotalProgress)*parseInt(100));
-    console.log("Percentage: "+ percentage);
-
     var evt = this.parentDocument.createEvent("HTMLEvents"); 
     evt.initEvent("experimental-dom-progress", true, false);
     evt.url="1";
     evt.percentage = percentage;
     this.iframeElement.dispatchEvent(evt);
-
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
   {
