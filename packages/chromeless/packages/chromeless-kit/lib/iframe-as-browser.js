@@ -119,7 +119,7 @@ nsBrowserStatusHandler.prototype =
     {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_START)
       {
-                if(aRequest && aWebProgress.DOMWindow == content) {
+                if(aRequest && aWebProgress.DOMWindow == this.iframeElement.contentWindow) {
                          this.startDocumentLoad(aRequest);
                 }
         return;
@@ -127,7 +127,7 @@ nsBrowserStatusHandler.prototype =
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP)
       {
         if (aRequest) {
-            if (aWebProgress.DOMWindow == content) this.endDocumentLoad(aRequest, aStatus);
+            if (aWebProgress.DOMWindow == this.iframeElement.contentWindow) this.endDocumentLoad(aRequest, aStatus);
         }
         return;
       }
@@ -155,7 +155,6 @@ nsBrowserStatusHandler.prototype =
     var percentage = parseInt((aCurTotalProgress/aMaxTotalProgress)*parseInt(100));
     var evt = this.parentDocument.createEvent("HTMLEvents"); 
     evt.initEvent("experimental-dom-progress", true, false);
-    evt.url="1";
     evt.percentage = percentage;
     this.iframeElement.dispatchEvent(evt);
   },
@@ -173,9 +172,15 @@ nsBrowserStatusHandler.prototype =
   },
   startDocumentLoad : function(aRequest)
   {
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-start", true, false);
+        this.iframeElement.dispatchEvent(evt);
   },
   endDocumentLoad : function(aRequest, aStatus)
   {
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-stop", true, false);
+        this.iframeElement.dispatchEvent(evt);
   },
   onSecurityChange : function(aWebProgress, aRequest, aState)
   {
