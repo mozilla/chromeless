@@ -42,25 +42,24 @@ const {Cc, Ci, Cr} = require("chrome");
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
-
 // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
 
-exports.get = function enhancedBrowser(frame) {
+var tagElementList = new Array();
 
+exports.bind = function enhanceIframe(frame, parentDoc) {
+
+  tagElementList.push(frame);
   var window = frame.contentWindow;
   
- 
-  try { 
   var frameShell = frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                      .getInterface(Ci.nsIWebNavigation)
                      .QueryInterface(Ci.nsIDocShell);
-
 
   // chrome://global/content/bindings/browser.xml#browser
   var webProgress = frameShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebProgress);
 
   gBrowserStatusHandler = new nsBrowserStatusHandler();
-  gBrowserStatusHandler.init();
+  gBrowserStatusHandler.init(frame, parentDoc);
 
   filter = Cc["@mozilla.org/appshell/component/browser-status-filter;1"]
           .createInstance(Ci.nsIWebProgress);
@@ -68,7 +67,6 @@ exports.get = function enhancedBrowser(frame) {
   webProgress.addProgressListener(filter,Ci.nsIWebProgress.NOTIFY_ALL);
   filter.addProgressListener(gBrowserStatusHandler, Ci.nsIWebProgress.NOTIFY_ALL);
 
-  } catch (i) { console.log(i) } 
 
   console.log(webProgress);
   console.log(frameShell);
@@ -95,9 +93,19 @@ nsBrowserStatusHandler.prototype =
     throw Cr.NS_NOINTERFACE;
   },
 
-  init : function()
+  init : function(tagElementReference, parentDocument)
   {
+     /* we know our window here, and we want to be able to inform 
+        the updates to the actual tagElementReference, to the iframe 
+        HTML element, so the HTML developer's browser can know things
+        such as progress updates and so on */
+      
+        this.iframeElement = tagElementReference;       
+        this.parentDocument = parentDocument;
   },
+  
+  iframeElement: null, 
+  parentDocument: null, 
 
   destroy : function()
   {
@@ -145,7 +153,11 @@ nsBrowserStatusHandler.prototype =
     var percentage = parseInt((aCurTotalProgress/aMaxTotalProgress)*parseInt(100));
     console.log("Percentage: "+ percentage);
 
-    if(percentage<0) percentage=10;
+    var evt = this.parentDocument.createEvent("HTMLEvents"); 
+    evt.initEvent("experimental-dom-progress", true, false);
+    evt.url="1";
+    evt.percentage = percentage;
+    this.iframeElement.dispatchEvent(evt);
 
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)

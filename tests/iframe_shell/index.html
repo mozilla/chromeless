@@ -11,17 +11,22 @@
    <script type="text/javascript">
      function onload() { 
 
-      try {
-        var fr = require("iframe-as-browser").get(document.getElementById("browser"));
+        var fr = require("iframe-as-browser").bind(document.getElementById("browser"), document);
+        document.getElementById("browser")
+                .addEventListener("experimental-dom-progress",
+                 function (e) {
+                   document.getElementById("progress").innerHTML=e.percentage;
+                   document.getElementById("dots").innerHTML+=".";
+                 }
+        ,false); 
         document.getElementById("browser").src="http://www.slashdot.org";
-      } catch(e) {
-	alert(e);
-      }
     } 
 
    </script>
-   <br>
-   <iframe id='browser' src="about:blank" width="400" height="400" border="2">
+   <div style="border:10px solid blue;padding:1em;">
+   Loading a web page: <span id="progress"></span>% <span id="dots"></span>
+   </div>
+   <iframe id='browser' src="about:blank" width="100%" height="500" style="border:0" >
    </iframe>
   </body>
 </html>
