@@ -37,12 +37,25 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+observers = require("observer-service");
+
+observers.add("content-document-global-created", function(subject, url) {
+    if ( byWindow[subject.window] ) {
+            // generate a custom event to indicate to top level HTML
+            // that the initial page load is complete (no scripts yet exectued)
+            var evt = byWindow[subject.window].refDocument.createEvent("HTMLEvents");
+            evt.initEvent("experimental-dom-document-load", true, false);
+            evt.url = subject.window.location.href;
+            subject.window.dispatchEvent(evt);
+    }
+});
+
 const {Cc, Ci, Cr} = require("chrome");
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
-var tagElementList = new Array();
+var byWindow  = new Array();
 
 /* The reason we need the parentDoc is because we need to dispatch 
    HTMLevents to the iframe, and in order to create the HTMLevents's   
@@ -59,7 +72,7 @@ var tagElementList = new Array();
 
 exports.bind = function enhanceIframe(frame, parentDoc) {
   // we keep track of this in case we need to clean things up
-  tagElementList.push(frame);
+  byWindow[frame.contentWindow]= { iframeElement:frame, refDocument: parentDoc }; 
 
   var window = frame.contentWindow;
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
@@ -160,12 +173,13 @@ nsBrowserStatusHandler.prototype =
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
   {
+    console.log("location changed");
+/*
       domWindow = aWebProgress.DOMWindow;
       // Update urlbar only if there was a load on the root docshell
       if (domWindow == domWindow.top) {
-        this.urlBar.value = aLocation.spec;
       }
-    console.log("location changed");
+*/
   },
   onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
   {
@@ -184,6 +198,33 @@ nsBrowserStatusHandler.prototype =
   },
   onSecurityChange : function(aWebProgress, aRequest, aState)
   {
+    switch (aState) {
+     case Ci.nsIWebProgressListener.STATE_IS_SECURE | Ci.nsIWebProgressListener.STATE_SECURE_HIGH:
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-security", true, false);
+        evt.detail='high';
+        this.iframeElement.dispatchEvent(evt);
+     break;  
+     case Ci.nsIWebProgressListener.STATE_IS_SECURE | Ci.nsIWebProgressListener.STATE_SECURE_LOW:
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-security", true, false);
+        evt.detail='low';
+        this.iframeElement.dispatchEvent(evt);
+     break;
+     case Ci.nsIWebProgressListener.STATE_IS_BROKEN:
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-security", true, false);
+        evt.detail='broken';
+        this.iframeElement.dispatchEvent(evt);
+     break;
+     case Ci.nsIWebProgressListener.STATE_IS_INSECURE:
+     default:
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-security", true, false);
+        evt.detail="notavailable";
+        this.iframeElement.dispatchEvent(evt);
+     break;
+    }   
   },
   setJSStatus : function(status)
   {

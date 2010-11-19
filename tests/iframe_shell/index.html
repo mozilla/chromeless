@@ -32,6 +32,13 @@
                  }
         ,false); 
 
+        document.getElementById("browser")
+                .addEventListener("experimental-dom-document-load",
+                 function (e) {
+                   document.getElementById("dots").innerHTML+="loaded";
+                 }
+        ,false); 
+
         document.getElementById("browser").src="http://www.slashdot.org";
     } 
 
