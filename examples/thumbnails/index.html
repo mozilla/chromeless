@@ -192,10 +192,8 @@ function newTab() {
   // since this 'experimental-dom-loaded' is before scripts 
   // and images.  
 
-try { 
   require("iframe-as-browser").bind(newBrowser,document);
 
-} catch(i) { alert(i) } 
   newBrowser.addEventListener("experimental-dom-load",function (e) { 
       setTimeout(function() { syncTabs(browserUnique); }, 1000);
   },true);

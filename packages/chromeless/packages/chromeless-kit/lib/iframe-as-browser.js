@@ -39,31 +39,37 @@
 
 observers = require("observer-service");
 
-observers.add("content-document-global-created", function(subject, url) {
-    //if ( byWindow[subject.window] ) {
-    for( frameKey in byElements ) { 
-            // generate a custom event to indicate to top level HTML
-        try { 
-        if(subject.window == byElements[frameKey].iframeElement.contentWindow) { 
+const {Cc, Ci, Cr} = require("chrome");
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
+var byElements = new Array();
+
+/* Notice this is here for two reasons. One is that we want to kick experimental-dom-load
+   to each iframe. Other is that we want to hook a progress listener when an iframe's
+   contentWindow is available. But this is tricky, because an <iframe /> empty tag 
+   has no contentWindow when it is first created. The contentWindow may come up later
+   when the src is populated. So, beware this major issue here, when we get the 
+   content-document-global-created is when we attach the progress listener now. The impact to this
+   is that we do not capture progress for the actual HTML page, we sort of capture progress
+   for the inner data that is part of the page. */
+
+observers.add("content-document-global-created", function(subject, url) {
+    for( frameKey in byElements ) { 
+        var refObj = byElements[frameKey]; 
+        if(subject.window == refObj.iframeElement.contentWindow) { 
+            if(refObj.listener ==null) { 
+               refObj.listener = hookProgress(refObj.iframeElement, refObj.refDocument);
+            } 
             // that the initial page load is complete (no scripts yet exectued)
             var evt = byElements[frameKey].refDocument.createEvent("HTMLEvents");
             evt.initEvent("experimental-dom-load", true, false);
             evt.url = subject.window.location.href;
             subject.window.dispatchEvent(evt);
         }
- 
-        } catch(i) { console.log(i) } 
     } 
 });
 
-const {Cc, Ci, Cr} = require("chrome");
-
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const XHTML_NS ="http://www.w3.org/1999/xhtml";
-
-var byWindow  = new Array();
-var byElements = new Array();
 
 /* The reason we need the parentDoc is because we need to dispatch 
    HTMLevents to the iframe, and in order to create the HTMLevents's   
@@ -79,10 +85,10 @@ var byElements = new Array();
 */
 
 exports.bind = function enhanceIframe(frame, parentDoc) {
-  // we keep track of this in case we need to clean things up
-  byElements[frame]= { iframeElement:frame, refDocument: parentDoc }; 
- // byWindow[frame.contentWindow]= { iframeElement:frame, refDocument: parentDoc }; 
+  byElements[frame]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
+}
 
+function hookProgress(frame, parentDoc) { 
   var window = frame.contentWindow;
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
   var frameShell = frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
@@ -97,7 +103,7 @@ exports.bind = function enhanceIframe(frame, parentDoc) {
 
   webProgress.addProgressListener(filter,Ci.nsIWebProgress.NOTIFY_ALL);
   filter.addProgressListener(gBrowserStatusHandler, Ci.nsIWebProgress.NOTIFY_ALL);
-}
+} 
 
 function nsBrowserStatusHandler() {
 }
