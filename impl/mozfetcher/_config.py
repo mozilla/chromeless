@@ -1,6 +1,6 @@
 software = {
     "Linux_64bit": {
-       "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.linux-x86_64.tar.bz2",
+       "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.linux-x86_64.tar.bz2",
        "md5": "1c735b4e478f83b674a8cde834011e29",
        "bin": {
            "path": "xulrunner/xulrunner",
@@ -17,7 +17,7 @@ software = {
         }
     },
     ( "Windows_32bit", "Windows_64bit" ): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.win32.zip",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.win32.zip",
         "md5": "318653c4952f0e6f0e58db0c548730f6",
         "bin": {
             "path": "xulrunner/xulrunner.exe",
@@ -25,7 +25,7 @@ software = {
         }
     },
     "Linux_32bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/latest-trunk/xulrunner-2.0b7pre.en-US.linux-i686.tar.bz2",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.linux-i686.tar.bz2",
         "md5": "64e11cb6c02d9a1d2932e3fb47080e1d",
         "bin": {
             "path": "xulrunner/xulrunner",
