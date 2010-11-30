@@ -75,12 +75,12 @@ body {
 
 #thumbsNavigator { 
 	width:800px;
-	height:40px;
+	height:32px;
 	overflow:hidden;
 } 
 
 .thumb_img { 
-   -moz-transition-property: width;
+   -moz-transition-property: width,height;
    -moz-transition-duration: .5s;
    -moz-transition-delay: .5s;
    width:32px;
@@ -91,10 +91,10 @@ body {
 } 
 
 .thumb_img:hover { 
-   -moz-transition-property: width;
+   -moz-transition-property: width,height;
    -moz-transition-duration: .5s;
    -moz-transition-delay: 0s;
-   height:32px;
+   height:220px;
    width:240px;
 } 
 
@@ -204,6 +204,7 @@ function newTab() {
   var img = document.createElement("img");
   thumb.setAttribute("class","thumb");
   img.setAttribute("class","thumb_img");
+  img.setAttribute("align","top");
 
   img.width="60";
   img.height="60";
