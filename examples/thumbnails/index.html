@@ -110,16 +110,16 @@ body {
   </head>
   <body>
     <div id="outer">
+    <div id="thumbsNavigator">
+    </div>
     <div id="browserHeader">
         <form>
 	<input id="awesomeBox"  type="text" value="http://www.google.com" />
 	<input type="submit" id="buttonGo"  value="go"></input>
 	<button id="buttonNew" >New</button>
 	<button id="buttonPersist" >All</button>
+	<button id="buttonFull" >Full</button>
 	</form>
-    </div>
-    <div id="thumbsNavigator">
-
     </div>
     <div id="browserContentArea">
       <!-- what if iframes were how the browser HTML embedded web content?
@@ -243,7 +243,11 @@ $(document).ready(function() {
     $("#browserHeader #buttonPersist").click(function(e) {
         $(".browser").removeClass("browser_hidden");
         return false; 
-
+    });
+    $("#browserHeader #buttonFull").click(function(e) {
+        var misc = require("misc");
+        misc.fullscreen();
+        return false; 
     });
 });
 
