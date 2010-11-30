@@ -575,6 +575,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == 'xpi':
         from cuddlefish.xpi import build_xpi
+        from cuddlefish.zip import build_zip
         from cuddlefish.rdf import gen_manifest, RDFUpdate
 
         manifest = gen_manifest(template_root_dir=app_extension_dir,
@@ -592,7 +593,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         xpi_name = XPI_FILENAME % target_cfg.name
         print "Exporting extension to %s." % xpi_name
-        build_xpi(template_root_dir=app_extension_dir,
+        build_zip(template_root_dir=app_extension_dir,
                   manifest=manifest,
                   xpi_name=xpi_name,
                   harness_options=harness_options,

@@ -4,7 +4,7 @@
 # accepts a single argument on the command line which is the path to the
 # "entry point HTML" - that which should be used as the browser's UI.
 
-import os,sys
+import os,sys,shutil
 
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
@@ -34,30 +34,31 @@ elif python_lib_dir not in os.environ['PYTHONPATH'].split(os.pathsep):
 def findBrowserHTML(path):
     # "examples" directory can be omitted, but we'll automatically append it to
     # verify that file exists.
-    if not os.path.exists(path):
-        path = os.path.join("examples", path)
     if os.path.isdir(path):
         path = os.path.join(path, "index.html")
     # the path we return must have ui omitted
     return os.path.abspath(path)
 
 # be flexible in handling the first argument
-browserToLaunch = "first_browser/index.html"
+browserToLaunch = "./examples/first_browser/index.html"
 try:
     browserToLaunch = sys.argv[1]
 except:
     pass
-browserToLaunch = findBrowserHTML(browserToLaunch)
 
 executionMode = "run" 
+browserArgument ="browser"
+
 try: 
   if sys.argv[2] == "package":
     executionMode = "xpi" 
+    browserArgument ="browser_embeded_path"
     print "Packaging your application for distribution or installation..."
     print "Note: expect a chromeless.zip application generated in this directory; "
     print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
 except: 
-  pass
+  browserToLaunch = findBrowserHTML(browserToLaunch)
+
 
 # throw an error message if we can't figure out what html file
 # is the browser's HTML entry point
@@ -76,16 +77,13 @@ print "Using Browser HTML at '%s'" % browserToLaunch
 import cuddlefish
 import simplejson as json
 
-# now let's run the cfx thingy and specify the app-kit main module
-# as our starting point
 cuddlefish.run([
         executionMode,
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
         "-t", "./template",
-        "--static-args", json.dumps({"browser": browserToLaunch}),
+        "--static-args", json.dumps({browserArgument: browserToLaunch}),
         "-p", "packages/chromeless"
         ])
-
 
 

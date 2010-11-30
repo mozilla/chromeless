@@ -540,8 +540,14 @@ function getDefaults(rootFileSpec) {
     }
 
     options = JSON.parse(jsonData);
-    if ("staticArgs" in options)
+    if ("staticArgs" in options) { 
       options.staticArgs = JSON.parse(options.staticArgs);
+      if(options.staticArgs.browser_embeded_path) { 
+        dirbase = rootFileSpec.clone();
+        options.staticArgs.appBasePath=dirbase.path;
+        options.staticArgs.browser = options.staticArgs.browser_embeded_path;
+      } 
+    } 
   } catch (e) {
     defaultLogError(e);
     throw e;

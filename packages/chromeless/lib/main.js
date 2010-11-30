@@ -56,7 +56,14 @@ exports.main = function main(options) {
     var contentWindow = require("chromeless-sandbox-window");
 
     // convert browser url into a file url
-    var startPage = require('url').fromFilename(call.browser)
+    console.log("Path base = "+call.appBasePath); 
+
+    console.log("Browser path = " +call.browser); 
+    var launchUrl = call.browser;
+    if(call.appBasePath) { 
+       launchUrl = call.appBasePath+"/"+launchUrl; 
+    } 
+    var startPage = require('url').fromFilename(launchUrl)
 
     console.log("Loading browser using = " + startPage);
 
