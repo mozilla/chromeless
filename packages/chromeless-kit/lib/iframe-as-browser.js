@@ -40,8 +40,6 @@
 observers = require("observer-service");
 
 const {Cc, Ci, Cr} = require("chrome");
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const XHTML_NS ="http://www.w3.org/1999/xhtml";
 
 var byElements = new Array();
 
@@ -50,9 +48,10 @@ var byElements = new Array();
    contentWindow is available. But this is tricky, because an <iframe /> empty tag 
    has no contentWindow when it is first created. The contentWindow may come up later
    when the src is populated. So, beware this major issue here, when we get the 
-   content-document-global-created is when we attach the progress listener now. The impact to this
-   is that we do not capture progress for the actual HTML page, we sort of capture progress
-   for the inner data that is part of the page. */
+   content-document-global-created is when we attach the progress listener now. 
+   The impact to this is that we do not capture progress at the right timing. 
+   We are waiting too much. So, for example you may see that progress state 
+   comes a bit late, like starts with 30%.. etc */ 
 
 observers.add("content-document-global-created", function(subject, url) {
     for( frameKey in byElements ) { 
@@ -88,6 +87,7 @@ exports.bind = function enhanceIframe(frame, parentDoc) {
   byElements[frame]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
 }
 
+
 function hookProgress(frame, parentDoc) { 
   var window = frame.contentWindow;
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
@@ -96,13 +96,25 @@ function hookProgress(frame, parentDoc) {
                      .QueryInterface(Ci.nsIDocShell);
   // chrome://global/content/bindings/browser.xml#browser
   var webProgress = frameShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebProgress);
-  gBrowserStatusHandler = new nsBrowserStatusHandler();
-  gBrowserStatusHandler.init(frame, parentDoc);
+  var aBrowserStatusHandler = new nsBrowserStatusHandler();
+  aBrowserStatusHandler.init(frame, parentDoc);
   var filter = Cc["@mozilla.org/appshell/component/browser-status-filter;1"]
           .createInstance(Ci.nsIWebProgress);
 
   webProgress.addProgressListener(filter,Ci.nsIWebProgress.NOTIFY_ALL);
-  filter.addProgressListener(gBrowserStatusHandler, Ci.nsIWebProgress.NOTIFY_ALL);
+  filter.addProgressListener(aBrowserStatusHandler, Ci.nsIWebProgress.NOTIFY_ALL);
+
+  /* We need to hook up a service to bind security awareness here, 
+     I am not totally sure about this, but searching in browser implementation
+     was able to find some security UI doc 
+     http://mxr.mozilla.org/mozilla-central/source/toolkit/content/widgets/browser.xml#544
+  */
+  if(!frameShell.securityUI) { 
+     var securityUI = Cc["@mozilla.org/secure_browser_ui;1"]
+                      .createInstance(Ci.nsISecureBrowserUI);
+     securityUI.init(window);
+  } 
+            
 } 
 
 function nsBrowserStatusHandler() {
@@ -199,18 +211,6 @@ nsBrowserStatusHandler.prototype =
   onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
   {
   },
-  startDocumentLoad : function(aRequest)
-  {
-        var evt = this.parentDocument.createEvent("HTMLEvents"); 
-        evt.initEvent("experimental-dom-start", true, false);
-        this.iframeElement.dispatchEvent(evt);
-  },
-  endDocumentLoad : function(aRequest, aStatus)
-  {
-        var evt = this.parentDocument.createEvent("HTMLEvents"); 
-        evt.initEvent("experimental-dom-stop", true, false);
-        this.iframeElement.dispatchEvent(evt);
-  },
   onSecurityChange : function(aWebProgress, aRequest, aState)
   {
     switch (aState) {
@@ -240,6 +240,18 @@ nsBrowserStatusHandler.prototype =
         this.iframeElement.dispatchEvent(evt);
      break;
     }   
+  },
+  startDocumentLoad : function(aRequest)
+  {
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-start", true, false);
+        this.iframeElement.dispatchEvent(evt);
+  },
+  endDocumentLoad : function(aRequest, aStatus)
+  {
+        var evt = this.parentDocument.createEvent("HTMLEvents"); 
+        evt.initEvent("experimental-dom-stop", true, false);
+        this.iframeElement.dispatchEvent(evt);
   },
   setJSStatus : function(status)
   {

@@ -31,6 +31,31 @@ body {
   width:240px;
 }
 
+.security_high { 
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:lightblue;
+}  
+.security_low { 
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:yellow;
+}  
+.security_notavailable { 
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:white;
+}  
+.security_broken { 
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:red;
+}  
+
 #browserContentArea {
   -moz-box-flex: 1;
   -webkit-box-flex: 1;
@@ -192,6 +217,10 @@ function newTab() {
   newBrowser.addEventListener("experimental-dom-load",function (e) { 
       setTimeout(function() { syncTabs(browserUnique); }, 1000);
   },true);
+
+  newBrowser.addEventListener("experimental-dom-security", function (e) {
+      $("#awesomeBox").attr("class","security_"+e.detail);
+  },false); 
 
   var thumb = document.createElement("span");
   var img = document.createElement("img");
