@@ -44,3 +44,6 @@ exports.fullscreen = function flipFullScreen() {
    mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
 }
 
+exports.fixupuri = function fixUpURI(url) { 
+   return Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup).createFixupURI(url,0).spec;;
+} 

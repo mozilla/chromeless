@@ -134,14 +134,13 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-var currentBrowser = null; 
-var browserTabs = new Array();
-
+var misc    = require("misc");
 var console = require("plain-text-console");
-dump =  new console.PlainTextConsole();
+var dump    =  new console.PlainTextConsole();
 
-// If you want to try different browser implementations, replace iframe with the 
-// correct DOM element. 
+var currentBrowser = null; 
+var currSelected   = null; 
+var browserTabs    = new Array();
 
 function makeBrowser() { 
   var browser = document.createElement("iframe");
@@ -149,17 +148,14 @@ function makeBrowser() {
   return browser;
 } 
 
-var currSelected = null; 
-
 function selectBrowser(browserRef) { 
   $(".browser").removeClass("browser_selected");
   $(".browser").addClass("browser_hidden");
   $(browserRef).removeClass("browser_hidden");
   $(browserRef).addClass("browser_selected");
-
   var refBrowserId = $(browserRef).attr("id");
   var uniqueId = refBrowserId.split("browser_unique_")[1];
-  if(currSelected != null) { 
+  if(currSelected) { 
     document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
   } 
   document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
@@ -169,11 +165,10 @@ function selectBrowser(browserRef) {
 function canvasShot(browserRef, thumbImageRef) { 
   if(!browserRef) browserRef = currentBrowser;
   try { 
-
-  var camera = require("canvas-proxy");
-  thumbImageRef.width="1";
-  thumbImageRef.height="1";
-  thumbImageRef.src=camera.snapshot(browserRef);
+    var camera = require("canvas-proxy");
+    thumbImageRef.width="1";
+    thumbImageRef.height="1";
+    thumbImageRef.src=camera.snapshot(browserRef);
   } catch (i) { 
     alert(i); 
   } 
@@ -181,10 +176,10 @@ function canvasShot(browserRef, thumbImageRef) {
 
 function newTab() { 
   var newBrowser = makeBrowser();
-  browserTabs.push(newBrowser);
-  var uniqueId = Math.random();
+  var uniqueId   = Math.random();
   var browserUnique = "browser_unique_"+uniqueId;
-  
+
+  browserTabs.push(newBrowser);
   newBrowser.setAttribute("id",browserUnique);
 
   // experimental onload to sync thumbnails, 
@@ -198,27 +193,21 @@ function newTab() {
       setTimeout(function() { syncTabs(browserUnique); }, 1000);
   },true);
 
-
   var thumb = document.createElement("span");
-
   var img = document.createElement("img");
   thumb.setAttribute("class","thumb");
   img.setAttribute("class","thumb_img");
   img.setAttribute("align","top");
-
   img.width="60";
   img.height="60";
   img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
   thumb.setAttribute("id","thumb_unique_"+uniqueId);
   img.setAttribute("id","image_unique_"+uniqueId);
   thumb.appendChild(img);
-
   document.getElementById("thumbsNavigator").appendChild(thumb);
   document.getElementById("browserContentArea").appendChild(newBrowser);
-
   selectBrowser(newBrowser);
   currentBrowser = newBrowser;
-
 } 
 
 function syncTabs(refBrowserId) { 
@@ -231,7 +220,8 @@ $(document).ready(function() {
        if(browserTabs.length<1) newTab();  
        browserUniqueId = $(".browser_selected").attr("id");
        var url = $.trim($("#awesomeBox").val());
-        $(".browser_selected").attr("src", url);
+       $(".browser_selected").attr("src", misc.fixupuri(url));
+
         return false; 
     });
     $("#browserHeader #buttonNew").click(function(e) {
@@ -245,7 +235,6 @@ $(document).ready(function() {
         return false; 
     });
     $("#browserHeader #buttonFull").click(function(e) {
-        var misc = require("misc");
         misc.fullscreen();
         return false; 
     });
