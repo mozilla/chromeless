@@ -8,56 +8,46 @@
      This is an initial example, an experimentation to track 
      loading progress of an iframe. 
    </p>
+   <!-- Note _ Dec 2 2010. This only works ( experimental-dom-security events ) 
+        if you create the iframe, do the binding, before you add the iframe 
+        to the body --> 
+
    <script type="text/javascript">
-     function fire() { 
+   
+   function start() { 
+     var i = document.createElement("iframe");
+     i.style.width="100%";
+     i.style.height="500px";
+     var fr = require("iframe-as-browser").bind(i, document);
 
-        var fr = require("iframe-as-browser").bind(document.getElementById("browser"), document);
+     /* We track progress! */
+     i.addEventListener("experimental-dom-progress",
+         function (e) {
+             document.getElementById("progress").innerHTML=e.percentage;
+             document.getElementById("dots").innerHTML+=".";
+         }
+     ,false); 
 
-	/* We track progress! */
-        document.getElementById("browser")
-                .addEventListener("experimental-dom-progress",
-                 function (e) {
-                   document.getElementById("progress").innerHTML=e.percentage;
-                   document.getElementById("dots").innerHTML+=".";
-                 }
-        ,false); 
-
-
-	/* We track when the page is loaded! */
-        document.getElementById("browser")
-                .addEventListener("experimental-dom-stop",
-                 function (e) {
-                   document.getElementById("progress").innerHTML="AHhhhh this page is totally loaded!, just enjoy!";
-                   document.getElementById("dots").innerHTML+=".";
-                 }
-        ,false); 
-
-        document.getElementById("browser")
-                .addEventListener("experimental-dom-load",
-                 function (e) {
-                   document.getElementById("dots").innerHTML+="loaded";
-                 }
-        ,false); 
-
-        document.getElementById("browser")
-                .addEventListener("experimental-dom-security",
-                 function (e) {
-                   document.getElementById("dots").innerHTML+="Security: "+e.detail;
-                 }
-        ,false); 
+     /* We track when the page is loaded! */
+     i.addEventListener("experimental-dom-stop", function (e) {
+         document.getElementById("progress").innerHTML="AHhhhh this page is totally loaded!, just enjoy!";
+         document.getElementById("dots").innerHTML+=".";
+     },false); 
+     i.addEventListener("experimental-dom-load", function (e) {
+         document.getElementById("dots").innerHTML+="loaded";
+     },false); 
+     i.addEventListener("experimental-dom-security",function (e) {
+         document.getElementById("dots").innerHTML+="Security: "+e.detail;
+     },false); 
  
-        document.getElementById("browser").src="https://www.google.com";
-    } 
-
-    function start() { 
-	setTimeout("fire()",1000);
+     document.body.appendChild(i);
+     i.src="https://www.google.com";
     } 
 
    </script>
    <div style="border:10px solid blue;padding:1em;">
    Loading a web page: <span id="progress"></span>% <span id="dots"></span>
    </div>
-   <iframe id='browser' width="100%" height="500" style="border:0" >
-   </iframe>
+
   </body>
 </html>
