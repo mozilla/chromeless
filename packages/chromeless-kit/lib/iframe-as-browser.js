@@ -44,7 +44,9 @@ const {Cc, Ci, Cr} = require("chrome");
 var byElements = new Array();
 
 /* Notice this is here for two reasons. One is that we want to kick experimental-dom-load
-   to each iframe. Other is that we want to hook a progress listener when an iframe's
+   to each iframe tag, parent of the window iframe, but the observer gives us the window 
+   and not the parent tag. So we do this after we know which window relates to which iframe
+   tag = byElements hash. Other is that we want to hook a progress listener when an iframe's
    contentWindow is available. But this is tricky, because an <iframe /> empty tag 
    has no contentWindow when it is first created. The contentWindow may come up later
    when the src is populated. So, beware this major issue here, when we get the 
@@ -56,7 +58,7 @@ var byElements = new Array();
 observers.add("content-document-global-created", function(subject, url) {
     for( frameKey in byElements ) { 
         var refObj = byElements[frameKey]; 
-        if(subject.window == refObj.iframeElement.contentWindow) { 
+        if(subject.window === refObj.iframeElement.contentWindow) { 
             if(refObj.listener ==null) { 
                refObj.listener = hookProgress(refObj.iframeElement, refObj.refDocument);
             } 
@@ -69,7 +71,6 @@ observers.add("content-document-global-created", function(subject, url) {
         }
     } 
 });
-
 
 /* The reason we need the parentDoc is because we need to dispatch 
    HTMLevents to the iframe, and in order to create the HTMLevents's   
@@ -86,9 +87,11 @@ observers.add("content-document-global-created", function(subject, url) {
 
 exports.bind = function enhanceIframe(frame, parentDoc) {
   // now use the id to be more hash-unique
-  byElements[frame.getAttribute("id")]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
+  var uniqueId = "chromeless-"+Math.random();
+  frame.setAttribute("chromeless-id",uniqueId);
+  byElements[frame.getAttribute("chromeless-id")]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
+  return uniqueId; 
 }
-
 
 function hookProgress(frame, parentDoc) { 
   var window = frame.contentWindow;
