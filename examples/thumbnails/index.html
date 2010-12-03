@@ -188,14 +188,13 @@ function selectBrowser(browserRef) {
 } 
 
 function canvasShot(browserRef, thumbImageRef) { 
-  if(!browserRef) browserRef = currentBrowser;
   try { 
     var camera = require("canvas-proxy");
     thumbImageRef.width="1";
     thumbImageRef.height="1";
     thumbImageRef.src=camera.snapshot(browserRef);
   } catch (i) { 
-    alert(i); 
+    dump.log(i); 
   } 
 } 
 

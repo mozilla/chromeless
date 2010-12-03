@@ -64,7 +64,8 @@ observers.add("content-document-global-created", function(subject, url) {
             var evt = byElements[frameKey].refDocument.createEvent("HTMLEvents");
             evt.initEvent("experimental-dom-load", true, false);
             evt.url = subject.window.location.href;
-            subject.window.dispatchEvent(evt);
+            // We now send this event to the actual tag, not the window
+            refObj.iframeElement.dispatchEvent(evt);
         }
     } 
 });
@@ -84,7 +85,8 @@ observers.add("content-document-global-created", function(subject, url) {
 */
 
 exports.bind = function enhanceIframe(frame, parentDoc) {
-  byElements[frame]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
+  // now use the id to be more hash-unique
+  byElements[frame.getAttribute("id")]= { iframeElement:frame, refDocument: parentDoc, listener:null }; 
 }
 
 
