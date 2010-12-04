@@ -1,0 +1,305 @@
+<!-- This webpage controls the top level rendering of the browser.  it's
+     the first document that is loaded. and defines the look and feel of
+     the browser.  --> 
+
+<html>
+  <head>
+    <!-- What if the title of the top level document dictated the os level
+         process/application name? -->
+    <title>WebbyFox</title>
+
+<!-- we can use basic flexbox layout! -->
+    
+    <link href="security.css" rel="stylesheet" media="screen, projection">
+    <style type="text/css" media="screen">
+
+body {
+  background-color: #999;
+  padding: 0;
+  margin: 0;
+}
+
+#browserHeader {
+  width: 100%;
+  text-align: center;
+}
+
+#browserHeader form { 
+   margin-bottom:5px;
+} 
+#awesomeBox {
+  font-size: 120%;
+  margin-right: 20px;
+  width:240px;
+}
+
+#browserContentArea {
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+  box-flex: 1;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+  border: 1px solid green;
+  margin:1em;
+  margin-top:0;
+}
+
+
+#outer {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+  -moz-box-orient: vertical;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+}
+
+.browser { 
+  border: 1px solid blue;
+  box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+  width: 100%;
+  height: 100%;
+} 
+
+.browser_selected { 
+  display:block;
+} 
+
+.browser_hidden { 
+  display:none;
+} 
+
+#thumbsNavigator { 
+	width:800px;
+	height:62px;
+	text-align:center;
+	overflow:hidden;
+} 
+
+.thumb_img { 
+   opacity:.6;
+   width:30px; 
+   height:30px
+} 
+
+.thumb { 
+   border:2px solid transparent;
+ overflow:hidden;
+} 
+
+.thumb_selected { 
+   -moz-transition-property: opacity;
+   -moz-transition-duration: .5s;
+    opacity:1;
+   -moz-transition-delay: 0s;
+   width:240px;
+   height:40px;
+} 
+    </style>
+  </head>
+  <body>
+    <div id="outer">
+    <div id="thumbsNavigator">
+    </div>
+    <div id="browserHeader">
+        <form>
+	<input id="awesomeBox"  type="text" value="http://www.google.com" />
+	<input type="submit" id="buttonGo"  value="go"></input>
+	<button id="buttonNew" >New</button>
+	<button id="buttonHome" >Home</button>
+	<button id="buttonPersist" >All</button>
+	<button id="buttonFull" >Full</button>
+	</form>
+    </div>
+    <div id="browserContentArea">
+      <!-- what if iframes were how the browser HTML embedded web content?
+           what if a new attribute were introduced which controlled priviledge
+           level of content loaded in an iframe? --> 
+    </div>
+    </div>
+  </body>
+  <!-- Could the browser itself leverage a framework like YUI or jquery?
+       This shouldn't be that much different than slamming YUI into node.js
+       or jquery into jetpacks? -->
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+var misc = require("misc");
+var currentBrowser = null; 
+var browserTabs = new Array();
+
+var console = require("plain-text-console");
+var dump =  new console.PlainTextConsole();
+
+// If you want to try different browser implementations, replace iframe with the 
+// correct DOM element. 
+
+function makeBrowser() { 
+  var browser = document.createElement("iframe");
+  $(browser).addClass("browser");
+  return browser;
+} 
+
+var currSelected = null; 
+
+function selectBrowser(browserRef) { 
+  $(".browser").removeClass("browser_selected");
+  $(".browser").addClass("browser_hidden");
+  $(browserRef).removeClass("browser_hidden");
+  $(browserRef).addClass("browser_selected");
+
+  var refBrowserId = $(browserRef).attr("id");
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+  if(currSelected != null) { 
+    document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
+  } 
+  document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
+  currSelected = uniqueId; 
+} 
+
+function canvasShot(browserRef, thumbImageRef) { 
+  try { 
+    var camera = require("canvas-proxy");
+    thumbImageRef.width="1";
+    thumbImageRef.height="1";
+    thumbImageRef.src=camera.snapshot(browserRef);
+  } catch (i) { 
+    console.dump(i); 
+  } 
+} 
+
+
+var tabsFixed = new Array(); 
+var tabsIndex =-1;
+
+function newTab() { 
+  tabsIndex++;
+
+  var newBrowser = makeBrowser();
+  browserTabs.push(newBrowser);
+  var uniqueId = Math.random();
+  var browserUnique = "browser_unique_"+uniqueId;
+  
+  newBrowser.setAttribute("id",browserUnique);
+
+  // experimental onload to sync thumbnails, 
+  // we may need to send another events for the full onload 
+  // since this 'experimental-dom-loaded' is before scripts 
+  // and images.  
+
+  require("iframe-as-browser").bind(newBrowser,document);
+
+  newBrowser.addEventListener("experimental-dom-load",function (e) { 
+      var refBrowser = browserUnique; 
+      setTimeout(function() { syncTabs(refBrowser); }, 1000);
+  },true);
+  newBrowser.addEventListener("experimental-dom-security", function (e) {
+      $("#awesomeBox").attr("class","security_"+e.detail);
+  },false);
+
+  var thumb = document.createElement("span");
+
+  var img = document.createElement("img");
+  thumb.setAttribute("class","thumb");
+  img.setAttribute("class","thumb_img");
+  img.setAttribute("align","top");
+
+  img.width="30";
+  img.height="30";
+  img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
+  thumb.setAttribute("id","thumb_unique_"+uniqueId);
+  img.setAttribute("id","image_unique_"+uniqueId);
+  thumb.appendChild(img);
+
+  document.getElementById("thumbsNavigator").appendChild(thumb);
+  document.getElementById("browserContentArea").appendChild(newBrowser);
+
+  tabsFixed=32*tabsIndex;
+
+  selectBrowser(newBrowser);
+  currentBrowser = newBrowser;
+
+} 
+
+function syncTabs(refBrowserId) { 
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+  canvasShot(document.getElementById(refBrowserId),document.getElementById("image_unique_"+uniqueId));
+} 
+
+function fishEyeOut(e) { 
+
+  $(".thumb img").each(function(i,el) { 
+       el.style.width=32+"px";
+       el.style.height=32+"px";
+  });
+
+} 
+function fishEye(e) { 
+
+	var totalWidth = tabsFixed;
+	var shiftX = parseInt((window.innerWidth-totalWidth)/2);
+	var deltaX = e.clientX-shiftX; 
+
+	var c =-1;
+	$(".thumb").each(function(i,el) { 
+		c++;	
+		var delta = Math.abs(deltaX-c*32); 
+		if(delta>=58) { 
+  			delta=58; 
+		} 
+			$(this).find("img").each(function (i,el) { 
+			el.style.width=90-delta+"px";
+			el.style.height=90-delta+"px";
+			} );
+		
+	});
+} 
+
+$(document).ready(function() {
+
+    //document.getElementById("thumbsNavigator").addEventListener("mousemove",fishEye, false); 
+    $("#thumbsNavigator").mousemove(function(event) { 
+	fishEye(event);
+    });
+    $("#thumbsNavigator").mouseleave(function(event) { 
+	fishEyeOut(event);
+    });
+
+    //document.getElementById("thumbsNavigator").addEventListener("mouseout",fishEyeOut, false); 
+
+    $("#browserHeader form").submit(function(e) {
+       if(browserTabs.length<1) newTab();  
+       browserUniqueId = $(".browser_selected").attr("id");
+       var url = $.trim($("#awesomeBox").val());
+        $(".browser_selected").attr("src", misc.fixupuri(url));
+        return false; 
+    });
+    $("#browserHeader #buttonHome").click(function(e) {
+
+        $(".browser_selected").attr("src", misc.fixupuri("http://www.google.com"));
+        return false; 
+    });
+    $("#browserHeader #buttonNew").click(function(e) {
+        newTab();
+        $("#awesomeBox").val("");
+        $("#awesomeBox").focus();
+        return false; 
+    });
+    $("#browserHeader #buttonPersist").click(function(e) {
+        $(".browser").removeClass("browser_hidden");
+        return false; 
+    });
+    $("#browserHeader #buttonFull").click(function(e) {
+        misc.fullscreen();
+        return false; 
+    });
+});
+
+  </script>
+</html>

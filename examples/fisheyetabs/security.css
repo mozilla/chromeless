@@ -1,0 +1,25 @@
+.security_high {
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:lightblue;
+}
+.security_low {
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:yellow;
+}
+.security_notavailable {
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:white;
+}
+.security_broken {
+   -moz-transition-property: background-color;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   background-color:red;
+}
+
