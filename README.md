@@ -66,7 +66,7 @@ XULRunner application (danger, experimental):
     (win32) C:\xxx\chromeless> chromeless examples\webgl package
     (osx)   $ ./chromeless examples/webgl package
 
-This will output a zip file. You can then use the built in XULRunner to install the ZIP file as a XULRunner application in your computer. There is a convenience script to install chromeless.zip in the local computer. 
+This will output a zip file. You can then use the built in XULRunner to install the ZIP file as a XULRunner application in your computer. There is a convenience script to install chromeless.zip in the local computer. In Mac OSX, look for the application under Applications/Mozilla/Chromeless. With Linux under /usr/lib/mozilla/chromeless and in Windows in C:\Program Files\Mozilla\Chromeless. If you want to change the vendor name, you should edit the ./template application.ini file.  
 
     ./xulapp-install 
 
