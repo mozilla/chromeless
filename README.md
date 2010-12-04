@@ -66,7 +66,9 @@ XULRunner application (danger, experimental):
     (win32) C:\xxx\chromeless> chromeless examples\webgl package
     (osx)   $ ./chromeless examples/webgl package
 
-This will output a zip file which you can install using the --install-app flag to xulrunner.
+This will output a zip file. You can then use the built in XULRunner to install the ZIP file as a XULRunner application in your computer. There is a convenience script to install chromeless.zip in the local computer. 
+
+    ./xulapp-install 
 
 ## More Information
 
