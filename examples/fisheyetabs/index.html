@@ -160,7 +160,8 @@ function makeBrowser() {
 
 var currSelected = null; 
 
-function selectBrowser(browserRef) { 
+function changeBrowser(browserRef,updateBar) { 
+
   $(".browser").removeClass("browser_selected");
   $(".browser").addClass("browser_hidden");
   $(browserRef).removeClass("browser_hidden");
@@ -173,6 +174,11 @@ function selectBrowser(browserRef) {
   } 
   document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
   currSelected = uniqueId; 
+
+  if(updateBar) { 
+    $("#awesomeBox").attr("value",browserRef.src); 
+  } 
+
 } 
 
 function canvasShot(browserRef, thumbImageRef) { 
@@ -233,7 +239,7 @@ function newTab() {
 
   img.width="30";
   img.height="30";
-  img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
+  img.setAttribute("onclick","changeBrowser(document.getElementById('browser_unique_"+uniqueId+"'),true)");
   thumb.setAttribute("id","thumb_unique_"+uniqueId);
   img.setAttribute("id","image_unique_"+uniqueId);
   thumb.appendChild(img);
@@ -242,10 +248,14 @@ function newTab() {
   document.getElementById("browserContentArea").appendChild(newBrowser);
 
   tabsFixed=32*tabsIndex;
+ 
+  changeBrowser(newBrowser);
 
-  selectBrowser(newBrowser);
   currentBrowser = newBrowser;
 
+} 
+
+function updateVisibleBrowser(browserRef) { 
 } 
 
 function thumbnailUpdate(refBrowserId) { 
@@ -296,8 +306,8 @@ $(document).ready(function() {
        if(browserTabs.length<1) newTab();  
        browserUniqueId = $(".browser_selected").attr("id");
        var url = $.trim($("#awesomeBox").val());
-        $(".browser_selected").attr("src", misc.fixupuri(url));
-        return false; 
+       $(".browser_selected").attr("src", misc.fixupuri(url));
+       return false; 
     });
     $("#browserHeader #buttonHome").click(function(e) {
 
