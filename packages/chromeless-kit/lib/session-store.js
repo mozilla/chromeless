@@ -38,33 +38,12 @@
  * ***** END LICENSE BLOCK ***** */
 
 const {Cc, Ci, Cu} = require("chrome");
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const XHTML_NS ="http://www.w3.org/1999/xhtml";
-
-/* 
- https://developer.mozilla.org/en/session_store_api 
-
- delayed startup in the firefox browser 
- http://mxr.mozilla.org/mozilla-central/source/browser/base/content/browser.js#1370
-
- session store init
- 
- session history 
- http://mxr.mozilla.org/mozilla-central/source/browser/base/content/browser.js#1619
-
- session store implementation
- http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/
- http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/src/nsSessionStore.js
-  
- Interesting notes related to restoration of windows 
- http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/src/nsSessionStore.js#92
-
-*/
 
 let gSession = { 
  
   _sessionFile: null, 
-  windows: [], 
+ 
+  localData: new Array(), 
  
   initSessionFile: function is() { 
     var dirService = Cc["@mozilla.org/file/directory_service;1"].
@@ -74,21 +53,21 @@ let gSession = {
     this._sessionFile.append("sessionstore.js");
     this._sessionFileBackup.append("sessionstore.bak");
   },
-  addWindow: function aw(refWindow) { 
- 	this.windows.push(refWindow); 
+  addData: function aw(someData) { 
+     this.localData.push(someData);
   }, 
   // Based on sss_saveState 
   // http://mxr.mozilla.org/mozilla-central/source/browser/components/sessionstore/src/nsSessionStore.js
   saveState: function ss() { 
     // we acquire some session stuff here 
     // we will eventually loop through browsers 
-    aStateObj = this.windows[0];
 
     var stateString = Cc["@mozilla.org/supports-string;1"].
                         createInstance(Ci.nsISupportsString);
     //stateString.data = "(" + this._toJSONString(aStateObj) + ")";
     // don't touch the file if an observer has deleted all state data
-    stateString.data = "window="+this.windows[0].contentTitle;
+
+    stateString.data = this.localData[0];
 
     console.log("Will write data = "+stateString.data);
     console.log("Check your user profile for a sessionstore.js file");
@@ -112,45 +91,18 @@ let gSession = {
       jsonString = jsonString.replace(/[\u2028\u2029]/g, function($0) "\\u" + $0.charCodeAt(0).toString(16));
     }
     return jsonString;
-  },
-  _initSessionHistory: function _initSessionHistory() {
-
-    // We will change this eventually. We so far have a whole 
-    // session history service associated with each browser
-    // due to fact we using tabbrowser
-    // gBrowser.selectedBrowser.webNavigation.sessionHistory;  
-
-    try { 
-    var gBrowser = this.windows[0];
-
-    gBrowser.webNavigation.sessionHistory = 
-            Cc["@mozilla.org/browser/shistory;1"].
-            createInstance(Ci.nsISHistory);
-    gBrowser.browsers[0].removeAttribute("disablehistory");
-    try {
-      gBrowser.docShell.QueryInterface(Ci.nsIDocShellHistory).useGlobalHistory = true;
-    }
-    catch(ex) {
-      console.log("Places database may be locked: " + ex);
-    }
-    } catch (i) { console.log(i) } 
-  },
+  }
 } 
 
-__defineGetter__("NetUtil", function() {
-  delete this.NetUtil;
-  Cu.import("resource://gre/modules/NetUtil.jsm");
-  return NetUtil;
-});
-
-exports.init = function init(aBrowser) {
-        //gSession.initSessionHistory(aBrowser);
+exports.init = function init() {
 	gSession.initSessionFile();
-        console.log("Called setBroser");
-	gSession.addWindow(aBrowser);
-        gSession._initSessionHistory();
 }
+
+exports.add = function add(data) { 
+ 	gSession.addData(data);
+}  
 
 exports.save = function save() { 
 	gSession.saveState();
 } 
+

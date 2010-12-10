@@ -1,67 +1,22 @@
-<!-- 
-
-About this sample: 
-
-We do not want to expose graphic / UI of tabbrowser. This case is here
-so that we can test the use of a XUL browser implementation that works
-in the scope of the XHTML file. What we want, in the moving forward, 
-is to have some sort of tabrowser = browser collection abstraction, 
-to let the HTML browser developer keep their multiple browser elements
-in the page and present or not tabs, organize the browsers in different 
-ways - higher flexibility. 
-
---> 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" windowtype="navigator:browser" titlepreface="" titlemodifier="" width="800" height="600" >
-
+<html>
   <head>
-  <link rel="stylesheet" href="chrome://browser/content/browser.css"/>
-  <link rel="stylesheet" href="browser.css"/>
+    <title>WebbyFox</title>
   </head>
-  <body>
+  <body onload="start()" >
+   <p>
+     Save something to the user's profile
+   </p>
 
-  <form><input id="awesomeBox" type="text" value="http://www.google.com" /><input type="button" onclick="launch();return false" value="go"/></form>
-
-  <tabbrowser id="content" type="content-primary" />
-
-  <!-- hacks to make xul:tabbrowser work -->
-  <xul:menubar style="display: none">
-    <xul:menu label="menu">
-      <xul:menupopup>
-        <xul:menuitem label="close window hook" id="menu_closeWindow"/>
-        <xul:menuitem label="close hook" id="menu_close"/>
-      </xul:menupopup>
-    </xul:menu>
-  </xul:menubar>
-
-<script type="application/javascript">
-    var XULBrowserWindow = {
-      isBusy: false,
-      setOverLink: function (link, b) {
-      }
-    };
-    var gFindBar = {
-      hidden: true
-    };
-    function makeURI(aURLSpec, aCharset) {
-      var ios = Cc["@mozilla.org/network/io-service;1"].
-                getService(Ci.nsIIOService);
-      return ios.newURI(aURLSpec, aCharset, null);
-    }
-  </script>
-
-
-  <script type="text/javascript">
-
-    function launch() { 
-        try { 
- 		var uri = document.getElementById("awesomeBox").value;
-        	document.getElementById("content").addTab(uri);
-        } catch(i) { alert(i) } 
+   <script type="text/javascript">
+   
+   function start() { 
+  	ss = require("session-store");
+	ss.init();
+        ss.add("data");
+        ss.save();
     } 
 
-  </script>
-  </body>
+   </script>
 
+  </body>
 </html>
