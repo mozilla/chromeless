@@ -40,35 +40,47 @@
     </script>
     <script> 
  
-  gThumbImageRef = null; // This is being used by webgl-demo.js
+var myBrowser = null; 
+var gThumbImageRef = null; // This is being used by webgl-demo.js
 
-  function launchHiddenWorkerIframe() { 
-    var hiddenFrames = require("hidden-frame-xulrunner");
-    var hiddenFrame = hiddenFrames.add(hiddenFrames.HiddenFrame({
-      onReady: function() {
-        this.element.contentWindow.location = "https://mozillalabs.com/";
-        var self = this;
-        this.element.addEventListener("DOMContentLoaded", function() {
-          /* Notice that DOMContentLoaded is not ideal here, we want to 
-             render the page when all the inner DOM elements are also 
-             loaded. DOMContentLoaded is just about the raw view-source 
-             and won't include images in the page, so it will look bad */
-
-          try { 
-            var camera = require("canvas-proxy");
-            var shot = camera.snapshot(self.element);
-            gThumbImageRef = new Image();
-            gThumbImageRef.width="64";
-            gThumbImageRef.height="64";
-            gThumbImageRef.src=shot.toDataURL("image/png");
-          } catch (i) { alert(i) } 
-
-        }, true, true);
+function launchBrowser() { 
+    myBrowser = document.createElement("iframe");
+    require("iframe-as-browser").bind(myBrowser,document);
+    myBrowser.addEventListener("experimental-dom-progress", function (e) {
+      if(e.percentage>=100) {
+          thumbnailUpdate();
       }
-    }));
+    },false);
+    document.body.appendChild(myBrowser);
+    myBrowser.src = "http://www.google.com/";
+} 
+
+function thumbnailUpdate() { 
+    var camera = require("canvas-proxy");
+    var shot = camera.snapshot(myBrowser);
+
+    var thumbnailFromPage = new Image();
+    thumbnailFromPage.width="64";
+    thumbnailFromPage.height="64";
+    thumbnailFromPage.src=shot;
+    thumbnailFromPage.onload = function () { 
+       ctx.drawImage(thumbnailFromPage, 0, 0, 64,64 );
+       gThumbImageRef = document.createElement("img");
+       gThumbImageRef.src = square.toDataURL("image/png");
+       //document.body.appendChild(gThumbImageRef);
+    } 
+    /* We do this because we need a 64x64 picture even to make  a 
+    texture, required by the webgl demo */
+
+    var square = document.createElement("canvas");
+    ctx = square.getContext("2d");
+    square.width = 64;
+    square.height = 64;
+    //document.body.appendChild(square);
   } 
+
   function prestart() { 
-    launchHiddenWorkerIframe();
+    launchBrowser();
     start(); 
   } 
 
