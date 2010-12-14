@@ -78,6 +78,15 @@ will be a tutorial and API documentation.
 You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
 this project on our mailing list: `mozilla-labs@googlegroups.com`
 
+## Notes and Known Issues
+
+Known Issues
+
+  * You need to pass a relative path to your application when you invoke chromeless script 
+  * This version only packages your files that are under your main application directory. So if you use, for example, jquery in a sub-directory, it will not be bundled. Make sure you have all your files in the same directory. 
+  * With Mac OSX, if you launch the application for tests ( not passing package option ), the keyboard output will show in the console and not in the browser screen. For Mac OSX, you may need to use the "package" argument and install in your machine. 
+  * It works with some specific versions of XULRunner. And to help out developers, the chromeless script will fetch a XULRunner SDK. 
+
 ## LICENSE
 
 All files that are part of this project are covered by the following
