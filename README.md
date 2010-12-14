@@ -80,8 +80,6 @@ this project on our mailing list: `mozilla-labs@googlegroups.com`
 
 ## Notes and Known Issues
 
-Known Issues
-
   * You need to pass a relative path to your application when you invoke chromeless script 
   * This version only packages your files that are under your main application directory. So if you use, for example, jquery in a sub-directory, it will not be bundled. Make sure you have all your files in the same directory. 
   * With Mac OSX, if you launch the application for tests ( not passing package option ), the keyboard output will show in the console and not in the browser screen. For Mac OSX, you may need to use the "package" argument and install in your machine. 

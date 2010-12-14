@@ -8,7 +8,7 @@
          process/application name? -->
     <title>WebbyFox</title>
 
-<!-- we can use basic flexbox layout! -->
+    <!-- we can use basic flexbox layout! -->
     
     <link href="security.css" rel="stylesheet" media="screen, projection">
     <style type="text/css" media="screen">
@@ -19,21 +19,26 @@ body {
   margin: 0;
 }
 
+#topCanvasMask { 
+     background-image: -moz-linear-gradient(-90deg, rgba(255,255,255,0) , #fff);
+     height:62px;
+     width:100%;
+} 
+
 #browserHeader {
   width: 80%;
+  height:40px;
   margin:1em;
   margin-top:0;
   padding-top:10px;
-  background-color:white;
   text-align: center;
-  height:40px;
+  background-color:white;
 }
 
 #browserHeader form { 
   display:-moz-inline-box;
   -moz-box-orient:horizontal;
 } 
-
 
 .toolbarItem { 
   -moz-box-flex: 1;
@@ -102,22 +107,20 @@ body {
 
 .thumb { 
    border:2px solid transparent;
+  -moz-box-shadow:0 0 0;
    overflow:hidden;
 } 
 
 .thumb_selected { 
-   -moz-transition-property: opacity;
-   -moz-transition-duration: .5s;
-    opacity:1;
-   -moz-transition-delay: 0s;
-   width:240px;
-   height:40px;
+  -moz-box-shadow:0 0 20px white;
 } 
     </style>
   </head>
   <body>
     <div id="outer">
+    <div id="topCanvasMask">
     <div id="thumbsNavigator">
+    </div>
     </div>
     <div id="browserHeader">
         <form>
@@ -145,6 +148,7 @@ body {
 var misc = require("misc");
 var currentBrowser = null; 
 var browserTabs = new Array();
+var currSelected = null; 
 
 var console = require("plain-text-console");
 var dump =  new console.PlainTextConsole();
@@ -158,8 +162,6 @@ function makeBrowser() {
   return browser;
 } 
 
-var currSelected = null; 
-
 function changeBrowser(browserRef,updateBar) { 
 
   $(".browser").removeClass("browser_selected");
@@ -172,7 +174,7 @@ function changeBrowser(browserRef,updateBar) {
   if(currSelected != null) { 
     document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
   } 
-  document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
+  document.getElementById("image_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
   currSelected = uniqueId; 
 
   if(updateBar) { 
