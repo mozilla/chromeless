@@ -33,8 +33,8 @@ class PackagingTests(unittest.TestCase):
         configs = get_configs('aardvark')
         packages = configs.pkg_cfg.packages
 
-        self.assertTrue('jetpack-core' in packages)
+        self.assertTrue('api-utils' in packages)
         self.assertTrue('aardvark' in packages)
-        self.assertTrue('jetpack-core' in packages.aardvark.dependencies)
-        self.assertEqual(packages['jetpack-core'].loader, 'lib/loader.js')
+        self.assertTrue('api-utils' in packages.aardvark.dependencies)
+        self.assertEqual(packages['api-utils'].loader, 'lib/loader.js')
         self.assertTrue(packages.aardvark.main == 'main')

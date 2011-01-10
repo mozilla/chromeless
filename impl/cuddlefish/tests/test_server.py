@@ -47,17 +47,17 @@ class UnprivilegedServerTests(unittest.TestCase):
         self.assertEqual(self.request('/packages/bleh'), '404 Not Found')
 
     def test_package_file_404(self):
-        self.assertEqual(self.request('/packages/jetpack-core/bleh'),
+        self.assertEqual(self.request('/packages/api-utils/bleh'),
                          '404 Not Found')
 
     def test_package_file_200(self):
-        readme = self.request('/packages/jetpack-core/README.md')
+        readme = self.request('/packages/api-utils/README.md')
         self.assertTrue('Jetpack Core' in readme)
 
     def test_packages_index_json_200(self):
         info = server.json.loads(self.request('/packages/index.json'))
         self.assertEqual(type(info), dict)
-        self.assertTrue('jetpack-core' in info)
+        self.assertTrue('api-utils' in info)
 
     def test_404_on_blank_path(self):
         self.assertEqual(self.request(''), '404 Not Found')

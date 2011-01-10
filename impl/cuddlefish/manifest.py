@@ -104,7 +104,7 @@ def scan_package(pkg_name, dirname, stderr=sys.stderr):
     for dirpath, dirnames, filenames in os.walk(dirname):
         for fn in [fn for fn in filenames if fn.endswith(".js")]:
             modname = os.path.splitext(fn)[0]
-            # turn "packages/jetpack-core/lib/content/foo" into "content/foo"
+            # turn "packages/api-utils/lib/content/foo" into "content/foo"
             reldir = dirpath[len(dirname)+1:]
             if reldir:
                 modname = "/".join(reldir.split(os.sep) + [modname])

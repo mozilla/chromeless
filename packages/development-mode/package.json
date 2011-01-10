@@ -6,6 +6,6 @@
     "version": "0.8",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "main": "main",
-    "dependencies": ["jetpack-core", "test-harness"],
+    "dependencies": ["api-utils", "test-harness"],
     "id": "anonid0-development-mode"
 }

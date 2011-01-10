@@ -3,7 +3,7 @@
     "description": "Jetpack binary component.",
     "author": "Atul Varma (http://toolness.com/)",
     "keywords": ["jetpack-low-level"],
-    "dependencies": ["jetpack-core"],
+    "dependencies": ["api-utils"],
     "lib": ["lib"],
     "tests": ["tests"],
     "version": "0.2",

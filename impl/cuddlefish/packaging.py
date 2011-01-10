@@ -7,7 +7,7 @@ from cuddlefish.bunch import Bunch
 
 MANIFEST_NAME = 'package.json'
 
-DEFAULT_LOADER = 'jetpack-core'
+DEFAULT_LOADER = 'api-utils'
 
 DEFAULT_PROGRAM_MODULE = 'main'
 

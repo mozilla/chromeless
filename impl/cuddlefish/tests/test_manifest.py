@@ -182,7 +182,7 @@ class BadChrome(unittest.TestCase):
 
 class Package(unittest.TestCase):
     def test_bug_596573(self):
-        jp_tests = "packages/jetpack-core/tests"
+        jp_tests = "packages/api-utils/tests"
         manifest, has_problems = scan_package("tests", jp_tests)
         found = [modname
                  for pkgname, modname, deps, needschrome in manifest
@@ -191,12 +191,12 @@ class Package(unittest.TestCase):
         self.failUnless(len(found) == 1)
         
     def test_jetpack_core(self):
-        # this has a side-effect of asserting that all the SDK's jetpack-core
+        # this has a side-effect of asserting that all the SDK's api-utils
         # modules are clean.
-        jp_core = "packages/jetpack-core/lib"
+        jp_core = "packages/api-utils/lib"
         assert os.path.isdir(jp_core) # we expect to be run from the SDK top
         stderr = StringIO()
-        manifest, has_problems = scan_package("jetpack-core", jp_core, stderr)
+        manifest, has_problems = scan_package("api-utils", jp_core, stderr)
         stderr.seek(0)
         err = stderr.readlines()
         self.failUnlessEqual(err, [], "".join(err))

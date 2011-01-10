@@ -10,7 +10,7 @@
     "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>", 
     "version": "0.1", 
     "dependencies": [
-        "jetpack-core", 
+        "api-utils", 
         "chromeless-kit"
     ], 
     "keywords": [

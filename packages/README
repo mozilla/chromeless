@@ -1,10 +1,10 @@
 What is in packages?
 
-The directory packages has an application, named chromeless, and also has libraries, such as addon-kit, and jetpack-core. This can be really confusing because it's all flat in the same directory. So tag cloud: 
+The directory packages has an application, named chromeless, and also has libraries, such as addon-kit, and api-utils. This can be really confusing because it's all flat in the same directory. So tag cloud: 
 
 App: chromeless
 
-Library: jetpack-core, addon-kit 
+Library: api-utils, addon-kit 
 
 Execution
 

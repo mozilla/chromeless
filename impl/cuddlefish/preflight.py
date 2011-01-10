@@ -40,7 +40,7 @@ def vk_to_jid(vk):
     # C:\Documents and Settings\<username>\Application Data\Mozilla\Firefox\Profiles\232353483.default\extensions\$JID\...
     # (which is 108 chars long without the $JID).
     # Then the unpacked XPI contains packaged resources like:
-    #  resources/$JID-jetpack-core-lib/main.js   (35 chars plus the $JID)
+    #  resources/$JID-api-utils-lib/main.js   (35 chars plus the $JID)
     #
     # We hash the pubkey into a 160 bit string, base64 encode that (with
     # AB instead of +/ to be path-safe), then bundle it into
