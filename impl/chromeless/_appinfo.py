@@ -16,13 +16,16 @@ class AppInfo(object):
         app_info_spec  = {
             "name":    "My Chromeless App",
             "version": "0.1",
-            "long_version": "0.1." + timestamp ,
+            "build_id": timestamp,
             "resizable": "false",
+            "developer_email": "unknown@unknown.com",
+            "vendor": "Unknown",
             "initial_dimensions": {
                 "width": 800,
                 "height": 600
             }
         }
+
         for prop in app_info_spec.keys():
             self.__dict__[prop] = parsed_info[prop] if prop in parsed_info else app_info_spec[prop]
             # XXX: creation of default values for nested properties

@@ -34,4 +34,5 @@ class Appifier(object):
         self.osappifier.output_xulrunner_app(dir= params['xulrunner_app_dir'],
                                              browser_code_dir=browser_code_dir,
                                              browser_code_main=browser_code_main,
-                                             dev_mode=dev_mode)
+                                             dev_mode=dev_mode,
+                                             harness_options=harness_options)

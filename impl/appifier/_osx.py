@@ -2,6 +2,7 @@ import chromeless
 import os
 import shutil
 from string import Template
+import simplejson as json
 
 class OSAppifier(object):
     def __init__(self):
@@ -10,8 +11,84 @@ class OSAppifier(object):
         self.dirs = chromeless.Dirs()
 
         print "OSAppifier initialized"
+
+    def _sub_and_copy(self, src, dst, mapping):
+        template_content = ""
+        with open(src, 'r') as f:
+            template_content = f.read()
+        s = Template(template_content)
+        final_contents = s.substitute(mapping)
+        with open(dst, 'w') as f:
+            f.write(final_contents)
+
         
-    def output_xulrunner_app(self, dir, browser_code_dir, browser_code_main, dev_mode):
+    def output_xulrunner_app(self, dir, browser_code_dir, browser_code_main, dev_mode,
+                             harness_options, verbose=True):
+        # XXX: maybe ALL of this can be shared code between platforms??
+        print "Building xulrunner app in >%s< ..." % dir 
+        
+        # extract information about the application from appinfo.json
+        app_info = chromeless.AppInfo(dir=browser_code_dir)
+
+        res_dir = os.path.join(os.path.dirname(__file__), "resources")
+
+        # copy all the template files which require no substitution
+        template_dir = os.path.join(res_dir, "xulrunner.template")
+        if verbose:
+            print "  ... copying application template"
+
+        for f in os.listdir(template_dir):
+            src = os.path.join(template_dir, f)
+            dst = os.path.join(dir, f)
+            if (os.path.isdir(src)): 
+                shutil.copytree(src, dst)
+            else:
+                shutil.copy(src, dst)
+
+        # sub in application.ini
+        if verbose:
+            print "  ... creating application.ini"
+
+        app_ini_template = os.path.join(res_dir, "application.ini.template")
+        app_ini_path = os.path.join(dir, "application.ini")
+
+        self._sub_and_copy(app_ini_template, app_ini_path, {
+                "application_name": app_info.name,
+                "application_vendor": app_info.vendor,
+                "short_version": app_info.version,
+                "build_id": app_info.build_id,
+                "developer_email": app_info.developer_email
+        })
+
+        # now copy in packages
+        # XXX: only copying in dependencies would be A Good Thing
+        if verbose:
+            print "  ... copying in CommonJS packages"
+        shutil.copytree(os.path.join(self.dirs.cuddlefish_root, "packages"),
+                        os.path.join(dir, "packages"))
+
+        # and browser code
+        if verbose:
+            print "  ... copying in browser code (%s)" % browser_code_dir 
+        shutil.copytree(browser_code_dir, os.path.join(dir, "browser_code"))
+
+        # now munge harness_options a bit to get correct path to brtowser_code in
+        browser_code_path = "browser_code"
+        if browser_code_main:
+            browser_code_path = os.path.join(browser_code_path, browser_code_main)
+        static_opts = json.loads(harness_options['staticArgs'])
+        static_opts["browser_embeded_path"] = browser_code_path
+        harness_options['staticArgs'] = json.dumps(static_opts)
+
+        # and write harness options
+        if verbose:
+            print "  ... writing harness options"
+
+        with open(os.path.join(dir, "harness-options.json"), 'w') as f:
+            f.write(json.dumps(harness_options, indent=4))
+        
+        # XXX: support for extra packages located outside of the packages/ directory!
+
         print "output_xulrunner_app called"        
 
 
@@ -54,17 +131,11 @@ class OSAppifier(object):
             print "  ... writing Info.plist"
         info_plist_path = os.path.join(output_dir, "Contents", "Info.plist")
         template_path = os.path.join(os.path.dirname(__file__), "resources", "Info.plist.template")
-        template_content = ""
-        with open(template_path, 'r') as f:
-            template_content = f.read()
-
-        s = Template(template_content)
-        info_plist_contents = s.substitute(application_name=app_info.name,
-                                           short_version=app_info.version,
-                                           full_version=app_info.long_version)
-
-        with open(info_plist_path, 'w') as f:
-            f.write(info_plist_contents)
+        self._sub_and_copy(template_path, info_plist_path, {
+                "application_name": app_info.name,
+                "short_version": app_info.version,
+                "full_version": (app_info.version + "." + app_info.build_id)
+        })
 
         # we'll create the MacOS (binary) dir and copy over the xulrunner binary
         if verbose:

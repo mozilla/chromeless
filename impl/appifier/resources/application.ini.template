@@ -1,0 +1,14 @@
+[App]
+Vendor=${application_vendor}
+Name=${application_name}
+Version=${short_version}
+BuildID=${build_id}
+Copyright=
+ID=${developer_email}
+
+[Gecko]
+MinVersion=2.0b6
+MaxVersion=2.0b8
+
+[XRE]
+EnableExtensionManager=true
