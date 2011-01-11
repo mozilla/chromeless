@@ -40,31 +40,37 @@ def findBrowserHTML(path):
     return os.path.abspath(path)
 
 # be flexible in handling the first argument
-browserToLaunch = "./examples/first_browser/index.html"
+browserToLaunch = ""
 try:
-    browserToLaunch = sys.argv[1]
+    browserToLaunch = findBrowserHTML(sys.argv[len(sys.argv) - 1])
 except:
     pass
-
-executionMode = "run" 
-browserArgument ="browser"
-
-try: 
-  if sys.argv[2] == "package":
-    executionMode = "xpi" 
-    browserArgument ="browser_embeded_path"
-    print "Packaging your application for distribution or installation..."
-    print "Note: expect a chromeless.zip application generated in this directory; "
-    print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
-except: 
-  browserToLaunch = findBrowserHTML(browserToLaunch)
-
+if not os.path.exists(browserToLaunch):
+    browserToLaunch = findBrowserHTML("./examples/first_browser/index.html")
 
 # throw an error message if we can't figure out what html file
 # is the browser's HTML entry point
 if not os.path.exists(browserToLaunch):
     print >>sys.stderr, "can't find browser HTML (tried '"+browserToLaunch+"')"
     raise SystemExit(1)
+
+executionMode = "run" 
+browserArgument ="browser"
+
+# We should migrate to optparse
+try:
+    if sys.argv[1] == "package":
+        executionMode = "xpi" 
+        browserArgument ="browser_embeded_path"
+        print "Packaging your application for distribution or installation..."
+        print "Note: expect a chromeless.zip application generated in this directory; "
+        print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
+    elif sys.argv[1] == "appify":
+        executionMode = "appify" 
+        browserArgument ="browser_embeded_path"
+        print "Generating a standalone, redistributable, application"
+except:
+    pass
 
 import mozfetcher
 f = mozfetcher.Fetcher(build_dir)
@@ -86,5 +92,3 @@ cuddlefish.run([
         "--static-args", json.dumps({browserArgument: browserToLaunch}),
         "-p", "packages/chromeless"
         ])
-
-

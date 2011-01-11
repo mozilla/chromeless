@@ -432,6 +432,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         sys.exit(0)
     elif command == "xpi":
         use_main = True
+    elif command == "appify":
+        use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
             target_cfg['tests'] = []
@@ -457,7 +459,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     # TODO: Consider keeping a cache of dynamic UUIDs, based
     # on absolute filesystem pathname, in the root directory
     # or something.
-    if command in ('xpi', 'run'):
+    if command in ('xpi', 'run', 'appify'):
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
             config_was_ok, modified = preflight_config(
@@ -598,6 +600,15 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                   xpi_name=xpi_name,
                   harness_options=harness_options,
                   xpts=xpts)
+    elif command == 'appify':
+        import appifier
+        browser_code_path = json.loads(options.static_args)["browser_embeded_path"]
+        a = appifier.Appifier()
+        a.output_application(template_root_dir=app_extension_dir,
+                             browser_code=browser_code_path,
+                             harness_options=harness_options,
+                             dev_mode=False)
+      
     else:
         if options.use_server:
             from cuddlefish.server import run_app
