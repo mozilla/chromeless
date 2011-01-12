@@ -60,26 +60,59 @@ class OSAppifier(object):
                 "developer_email": app_info.developer_email
         })
 
-        # now copy in packages
-        # XXX: only copying in dependencies would be A Good Thing
+        # now copy in required packages (and update harness options with new pathing
+        # as we go)
         if verbose:
             print "  ... copying in CommonJS packages"
-        shutil.copytree(os.path.join(self.dirs.cuddlefish_root, "packages"),
-                        os.path.join(dir, "packages"))
+
+        IGNORED_FILES = [".gitignore", ".hgignore", "install.rdf"]
+        IGNORED_FILE_SUFFIXES = ["~"]
+        IGNORED_DIRS = [".svn", ".hg", "defaults"]
+
+        def filter_filenames(filenames):
+            for filename in filenames:
+                if filename in IGNORED_FILES:
+                    continue
+                if any([filename.endswith(suffix)
+                        for suffix in IGNORED_FILE_SUFFIXES]):
+                    continue
+                yield filename
+
+        pkg_tgt_dir = os.path.join(dir, "packages")
+
+        new_resources = {}
+        for resource in harness_options['resources']:
+            base_arcpath = os.path.join('packages', resource)
+            new_resources[resource] = ['packages', resource]
+            abs_dirname = harness_options['resources'][resource]
+            # Always create the directory, even if it contains no files,
+            # since the harness will try to access it.
+            res_tgt_dir = os.path.join(pkg_tgt_dir, resource)
+            os.makedirs(res_tgt_dir)
+            for dirpath, dirnames, filenames in os.walk(abs_dirname):
+                goodfiles = list(filter_filenames(filenames))
+                tgt_dir = os.path.join(res_tgt_dir, os.path.relpath(dirpath, abs_dirname))
+                if not os.path.isdir(tgt_dir):
+                    os.makedirs(tgt_dir)
+                for filename in goodfiles:
+                    shutil.copy(os.path.join(dirpath, filename), os.path.join(tgt_dir, filename))
+                dirnames[:] = [dirname for dirname in dirnames if dirname not in IGNORED_DIRS]
+
+        harness_options['resources'] = new_resources
 
         # and browser code
         if verbose:
             print "  ... copying in browser code (%s)" % browser_code_dir 
         shutil.copytree(browser_code_dir, os.path.join(dir, "browser_code"))
 
-        # now munge harness_options a bit to get correct path to brtowser_code in
+        # now munge harness_options a bit to get correct path to browser_code in
         browser_code_path = "browser_code"
         if browser_code_main:
             browser_code_path = os.path.join(browser_code_path, browser_code_main)
         static_opts = json.loads(harness_options['staticArgs'])
         static_opts["browser_embeded_path"] = browser_code_path
         harness_options['staticArgs'] = json.dumps(static_opts)
-
+        
         # and write harness options
         if verbose:
             print "  ... writing harness options"
