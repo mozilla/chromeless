@@ -2,6 +2,9 @@ import sys
 import os
 import optparse
 import glob
+import platform
+import appifier
+import subprocess
 
 from copy import copy
 import simplejson as json
@@ -350,7 +353,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         test_cfx(env_root, options.verbose)
         return
     elif command == "docs":
-        import subprocess
         import time
         import cuddlefish.server
 
@@ -549,62 +551,73 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     retval = 0
 
-    if options.templatedir:
-        app_extension_dir = os.path.abspath(options.templatedir)
-    else:
-        mydir = os.path.dirname(os.path.abspath(__file__))
-        if sys.platform == "darwin":
-            # If we're on OS X, at least point into the XULRunner
-            # app dir so we run as a proper app if using XULRunner.
-            app_extension_dir = os.path.join(mydir, "Test App.app",
-                                             "Contents", "Resources")
-        else:
-            app_extension_dir = os.path.join(mydir, "app-extension")
+    a = appifier.Appifier()
 
     if command == 'package':
-        import appifier
-        a = appifier.Appifier()
-        browser_code_path = json.loads(options.static_args)["browser_embeded_path"]
+        browser_code_path = json.loads(options.static_args)["browser"]
         a.output_xul_app(browser_code=browser_code_path,
                          harness_options=harness_options,
                          dev_mode=False)
 
     elif command == 'appify':
-        import appifier
-        browser_code_path = json.loads(options.static_args)["browser_embeded_path"]
-        a = appifier.Appifier()
+        browser_code_path = json.loads(options.static_args)["browser"]
         a.output_application(browser_code=browser_code_path,
                              harness_options=harness_options,
                              dev_mode=False)
       
     else:
-        if options.use_server:
-            from cuddlefish.server import run_app
-        else:
-            from cuddlefish.runner import run_app
+        # on OSX we must invoke xulrunner from within a proper .app bundle,
+        # otherwise many basic application features will not work.  For instance
+        # keyboard focus and mouse interactions will be broken.
+        # for this reason, on OSX we'll actually generate a full standalone
+        # application and launch that using the open command.  On other
+        # platforms we'll build a xulrunner application (directory) and
+        # invoke xulrunner-bin pointing at that. 
+
+        browser_code_path = json.loads(options.static_args)["browser"]
 
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
             options.profiledir = os.path.abspath(options.profiledir)
 
-        if options.addons is not None:
-            options.addons = options.addons.split(",")
+        if (platform.system() == 'Darwin'): 
+            # XXX: figure out how to pass a temporary profile directory
+            # and get console output working
+            standalone_app_dir = a.output_application(browser_code=browser_code_path,
+                                                      harness_options=harness_options,
+                                                      dev_mode=True)
+            print "opening '%s'" % standalone_app_dir
 
-        try:
-            retval = run_app(harness_root_dir=app_extension_dir,
-                             harness_options=harness_options,
-                             xpts=xpts,
-                             app_type=options.app,
-                             binary=options.binary,
-                             profiledir=options.profiledir,
-                             verbose=options.verbose,
-                             timeout=timeout,
-                             logfile=options.logfile,
-                             addons=options.addons)
-        except Exception, e:
-            if e.message.startswith(MOZRUNNER_BIN_NOT_FOUND):
-                print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
-                retval = -1
+            retval = subprocess.call(["open", "-W", standalone_app_dir])
+        else:
+            xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
+                                           harness_options=harness_options,
+                                           dev_mode=True)
+
+            if options.use_server:
+                from cuddlefish.server import run_app
             else:
-                raise
-    sys.exit(retval)
+                from cuddlefish.runner import run_app
+                
+
+            if options.addons is not None:
+                options.addons = options.addons.split(",")
+
+            try:
+                retval = run_app(harness_root_dir=xul_app_dir,
+                                 harness_options=harness_options,
+                                 xpts=xpts,
+                                 app_type=options.app,
+                                 binary=options.binary,
+                                 profiledir=options.profiledir,
+                                 verbose=options.verbose,
+                                 timeout=timeout,
+                                 logfile=options.logfile,
+                                 addons=options.addons)
+            except Exception, e:
+                if e.message.startswith(MOZRUNNER_BIN_NOT_FOUND):
+                    print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
+                    retval = -1
+                else:
+                    raise
+        sys.exit(retval)

@@ -36,6 +36,7 @@ class Appifier(object):
                                              browser_code_main=browser_code_main,
                                              dev_mode=dev_mode,
                                              harness_options=harness_options)
+        return params['output_dir']
 
     def output_xul_app(self, browser_code, harness_options, dev_mode):
         browser_code_dir = browser_code
@@ -61,3 +62,4 @@ class Appifier(object):
                                              harness_options=harness_options)
 
         print "xul app generated in %s" % os.path.relpath(output_dir, self.dirs.cuddlefish_root) 
+        return output_dir

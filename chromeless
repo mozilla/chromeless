@@ -40,14 +40,12 @@ def findBrowserHTML(path):
     return os.path.abspath(path)
 
 executionMode = "run" 
-browserArgument ="browser"
 
 # We should migrate to optparse
 browserToLaunch = None
 if len(sys.argv) > 1:
     if sys.argv[1] == "package":
         executionMode = "package" 
-        browserArgument ="browser_embeded_path"
         print "Packaging your application for distribution or installation..."
         print "Note: expect a chromeless.zip application generated in this directory; "
         print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
@@ -55,7 +53,6 @@ if len(sys.argv) > 1:
             browserToLaunch = findBrowserHTML(sys.argv[2])
     elif sys.argv[1] == "appify":
         executionMode = "appify" 
-        browserArgument ="browser_embeded_path"
         print "Generating a standalone, redistributable, application"
         if len(sys.argv) > 2:
             browserToLaunch = findBrowserHTML(sys.argv[2])
@@ -88,6 +85,6 @@ cuddlefish.run([
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
         "-t", "./template",
-        "--static-args", json.dumps({browserArgument: browserToLaunch}),
+        "--static-args", json.dumps({"browser": browserToLaunch}),
         "-p", "packages/chromeless"
         ])

@@ -110,7 +110,7 @@ class OSAppifier(object):
         if browser_code_main:
             browser_code_path = os.path.join(browser_code_path, browser_code_main)
         static_opts = json.loads(harness_options['staticArgs'])
-        static_opts["browser_embeded_path"] = browser_code_path
+        static_opts["browser"] = browser_code_path
         harness_options['staticArgs'] = json.dumps(static_opts)
         
         # and write harness options
@@ -185,4 +185,4 @@ class OSAppifier(object):
         resources_path = os.path.join(output_dir, "Contents", "Resources")
         os.makedirs(resources_path)
 
-        return { "xulrunner_app_dir": resources_path } 
+        return { "xulrunner_app_dir": resources_path, "output_dir": output_dir } 
