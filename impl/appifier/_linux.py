@@ -36,17 +36,12 @@ class OSAppifier(object):
             print "  ... copying in xulrunner binaries"
         shutil.copytree(xul_src, xul_dst)
 
-        # we'll copy over the xulrunner-stub.exe binary to the top leve
+        # we'll copy over the xulrunner-stub binary to the top leve
         if verbose:
             print "  ... placing xulrunner binary"
 
-        xulrunner_stub_path = os.path.join(output_dir, "xulrunner", "xulrunner-stub.exe")
-        final_binary_path = os.path.join(output_dir, app_info.name + ".exe")
+        xulrunner_stub_path = os.path.join(output_dir, "xulrunner", "xulrunner-stub")
+        final_binary_path = os.path.join(output_dir, app_info.name)
         shutil.copy(xulrunner_stub_path,  final_binary_path)
-
-        # and move the mozcrt19.dll file into place (next to the binary that
-        # requires it)
-        dllsrc = os.path.join(output_dir, "xulrunner", "mozcrt19.dll")
-        shutil.move(dllsrc, output_dir)
 
         return { "xulrunner_app_dir": output_dir, "output_dir": output_dir } 

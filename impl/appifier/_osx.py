@@ -10,8 +10,6 @@ class OSAppifier(object):
         # as properties
         self.dirs = chromeless.Dirs()
 
-        print "OSAppifier initialized"
-
     def _sub_and_copy(self, src, dst, mapping):
         template_content = ""
         with open(src, 'r') as f:

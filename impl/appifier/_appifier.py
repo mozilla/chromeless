@@ -1,9 +1,11 @@
+from __future__ import with_statement 
 import platform
 import os
 import shutil
 import chromeless
 from string import Template
 import simplejson as json
+from _relpath import relpath
 
 class Appifier(object):
     def __init__(self):
@@ -151,7 +153,9 @@ class Appifier(object):
             else:
                 for dirpath, dirnames, filenames in os.walk(abs_dirname):
                     goodfiles = list(filter_filenames(filenames))
-                    tgt_dir = os.path.join(res_tgt_dir, os.path.relpath(dirpath, abs_dirname))
+                    tgt_dir = res_tgt_dir
+                    if dirpath != abs_dirname:
+                        tgt_dir = os.path.join(tgt_dir, relpath(dirpath, abs_dirname))
                     if not os.path.isdir(tgt_dir):
                         os.makedirs(tgt_dir)
                     for filename in goodfiles:
@@ -183,5 +187,5 @@ class Appifier(object):
         # XXX: support for extra packages located outside of the packages/ directory!
 
 
-        print "xul app generated in %s" % os.path.relpath(output_dir, self.dirs.cuddlefish_root) 
+        print "xul app generated in %s" % relpath(output_dir, self.dirs.cuddlefish_root) 
         return output_dir

@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import os
 import simplejson as json
 from datetime import datetime
