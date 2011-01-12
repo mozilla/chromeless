@@ -48,7 +48,13 @@ var appWindow = null;
 
 function requireForBrowser(moduleName) {
     console.log("browser HTML requires: " + moduleName);
-	return require(moduleName);
+    try {
+  	    return require(moduleName);
+    } catch(e) {
+        console.log("require of '"+moduleName+"' failed: " + e);
+        // re-throw to the developer to give them an opportunity to handle the error
+        throw e;
+    }
 }
 
 exports.main = function main(options) {
