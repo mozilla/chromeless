@@ -6,6 +6,7 @@ import platform
 import appifier
 import subprocess
 import signal
+import tempfile
 
 from copy import copy
 import simplejson as json
@@ -593,18 +594,28 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             options.profiledir = os.path.abspath(options.profiledir)
 
         if (platform.system() == 'Darwin'): 
-            # XXX: figure out how to pass a temporary profile directory
-            # and get console output working
+            # because of the manner in which we run the application, we must use a
+            # temporary file to enable console output
+            [fd, tmppath] = tempfile.mkstemp()
+            os.close(fd)
+
+            print "logging to '%s'" % tmppath
+            harness_options['logFile'] = tmppath
             standalone_app_dir = a.output_application(browser_code=browser_code_path,
                                                       harness_options=harness_options,
                                                       dev_mode=True)
             print "opening '%s'" % standalone_app_dir
 
+            tailProcess = None
             try:
+                tailProcess = subprocess.Popen(["tail", "-f", tmppath])
                 retval = subprocess.call(["open", "-W", standalone_app_dir])
             except KeyboardInterrupt:
                 print "got ^C, exiting..."
                 killProcessByName(standalone_app_dir)
+            finally:
+                tailProcess.terminate()
+                os.remove(tmppath)
         else:
             xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
                                            harness_options=harness_options,
