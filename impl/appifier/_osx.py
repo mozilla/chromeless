@@ -89,14 +89,21 @@ class OSAppifier(object):
             # since the harness will try to access it.
             res_tgt_dir = os.path.join(pkg_tgt_dir, resource)
             os.makedirs(res_tgt_dir)
-            for dirpath, dirnames, filenames in os.walk(abs_dirname):
-                goodfiles = list(filter_filenames(filenames))
-                tgt_dir = os.path.join(res_tgt_dir, os.path.relpath(dirpath, abs_dirname))
-                if not os.path.isdir(tgt_dir):
-                    os.makedirs(tgt_dir)
-                for filename in goodfiles:
-                    shutil.copy(os.path.join(dirpath, filename), os.path.join(tgt_dir, filename))
-                dirnames[:] = [dirname for dirname in dirnames if dirname not in IGNORED_DIRS]
+
+            # in development mode we'll create symlinks.  otherwise we'll recursively
+            # copy over required packages and filter out temp files
+            if dev_mode:
+                for f in os.listdir(abs_dirname):
+                    os.symlink(os.path.join(abs_dirname, f), os.path.join(res_tgt_dir, f))
+            else:
+                for dirpath, dirnames, filenames in os.walk(abs_dirname):
+                    goodfiles = list(filter_filenames(filenames))
+                    tgt_dir = os.path.join(res_tgt_dir, os.path.relpath(dirpath, abs_dirname))
+                    if not os.path.isdir(tgt_dir):
+                        os.makedirs(tgt_dir)
+                    for filename in goodfiles:
+                        shutil.copy(os.path.join(dirpath, filename), os.path.join(tgt_dir, filename))
+                    dirnames[:] = [dirname for dirname in dirnames if dirname not in IGNORED_DIRS]
 
         harness_options['resources'] = new_resources
 
@@ -152,7 +159,10 @@ class OSAppifier(object):
         # and recursivly copy in the bin/ directory out of the sdk 
         if verbose:
             print "  ... copying in xulrunner binaries"
-        shutil.copytree(xul_bin_src, cur_ver_dir)
+        if dev_mode:
+            os.symlink(xul_bin_src, cur_ver_dir)
+        else:
+            shutil.copytree(xul_bin_src, cur_ver_dir)
 
         # create links inside framework
         for f in ("XUL", "xulrunner-bin", "libxpcom.dylib"):

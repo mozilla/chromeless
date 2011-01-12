@@ -17,6 +17,9 @@ class Appifier(object):
         self.osappifier = osappifier.OSAppifier()
         self.dirs = chromeless.Dirs()
 
+    # generate a complete standalone application (inside of a folder)
+    # the output will be placed in build/ directory and the path to the
+    # application will be returned
     def output_application(self, browser_code, harness_options, dev_mode):
         browser_code_dir = browser_code
         browser_code_main = "index.html"
@@ -38,6 +41,9 @@ class Appifier(object):
                                              harness_options=harness_options)
         return params['output_dir']
 
+    # generate a xul application (a directory with application.ini and other stuff)
+    # the application will be placed in the build/ directory and the path to it
+    # will be returned
     def output_xul_app(self, browser_code, harness_options, dev_mode):
         browser_code_dir = browser_code
         browser_code_main = "index.html"
