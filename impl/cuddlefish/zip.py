@@ -13,11 +13,12 @@ def build_zip(template_root_dir, manifest, xpi_name,
 
     staticArgs = json.loads(harness_options['staticArgs'])
     dir_src = staticArgs['browser_embeded_path'];
-    splitfilename = dir_src.split("/");
-    stripdir = dir_src.split("/"+splitfilename[len(splitfilename)-1])[0]
-    for file in os.listdir(os.getcwd() + "/"+ stripdir):
-        print "Inserting file: %s" % os.getcwd() + "/"+ stripdir+"/"+file 
-        zf.write(os.getcwd() + "/"+ stripdir+"/"+file, stripdir +"/"+ file);
+    splitfilename = os.path.basename(dir_src)
+    stripdir = os.path.dirname(dir_src)
+    relpath = os.path.relpath(os.getcwd(), stripdir)
+    for file in os.listdir(stripdir):
+        print "Inserting file: %s" % os.path.join(stripdir, file)
+        zf.write(os.path.join(stripdir,file), os.path.join(relpath, file));
         #shutil.copy(os.path.join(file_src, file), os.path.join(file_dst, fil e))
 
 
