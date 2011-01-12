@@ -41,11 +41,9 @@ def findBrowserHTML(path):
 
 # be flexible in handling the first argument
 browserToLaunch = ""
-try:
+if len(sys.argv) > 1:
     browserToLaunch = findBrowserHTML(sys.argv[len(sys.argv) - 1])
-except:
-    pass
-if not os.path.exists(browserToLaunch):
+else:
     browserToLaunch = findBrowserHTML("./examples/first_browser/index.html")
 
 # throw an error message if we can't figure out what html file
