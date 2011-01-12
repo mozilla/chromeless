@@ -15,14 +15,13 @@ on your system. Please specify one using the -b/--binary option.
 """
 
 UPDATE_RDF_FILENAME = "%s.update.rdf"
-XPI_FILENAME = "%s.zip"
 
 usage = """
 %prog [options] [command]
 
 Package-Specific Commands:
   xpcom      - build xpcom component
-  xpi        - generate an xpi
+  package    - generate a stanalone xulrunner app directory
   test       - run tests
   run        - run program
 
@@ -76,19 +75,6 @@ parser_options = {
     }
 
 parser_groups = Bunch(
-    xpi=Bunch(
-        name="XPI Options",
-        options={
-            ("-u", "--update-url",): dict(dest="update_url",
-                                          help="update URL in install.rdf",
-                                          metavar=None,
-                                          default=None),
-            ("-l", "--update-link",): dict(dest="update_link",
-                                           help="generate update.rdf",
-                                           metavar=None,
-                                           default=None),
-            }
-        ),
     app=Bunch(
         name="Application Options",
         options={
@@ -430,7 +416,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             module_name=xpcom.module
             )
         sys.exit(0)
-    elif command == "xpi":
+    elif command == "package":
         use_main = True
     elif command == "appify":
         use_main = True
@@ -459,7 +445,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     # TODO: Consider keeping a cache of dynamic UUIDs, based
     # on absolute filesystem pathname, in the root directory
     # or something.
-    if command in ('xpi', 'run', 'appify'):
+    if command in ('package', 'run', 'appify'):
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
             config_was_ok, modified = preflight_config(
@@ -575,37 +561,19 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         else:
             app_extension_dir = os.path.join(mydir, "app-extension")
 
-    if command == 'xpi':
-        from cuddlefish.xpi import build_xpi
-        from cuddlefish.zip import build_zip
-        from cuddlefish.rdf import gen_manifest, RDFUpdate
+    if command == 'package':
+        import appifier
+        a = appifier.Appifier()
+        browser_code_path = json.loads(options.static_args)["browser_embeded_path"]
+        a.output_xul_app(browser_code=browser_code_path,
+                         harness_options=harness_options,
+                         dev_mode=False)
 
-        manifest = gen_manifest(template_root_dir=app_extension_dir,
-                                target_cfg=target_cfg,
-                                bundle_id=bundle_id,
-                                update_url=options.update_url,
-                                bootstrap=True)
-
-        if options.update_link:
-            rdf_name = UPDATE_RDF_FILENAME % target_cfg.name
-            print "Exporting update description to %s." % rdf_name
-            update = RDFUpdate()
-            update.add(manifest, options.update_link)
-            open(rdf_name, "w").write(str(update))
-
-        xpi_name = XPI_FILENAME % target_cfg.name
-        print "Exporting extension to %s." % xpi_name
-        build_zip(template_root_dir=app_extension_dir,
-                  manifest=manifest,
-                  xpi_name=xpi_name,
-                  harness_options=harness_options,
-                  xpts=xpts)
     elif command == 'appify':
         import appifier
         browser_code_path = json.loads(options.static_args)["browser_embeded_path"]
         a = appifier.Appifier()
-        a.output_application(template_root_dir=app_extension_dir,
-                             browser_code=browser_code_path,
+        a.output_application(browser_code=browser_code_path,
                              harness_options=harness_options,
                              dev_mode=False)
       
