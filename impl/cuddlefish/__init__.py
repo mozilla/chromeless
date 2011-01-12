@@ -5,6 +5,7 @@ import glob
 import platform
 import appifier
 import subprocess
+import signal
 
 from copy import copy
 import simplejson as json
@@ -318,6 +319,17 @@ def get_config_args(name, env_root):
         sys.exit(1)
     return config
 
+def killProcessByName(name):
+    for line in os.popen("ps xa"):
+        fields = line.split()
+        pid = fields[0]
+        process = " ".join(fields[4:])
+
+        if process.find(name) != -1:
+            print "killing pid: %s" % pid
+            os.kill(int(pid), signal.SIGHUP)
+            break
+
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         defaults=None, env_root=os.environ.get('CUDDLEFISH_ROOT')):
     parser_kwargs = dict(arguments=arguments,
@@ -588,7 +600,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                                       dev_mode=True)
             print "opening '%s'" % standalone_app_dir
 
-            retval = subprocess.call(["open", "-W", standalone_app_dir])
+            try:
+                retval = subprocess.call(["open", "-W", standalone_app_dir])
+            except KeyboardInterrupt:
+                print "got ^C, exiting..."
+                killProcessByName(standalone_app_dir)
         else:
             xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
                                            harness_options=harness_options,
