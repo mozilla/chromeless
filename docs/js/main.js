@@ -8,7 +8,7 @@ function startApp(jQuery, window) {
   const DEFAULT_HASH = "guide/welcome";
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
-  const DOCUMENT_TITLE_ROOT = "Add-on SDK Documentation";
+  const DOCUMENT_TITLE_ROOT = "Chromeless Documentation";
 
   function checkHash() {
     var hash = window.location.hash;
