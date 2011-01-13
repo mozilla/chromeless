@@ -1,37 +1,21 @@
-We'd like to thank our many Jetpack project contributors!  They include:
+Chromeless is possible because of the [XULRunner] and [addon-sdk]
+projects, both of which have a long list of contributors.  We'd like
+to thank both of those projects and their contributors for being
+awesome, as well as the following list of contributors who have
+directly helped build chromeless:
 
-* Adamantium
-* Ehsan Akhgari
-* Dietrich Ayala
-* Will Bamberg
-* Zbigniew Braniecki
-* Daniel Buchner
-* Hernán Rodriguez Colmeiro
-* Felipe Gomes
-* Irakli Gozalishvili
-* Luca Greco
-* Lloyd Hilaiel
-* Eric H. Jung
-* Hrishikesh Kale
-* Wes Kocher
-* Edward Lee
-* Myk Melez
-* Zandr Milewski
-* Noelle Murata
-* Nick Nguyen
-* Paul O’Shannessy
-* Alexandre Poirot
-* Nickolay Ponomarev
-* Aza Raskin
-* Justin Scott
-* Ayan Shah
-* Clint Talbert
-* Thomas
-* Dave Townsend
-* Peter Van der Beken
+  [XULRunner]: https://developer.mozilla.org/en/xulrunner
+  [addon-sdk]: https://github.com/mozilla/addon-sdk
+
+<span class="aside">
+  Because measuring the value of contributions is intractable,
+  let's just be lexicographic about this.
+</span>
+
 * Atul Varma
-* Erik Vold
-* Vladimir Vukicevic
-* Brian Warner
-* Drew Willcoxon
-* Piotr Zalewa
+* Ian Bicking
+* Jim Pick
+* Jonathan Ballet
+* Lloyd Hilaiel
+* Marcio Galli
+* Mike de Boer
