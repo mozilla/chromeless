@@ -16,6 +16,7 @@ import traceback
 from cuddlefish import packaging
 from cuddlefish import Bunch
 from cuddlefish import apiparser
+from cuddlefish import apirenderer
 import simplejson as json
 
 try:
@@ -66,6 +67,12 @@ if wsgiref_available:
         def log_message(self, *args, **kwargs):
             pass
 
+# Due to https://bugzilla.mozilla.org/show_bug.cgi?id=616922,
+# per http://bugs.python.org/issue10551, call mimetypes.init with an empty list
+# argument to the `files` parameter to force the module to ignore the Windows
+# registry, whose consultation can lead to unpredictable results in unit tests.
+mimetypes.init(files=[])
+
 def guess_mime_type(url):
     """
     Attempts to guess a MIME type for a given URL.
@@ -106,7 +113,7 @@ class Server(object):
     def __init__(self, env_root, task_queue, expose_privileged_api=True):
         self.env_root = env_root
         self.expose_privileged_api = expose_privileged_api
-        self.root = os.path.join(self.env_root, 'static-files')
+        self.root = os.path.join(self.env_root, 'docs')
         self.index = os.path.join(self.root, 'index.html')
         self.task_queue = task_queue
 
@@ -130,6 +137,18 @@ class Server(object):
                                 [('Content-type', "text/plain")])
             return [json.dumps(parsed)]
         except apiparser.ParseError, e:
+            self.start_response('500 Parse Error',
+                                [('Content-type', "text/plain")])
+            return [str(e)]
+
+    def _respond_with_apidoc_div(self, path):
+        docs_md = open(path, 'r').read()
+        try:
+            parsed = apirenderer.md_to_div(path)
+            self.start_response('200 OK',
+                                [('Content-type', "text/html")])
+            return [parsed]
+        except apirenderer.ParseError, e:
             self.start_response('500 Parse Error',
                                 [('Content-type', "text/plain")])
             return [str(e)]
@@ -193,17 +212,23 @@ class Server(object):
             else:
                 dir_path = os.path.join(root_dir, *parts[1:])
                 dir_path = os.path.normpath(dir_path)
-                parse_apidoc = False
+                parse_json = False
+                parse_div = False
                 if dir_path.endswith(".md.json"):
-                    parse_apidoc = True
+                    parse_json = True
                     dir_path = dir_path[:-len(".json")]
+                if dir_path.endswith(".md.div"):
+                    parse_div = True
+                    dir_path = dir_path[:-len(".div")]
                 if not (dir_path.startswith(root_dir) and
                         os.path.exists(dir_path) and
                         os.path.isfile(dir_path)):
                     return self._respond('404 Not Found')
                 else:
-                    if parse_apidoc:
+                    if parse_json:
                         return self._respond_with_apidoc_json(dir_path)
+                    elif parse_div:
+                        return self._respond_with_apidoc_div(dir_path)
                     else:
                         return self._respond_with_file(dir_path)
 
@@ -371,7 +396,7 @@ def generate_static_docs(env_root, tgz_filename):
     server = Server(env_root=env_root,
                     task_queue=None,
                     expose_privileged_api=False)
-    staging_dir = os.path.join(env_root, "jetpack-sdk-docs")
+    staging_dir = os.path.join(env_root, "addon-sdk-docs")
     if os.path.exists(staging_dir):
         shutil.rmtree(staging_dir)
 
@@ -431,14 +456,20 @@ def generate_static_docs(env_root, tgz_filename):
                     docs_parsed = list(apiparser.parse_hunks(docs_md))
                     docs_json = json.dumps(docs_parsed)
                     open(dest_path + ".json", "w").write(docs_json)
+                    # write the HTML div files
+                    docs_div = apirenderer.json_to_div(docs_parsed, src_path)
+                    open(dest_path + ".div.html", "w").write(docs_div)
+                    # write the standalone HTML files
+                    docs_html = apirenderer.json_to_html(docs_parsed, src_path)
+                    open(dest_path + ".html", "w").write(docs_html)
 
     # finally, build a tarfile out of everything
     tgz = tarfile.open(tgz_filename, 'w:gz')
-    tgz.add('jetpack-sdk-docs', 'jetpack-sdk-docs')
+    tgz.add('addon-sdk-docs', 'addon-sdk-docs')
     tgz.close()
     shutil.rmtree(staging_dir)
 
-def run_app(harness_root_dir, harness_options, xpts,
+def run_app(harness_root_dir, harness_options,
             app_type, binary=None, profiledir=None, verbose=False,
             timeout=None, logfile=None, addons=None,
             host=DEFAULT_HOST,

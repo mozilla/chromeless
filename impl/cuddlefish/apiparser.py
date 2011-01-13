@@ -1,5 +1,7 @@
 import sys, re, textwrap
 
+VERSION = 2
+
 class ParseError(Exception):
     # args[1] is the line number that caused the problem
     def __init__(self, why, lineno):
@@ -38,87 +40,146 @@ class Accumulator:
 
 class APIParser:
     def parse(self, lines, lineno):
-        api = {"line_number": lineno}
+        api = {"line_number": lineno + 1}
+# assign the name from the first line, of the form "<api name="API_NAME">"
+        title_line = lines[lineno].rstrip("\n")
+        api["name"] = self._parse_title_line(title_line, lineno + 1)
+        lineno += 1
+# finished with the first line, assigned the name
+        working_set = self._initialize_working_set()
+        props = []
+        currentPropHolder = api
+# fetch the next line, of the form "@tag [name] {datatype} description"
+# and parse it into tag, info, description
+        tag, info, firstline = self._parseTypeLine(lines[lineno], lineno + 1)
+        api["type"] = tag
+# if this API element is a property then datatype must be set
+        if tag == 'property':
+            api['property_type'] = info['type']
+        # info is ignored
+        currentAccumulator = Accumulator(api, firstline)
+        lineno += 1
+        while (lineno) < len(lines):
+            line = lines[lineno].rstrip("\n")
+            # accumulate any multiline descriptive text belonging to
+            # the preceding "@" section
+            if self._is_description_line(line):
+                currentAccumulator.addline(line)
+            else:
+                currentAccumulator.finish()
+                if line.startswith("<api"):
+                # then we should recursively handle a nested element
+                    nested_api, lineno = self.parse(lines, lineno)
+                    self._update_working_set(nested_api, working_set)
+                elif line.startswith("</api"):
+                # then we have finished parsing this api element
+                    currentAccumulator.finish()
+                    if props and currentPropHolder:
+                        currentPropHolder["props"] = props
+                    self._assemble_api_element(api, working_set)
+                    return api, lineno
+                else:
+                # then we are looking at a subcomponent of an <api> element
+                    tag, info, desc = self._parseTypeLine(line, lineno + 1)
+                    currentAccumulator = Accumulator(info, desc)
+                    if tag == "prop":
+                        # build up props[]
+                        props.append(info)
+                    elif tag == "returns":
+                        # close off the @prop list
+                        if props and currentPropHolder:
+                            currentPropHolder["props"] = props
+                            props = []
+                        api["returns"] = info
+                        currentPropHolder = info
+                    elif tag == "param":
+                        # close off the @prop list
+                        if props and currentPropHolder:
+                            currentPropHolder["props"] = props
+                            props = []
+                        working_set["params"].append(info)
+                        currentPropHolder = info
+                    else:
+                        raise ParseError("unknown '@' section header %s in \
+                                           '%s'" % (tag, line), lineno + 1)
+            lineno += 1
+        raise ParseError("closing </api> tag not found", lineno + 1)
 
-        titleLine = lines.pop(0)
-        if "name" not in titleLine:
+    def _parse_title_line(self, title_line, lineno):
+        if "name" not in title_line:
             raise ParseError("Opening <api> tag must have a name attribute.",
-                             lineno)
-        m = re.search("name=['\"]{0,1}([-\w\.]*?)['\"]", titleLine)
+                            lineno)
+        m = re.search("name=['\"]{0,1}([-\w\.]*?)['\"]", title_line)
         if not m:
             raise ParseError("No value for name attribute found in "
-                                             "opening <api> tag.", lineno)
-        lineno += 1
-        api["name"] = m.group(1)
+                                     "opening <api> tag.", lineno)
+        return m.group(1)
 
-        finalLine = lines.pop()
-        if not "</api>" in finalLine:
-            raise ParseError("Closing </api> not found.", lineno+len(lines))
+    def _is_description_line(self, line):
+        return not ( (line.lstrip().startswith("@")) or
+               (line.lstrip().startswith("<api")) or
+               (line.lstrip().startswith("</api")) )
 
-        props = []
-        currentPropHolder = None
-        params = []
-        tag, info, firstline = self._parseTypeLine(lines[0], lineno)
-        api["type"] = tag
+    def _initialize_working_set(self):
+        # working_set accumulates api elements
+        # that might belong to a parent api element
+        working_set = {}
+        working_set["constructors"] = []
+        working_set["methods"] = []
+        working_set["properties"] = []
+        working_set["params"] = []
+        return working_set
 
+    def _update_working_set(self, nested_api, working_set):
+        # add this api element to whichever list is appropriate
+        if nested_api["type"] == "constructor":
+            working_set["constructors"].append(nested_api)
+        if nested_api["type"] == "method":
+            working_set["methods"].append(nested_api)
+        if nested_api["type"] == "property":
+            working_set["properties"].append(nested_api)
+
+    def _assemble_signature(self, api_element, params):
+        signature = api_element["name"] + "("
+        if len(params) > 0:
+            signature += params[0]["name"]
+            for param in params[1:]:
+                signature += ", " + param["name"]
+        signature += ")"
+        api_element["signature"] = signature
+
+    def _assemble_api_element(self, api_element, working_set):
+        # if any of this working set's lists are non-empty,
+        # add it to the current api element
+        if (api_element["type"] == "constructor") or \
+           (api_element["type"] == "function") or \
+           (api_element["type"] == "method"):
+           self._assemble_signature(api_element, working_set["params"])
+        if len(working_set["params"]) > 0:
+            api_element["params"] = working_set["params"]
+        if len(working_set["properties"]) > 0:
+            api_element["properties"] = working_set["properties"]
+        if len(working_set["constructors"]) > 0:
+            api_element["constructors"] = working_set["constructors"]
+        if len(working_set["methods"]) > 0:
+            api_element["methods"] = working_set["methods"]
+
+    def _validate_info(self, tag, info, line, lineno):
         if tag == 'property':
             if not 'type' in info:
                 raise ParseError("No type found for @property.", lineno)
-            api['property_type'] = info['type']
-
-        # info is ignored
-        currentAccumulator = Accumulator(api, firstline)
-        for line in lines[1:]:
-            lineno += 1  # note that we count from lines[1:]
-
-            if not line.lstrip().startswith("@"):
-                currentAccumulator.addline(line)
-                continue
-
-            # we're starting a new section
-            currentAccumulator.finish()
-            tag, info, firstline = self._parseTypeLine(line, lineno)
-            if tag == "prop":
-                if "type" not in info:
-                    raise ParseError("@prop lines must include {type}: '%s'" %
-                                     line, lineno)
-                if "name" not in info:
-                    raise ParseError("@prop lines must provide a name: '%s'" %
-                                     line, lineno)
-                props.append(info) # build up props[]
-                currentAccumulator = Accumulator(info, firstline)
-                continue
-            # close off the @prop list
-            if props and currentPropHolder:
-                currentPropHolder["props"] = props
-                props = []
-
-            if tag == "returns":
-                api["returns"] = info
-                # the Accumulator will add ["description"] when done
-                currentAccumulator = Accumulator(info, firstline)
-                # @prop tags get attached to api["returns"]
-                currentPropHolder = info
-                continue
-            if tag == "param":
-                if info.get("required", False) and "default" in info:
-                    raise ParseError("required parameters should not have defaults: '%s'"
+        elif tag == "param":
+            if info.get("required", False) and "default" in info:
+                raise ParseError(
+                    "required parameters should not have defaults: '%s'"
                                      % line, lineno)
-                params.append(info)
-                currentAccumulator = Accumulator(info, firstline)
-                # @prop tags get attached to this param
-                currentPropHolder = info
-                continue
-            raise ParseError("unknown '@' section header %s in '%s'" %
-                             (tag, line), lineno)
-
-        currentAccumulator.finish()
-        if props and currentPropHolder:
-            currentPropHolder["props"] = props
-        if params:
-            api["params"] = params
-
-        return api
+        elif tag == "prop":
+            if "type" not in info:
+                raise ParseError("@prop lines must include {type}: '%s'" %
+                                  line, lineno)
+            if "name" not in info:
+                raise ParseError("@prop lines must provide a name: '%s'" %
+                                  line, lineno)
 
     def _parseTypeLine(self, line, lineno):
         # handle these things:
@@ -129,7 +190,13 @@ class APIParser:
         #    @param NAME
         #    @prop NAME {type} description
         #    @prop NAME
+        # returns:
+        #    tag: type of api element
+        #    info: linenumber, required, default, name, datatype
+        #    description
+
         info = {"line_number": lineno}
+        line = line.rstrip("\n")
         pieces = line.split()
 
         if not pieces:
@@ -167,31 +234,38 @@ class APIParser:
                 description = pieces[skip]
             else:
                 description = ""
-
+        self._validate_info(tag, info, line, lineno)
         return tag, info, description
-
 
 def parse_hunks(text):
     # return a list of tuples. Each is one of:
     #    ("raw", string)         : non-API blocks
     #    ("api-json", dict)  : API blocks
-    processed = 0 # we've handled all bytes up-to-but-not-including this offset
-    line_number = 1
-    for m in re.finditer("<api[\w\W]*?</api>", text, re.M):
-        start = m.start()
-        if start > processed+1:
-            hunk = text[processed:start]
-            yield ("markdown", hunk)
-            processed = start
-            line_number += hunk.count("\n")
-        api_text = m.group(0)
-        api_lines = api_text.splitlines()
-        d = APIParser().parse(api_lines, line_number)
-        yield ("api-json", d)
-        processed = m.end()
-        line_number += api_text.count("\n")
-    if processed < len(text):
-        yield ("markdown", text[processed:])
+    yield ("version", VERSION)
+    lines = text.splitlines(True)
+    line_number = 0
+    markdown_string = ""
+    while line_number < len(lines):
+        line = lines[line_number]
+        if line.startswith("<api"):
+            if len(markdown_string) > 0:
+                yield ("markdown", markdown_string)
+                markdown_string = ""
+            api, line_number = APIParser().parse(lines, line_number)
+            # this business with 'leftover' is a horrible thing to do,
+            # and exists only to collect the \n after the closing /api tag.
+            # It's not needed probably, except to help keep compatibility
+            # with the previous behaviour
+            leftover = lines[line_number].lstrip("</api>")
+            if len(leftover) > 0:
+                markdown_string += leftover
+            line_number = line_number + 1
+            yield ("api-json", api)
+        else:
+            markdown_string += line
+            line_number = line_number + 1
+    if len(markdown_string) > 0:
+        yield ("markdown", markdown_string)
 
 class TestRenderer:
     # render docs for test purposes
@@ -219,17 +293,20 @@ class TestRenderer:
         for prop in p.get("props", []):
             yield " " + self.render_prop(prop)
 
-    def format_api(self, api):
-        yield "name= %s" % self.getm(api, "name")
-        yield "type= %s" % self.getm(api, "type")
-        yield "description= %s" % self.getm(api, "description")
-        params = api.get("params", [])
+    def render_method(self, method):
+        yield "name= %s" % self.getm(method, "name")
+        yield "type= %s" % self.getm(method, "type")
+        yield "description= %s" % self.getm(method, "description")
+        signature = method.get("signature")
+        if signature:
+            yield "signature= %s" % self.getm(method, "signature")
+        params = method.get("params", [])
         if params:
             yield "parameters:"
             for p in params:
                 for pline in self.render_param(p):
                     yield " " + pline
-        r = api.get("returns", None)
+        r = method.get("returns", None)
         if r:
             yield "returns:"
             if "type" in r:
@@ -240,14 +317,33 @@ class TestRenderer:
             for p in props:
                 yield "  " + self.render_prop(p)
 
+    def format_api(self, api):
+        for mline in self.render_method(api):
+            yield mline
+        constructors = api.get("constructors", [])
+        if constructors:
+            yield "constructors:"
+            for m in constructors:
+                for mline in self.render_method(m):
+                    yield " " + mline
+        methods = api.get("methods", [])
+        if methods:
+            yield "methods:"
+            for m in methods:
+                for mline in self.render_method(m):
+                    yield " " + mline
+        properties = api.get("properties", [])
+        if properties:
+            yield "properties:"
+            for p in properties:
+                yield "  " + self.render_prop(p)
+
     def render_docs(self, docs_json, outf=sys.stdout):
 
         for (t,data) in docs_json:
             if t == "api-json":
-                #import pprint
-                #for line in str(pprint.pformat(data)).split("\n"):
-                #    outf.write("JSN: " + line + "\n")
                 for line in self.format_api(data):
+                    line = line.rstrip("\n")
                     outf.write("API: " + line + "\n")
             else:
                 for line in str(data).split("\n"):

@@ -56,6 +56,9 @@ if len(sys.argv) > 1:
         print "Generating a standalone, redistributable, application"
         if len(sys.argv) > 2:
             browserToLaunch = findBrowserHTML(sys.argv[2])
+    elif sys.argv[1] == "docs":
+        executionMode = "sdocs" 
+        print "Generating documentation"
     else:
         browserToLaunch = findBrowserHTML(sys.argv[1])
 
