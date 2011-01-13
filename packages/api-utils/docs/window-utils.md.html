@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <base target="_blank"/>
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/base.css" />
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/apidocs.css" />
+
+  <title>Add-on SDK Documentation</title>
+
+  <style type="text/css">
+
+    body {
+
+      border: 50px solid #FFFFFF;
+
+    }
+
+  </style>
+
+
+
+  <script type="text/javascript">
+
+    function rewrite_links() {
+
+      var images = document.getElementsByTagName("img");
+
+      for (var i = 0; i < images.length; i++) {
+
+        var before = images[i].src.split("packages/")[0];
+
+        var after = images[i].src.split("/docs")[1];
+
+        images[i].src = before + after;
+
+      }
+
+    }
+
+    </script>
+
+</head>
+
+
+
+<body onload = "rewrite_links()">
+
+<div id="window-utils_module_api_docs" class="module_api_docs">
+  
+  <h1>window-utils</h1>
+  <div class="module_description">
+    
+    <!-- contributed by Drew Willcoxon [adw@mozilla.com] -->
+    
+    <p>The <code>window-utils</code> module provides helpers for accessing and tracking
+    application windows.  These windows implement the <a href="http://mxr.mozilla.org/mozilla-central/source/dom/interfaces/base/nsIDOMWindow.idl"><code>nsIDOMWindow</code></a>
+    interface.</p>
+  </div>
+  
+  
+  <div class="api_reference">
+    
+    
+    <h2 class="api_header">
+    
+    API Reference
+    </h2>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Classes
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        WindowTracker
+        </h4>
+        
+        <p><code>WindowTracker</code> objects make it easy to "monkeypatch" windows when a program is
+        loaded and "un-monkeypatch" those windows when the program is unloaded.  For
+        example, if a Firefox add-on needs to add a status bar icon to all browser
+        windows, it can use a single <code>WindowTracker</code> object to gain access to windows
+        when they are opened and closed and also when the add-on is loaded and unloaded.</p>
+        <p>When a window is opened or closed, a <code>WindowTracker</code> notifies its delegate
+        object, which is passed to the constructor.  The delegate is also notified of
+        all windows that are open at the time that the <code>WindowTracker</code> is created and
+        all windows that are open at the time that the <code>WindowTracker</code> is unloaded.  The
+        caller can therefore use the same code to act on all windows, regardless of
+        whether they are currently open or are opened in the future, or whether they are
+        closed while the parent program is loaded or remain open when the program is
+        unloaded.</p>
+        <p>When a window is opened or when a window is open at the time that the
+        <code>WindowTracker</code> is created, the delegate's <code>onTrack()</code> method is called and
+        passed the window.</p>
+        <p>When a window is closed or when a window is open at the time that the
+        <code>WindowTracker</code> is unloaded, the delegate's <code>onUntrack()</code> method is called and
+        passed the window.  (The <code>WindowTracker</code> is unloaded when its its <code>unload()</code>
+        method is called, or when its parent program is unloaded, disabled, or
+        uninstalled, whichever comes first.)</p>
+        <p><strong>Example</strong></p>
+        <pre><code>var delegate = {
+          onTrack: function (window) {
+            console.log("Tracking a window: " + window.document.URL);
+            // Modify the window!
+          },
+          onUntrack: function (window) {
+            console.log("Untracking a window: " + window.document.URL);
+            // Undo your modifications!
+          }
+        };
+        var winUtils = require("window-utils");
+        var tracker = new winUtils.WindowTracker(delegate);
+        </code></pre>
+        <div class="api_component_group">
+          
+          
+          <div class="api_header">
+            
+            Constructors
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              WindowTracker(delegate)
+            </div>
+            
+            <p>A <code>WindowTracker</code> object listens for openings and closings of application
+            windows.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  delegate : 
+                  <span class="datatype">object</span>
+                  
+                  
+                </div>
+                
+                <p>An object that implements <code>onTrack()</code> and <code>onUntrack()</code> methods.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Functions
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        windowIterator()
+        </h4>
+        
+        <p>An iterator for windows currently open in the application.</p>
+        <p><strong>Example</strong></p>
+        <pre><code>var winUtils = require("window-utils");
+        for (window in winUtils.windowIterator())
+          console.log("An open window! " + window.document.URL);
+        </code></pre>
+      </div>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        closeOnUnload(window)
+        </h4>
+        
+        <p>Marks an application window to be closed when the program is unloaded.</p>
+        <div class="parameter_set">
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              window : 
+              <span class="datatype">window</span>
+              
+              
+            </div>
+            
+            <p>The window to close.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+  </div>
+  
+  
+</div>
+
+
+</body>
+
+
+
+</html>

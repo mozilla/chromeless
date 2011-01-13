@@ -1,0 +1,163 @@
+
+<div id="traceback_module_api_docs" class="module_api_docs">
+
+<h1>traceback</h1>
+<div class="module_description">
+
+<!-- contributed by Atul Varma [atul@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
+<p>The <code>traceback</code> module contains functionality similar to
+Python's [traceback] module.</p>
+<h2>JSON Traceback Objects</h2>
+<p>Tracebacks are stored in JSON format. The stack is represented as an
+array in which the most recent stack frame is the last element; each
+element thus represents a stack frame and has the following keys:</p>
+<table>
+  <tr>
+    <td><code>filename</code></td>
+    <td>The name of the file that the stack frame takes place in.</td>
+  </tr>
+  <tr>
+    <td><code>lineNo</code></td>
+    <td>The line number is being executed at the stack frame.</td>
+  </tr>
+  <tr>
+    <td><code>funcName</code></td>
+    <td>The name of the function being executed at the stack frame, or
+    <code>null</code> if the function is anonymous or the stack frame is
+    being executed in a top-level script or module.</td>
+  </tr>
+</table>
+
+<p>See [nsIException] for more information.</p>
+</div>
+
+
+<div class="api_reference">
+
+
+<h2 class="api_header">
+
+API Reference
+</h2>
+
+
+<div class="api_component_group">
+
+
+<h3 class="api_header">
+
+Functions
+</h3>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+fromException(exception)
+</h4>
+
+<p>Attempts to extract the traceback from <em><code>exception</code></em>.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+exception : 
+<span class="datatype">exception</span>
+
+
+</div>
+
+<p>exception where exception is an <code>nsIException</code>.</p>
+</div>
+
+
+</div>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">traceback</span>
+
+JSON representation of the traceback or `null` if not found.
+
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+get()
+</h4>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">JSON</span>
+
+Returns the JSON representation of the stack at the point that this
+function is called.
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+format(tbOrException)
+</h4>
+
+<p>Given a JSON representation of the stack or an exception instance,
+returns a formatted plain text representation of it, similar to
+Python's formatted stack tracebacks.  If no argument is provided, the
+stack at the point this function is called is used.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+tbOrException : 
+<span class="datatype">object</span>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+

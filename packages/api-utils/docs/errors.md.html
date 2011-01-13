@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <base target="_blank"/>
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/base.css" />
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/apidocs.css" />
+
+  <title>Add-on SDK Documentation</title>
+
+  <style type="text/css">
+
+    body {
+
+      border: 50px solid #FFFFFF;
+
+    }
+
+  </style>
+
+
+
+  <script type="text/javascript">
+
+    function rewrite_links() {
+
+      var images = document.getElementsByTagName("img");
+
+      for (var i = 0; i < images.length; i++) {
+
+        var before = images[i].src.split("packages/")[0];
+
+        var after = images[i].src.split("/docs")[1];
+
+        images[i].src = before + after;
+
+      }
+
+    }
+
+    </script>
+
+</head>
+
+
+
+<body onload = "rewrite_links()">
+
+<div id="errors_module_api_docs" class="module_api_docs">
+  
+  <h1>errors</h1>
+  <div class="module_description">
+    
+    <!-- contributed by Drew Willcoxon [adw@mozilla.com] -->
+    
+    <p>The <code>errors</code> module provides helpers for safely invoking user callbacks.</p>
+  </div>
+  
+  
+  <div class="api_reference">
+    
+    
+    <h2 class="api_header">
+    
+    API Reference
+    </h2>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Functions
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        catchAndLog(callback, defaultResponse, logException)
+        </h4>
+        
+        <p>Wraps a callback in a function that when invoked will catch and log any
+        exception thrown by the callback.</p>
+        <div class="parameter_set">
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              callback : 
+              <span class="datatype">function</span>
+              
+              
+            </div>
+            
+            <p>The callback to wrap.</p>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              defaultResponse : 
+              <span class="datatype">value</span>
+              
+              
+            </div>
+            
+            <p>This value will be returned by the wrapper if <code>callback</code> throws an exception.
+            If not given, <code>undefined</code> is used.</p>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              logException : 
+              <span class="datatype">function</span>
+              
+              
+            </div>
+            
+            <p>When <code>callback</code> throws an exception, it will be passed to this function.  If
+            not given, the exception is logged using <code>console.exception()</code>.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+        <div class="returns">
+          
+          Returns: 
+          <span class="datatype">function</span>
+          
+          A function that will invoke `callback` when called.  The return value of this
+          function is the return value of `callback` unless `callback` throws an
+          exception.  In that case, `defaultResponse` is returned or `undefined` if
+          `defaultResponse` is not given.
+        </div>
+        
+        
+      </div>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        catchAndLogProps(object, props, defaultResponse, logException)
+        </h4>
+        
+        <p>Replaces methods of an object with wrapped versions of those methods returned
+        by <code>catchAndLog()</code>.</p>
+        <div class="parameter_set">
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              object : 
+              <span class="datatype">object</span>
+              
+              
+            </div>
+            
+            <p>The object whose methods to replace.</p>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              props : 
+              <span class="datatype">string,array</span>
+              
+              
+            </div>
+            
+            <p>The names of the methods of <code>object</code> to replace, either a string for a single
+            method or an array of strings for multiple methods.</p>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              defaultResponse : 
+              <span class="datatype">value</span>
+              
+              
+            </div>
+            
+            <p>This value will be returned by any wrapper whose wrapped method throws an
+            exception.  If not given, <code>undefined</code> is used.</p>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              logException : 
+              <span class="datatype">function</span>
+              
+              
+            </div>
+            
+            <p>See <code>catchAndLog()</code>.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+  </div>
+  
+  
+</div>
+
+
+</body>
+
+
+
+</html>

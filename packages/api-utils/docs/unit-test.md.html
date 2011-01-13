@@ -1,0 +1,675 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <base target="_blank"/>
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/base.css" />
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/apidocs.css" />
+
+  <title>Add-on SDK Documentation</title>
+
+  <style type="text/css">
+
+    body {
+
+      border: 50px solid #FFFFFF;
+
+    }
+
+  </style>
+
+
+
+  <script type="text/javascript">
+
+    function rewrite_links() {
+
+      var images = document.getElementsByTagName("img");
+
+      for (var i = 0; i < images.length; i++) {
+
+        var before = images[i].src.split("packages/")[0];
+
+        var after = images[i].src.split("/docs")[1];
+
+        images[i].src = before + after;
+
+      }
+
+    }
+
+    </script>
+
+</head>
+
+
+
+<body onload = "rewrite_links()">
+
+<div id="unit-test_module_api_docs" class="module_api_docs">
+  
+  <h1>unit-test</h1>
+  <div class="module_description">
+    
+    <!-- contributed by Atul Varma [atul@mozilla.com]  -->
+    <!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+    
+    <p>The <code>unit-test</code> module makes it easy to find and run unit tests.</p>
+  </div>
+  
+  
+  <div class="api_reference">
+    
+    
+    <h2 class="api_header">
+    
+    API Reference
+    </h2>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Classes
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        test
+        </h4>
+        
+        <p>Each function which represents a test case is passed a single argument
+        <code>test</code>, which represents the test runner.</p>
+        <div class="api_component_group">
+          
+          
+          <div class="api_header">
+            
+            Methods
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              pass(message)
+            </div>
+            
+            <p>Marks a test as passing, with the given optional message.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>Optional passing message.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              fail(message)
+            </div>
+            
+            <p>Marks a test as failing, with the given optional message.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>Optional failure message.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              exception(e)
+            </div>
+            
+            <p>Marks a test as failing due to the given exception having been thrown.
+            This can be put in a <code>catch</code> clause.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  e : 
+                  <span class="datatype">exception</span>
+                  
+                  
+                </div>
+                
+                <p>An exception.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              assert(a, message)
+            </div>
+            
+            <p>Ensures that <code>a</code> has a truthy value.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  a : 
+                  <span class="datatype">value</span>
+                  
+                  
+                </div>
+                
+                <p>Value to verify.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>The test is marked as passing or failing depending on the result, logging
+                <em>message</em> with it.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              assertEqual(a, b, message)
+            </div>
+            
+            <p>Simply ensures that <code>a == b</code> without recursing into <code>a</code> or <code>b</code>.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  a : 
+                  <span class="datatype">value</span>
+                  
+                  
+                </div>
+                
+                <p>A value.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  b : 
+                  <span class="datatype">value</span>
+                  
+                  
+                </div>
+                
+                <p>Another value.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>The test is marked as passing or failing depending on the result, logging
+                <em>message</em> with it.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              assertNotEqual(a, b, message)
+            </div>
+            
+            <p>Simply ensures that <code>a != b</code> without recursing into <code>a</code> or <code>b</code>.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  a : 
+                  <span class="datatype">value</span>
+                  
+                  
+                </div>
+                
+                <p>A value.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  b : 
+                  <span class="datatype">value</span>
+                  
+                  
+                </div>
+                
+                <p>Another value.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>The test is marked as passing or failing depending on the result, logging
+                <em>message</em> with it.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              assertMatches(string, regexp, message)
+            </div>
+            
+            <p>Ensures that the given string matches the given regular expression.
+            If it does, marks a test as passing, otherwise marks a test as
+            failing.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  string : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>The string to test.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  regexp : 
+                  <span class="datatype">regexp</span>
+                  
+                  
+                </div>
+                
+                <p>The string should match this regular expression.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>The test is marked as passing or failing depending on the result, logging
+                <em>message</em> with it.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              assertRaises(func, predicate, message)
+            </div>
+            
+            <p>Calls the function <code>func</code> with no arguments, expecting an exception
+            to be raised. If nothing is raised, marks the test as failing. If an
+            exception is raised, the exception's <code>message</code> property is
+            compared with <code>predicate</code>: if <code>predicate</code> is a string, then a
+            simple equality comparison is done with <code>message</code>. Otherwise,
+            if <code>predicate</code> is a regular expression, <code>message</code> is tested
+            against it.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  func : 
+                  <span class="datatype">function</span>
+                  
+                  
+                </div>
+                
+                <p>A function that should raise an exception when called.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  predicate : 
+                  <span class="datatype">string,regexp</span>
+                  
+                  
+                </div>
+                
+                <p>A string or regular expression to compare to the exception's message.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  message : 
+                  <span class="datatype">string</span>
+                  
+                  
+                </div>
+                
+                <p>Depending on the outcome, a test is marked as passing or failing, and
+                <em>message</em> is logged.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              waitUntilDone(timeout)
+            </div>
+            
+            <p>Puts the test runner into asynchronous testing mode, waiting up to
+            <em>timeout</em> milliseconds for <code>test.done()</code> to be called.  This
+            is intended for use in situations where a test suite schedules a
+            callback, calls <code>test.waitUntilDone()</code>, and then calls
+            <code>test.done()</code> in the callback.</p>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  timeout : 
+                  <span class="datatype">integer</span>
+                  
+                  
+                </div>
+                
+                <p>If this number of milliseconds elapses and <code>test.done()</code> has not yet been
+                called, the test is marked as failing.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              done()
+            </div>
+            
+            <p>Marks a test as being complete.  Assumes a previous call to
+            <code>test.waitUntilDone()</code>.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Functions
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        findAndRunTests(options)
+        </h4>
+        
+        <p>The list of directories is searched for SecurableModules that start
+        with the prefix <code>test-</code>.  Each module matching this criteria is
+        expected to export functions that are test cases or a suite of test
+        cases; each is called with a single argument, which is a Test Runner
+        Object.</p>
+        <div class="parameter_set">
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              options : 
+              <span class="datatype">object</span>
+              
+              
+            </div>
+            
+            <p>An object with the following properties:</p>
+            <div class="api_component">
+              
+              
+              <div class="api_name">
+                
+                dirs : 
+                <span class="datatype">string</span>
+                
+                
+              </div>
+              
+              <p>A list of absolute paths representing directories to search
+              for tests in.  It's assumed that all of these directories are also
+              in the module search path, i.e. any JS files found in them are
+              SecurableModules that can be loaded via a call to
+              <code>require()</code>.</p>
+            </div>
+            
+            
+            <div class="api_component">
+              
+              
+              <div class="api_name">
+                
+                onDone : 
+                <span class="datatype">function</span>
+                
+                
+              </div>
+              
+              <p>A function to call when testing is complete.</p>
+            </div>
+            
+            
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+  </div>
+  
+  
+</div>
+
+
+</body>
+
+
+
+</html>

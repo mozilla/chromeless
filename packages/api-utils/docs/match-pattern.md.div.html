@@ -1,0 +1,194 @@
+
+<div id="match-pattern_module_api_docs" class="module_api_docs">
+
+<h1>match-pattern</h1>
+<div class="module_description">
+
+<p>The <code>match-pattern</code> module can be used to test URLs against simple patterns.</p>
+<h2>Patterns</h2>
+<p>There are four kinds of patterns.  The first three use an asterisk as a
+glob-style wildcard.  Note that these are not regular expressions.</p>
+<ol>
+<li><strong>A single asterisk</strong> matches any URL with an <code>http</code>, <code>https</code>, or <code>ftp</code>
+   scheme.</li>
+</ol>
+<p><em>Example:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<strong><code>*</code></strong></p>
+<p><em>Example matching URLs:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>https://example.com/</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>ftp://example.com/</code></p>
+<ol>
+<li><strong>A domain name prefixed with an asterisk and dot</strong> matches any URL of that
+   domain or a subdomain.</li>
+</ol>
+<p><em>Example:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<strong><code>*.example.com</code></strong></p>
+<p><em>Example matching URLs:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://foo.example.com/</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://bar.foo.example.com/</code></p>
+<ol>
+<li><strong>A URL suffixed with an asterisk</strong> matches that URL and any URL prefixed
+   with the pattern.</li>
+</ol>
+<p><em>Example:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<strong><code>http://example.com/*</code></strong></p>
+<p><em>Example matching URLs:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/foo</code><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/foo/bar</code></p>
+<ol>
+<li><strong>A URL</strong> matches only that URL.</li>
+</ol>
+<p><em>Example:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<strong><code>http://example.com/</code></strong></p>
+<p><em>Example matching URLs:</em><br>
+   &nbsp;&nbsp;&nbsp;&nbsp;<code>http://example.com/</code></p>
+<h2>Examples</h2>
+<pre><code>var { MatchPattern } = require("match-pattern");
+var pattern = new MatchPattern("http://example.com/*");
+console.log(pattern.test("http://example.com/"));       // true
+console.log(pattern.test("http://example.com/foo"));    // true
+console.log(pattern.test("http://foo.com/"));           // false!
+</code></pre>
+</div>
+
+
+<div class="api_reference">
+
+
+<h2 class="api_header">
+
+API Reference
+</h2>
+
+
+<div class="api_component_group">
+
+
+<h3 class="api_header">
+
+Classes
+</h3>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+MatchPattern
+</h4>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Constructors
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+MatchPattern(pattern)
+</div>
+
+<p>This constructor creates match pattern objects that can be used to test URLs.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+pattern : 
+<span class="datatype">string</span>
+
+
+</div>
+
+<p>The pattern to use.  See Patterns above.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Methods
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+test(url)
+</div>
+
+<p>Tests a URL against the match pattern.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+url : 
+<span class="datatype">string</span>
+
+
+</div>
+
+<p>The URL to test.</p>
+</div>
+
+
+</div>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">boolean</span>
+
+True if the URL matches the pattern and false otherwise.
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+

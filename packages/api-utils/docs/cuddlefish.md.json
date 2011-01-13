@@ -1,0 +1,1 @@
+[["version", 2], ["markdown", "`cuddlefish` is the name of the SDK's module loader. It builds on\n`securable-module` to provide many SDK-specific globals such as `console`\nand `memory`.\n\nThis module still needs to be documented.\n"]]

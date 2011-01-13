@@ -1,0 +1,226 @@
+
+<div id="timer_module_api_docs" class="module_api_docs">
+
+<h1>timer</h1>
+<div class="module_description">
+
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- contributed by Atul Varma [atul@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+<!-- contributed by Irakli Gozalishvil [gozala@mozilla.com] -->
+
+<p>The <code>timer</code> module provides access to web-like timing functionality.</p>
+</div>
+
+
+<div class="api_reference">
+
+
+<h2 class="api_header">
+
+API Reference
+</h2>
+
+
+<div class="api_component_group">
+
+
+<h3 class="api_header">
+
+Functions
+</h3>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+setTimeout(callback, ms)
+</h4>
+
+<p>Schedules <code>callback</code> to be called in <code>ms</code> milliseconds. Any additional
+arguments are passed straight through to the callback.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+callback : 
+<span class="datatype">function</span>
+
+
+</div>
+
+<p>Function to be called.</p>
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ms : 
+<span class="datatype">integer</span>
+
+
+</div>
+
+<p>Interval in milliseconds after which the function will be called.</p>
+</div>
+
+
+</div>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">integer</span>
+
+An ID that can later be used to undo this scheduling, if `callback` hasn't yet
+been called.
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+clearTimeout(ID)
+</h4>
+
+<p>Given an ID returned from <code>setTimeout()</code>, prevents the callback with the ID
+from being called (if it hasn't yet been called).</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ID : 
+<span class="datatype">integer</span>
+
+
+</div>
+
+<p>An ID returned from <code>setTimeout()</code>.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+setInterval(callback, ms)
+</h4>
+
+<p>Schedules <code>callback</code> to be called repeatedly every <code>ms</code> milliseconds. Any
+additional arguments are passed straight through to the callback.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+callback : 
+<span class="datatype">function</span>
+
+
+</div>
+
+<p>Function to be called.</p>
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ms : 
+<span class="datatype">integer</span>
+
+
+</div>
+
+<p>Interval in milliseconds at which the function will be called.</p>
+</div>
+
+
+</div>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">integer</span>
+
+An ID that can later be used to unschedule the callback.
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+clearInterval(ID)
+</h4>
+
+<p>Given an ID returned from <code>setInterval()</code>, prevents the callback with the ID
+from being called again.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ID : 
+<span class="datatype">integer</span>
+
+
+</div>
+
+<p>An ID returned from <code>setInterval()</code>.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+

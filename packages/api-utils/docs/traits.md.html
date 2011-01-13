@@ -1,0 +1,540 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <base target="_blank"/>
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/base.css" />
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/apidocs.css" />
+
+  <title>Add-on SDK Documentation</title>
+
+  <style type="text/css">
+
+    body {
+
+      border: 50px solid #FFFFFF;
+
+    }
+
+  </style>
+
+
+
+  <script type="text/javascript">
+
+    function rewrite_links() {
+
+      var images = document.getElementsByTagName("img");
+
+      for (var i = 0; i < images.length; i++) {
+
+        var before = images[i].src.split("packages/")[0];
+
+        var after = images[i].src.split("/docs")[1];
+
+        images[i].src = before + after;
+
+      }
+
+    }
+
+    </script>
+
+</head>
+
+
+
+<body onload = "rewrite_links()">
+
+<div id="traits_module_api_docs" class="module_api_docs">
+  
+  <h1>traits</h1>
+  <div class="module_description">
+    
+    <!-- contributed by Irakli Gozalishvil [gozala@mozilla.com]  -->
+    
+    <p>The <code>traits</code> module provides base building blocks for secure object
+    composition. It exports base trait / constructor function that
+    constructs an instance of <code>Trait</code>.</p>
+    <h2>Traits</h2>
+    <p>[Traits] are a simple composition mechanism for structuring object-oriented
+    programs. Traits are similar to [interfaces], except that they often define
+    only a part of an object's data and behavior and are intended to be used in
+    conjunction with other traits to completely define the object.</p>
+    <p>Traits are also considered to be a more robust alternative to [mixins]
+    because, name conflicts have to be resolved explicitly by composer &amp; because
+    trait composition is order-independent (hence more declarative).</p>
+    <p>There are some other implementations of traits in JavaScript &amp; some ideas /
+    APIs are borrowed from them:</p>
+    <ul>
+    <li>[traitsjs]</li>
+    <li>[joose]</li>
+    </ul>
+    <h2>Object-capability security model</h2>
+    <p>Implementation uses an [object-capability security model] to allow protection
+    of private APIs. At the same private APIs can be shared between among trait
+    composition parties. To put it simply: All the properties whose names start
+    with <code>"_"</code> are considered to be <strong>private</strong>, and are unaccessible from anywhere
+    except other <strong>public</strong> methods / accessors of the instance that had been
+    defined during composition.</p>
+  </div>
+  
+  
+  <div class="api_reference">
+    
+    
+    <h2 class="api_header">
+    
+    API Reference
+    </h2>
+    
+    
+    <div class="api_component_group">
+      
+      
+      <h3 class="api_header">
+      
+      Classes
+      </h3>
+      
+      
+      <div class="api_component">
+        
+        
+        <h4 class="api_name">
+        
+        Trait
+        </h4>
+        
+        
+        <div class="api_component_group">
+          
+          
+          <div class="api_header">
+            
+            Constructors
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              Trait()
+            </div>
+            
+            <p>Creates an instance of Trait and returns it if it has no <code>constructor</code> method
+            defined. If instance has <code>constructor</code> method, then it is called with all the
+            arguments passed to this function and returned value is returned instead,
+            unless it's <code>undefined</code>. In that case instance is returned.</p>
+            <p><code>Trait</code> function represents a base trait. As with any other trait it represents
+            a constructor function for creating instances of its own &amp; a placeholder
+            for a trait compositions functions.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+        <div class="api_component_group">
+          
+          
+          <div class="api_header">
+            
+            Methods
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              compose(trait1, trait2, ...)
+            </div>
+            
+            <p>Composes new trait out of itself and traits / property maps passed as an
+            arguments. If two or more traits / property maps have properties with the same
+            name, the new trait will contain a "conflict" property for that name (see
+            examples in Examples section to find out more about "conflict" properties).
+            This is a commutative and associative operation, and the order of its
+            arguments is not significant.</p>
+            <p><strong>Examples:</strong></p>
+            <p>Let's say we want to define a reusable piece of code for a lists of elements.</p>
+            <pre><code>const { Trait } = require('traits');
+            const List = Trait.compose({
+              // private API:
+              _list: null,
+              // public API
+              constructor: function List() this._list = [],
+              get length() this._list.length,
+              add: function add(item) this._list.push(item),
+              remove: function remove(item) {
+                let list = this._list;
+                let index = list.indexOf(item);
+                if (0 &lt;= index) list.slice(index, 1);
+              }
+            });
+            </code></pre>
+            <p>Instances of <code>List</code> can be created by calling <code>List</code> function with or without
+            <code>new</code> keyword.</p>
+            <pre><code>let l1 = List();
+            l1 instanceof List;      // true
+            let l2 = new List();
+            l2 instanceof List;      // true
+            </code></pre>
+            <p>As you can see <code>add</code> and <code>remove</code> functions are capable of accessing private
+            <code>_list</code> property, but thats about it, there's nothing else that will be able
+            to access this property:</p>
+            <pre><code>'_list' in l1;              // false
+            '_list' in l2;              // false
+            '_list' in List.protoype;   // false
+            l1.has = function(name) name in this
+            l1.has('_list');            // false
+            l1.length;                  // 0
+            l1.add('test')
+            l1.length                   // 1
+            </code></pre>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  trait1 : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Trait or property map to compose new trait from.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  trait2 : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Trait or property map to compose new trait from.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  ... : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Traits or property maps to compose new trait from.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+            <div class="returns">
+              
+              Returns: 
+              <span class="datatype">Function</span>
+              
+              New trait containing the combined properties of all the traits.
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              resolve(resolutions)
+            </div>
+            
+            <p>Composes a new trait that has all the same properties
+            as the trait on which it is called, except that each property listed
+            in the <code>resolutions</code> argument will be renamed from the name
+            of the  property in the <code>resolutions</code> argument to its value.
+            And if its value is <code>null</code>, the property will become required.</p>
+            <p><strong>Example:</strong></p>
+            <pre><code>const Range = List.resolve({
+              constructor: null,
+              add: '_add',
+            }).compose({
+              min: null,
+              max: null,
+              get list() this._list.slice(0),
+              constructor: function Range(min, max) {
+                this.min = min;
+                this.max = max;
+                this._list = [];
+              },
+              add: function(item) {
+                if (item &lt;= this.max &amp;&amp; item &gt;= this.min)
+                  this._add(item)
+              }
+            });
+            
+            let r = Range(0, 10);
+            r.min;                      // 0
+            r.max;                      // 10
+            r.length;                   // 0;
+            r.add(5);
+            r.length;                   // 1
+            r.add(12);
+            r.length;                   // 1 (12 was not in a range)
+            </code></pre>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  resolutions : 
+                  <span class="datatype">Object</span>
+                  
+                  
+                </div>
+                
+                
+              </div>
+              
+              
+            </div>
+            
+            
+            <div class="returns">
+              
+              Returns: 
+              <span class="datatype">Function</span>
+              
+              New resolved trait.
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              override(trait1, trait2, ...)
+            </div>
+            
+            <p>Composes a new trait with all of the combined properties of <code>this</code> and the
+            argument traits. In contrast to <code>compose</code>, <code>override</code> immediately resolves
+            all conflicts resulting from this composition by overriding the properties of
+            later traits. Trait priority is from left to right. I.e. the properties of
+            the leftmost trait are never overridden.</p>
+            <p><strong>Example:</strong></p>
+            <pre><code>// will compose trait with conflict property 'constructor'
+            var ConstructableList = List.compose({
+              constructor: function List() this._list = Array.slice(arguments)
+            });
+            // throws error with message 'Remaining conflicting property: constructor'
+            ConstructableList(1, 2, 3);
+            
+            var ConstructableList = List.overridden({
+              constructor: function List() this._list = Array.slice(arguments)
+            });
+            ConstructableList(1, 2, 3).length       // 3
+            </code></pre>
+            <div class="parameter_set">
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  trait1 : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Trait or property map to compose new trait from.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  trait2 : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Trait or property map to compose new trait from.</p>
+              </div>
+              
+              
+              <div class="api_component">
+                
+                
+                <div class="api_name">
+                  
+                  ... : 
+                  <span class="datatype">Object|Function</span>
+                  
+                  
+                </div>
+                
+                <p>Traits or property maps to compose new trait from.</p>
+              </div>
+              
+              
+            </div>
+            
+            
+            <div class="returns">
+              
+              Returns: 
+              <span class="datatype">Function</span>
+              
+              New trait containing the combined properties of all the traits.
+            </div>
+            
+            
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              toString()
+            </div>
+            
+            <p>Textual representation of an object. All the traits will return:
+            <code>'[object Trait]'</code> string, unless they have <code>constructor</code> property, in that
+            case string <code>'Trait'</code> is replaced with the name of <code>constructor</code> property.</p>
+            <p><strong>Example:</strong></p>
+            <pre><code>const MyTrait = Trait.compose({
+              constructor: function MyTrait() {
+                // do your initialization here
+              }
+            });
+            MyTrait().toString();     // [object MyTrait]
+            </code></pre>
+          </div>
+          
+          
+        </div>
+        
+        
+        <div class="api_component_group">
+          
+          
+          <div class="api_header">
+            
+            Properties
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              required : 
+              <span class="datatype">Object</span>
+              
+              
+            </div>
+            
+            <p>Singleton, used during trait composition to define "required" properties.</p>
+            <p><strong>Example:</strong></p>
+            <pre><code>const Enumerable = Trait.compose({
+              list: Trait.required,
+              forEach: function forEach(consumer) {
+                return this.list.forEach(consumer);
+              }
+            });
+            
+            let c1 = Enumerable();      // Error: Missing required property: list
+            
+            const EnumerableList = List.compose({
+              get list: this._list.slice(0)
+            }, Enumerable);
+            
+            let c2 = EnumerableList();
+            c2.add('test')
+            c2.length                   // 1
+            c2.list[0]                  // 'test'
+            c2.forEach(console.log)     // &gt; info: 'test'
+            </code></pre>
+          </div>
+          
+          
+          <div class="api_component">
+            
+            
+            <div class="api_name">
+              
+              _public : 
+              <span class="datatype">Object</span>
+              
+              
+            </div>
+            
+            <p>Internal property of instance representing public API that is exposed to the
+            consumers of an instance.</p>
+          </div>
+          
+          
+        </div>
+        
+        
+      </div>
+      
+      
+    </div>
+    
+    
+  </div>
+  
+  
+</div>
+
+
+</body>
+
+
+
+</html>

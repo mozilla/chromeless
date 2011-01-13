@@ -1,0 +1,338 @@
+
+<div id="byte-streams_module_api_docs" class="module_api_docs">
+
+<h1>byte-streams</h1>
+<div class="module_description">
+
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
+<p>The <code>byte-streams</code> module provides streams for reading and writing bytes.</p>
+</div>
+
+
+<div class="api_reference">
+
+
+<h2 class="api_header">
+
+API Reference
+</h2>
+
+
+<div class="api_component_group">
+
+
+<h3 class="api_header">
+
+Classes
+</h3>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+ByteReader
+</h4>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Constructors
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ByteReader(inputStream)
+</div>
+
+<p>Creates a binary input stream that reads bytes from a backing stream.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+inputStream : 
+<span class="datatype">stream</span>
+
+
+</div>
+
+<p>The backing stream, an <a href="http://mxr.mozilla.org/mozilla-central/
+source/xpcom/io/nsIInputStream.idl"><code>nsIInputStream</code></a>.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Methods
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+close()
+</div>
+
+<p>Closes both the stream and its backing stream.  If the stream is already
+closed, an exception is thrown.</p>
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+read(numBytes)
+</div>
+
+<p>Reads a string from the stream.  If the stream is closed, an exception is
+thrown.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+numBytes : 
+<span class="datatype">number</span>
+
+
+</div>
+
+<p>The number of bytes to read.  If not given, the remainder of the entire stream
+is read.</p>
+</div>
+
+
+</div>
+
+
+<div class="returns">
+
+Returns: 
+<span class="datatype">string</span>
+
+A string containing the bytes read.  If the stream is at the end, returns the
+empty string.
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Properties
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+closed : 
+<span class="datatype">boolean</span>
+
+
+</div>
+
+<p>True if the stream is closed.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+ByteWriter
+</h4>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Constructors
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+ByteWriter(outputStream)
+</div>
+
+<p>Creates a binary output stream that writes bytes to a backing stream.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+outputStream : 
+<span class="datatype">stream</span>
+
+
+</div>
+
+<p>The backing stream, an <a href="http://mxr.mozilla.org/mozilla-central/
+source/xpcom/io/nsIOutputStream.idl"><code>nsIOutputStream</code></a>.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Methods
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+close()
+</div>
+
+<p>Closes both the stream and its backing stream.  If the stream is already
+closed, an exception is thrown.</p>
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+write(str)
+</div>
+
+<p>Writes a string to the stream.  If the stream is closed, an exception is
+thrown.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+str : 
+<span class="datatype">string</span>
+
+
+</div>
+
+<p>The string to write.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component_group">
+
+
+<div class="api_header">
+
+Properties
+</div>
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+closed : 
+<span class="datatype">boolean</span>
+
+
+</div>
+
+<p>True if the stream is closed.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+

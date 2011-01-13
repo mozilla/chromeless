@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <base target="_blank"/>
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/base.css" />
+
+  <link rel="stylesheet" type="text/css" media="all"
+
+        href="../../../css/apidocs.css" />
+
+  <title>Add-on SDK Documentation</title>
+
+  <style type="text/css">
+
+    body {
+
+      border: 50px solid #FFFFFF;
+
+    }
+
+  </style>
+
+
+
+  <script type="text/javascript">
+
+    function rewrite_links() {
+
+      var images = document.getElementsByTagName("img");
+
+      for (var i = 0; i < images.length; i++) {
+
+        var before = images[i].src.split("packages/")[0];
+
+        var after = images[i].src.split("/docs")[1];
+
+        images[i].src = before + after;
+
+      }
+
+    }
+
+    </script>
+
+</head>
+
+
+
+<body onload = "rewrite_links()">
+
+<div id="run-tests_module_api_docs" class="module_api_docs">
+  
+  <h1>run-tests</h1>
+  <div class="module_description">
+    
+    <p><span class="aside">
+    For more information on testing in the Jetpack SDK, see the
+    <a href="#guide/packaging">Packaging</a> tutorial.
+    </span></p>
+    <p>This module contains the package's main Jetpack Program, which does a
+    bit of high-level setup and then delegates test finding and running to
+    the <code>harness</code> module.</p>
+  </div>
+  
+  
+</div>
+
+
+</body>
+
+
+
+</html>

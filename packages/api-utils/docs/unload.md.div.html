@@ -1,0 +1,162 @@
+
+<div id="unload_module_api_docs" class="module_api_docs">
+
+<h1>unload</h1>
+<div class="module_description">
+
+<!-- contributed by Atul Varma [atul@mozilla.com]  -->
+<!-- contributed by Drew Willcoxon [adw@mozilla.com]  -->
+<!-- edited by Noelle Murata [fiveinchpixie@gmail.com]  -->
+
+<p>The <code>unload</code> module allows modules to register callbacks that are called
+when they are unloaded.  It is similar to the CommonJS module of the same
+name in the [Narwhal] platform.</p>
+</div>
+
+
+<div class="api_reference">
+
+
+<h2 class="api_header">
+
+API Reference
+</h2>
+
+
+<div class="api_component_group">
+
+
+<h3 class="api_header">
+
+Functions
+</h3>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+ensure(object)
+</h4>
+
+<p>Calling <code>ensure()</code> on an object does two things:</p>
+<ol>
+<li>It replaces <code>object.unload()</code> with a wrapper method that will never call
+   <code>object.unload()</code> more than once.</li>
+<li>It ensures that this wrapper method is called when <code>send()</code> is
+   called.</li>
+</ol>
+<p>Therefore, when you register an object with <code>ensure()</code>, you can call its
+<code>unload()</code> method yourself, you can let it happen for you, or you can do both.</p>
+<p><code>object.unload()</code> will be called with a single argument describing the reason
+for the unload; see <code>when()</code>.  If <code>object</code> does not have an <code>unload()</code> method,
+then an exception is thrown when <code>ensure()</code> is called.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+object : 
+<span class="datatype">object</span>
+
+
+</div>
+
+<p>An object that defines an <code>unload()</code> method.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+when(callback)
+</h4>
+
+<p>Registers a function to be called when <code>send()</code> is called.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+callback : 
+<span class="datatype">function</span>
+
+
+</div>
+
+<p>A function that will be called when <code>send()</code> is called.  It is called with a
+single argument, one of the following strings describing the reason for
+unload: <code>"uninstall"</code>, <code>"disable"</code>, <code>"shutdown"</code>, <code>"upgrade"</code>, or
+<code>"downgrade"</code>.  (On Gecko 1.9.2-based applications such as Firefox 3.6,
+<code>"upgrade"</code> and <code>"downgrade"</code> are not available, and <code>"shutdown"</code> will be sent
+in their place.)  If a reason could not be determined, <code>undefined</code> will be
+passed instead.  Note that if an add-on is unloaded with reason <code>"disable"</code>,
+it will not be notified about <code>"uninstall"</code> while it is disabled.  A solution
+to this issue is being investigated; see bug 571049.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="api_component">
+
+
+<h4 class="api_name">
+
+send(reason)
+</h4>
+
+<p>Sends an "unload signal", thereby triggering all callbacks registered via
+<code>when()</code>. In general, this function need not be manually called; it is
+automatically triggered by the embedder.</p>
+<div class="parameter_set">
+
+
+<div class="api_component">
+
+
+<div class="api_name">
+
+reason : 
+<span class="datatype">string</span>
+
+
+</div>
+
+<p>An optional string describing the reason for unload; see <code>unload.when()</code>.</p>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
