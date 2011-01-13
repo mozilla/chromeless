@@ -273,28 +273,6 @@ def test_all_packages(env_root, defaults):
         pkg_cfg=pkg_cfg,
         defaults=defaults)
 
-def run_development_mode(env_root, defaults):
-    pkgdir = os.path.join(env_root, 'packages', 'development-mode')
-    app = defaults['app']
-
-    from cuddlefish import server
-    port = server.DEV_SERVER_PORT
-    httpd = server.make_httpd(env_root, port=port)
-    thread = server.threading.Thread(target=httpd.serve_forever)
-    thread.setDaemon(True)
-    thread.start()
-
-    print "I am starting an instance of %s in development mode." % app
-    print "From a separate shell, you can now run cfx commands with"
-    print "'-r' as an option to send the cfx command to this instance."
-    print "All logging messages will appear below."
-
-    os.environ['JETPACK_DEV_SERVER_PORT'] = str(port)
-    options = {}
-    options.update(defaults)
-    run(["run", "--pkgdir", pkgdir],
-        defaults=options, env_root=env_root)
-
 def get_config_args(name, env_root):
     local_json = os.path.join(env_root, "local.json")
     if not (os.path.exists(local_json) and
@@ -350,9 +328,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     command = args[0]
 
-    if command == "develop":
-        run_development_mode(env_root, defaults=options.__dict__)
-        return
     if command == "testpkgs":
         test_all_packages(env_root, defaults=options.__dict__)
         return
@@ -365,26 +340,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     elif command == "testcfx":
         test_cfx(env_root, options.verbose)
         return
-    elif command == "docs":
-        import time
-        import cuddlefish.server
-
-        print "One moment."
-        popen = subprocess.Popen([sys.executable,
-                                  cuddlefish.server.__file__,
-                                  'daemonic'])
-        # TODO: See if there's actually a way to block on
-        # a particular event occurring, rather than this
-        # relatively arbitrary/generous amount.
-        time.sleep(cuddlefish.server.IDLE_WEBPAGE_TIMEOUT * 2)
-        return
     elif command == "sdocs":
-        import cuddlefish.server
-
-        # TODO: Allow user to change this filename via cmd line.
-        filename = 'jetpack-sdk-docs.tgz'
-        cuddlefish.server.generate_static_docs(env_root, filename)
-        print "Wrote %s." % filename
+        import cuddlefish.docgen
+        import chromeless
+        dirname = os.path.join(chromeless.Dirs().build_dir, "docs")
+        cuddlefish.docgen.generate_static_docs(env_root, dirname)
+        print "Created docs in %s." % dirname
         return
 
     target_cfg_json = None
@@ -621,11 +582,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                            harness_options=harness_options,
                                            dev_mode=True)
 
-            if options.use_server:
-                from cuddlefish.server import run_app
-            else:
-                from cuddlefish.runner import run_app
-                
+            from cuddlefish.runner import run_app
 
             if options.addons is not None:
                 options.addons = options.addons.split(",")

@@ -6,6 +6,11 @@
 
 import os,sys,shutil
 
+# the current chromeless version.  should be bumped when a release is tagged,
+# really we an immutable global accessible by all includes submodules, but
+# using the environment for this seems wonky.  ideas welcome.
+CHROMELESS_VERSION = "0.2";
+
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
 cuddlefish_root = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -46,9 +51,7 @@ browserToLaunch = None
 if len(sys.argv) > 1:
     if sys.argv[1] == "package":
         executionMode = "package" 
-        print "Packaging your application for distribution or installation..."
-        print "Note: expect a chromeless.zip application generated in this directory; "
-        print "Note: use xulrunner --install-app full_path_to-chromeless.zip to install;  "
+        print "Packaging a xulrunner application (directory) into build/"
         if len(sys.argv) > 2:
             browserToLaunch = findBrowserHTML(sys.argv[2])
     elif sys.argv[1] == "appify":
@@ -56,6 +59,9 @@ if len(sys.argv) > 1:
         print "Generating a standalone, redistributable, application"
         if len(sys.argv) > 2:
             browserToLaunch = findBrowserHTML(sys.argv[2])
+    elif sys.argv[1] == "docs":
+        executionMode = "sdocs" 
+        print "Generating documentation"
     else:
         browserToLaunch = findBrowserHTML(sys.argv[1])
 
@@ -84,7 +90,6 @@ cuddlefish.run([
         executionMode,
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
-        "-t", "./template",
         "--static-args", json.dumps({"browser": browserToLaunch}),
         "-p", "packages/chromeless"
         ])
