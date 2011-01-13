@@ -60,15 +60,19 @@ simple browser based on them.  You may also specify an alternate browser HTML on
 
 From here, you can inspect the implementation of any of these samples, copy, modify and explore.
 
-Finally, it's possible to generate a ZIP package of your HTML browser which is an installable
-XULRunner application (danger, experimental):
+For deployment or to share your application, you can use chromeless to generate a standalone
+application folder, that anyone on a supported platform can run.  Output will be placed
+in the build/ directory:
 
-    (win32) C:\xxx\chromeless> chromeless examples\webgl package
-    (osx)   $ ./chromeless examples/webgl package
+    (win32) C:\xxx\chromeless> chromeless appify examples\webgl
+    (osx)   $ ./chromeless appify examples/webgl
 
-This will output a zip file. You can then use the built in XULRunner to install the ZIP file as a XULRunner application in your computer. There is a convenience script to install chromeless.zip in the local computer. In Mac OSX, look for the application under Applications/Mozilla/Chromeless. With Linux under /usr/lib/mozilla/chromeless and in Windows in C:\Program Files\Mozilla\Chromeless. If you want to change the vendor name, you should edit the ./template application.ini file.  
+Finally, it's possible to generate a "XULRunner application", which is a folder that is much
+smaller than a standalone application, but can be run under (a specific version of) xulrunner.
+Again, the output will be placed in the build/ directory:
 
-    ./xulapp-install 
+    (win32) C:\xxx\chromeless> chromeless  package examples\webgl
+    (osx)   $ ./chromeless package examples/webgl 
 
 ## More Information
 
