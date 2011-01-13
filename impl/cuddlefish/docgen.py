@@ -109,13 +109,12 @@ def guess_mime_type(url):
         mimetype = "text/plain"
     return mimetype
 
-class Server(object):
-    def __init__(self, env_root, task_queue, expose_privileged_api=True):
+class DocGen(object):
+    def __init__(self, env_root, expose_privileged_api=True):
         self.env_root = env_root
         self.expose_privileged_api = expose_privileged_api
         self.root = os.path.join(self.env_root, 'docs')
         self.index = os.path.join(self.root, 'index.html')
-        self.task_queue = task_queue
 
     def _respond(self, message):
         self.start_response(message,
@@ -314,115 +313,36 @@ class Server(object):
             else:
                 return self._respond_with_file(fullpath)
 
-def make_wsgi_app(env_root, task_queue, expose_privileged_api=True):
-    def app(environ, start_response):
-        server = Server(env_root, task_queue, expose_privileged_api)
-        return server.app(environ, start_response)
-    return app
-
-def get_url(host=DEFAULT_HOST, port=DEFAULT_PORT):
-    return "http://%s:%d" % (host, port)
-
-def make_httpd(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT,
-               quiet=True):
-    if not quiet:
-        handler_class = simple_server.WSGIRequestHandler
-    else:
-        handler_class = QuietWSGIRequestHandler
-
-    tq = Queue.Queue()
-    httpd = simple_server.make_server(host, port,
-                                      make_wsgi_app(env_root, tq),
-                                      ThreadedWSGIServer,
-                                      handler_class)
-    return httpd
-
-def fault_tolerant_make_httpd(env_root, host=DEFAULT_HOST, port=DEFAULT_PORT):
-    listening = False
-    attempts_left = 10
-    while not listening:
-        try:
-            httpd = make_httpd(env_root, host, port, quiet=True)
-            listening = True
-        except socket.error, e:
-            print "Couldn't create server at %s:%d (%s)." % (host, port, e)
-            attempts_left -= 1
-            if attempts_left:
-                port += 1
-                print "Trying %s:%d." % (host, port)
-            else:
-                raise
-
-    return (httpd, port)
-
-def maybe_open_webpage(host=DEFAULT_HOST, port=DEFAULT_PORT):
-    _idle_event.wait(IDLE_WEBPAGE_TIMEOUT)
-    url = get_url(host, port)
-    if _idle_event.isSet():
-        print "Web browser appears to be viewing %s." % url
-    else:
-        print "Opening web browser to %s." % url
-        webbrowser.open(url)
-
-def start_daemonic(httpd, host=DEFAULT_HOST, port=DEFAULT_PORT):
-    thread = threading.Thread(target=httpd.serve_forever)
-    thread.setDaemon(True)
-    thread.start()
-
-    maybe_open_webpage(host, port)
-
-    while True:
-        _idle_event.wait(DAEMONIC_IDLE_TIMEOUT)
-        if _idle_event.isSet():
-            _idle_event.clear()
-        else:
-            #print ("Web browser is no longer viewing %s, "
-            #       "shutting down server." % get_url(host, port))
-            break
-
-def start(env_root=None, host=DEFAULT_HOST, port=DEFAULT_PORT,
-          quiet=False, httpd=None):
-    if not httpd:
-        httpd = make_httpd(env_root, host, port, quiet)
-    if not quiet:
-        print "Starting server at %s." % get_url(host, port)
-        print "Press Ctrl-C to exit."
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print "Ctrl-C received, exiting."
-
-def generate_static_docs(env_root, tgz_filename):
-    server = Server(env_root=env_root,
-                    task_queue=None,
+def generate_static_docs(env_root, output_dir):
+    docgen = DocGen(env_root=env_root,
                     expose_privileged_api=False)
-    staging_dir = os.path.join(env_root, "addon-sdk-docs")
-    if os.path.exists(staging_dir):
-        shutil.rmtree(staging_dir)
+
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
 
     # first, copy static-files
-    shutil.copytree(server.root, staging_dir)
+    shutil.copytree(docgen.root, output_dir)
     # py2.5 doesn't have ignore=, so we delete tempfiles afterwards. If we
     # required >=py2.6, we could use ignore=shutil.ignore_patterns("*~")
-    for (dirpath, dirnames, filenames) in os.walk(staging_dir):
+    for (dirpath, dirnames, filenames) in os.walk(output_dir):
         for n in filenames:
             if n.endswith("~"):
                 os.unlink(os.path.join(dirpath, n))
 
     # then copy docs from each package
-    os.mkdir(os.path.join(staging_dir, "packages"))
+    os.mkdir(os.path.join(output_dir, "packages"))
 
-    pkg_cfg = server.build_pkg_cfg()
+    pkg_cfg = docgen.build_pkg_cfg()
 
     # starting with the (generated) index file
-    index = json.dumps(server.build_pkg_index(pkg_cfg))
-    index_path = os.path.join(staging_dir, "packages", 'index.json')
+    index = json.dumps(docgen.build_pkg_index(pkg_cfg))
+    index_path = os.path.join(output_dir, "packages", 'index.json')
     open(index_path, 'w').write(index)
 
     # and every doc-like thing in the package
     for pkg_name, pkg in pkg_cfg['packages'].items():
         src_dir = pkg.root_dir
-        dest_dir = os.path.join(staging_dir, "packages", pkg_name)
+        dest_dir = os.path.join(output_dir, "packages", pkg_name)
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
 
@@ -463,12 +383,6 @@ def generate_static_docs(env_root, tgz_filename):
                     docs_html = apirenderer.json_to_html(docs_parsed, src_path)
                     open(dest_path + ".html", "w").write(docs_html)
 
-    # finally, build a tarfile out of everything
-    tgz = tarfile.open(tgz_filename, 'w:gz')
-    tgz.add('addon-sdk-docs', 'addon-sdk-docs')
-    tgz.close()
-    shutil.rmtree(staging_dir)
-
 def run_app(harness_root_dir, harness_options,
             app_type, binary=None, profiledir=None, verbose=False,
             timeout=None, logfile=None, addons=None,
@@ -482,23 +396,3 @@ def run_app(harness_root_dir, harness_options,
     response = urllib2.urlopen(url, payload)
     print response.read()
     return 0
-
-if __name__ == '__main__':
-    import sys
-
-    env_root=os.environ['CUDDLEFISH_ROOT']
-
-    if len(sys.argv) > 1:
-        if sys.argv[1] == 'daemonic':
-            httpd, port = fault_tolerant_make_httpd(env_root)
-            start_daemonic(httpd=httpd, port=port)
-        elif sys.argv[1] == 'safe':
-            app = make_wsgi_app(env_root, task_queue=None,
-                                expose_privileged_api=False)
-            httpd = simple_server.make_server(DEFAULT_HOST,
-                                              DEFAULT_PORT, app)
-            start(httpd=httpd)
-        else:
-            raise Exception('unrecognized command "%s"' % sys.argv[1])
-    else:
-        start(env_root)

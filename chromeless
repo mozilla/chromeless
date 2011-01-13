@@ -6,6 +6,11 @@
 
 import os,sys,shutil
 
+# the current chromeless version.  should be bumped when a release is tagged,
+# really we an immutable global accessible by all includes submodules, but
+# using the environment for this seems wonky.  ideas welcome.
+CHROMELESS_VERSION = "0.2";
+
 # set the cuddlefish "root directory" for this process if it's not already
 # set in the environment
 cuddlefish_root = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -87,7 +92,6 @@ cuddlefish.run([
         executionMode,
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
-        "-t", "./template",
         "--static-args", json.dumps({"browser": browserToLaunch}),
         "-p", "packages/chromeless"
         ])
