@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body >
+   <p> 
+	   Stats about your desktop:
+     <div id="textfile_contents">
+     </div>  
+   </p>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    // we'll create a text file on the desktop and start
+    // watching it for changes
+    var file = require('file');
+    var textFilePath = file.join(require('app-paths').desktopDir,
+                                 "watchedTextFile.txt"); 
+    var txtFile = file.open(textFilePath, "w");
+    txtFile.write("this is a text file\nYou can write to it and I'll be" +
+                  "watching!");
+    txtFile.close();
+    var lastLastModTime = 0;
+    setInterval(function() {
+      var thisLastModTime = file.stat(textFilePath).lastModified;
+      if (lastLastModTime != thisLastModTime) {
+        lastLastModTime = thisLastModTime;
+        console.log("file was modified at " + lastLastModTime);
+        var d = document.getElementById('textfile_contents');
+        d.innerHTML = file.open(textFilePath, "r").read();
+      }  
+    },700);
+  </script>
+</html>
+

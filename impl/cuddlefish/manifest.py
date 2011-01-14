@@ -103,6 +103,8 @@ def scan_package(pkg_name, dirname, stderr=sys.stderr):
     has_problems = False
     for dirpath, dirnames, filenames in os.walk(dirname):
         for fn in [fn for fn in filenames if fn.endswith(".js")]:
+            if fn.startswith("."):
+                continue
             modname = os.path.splitext(fn)[0]
             # turn "packages/api-utils/lib/content/foo" into "content/foo"
             reldir = dirpath[len(dirname)+1:]
@@ -114,6 +116,7 @@ def scan_package(pkg_name, dirname, stderr=sys.stderr):
             manifest.append( (pkg_name, modname, requires, chrome) )
             if problems:
                 has_problems = True
+
     return manifest, has_problems
 
 if __name__ == '__main__':

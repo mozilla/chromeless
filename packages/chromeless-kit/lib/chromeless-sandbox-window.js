@@ -101,6 +101,7 @@ function Window(options) {
 
   if (this.options.injectProps) {
       for (name in this.options.injectProps) {
+          console.log("injecting object into window: " + name);
           window[name] = this.options.injectProps[name];
       }
   }

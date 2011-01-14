@@ -1,8 +1,10 @@
+from __future__ import with_statement 
 import chromeless
 import os
 import shutil
 from string import Template
 import simplejson as json
+from _relpath import relpath
 
 class OSAppifier(object):
     def __init__(self):
@@ -53,7 +55,7 @@ class OSAppifier(object):
 
         # create links inside framework
         for f in ("XUL", "xulrunner-bin", "libxpcom.dylib"):
-            tgt = os.path.relpath(os.path.join(cur_ver_dir, f), framework_dir)
+            tgt = relpath(os.path.join(cur_ver_dir, f), framework_dir)
             os.symlink(tgt, os.path.join(framework_dir, f))
 
         # now it's time to write a parameterized Info.plist
