@@ -80,45 +80,52 @@ def generate_static_docs(env_root, output_dir):
     open(index_path, 'w').write(index)
 
     # and every doc-like thing in the package
+    pkgs = { }
     for pkg_name, pkg in pkg_cfg['packages'].items():
-        src_dir = pkg.root_dir
-        dest_dir = os.path.join(output_dir, "packages", pkg_name)
-        if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
+        pkgs[pkg_name] = pkg.root_dir
+    print pkgs
 
-        # TODO: This is a DRY violation from main.js. We should
-        # really move the common logic/names to cuddlefish.packaging.
-        src_readme = os.path.join(src_dir, "README.md")
-        if os.path.exists(src_readme):
-            shutil.copyfile(src_readme,
-                            os.path.join(dest_dir, "README.md"))
+    from _yuidoc_parse import DocParser 
+    dp = DocParser(pkgs, ( "jsdoc", "js" ));
+    print json.dumps(dp.data, indent=4)
 
-        docs_src_dir = os.path.join(src_dir, "docs")
-        docs_dest_dir = os.path.join(dest_dir, "docs")
-        if not os.path.exists(docs_dest_dir):
-            os.mkdir(docs_dest_dir)
-        for (dirpath, dirnames, filenames) in os.walk(docs_src_dir):
-            assert dirpath.startswith(docs_src_dir)
-            relpath = dirpath[len(docs_src_dir)+1:]
-            for dirname in dirnames:
-                dest_path = os.path.join(docs_dest_dir, relpath, dirname)
-                if not os.path.exists(dest_path):
-                    os.mkdir(dest_path)
-            for filename in filenames:
-                if filename.endswith("~"):
-                    continue
-                src_path = os.path.join(dirpath, filename)
-                dest_path = os.path.join(docs_dest_dir, relpath, filename)
-                shutil.copyfile(src_path, dest_path)
-                if filename.endswith(".md"):
-                    # parse and JSONify the API docs
-                    docs_md = open(src_path, 'r').read()
-                    docs_parsed = list(apiparser.parse_hunks(docs_md))
-                    docs_json = json.dumps(docs_parsed)
-                    open(dest_path + ".json", "w").write(docs_json)
-                    # write the HTML div files
-                    docs_div = apirenderer.json_to_div(docs_parsed, src_path)
-                    open(dest_path + ".div.html", "w").write(docs_div)
-                    # write the standalone HTML files
-                    docs_html = apirenderer.json_to_html(docs_parsed, src_path)
-                    open(dest_path + ".html", "w").write(docs_html)
+        # dest_dir = os.path.join(output_dir, "packages", pkg_name)
+        # if not os.path.exists(dest_dir):
+        #     os.mkdir(dest_dir)
+
+        # # TODO: This is a DRY violation from main.js. We should
+        # # really move the common logic/names to cuddlefish.packaging.
+        # src_readme = os.path.join(src_dir, "README.md")
+        # if os.path.exists(src_readme):
+        #     shutil.copyfile(src_readme,
+        #                     os.path.join(dest_dir, "README.md"))
+
+        # docs_src_dir = os.path.join(src_dir, "docs")
+        # docs_dest_dir = os.path.join(dest_dir, "docs")
+        # if not os.path.exists(docs_dest_dir):
+        #     os.mkdir(docs_dest_dir)
+        # for (dirpath, dirnames, filenames) in os.walk(docs_src_dir):
+        #     assert dirpath.startswith(docs_src_dir)
+        #     relpath = dirpath[len(docs_src_dir)+1:]
+        #     for dirname in dirnames:
+        #         dest_path = os.path.join(docs_dest_dir, relpath, dirname)
+        #         if not os.path.exists(dest_path):
+        #             os.mkdir(dest_path)
+        #     for filename in filenames:
+        #         if filename.endswith("~"):
+        #             continue
+        #         src_path = os.path.join(dirpath, filename)
+        #         dest_path = os.path.join(docs_dest_dir, relpath, filename)
+        #         shutil.copyfile(src_path, dest_path)
+        #         if filename.endswith(".md"):
+        #             # parse and JSONify the API docs
+        #             docs_md = open(src_path, 'r').read()
+        #             docs_parsed = list(apiparser.parse_hunks(docs_md))
+        #             docs_json = json.dumps(docs_parsed)
+        #             open(dest_path + ".json", "w").write(docs_json)
+        #             # write the HTML div files
+        #             docs_div = apirenderer.json_to_div(docs_parsed, src_path)
+        #             open(dest_path + ".div.html", "w").write(docs_div)
+        #             # write the standalone HTML files
+        #             docs_html = apirenderer.json_to_html(docs_parsed, src_path)
+        #             open(dest_path + ".html", "w").write(docs_html)

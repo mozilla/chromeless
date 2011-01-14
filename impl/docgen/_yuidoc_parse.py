@@ -12,7 +12,7 @@ version: 1.0.0b1
 ''' A class to parse Javadoc style comments out of javascript to document 
     an API. It is designed to parse one module at a time ''' 
 import os, re, simplejson, string, sys, pprint, logging, logging.config
-import const
+import _const as const
 from cStringIO import StringIO 
 from optparse import OptionParser
 
@@ -26,7 +26,7 @@ log = logging.getLogger('yuidoc.parse')
 
 class DocParser(object):
 
-    def __init__(self, inputdirs, outputdir, outputfile, extension, version):
+    def __init__(self, inputmap, extensions):
 
         def _mkdir(newdir):
             if os.path.isdir(newdir): pass
@@ -39,27 +39,24 @@ class DocParser(object):
                 if tail: os.mkdir(newdir)
 
         def parseFile(path, file):
+            print "parsing file %s" % file
             f=open(os.path.join(path, file))
             fileStr=StringIO(f.read()).getvalue()
-            log.info("parsing " + file)
+            #log.info("parsing " + file)
             # add a file marker token so the parser can keep track of what is in what file
             content = "\n/** @%s %s \n*/" % (const.FILE_MARKER, file)
-
-            # copy
-            out = open(os.path.join(self.outputdir, file), "w")
-            out.writelines(fileStr)
-            out.close()
-
+            content += "\n/** @%s %s \n*/" % (const.SUBMODULE, file)
             return content + fileStr
 
         def parseDir(path):
+            print "parsing dir %s" % path
             subdirs = []
             dircontent = ""
             for i in os.listdir(path):
                 fullname = os.path.join(path, i)
                 if os.path.isdir(fullname):
                     subdirs.append(fullname)
-                elif i.lower().endswith(self.extension):
+                elif any([i.lower().endswith(suffix) for suffix in extensions]):
                     dircontent += parseFile(path, i)
 
             for i in subdirs:
@@ -72,24 +69,13 @@ class DocParser(object):
         # the remainder of the file with the comment blocks removed
         # self.stripped = ""
 
-        majorVersion = version[:1]
-
-        try:
-            majorVersion = int(majorVersion)
-        except:
-            majorVersion = 3
-
         # Dictionary of parsed data
         self.data = { 
-            const.VERSION: version, 
-            const.MAJOR_VERSION: majorVersion, 
             const.CLASS_MAP: {}, 
             const.MODULES: {} }
 
-        self.inputdirs = inputdirs
-        self.outputdir = os.path.abspath(outputdir)
-        _mkdir(self.outputdir)
-        self.extension = extension
+        self.inputmap = inputmap
+        self.extensions = extensions
         self.script=""
         self.subModName = False
         self.deferredModuleClasses=[]
@@ -99,28 +85,32 @@ class DocParser(object):
 
         log.info("-------------------------------------------------------")
 
-        for i in inputdirs: 
+        print "num keys: %d" % len(inputmap.keys())
+
+        for i in inputmap.keys(): 
+            print "digging into: " + i
+            path = inputmap[i]
+            print i
+            print path
             self.currentClass     = ""
             self.currentNamespace = ""
-            self.currentModule    = ""
+            self.currentModule    = i
             self.currentFile      = ""
             self.blocks = []
             self.matches = []
-            path = os.path.abspath(i)
+            path = os.path.abspath(path)
+            modTag = "\n/** @module %s \n*/" % i
             self.script = parseDir(path)
             self.extract()
 
             # log.info("\n\n%s:\n\n%s\n" %("matches", unicode(self.matches)))
 
+            # define modules automagically
+            self.parse(self.tokenize("@module " + i))
+            print "found %d matches: " % len(self.matches)
             for match in self.matches:
                 self.parse(self.tokenize(match))
-            
-
-        out = open(os.path.join(self.outputdir, outputfile), "w")
-
-        out.writelines(simplejson.dumps(self.data))
-        out.close()
-
+            print "done parsing matches"
 
     def getClassName(self, classString, namespace):
         shortName = classString.replace(namespace + ".", "")
@@ -731,20 +721,8 @@ the attribute\'s value has changed.' %(config),
                     }
 
                 # auto-document '[configname]ChangeEvent' and 'before[Configname]ChangeEvent'
-                if self.data[const.MAJOR_VERSION] > 2:
-
-                    eventname = config + const.CHANGEEVENT
-                    c[const.EVENTS][eventname] = get3xAttEvt(eventname, config)
-
-                else:
-
-                    eventname = config + const.CHANGEEVENT
-                    desc = "Fires when the value for the configuration attribute '" + config + "' changes."
-                    c[const.EVENTS][eventname] = getAttEvt(eventname, desc)
-
-                    eventname = const.BEFORE + config[0].upper() + config[1:] + const.CHANGEEVENT
-                    desc = "Fires before the value for the configuration attribute '" + config + "' changes." + " Return false to cancel the attribute change."
-                    c[const.EVENTS][eventname] = getAttEvt(eventname, desc)
+                eventname = config + const.CHANGEEVENT
+                c[const.EVENTS][eventname] = get3xAttEvt(eventname, config)
 
                 
             else:
@@ -784,7 +762,7 @@ def main():
     optparser = OptionParser("usage: %prog [options] inputdir1 inputdir2 etc")
     optparser.set_defaults(outputdir="out",
                            outputfile="parsed.json", 
-                           extension=".js",
+                           extensions=[".js"],
                            version=""
                            )
     optparser.add_option( "-o", "--outputdir",
