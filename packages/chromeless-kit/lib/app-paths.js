@@ -55,3 +55,6 @@ exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;
 exports.pluginsDir =  dirsvc.get("APlugns", Ci.nsIFile).path;
 exports.curDir =  dirsvc.get("CurProcD", Ci.nsIFile).path;
 exports.tmpDir =  dirsvc.get("TmpD", Ci.nsIFile).path;
+
+// we don't need this anymore, let the GC do its job (eventually)
+dirsvc = null;
