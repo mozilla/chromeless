@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <title>Cloud9</title>
+        <style type="text/css" media="screen">
+            body {
+                background-color: #999;
+                padding: 0;
+                margin: 0;
+            }
+            
+            #browserContentArea {
+                display: -moz-box;
+                border: 1px solid green;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+            }
+            
+            #contentFrame {
+                border: 1px solid blue;
+                -moz-box-flex: 1;
+                width: 100%;
+                height: 100%;
+            }
+            
+            #outer {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                display: -moz-box;
+                -moz-box-orient: vertical;
+            }
+        </style>
+        <script type="text/javascript" src="async.js"></script>
+        <script type="text/javascript">
+            var ui = require("ui");
+            
+            function inspect(o) {
+                var s = "";
+                for (var i in o)
+                    s += i + ": " + o[i] + "\n";
+                console.log(s);
+            }
+
+            function start() {}
+            
+            function showNotification() {
+                ui.showNotification("Sample Notification", "Contents of the notification!", null, true, function() {
+                    alert("Notification clicked!");
+                }, function() {
+                    alert("Notification hidden!");
+                });
+            }
+            
+            function beep() {
+                ui.beep();
+            }
+            
+            function playSound() {
+                var sound = document.location.href.replace("index.html", "") + "office_lobby.mp3";
+                ui.playSound(sound);
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <div id="outer">
+            <div id="browserContentArea">
+                <button onclick="showNotification()">Display notification</button>
+                <button onclick="beep()">Sound a BEEP</button>
+                <button onclick="playSound()">Play an MP3</button>
+            </div>
+        </div>
+    </body>
+</html>
