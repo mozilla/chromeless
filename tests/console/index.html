@@ -4,12 +4,13 @@
   </head>
   <body >
    <p> 
-	I will write something to the console. 
+	   I will write something to the console. 
    </p>
    <script type="text/javascript" charset="utf-8">
-    var console = require("plain-text-console");
-    dump =  new console.PlainTextConsole();
-    dump.log('hello world');
+     var plainTextConsole = require("plain-text-console");
+     dump =  new plainTextConsole.PlainTextConsole();
+     dump.log('hello world to the real console');
+     console.log('hello world to the console.log');
    </script>
   </body>
 </html>
