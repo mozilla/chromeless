@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body >
+   <p> 
+	   Files on your desktop:
+     <ol id="files">
+     </ol>  
+   </p>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    var desktopPath = require('app-paths').desktopDir; 
+    var filesOnDesktop = require('file').list(desktopPath);
+    var orderedList = document.getElementById('files');
+    for (x in filesOnDesktop) {
+      var e = document.createElement('li');
+      e.innerHTML = filesOnDesktop[x];
+      orderedList.appendChild(e);
+    }
+  </script>
+</html>
+
