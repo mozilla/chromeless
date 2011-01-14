@@ -52,9 +52,6 @@ const OPEN_FLAGS = {
   EXCL: 0x80
 };
 
-var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
-             .getService(Ci.nsIProperties);
-
 function MozFile(path) {
   var file = Cc['@mozilla.org/file/local;1']
              .createInstance(Ci.nsILocalFile);
