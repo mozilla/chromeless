@@ -80,12 +80,16 @@ exports.main = function main(options) {
             require: requireForBrowser,
             console: {
                 log: function(x) { console.log(x); }
+            },
+            exit: function() {
+                console.log("window.exit() called...");
+                appWindow.close();
             }
         }
     });
 };
 
 exports.onUnload = function (reason) {
-  console.log("Trying to kill app window");
-  appWindow.close();
+    console.log("shutting down.");
+    appWindow.close();
 };
