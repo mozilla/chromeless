@@ -1,0 +1,184 @@
+<html>
+    <head>
+        <title>Cloud9</title>
+        <style type="text/css" media="screen">
+            body {
+                background-color: #999;
+                padding: 0;
+                margin: 0;
+            }
+            
+            #browserContentArea {
+                -moz-box-orient: vertical;
+                display: -moz-box;
+                -moz-box-flex: 1;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+            }
+            
+            #outer {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                display: -moz-box;
+                -moz-box-orient: vertical;
+            }
+            
+            #listDraggables {
+                display: -moz-inline-box;
+                -moz-box-flex: 1;
+            }
+            
+            #listContents {
+                display: -moz-inline-box;
+                -moz-box-flex: 1;
+            }
+            
+            #txtContents {
+                display: -moz-inline-box;
+                -moz-box-flex: 2;
+                height: 350px;
+            }
+            
+            div.draggable {
+                background-color: #77b8b8;
+                cursor: pointer;
+                width: 130px;
+                height: 30px;
+                padding: 4px;
+                margin: 4px;
+                overflow: visible;
+                text-align: center;
+                vertical-align: middle;
+            }
+            
+            div.draggable img {
+                width: 48px;
+                height: 48px;
+            }
+            
+            div.draggable:hover {
+                background-color: #336262;
+            }
+        </style>
+        <script type="text/javascript" src="async.js"></script>
+        <script type="text/javascript">
+            function inspect(o) {
+                var s = "";
+                for (var i in o)
+                    s += i + ": " + o[i] + "\n";
+                console.log(s);
+            }
+
+            function cancel(e) {
+                if (e.preventDefault) e.preventDefault(); // required by FF + Safari
+                //  e.dataTransfer.dropEffect = "copy"; // tells the browser what drop effect is allowed here
+                return false; // required by IE
+            }
+            
+            function entities(s) {
+                var e = {
+                    '"' : "&quot;",
+                    "&" : "&amp;",
+                    "<" : "&lt;",
+                    ">" : "&gt;"
+                };
+                return s.replace(/["&<>]/g, function (m) {
+                    return e[m];
+                });
+            }
+            
+            function handleDragStart(e) {
+                console.log("Starting drag...");
+                e.dataTransfer.setData("text/plain", "Text to drag");
+                var image = document.createElement("img");
+                image.setAttribute("border", "0");
+                image.setAttribute("src", "images/question.png");
+                image.setAttribute("width", "48");
+                image.setAttribute("height", "48");
+                e.dataTransfer.setDragImage(image, 25, 25);
+            }
+            
+            function handleDragEnd(e) {
+                //inspect(e);
+            }
+            
+            function start() {
+                var drop = document.getElementById("browserContentArea"),
+                    list = document.getElementById("listContents"),
+                    text = document.getElementById("txtContents");
+                
+                // setup draggables:
+                var dragItems = document.querySelectorAll("[draggable=true]");
+
+                for (var i = 0, l = dragItems.length; i < l; ++i) {
+                    dragItems[i].addEventListener("dragstart", handleDragStart, true);
+                    dragItems[i].addEventListener("dragend", handleDragEnd, true);
+                }
+                
+                // Tells the browser that we *can* drop on this target
+                drop.addEventListener("dragover", cancel, false);
+                drop.addEventListener("dragenter", cancel, false);
+                
+                drop.addEventListener("drop", function (e) {
+                    if (e.preventDefault) e.preventDefault(); // stops the browser from redirecting off to the text.
+
+                    if (!e.dataTransfer.types.contains("application/x-moz-file"))
+                        return;
+                    
+                    // clear out the original text
+                    list.innerHTML = "<ul></ul>";
+                    
+                    var li = document.createElement("li");
+                    
+                    li.innerHTML = "<ul>";
+                    
+                    async.forEach(e.dataTransfer.types, function (type, nextType) {
+                        if (type != "application/x-moz-file")
+                            return nextType();
+
+                        async.forEach(e.dataTransfer.files, function(file, nextFile) {
+                            li.innerHTML += "<li>" + entities(file.name) + "</li>"
+                                         +  "<li>" + file.size + " bytes</li>"
+
+                            var reader = new FileReader();
+                            reader.onloadend = function(e) {
+                                text.value = e.target.result;
+                                //li.innerHTML += '<li>' + entities(e.target.result + ' (content-type: ' + type + ')') + '</li>';
+                                nextFile();
+                            };
+                            reader.readAsText(file);
+                        }, nextType);
+                    }, function() {
+                        li.innerHTML += "</ul>";
+                        
+                        var ul = list.getElementsByTagName("ul")[0];
+                        
+                        if (ul.firstChild) {
+                            ul.insertBefore(li, ul.firstChild);
+                        } else {
+                            ul.appendChild(li);
+                        }
+                    });
+                    
+                    return false;
+                }, false);
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <div id="outer">
+            <div id="browserContentArea">
+                <div id="listDraggables">
+                    <div class="draggable" draggable="true">
+                        <img src="images/cool.png" border="0" alt="Drag Me!" />
+                        Drag Me!
+                    </div>
+                </div>
+                <div id="listContents"> </div>
+                <textarea id="txtContents"></textarea>
+            </div>
+        </div>
+    </body>
+</html>
