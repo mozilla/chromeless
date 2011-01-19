@@ -82,12 +82,14 @@ def generate_static_docs(env_root, output_dir):
     # and every doc-like thing in the package
     pkgs = { }
     for pkg_name, pkg in pkg_cfg['packages'].items():
-        pkgs[pkg_name] = pkg.root_dir
-    print pkgs
+        pkgs[pkg_name] = pkg.root_dir 
 
     from _yuidoc_parse import DocParser 
     dp = DocParser(pkgs, ( "jsdoc", "js" ));
-    print json.dumps(dp.data, indent=4)
+    apidocs = json.dumps(dp.data)
+    apidocs_path = os.path.join(output_dir, "packages", 'apidocs.json')
+    open(apidocs_path, 'w').write(apidocs)
+
 
         # dest_dir = os.path.join(output_dir, "packages", pkg_name)
         # if not os.path.exists(dest_dir):

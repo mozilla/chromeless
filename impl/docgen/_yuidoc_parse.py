@@ -16,12 +16,8 @@ import _const as const
 from cStringIO import StringIO 
 from optparse import OptionParser
 
-try:
-    logging.config.fileConfig(os.path.join(sys.path[0], const.LOGCONFIG))
-except:
-    pass
-
-log = logging.getLogger('yuidoc.parse')
+logging.basicConfig(level=logging.WARN)
+log = logging.getLogger('chromeless')
 
 
 class DocParser(object):
@@ -39,17 +35,21 @@ class DocParser(object):
                 if tail: os.mkdir(newdir)
 
         def parseFile(path, file):
-            print "parsing file %s" % file
             f=open(os.path.join(path, file))
             fileStr=StringIO(f.read()).getvalue()
-            #log.info("parsing " + file)
+            log.info("parsing " + file)
             # add a file marker token so the parser can keep track of what is in what file
             content = "\n/** @%s %s \n*/" % (const.FILE_MARKER, file)
-            content += "\n/** @%s %s \n*/" % (const.SUBMODULE, file)
+            # automatically define a "class" for each file ending in .js
+            if file.endswith(".js"):
+                log.info("create a class for this bitch: %s" % file)
+                class_name = file[:len(file)-len(".js")]
+                content += ('/** @class %s */' % class_name)
+
             return content + fileStr
 
         def parseDir(path):
-            print "parsing dir %s" % path
+            log.debug("parsing dir %s" % path)
             subdirs = []
             dircontent = ""
             for i in os.listdir(path):
@@ -85,13 +85,8 @@ class DocParser(object):
 
         log.info("-------------------------------------------------------")
 
-        print "num keys: %d" % len(inputmap.keys())
-
         for i in inputmap.keys(): 
-            print "digging into: " + i
             path = inputmap[i]
-            print i
-            print path
             self.currentClass     = ""
             self.currentNamespace = ""
             self.currentModule    = i
@@ -99,7 +94,6 @@ class DocParser(object):
             self.blocks = []
             self.matches = []
             path = os.path.abspath(path)
-            modTag = "\n/** @module %s \n*/" % i
             self.script = parseDir(path)
             self.extract()
 
@@ -107,10 +101,8 @@ class DocParser(object):
 
             # define modules automagically
             self.parse(self.tokenize("@module " + i))
-            print "found %d matches: " % len(self.matches)
             for match in self.matches:
                 self.parse(self.tokenize(match))
-            print "done parsing matches"
 
     def getClassName(self, classString, namespace):
         shortName = classString.replace(namespace + ".", "")
@@ -335,7 +327,7 @@ class DocParser(object):
             return dict
 
         def defineClass(name):
-            # log.info("\nDefine Class: " + name + ", " + self.currentModule)
+            log.info("\nDefine Class: " + name + ", " + self.currentModule)
             if self.currentNamespace:
                 shortName, longName = self.getClassName(name, self.currentNamespace)
             else:
@@ -529,7 +521,7 @@ it was empty" % token
 
             if const.MODULE in tokenMap:
                 target, tokenMap = parseModule(tokenMap)
-            
+
             if self.subModName:
                 self.data[const.MODULES][self.currentModule][const.SUBDATA][self.subModName][const.NAME] = longName
                 if const.DESCRIPTION in tokenMap:

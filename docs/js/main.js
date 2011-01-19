@@ -2,6 +2,7 @@ function startApp(jQuery, window) {
   var $ = jQuery;
   var document = window.document;
   var packages = null;
+  var apidocs = null;
   var currentHash = "";
   var shouldFadeAndScroll = true;
 
@@ -9,6 +10,13 @@ function startApp(jQuery, window) {
   const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
   const DOCUMENT_TITLE_ROOT = "Chromeless Documentation";
+
+  function sortedKeys(obj) {
+    var arr = [];
+    for (e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
+    arr.sort();
+    return arr;
+  }
 
   function checkHash() {
     var hash = window.location.hash;
@@ -38,6 +46,9 @@ function startApp(jQuery, window) {
       showGuideDetail(parts[1]);
       documentName = $('#' + parts[1]).text();
       break;
+    case "apiref":
+      showAPIRef(parts[1]);
+      documentName = $('#' + parts[1]).text();
     }
     if (documentName.length > 0) {
       document.title = documentName + " - " + DOCUMENT_TITLE_ROOT;
@@ -220,46 +231,119 @@ function startApp(jQuery, window) {
   }
 
   function showModuleDetail(pkgName, moduleName) {
-    var pkg = packages[pkgName];
+    var module = apidocs.classmap[moduleName];
     var entry = $("#templates .module-detail").clone();
-    var source_filename = "docs/" + moduleName + ".md";
-    var json_filename = "docs/" + moduleName + ".md.json";
-    var div_filename = "docs/" + moduleName + ".md.div";
 
-    entry.find(".name").text(moduleName);
+    entry.find(".package a")
+      .text(module.module)
+      .attr('href', "#package/" + pkgName);
+
+    entry.find(".module").text(module.shortname);
+
+    var converter = new Showdown.converter();
+
+    if (module.description) {
+      entry.find(".docs").html(converter.makeHtml(module.description));      
+    }
+
+    if (module.methods) {
+      var funcs = entry.find(".functions");
+      $("<h2>Functions</h2>").appendTo(funcs);
+
+      var sortedMethods = sortedKeys(module.methods);
+      for (var f in sortedMethods) {
+        var name = sortedMethods[f];
+        f = module.methods[name];
+        var func = $("#templates .one-function").clone();        
+        func.find(".varname").text(moduleName);
+        func.find(".funcName").text(name);
+        if (!f.description) {
+          f.description = "no documentation available for this function";
+        }
+        func.find(".description").html(converter.makeHtml(f.description));
+        
+        // extract return type.  hokey, yuidoc parser should do this for us
+        try {
+          var rv = f.returns.match(/^{([^}]*)}/)[1]
+          func.find(".returnValue").text(rv);
+        } catch(e) {
+          func.find(".type").remove();
+        }
+
+        // insert params into invocation line and documentation
+        if (f.params && f.params.length) {
+          var ps = func.find(".params");
+          for (var i = 0; i < f.params.length; i++) {
+            var param = f.params[i];
+            console.log(param);
+            var p = $('<span><span class="type"></span><span class="name"></span></span>');
+            if (param.type) p.find(".type").text(param.type);
+            else p.find(".type").remove();
+            if (param.name) p.find(".name").text(param.name);
+            console.log(ps.length);
+            if (ps.children().size()) $("<span>, </span>").appendTo(ps);
+            ps.append(p);
+          }
+        }
+        
+        func.appendTo(funcs);
+      }
+      funcs.appendTo(entry);
+      
+    }
+
+    if (module.properties) {
+      var props = entry.find(".properties");
+      $("<h2>Properties</h2>").appendTo(props);
+      for (var p in module.properties) {
+        var name = p;
+        p = module.properties[p];
+        var prop = $("#templates .one-property").clone();        
+        if (p.type) prop.find(".type").text(p.type);
+        prop.find(".varname").text(moduleName);
+        prop.find(".propName").text(name);
+        if (!p.description) {
+          p.description = "no documentation available for this property";
+        }
+        prop.find(".description").text(p.description);
+        prop.appendTo(props);
+      }
+      props.appendTo(entry);
+    }
+
     queueMainContent(entry, function () {
-      renderPkgAPI(pkg, source_filename, div_filename, entry.find(".docs"),
-                   function(please_display) {
-                     showMainContent(entry, pkgFileUrl(pkg, source_filename));
-                   });
+      showMainContent(entry);
     });
   }
 
   function listModules(pkg, entry) {
     var libs = [];
     if (pkg.lib) {
-      pkg.lib.forEach(
-        function(libDir) {
-          var modules = getModules(pkg.files[libDir]);
-          libs = libs.concat(modules);
-        });
+      for (var x in pkg.lib) { 
+        libDir = pkg.lib[x];
+        var modules = getModules(pkg.files[libDir]);
+        libs = libs.concat(modules);
+      }
     }
     var modules = entry.find(".modules");
     if (libs.length > 0) {
       modules.text("");
     }
     libs.sort();
-    libs.forEach(
-      function(moduleName) {
-        var module = $('<li class="module"></li>');
-        var hash = "#module/" + pkg.name + "/" + moduleName;
-        $('<a target="_self"></a>')
-          .attr("href", hash)
-          .text(moduleName)
-          .appendTo(module);
-        modules.append(module);
-        modules.append(document.createTextNode(' '));
-      });
+    var count = 0;
+    for (var x in libs) {
+      moduleName = libs[x];
+      var module = $('<li class="module"></li>');
+      var hash = "#module/" + pkg.name + "/" + moduleName;
+      $('<a target="_self"></a>')
+        .attr("href", hash)
+        .text(moduleName)
+        .appendTo(module);
+      modules.append(module);
+      modules.append(document.createTextNode(' '));
+      count++
+    }
+    return count;
   }
 
   function showPackageDetail(name) {
@@ -310,41 +394,17 @@ function startApp(jQuery, window) {
     finalizeSetup();
   }
 
+  function processAPIDocs(apidocsJSON) {
+    apidocs = apidocsJSON;
+    finalizeSetup();
+  }
+
   function processPackages(packagesJSON) {
     packages = packagesJSON;
-
-    var sortedPackages = [];
-    for (name in packages)
-      sortedPackages.push(name);
-    sortedPackages.sort();
-    var entries = $("<div></div>");
-    var lowLevelEntries = $("<div></div>");
-    $("#package-reference").after(entries);
-    $("#more-packages").after(lowLevelEntries);
-    entries.hide();
-    lowLevelEntries.hide();
-    sortedPackages.forEach(
-      function(name) {
-        var pkg = packages[name];
-        var entry = $("#templates .package-entry").clone();
-        var hash = "#package/" + pkg.name;
-        entry.find(".name").text(pkg.name).attr("href", hash);
-        entry.find(".description").text(pkg.description);
-
-        listModules(pkg, entry);
-
-        if ('keywords' in pkg && pkg.keywords.indexOf &&
-            pkg.keywords.indexOf('jetpack-low-level') != -1)
-          lowLevelEntries.append(entry);
-        else
-          entries.append(entry);
-      });
-    entries.fadeIn();
-    $("#more-packages").one('click', function() {
-      $(this).hide();
-      lowLevelEntries.slideDown();
-    });
-    finalizeSetup();
+    jQuery.ajax({url: "packages/apidocs.json",
+                 dataType: "json",
+                 success: processAPIDocs,
+                 error: onPackageError});
   }
 
   function finalizeSetup() {
@@ -387,6 +447,32 @@ function startApp(jQuery, window) {
     });
   }
 
+  function showAPIRef(name) {
+      if (name === 'api-by-package') {
+        var entry = $("#templates .package-list").clone();
+        var sortedPackageNames = sortedKeys(packages);
+        for (p in sortedPackageNames) {
+          p = sortedPackageNames[p];
+          var item = $("#templates .one-package").clone();
+          item.find(".name a")
+            .text(packages[p].name)
+            .attr('href', "#package/" + packages[p].name);
+          item.find(".description").text(packages[p].description);
+          var count = listModules(packages[p], item);
+          item.find(".number").text(count);
+          item.appendTo(entry);
+        }
+        queueMainContent(entry, function () {
+          showMainContent(entry);
+        });
+      } else if (name === 'api-full-listing') {
+        var entry = $("#templates .full-api").clone();
+        queueMainContent(entry, function () {
+          showMainContent(entry);
+        });
+      }
+  }
+
   function linkDeveloperGuide() {
     $(".link").each(
       function() {
@@ -400,52 +486,23 @@ function startApp(jQuery, window) {
       });
   }
 
-  var isPingWorking = true;
-
-  function sendIdlePing() {
-    jQuery.ajax({url:"api/idle",
-                 // This success function won't actually get called
-                 // for a really long time because it's a long poll.
-                 success: scheduleNextIdlePing,
-                 error: function(req) {
-                   if (req.status == 501 || req.status == 404)
-                     // The server either isn't implementing idle, or
-                     // we're being served from static files; just bail
-                     // and stop pinging this API endpoint.
-                     return;
-                   if (id) {
-                     window.clearTimeout(id);
-                     id = null;
-                     if (isPingWorking) {
-                       isPingWorking = false;
-                       $("#cannot-ping").slideDown();
-                     }
-                   }
-                   scheduleNextIdlePing();
-                 }});
-    var id = window.setTimeout(
+  function linkAPIReference() {
+    $(".apiref").each(
       function() {
-        // This is our "real" success function: basically, if we
-        // haven't received an error in IDLE_PING_DELAY ms, then
-        // we should assume success and hide the #cannot-ping
-        // element.
-        if (id) {
-          id = null;
-          if (!isPingWorking) {
-            isPingWorking = true;
-            $("#cannot-ping").slideUp();
-          }
+        if ($(this).children().length == 0) {
+          var hash = "#apiref/" + $(this).attr("id");
+          var hyperlink = $('<a target="_self"></a>');
+          hyperlink.attr("href", hash).text($(this).text());
+          $(this).text("");
+          $(this).append(hyperlink);
         }
-      }, IDLE_PING_DELAY);
+      });
   }
 
-  function scheduleNextIdlePing() {
-    window.setTimeout(sendIdlePing, IDLE_PING_DELAY);
-  }
-
-  if (window.location.protocol != "file:")
-    scheduleNextIdlePing();
   linkDeveloperGuide();
+  linkAPIReference();
+
+  // XXX: we should combine output into a single json file
   jQuery.ajax({url: "packages/index.json",
                dataType: "json",
                success: processPackages,

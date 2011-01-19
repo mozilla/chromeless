@@ -7,6 +7,10 @@
         href="css/base.css" />
   <link rel="stylesheet" type="text/css" media="all"
         href="css/apidocs.css" />
+  <link rel="stylesheet" type="text/css" media="all"
+        href="css/packages.css" />
+  <link rel="stylesheet" type="text/css" media="all"
+        href="css/moduledocs.css" />
   <title>Chromeless Documentation</title>
 </head>
 <body>
@@ -32,19 +36,19 @@
       <ol id="examples">
       </ol>
 
-      <div class="section" id="reference-header">Reference</div>
+      <div class="section" id="reference-header">API</div>
       <ol id="reference">
+        <li class="apiref" id="api-by-package">Browse</li>
+        <li class="apiref" id="api-full-listing">Full Reference</li>
       </ol>
 
       <div class="section" id="appendices-header">Appendices</div>
       <ol id="appendices">
         <li class="link" id="credits">Credits</li>
+        <li class="link" id="3psw">Third Party Software</li>
       </ol>
 
     </div>
-
-    <h2 id="package-reference">Package Reference</h2>
-    <div id="more-packages">More...</div>
   </div>
   <div id="main-content">
     <div id="right-column">
@@ -62,7 +66,32 @@
 </div>
 <div id="templates">
   <div class="module-detail">
-    <div class="docs"><p>This module has no documentation.</p></div>
+    <div class="name">
+      <span class="package"><a target="_self"></a></span> / <span class="module"></span>
+    </div>
+    <div class="example">
+      <code> var <span class="module"></span> = require('<span class="module"></span>');</code>
+    </div>
+    <div class="docs">
+    </div>
+    <div class="properties">
+    </div>
+    <div class="functions">
+    </div>
+  </div>
+  <div class="one-property">
+    <div class="invocation">
+      <span class="type"></span><span class="varname"></span>.<span class="propName"></span>
+    </div>
+    <div class="description">
+    </div>
+  </div>
+  <div class="one-function">
+    <div class="invocation">
+      <span class="returnValue type"></span><span class="varname"></span>.<span class="funcName"></span>(<span class="params"></span>)
+    </div>
+    <div class="description">
+    </div>
   </div>
   <div class="module-parse-error">
     <h1>Parse Error in <span class="filename"></span></h1>
@@ -102,6 +131,18 @@
     <a class="name" target="_self"></a>
     <span class="description"></span>
     <ul class="modules"></ul>
+  </div>
+  <div class="package-list">
+    <h1 class="name">Available Packages</h1>
+  </div>
+  <div class="one-package">
+    <span class="name"><a target="_self"></a></span>
+    --
+    <span class="description"></span> <span class="numfiles">(<span class="number"></span> modules)</span>
+    <ul class="modules"></ul>
+  </div>
+  <div class="full-api">
+    <h1 class="name">Chromeless API Reference</h1>
   </div>
 </div>
 </body>

@@ -36,9 +36,9 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * @module app-paths
- * Returns various paths that are pertinent to the currently running application and logged in
- * user.
+ * @class app-paths
+ * @description Returns various paths that are pertinent to the
+ * currently running application and logged in user.
  */
 
 const {Cc,Ci,Cr} = require("chrome");
@@ -47,20 +47,24 @@ var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
              .getService(Ci.nsIProperties);
 
 /**
- * @property profileDir The currently active "profile", which is a user specific directory where
+ * @property profileDir
+ * @description The currently active "profile", which is a user specific directory where
  * user scoped application data may reside, such as preferences and history.
  */
 exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
 
 /**
- * @property browserCodeDir The path where the *browser code* of the application resides on disk.
+ * @property browserCodeDir
+ * @description The path where the *browser code* of the application resides on disk.
  * For an installed application this usually be nested inside of a system wide installation path.
  * This path should be expected to be read-only.
  */
 exports.browserCodeDir = dirsvc.get("resource:app", Ci.nsIFile).path;
 
 /**
- * @property startMenuDir On windows, the path to the start menu where shortcuts may be installed.
+ * @property startMenuDir
+ * @type string
+ * @description On windows, the path to the start menu where shortcuts may be installed.
  * `null` on other platforms.
  */
 try {
@@ -70,33 +74,39 @@ try {
     exports.startMenuDir = null;
 }
 /**
- * @property desktopDir The path to the user's desktop.
+ * @property desktopDir
+ * @description The path to the user's desktop.
  */
 exports.desktopDir = dirsvc.get("Desk", Ci.nsIFile).path;
 
 /**
- * @property userHomeDir The path to the currently logged in user's home directory.
+ * @property userHomeDir
+ * @description The path to the currently logged in user's home directory.
  */
 exports.userHomeDir =  dirsvc.get("Home", Ci.nsIFile).path;
 
 /**
- * @property profileRootDir XXX I don't know.
+ * @property profileRootDir
+ * @description XXX I don't know.
  */
 exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;
 
 /**
- * @property pluginsDir The path to the directory where web plugins will be loaded for this
+ * @property pluginsDir
+ * @description The path to the directory where web plugins will be loaded for this
  * application. 
  */
 exports.pluginsDir =  dirsvc.get("APlugns", Ci.nsIFile).path;
 
 /**
- * @property curDir The current working directory of the chromeless application process.
+ * @property curDir
+ * @description The current working directory of the chromeless application process.
  */
 exports.curDir =  dirsvc.get("CurProcD", Ci.nsIFile).path;
 
 /**
- * @property curDir The system's temporary directory.
+ * @property curDir
+ * @description The system's temporary directory.
  */
 exports.tmpDir =  dirsvc.get("TmpD", Ci.nsIFile).path;
 

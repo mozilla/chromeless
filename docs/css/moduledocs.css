@@ -1,0 +1,35 @@
+.module-detail > div.name {
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.module-detail .package a {
+    color: gray;
+}
+
+.module-detail .example {
+    width: 100%;
+    background: #ccc;
+    padding: .5em;
+    background-color: .2em;
+    margin: 2em;
+}
+
+.one-property .invocation, .one-function .invocation {
+    font-family: Monaco, Lucida Console, monospace;
+    font-size: 1.1em;
+}
+
+.one-property .invocation .propName, .one-function .invocation .funcName {
+    font-weight: bold;
+}
+
+.one-property .description, .one-function .description {
+    margin: 1em;
+}
+
+.one-function .type {
+    color: gray;
+    margin-right: .65em;
+}
+

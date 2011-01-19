@@ -38,8 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * @module file
- * The `file` module provides access to the local filesystem.
+ * @class file
+ * @description Provides access to the local filesystem.
  */
 
 const {Cc,Ci,Cr} = require("chrome");
@@ -91,7 +91,7 @@ function ensureExists(file) {
 
 /**
  * @function exists
- * Returns true if a file exists at the given path and false otherwise.
+ * @description Returns true if a file exists at the given path and false otherwise.
  * @param path {string} The path to a file.
  * @returns {boolean} True if the file exists and false otherwise.
  */
@@ -101,7 +101,7 @@ exports.exists = function exists(filename) {
 
 /**
  * @function stat
- * Given a path returns metadata about the file or directory.  If the path is a symlink it
+ * @description Given a path returns metadata about the file or directory.  If the path is a symlink it
  * will be dereferenced and information about the underlying file will be returned
  * @param path {string} The path to a file.
  * @returns {object} Returns an object with information about the file, including
@@ -135,7 +135,7 @@ exports.stat = function stat(filename) {
 
 /**
  * @function read
- * Opens a file in text mode and returns a string containing its entire contents.
+ * @description Opens a file in text mode and returns a string containing its entire contents.
  * @param path {string}
  * The path of the file to read.
  * @returns {string}
@@ -155,7 +155,7 @@ exports.read = function read(filename) {
 
 /**
  * @function join
- * Takes a variable number of strings, joins them on the file system's path
+ * @description Takes a variable number of strings, joins them on the file system's path
  * separator, and returns the result.
  * @param ... {strings}
  * A variable number of strings to join.
@@ -186,7 +186,7 @@ exports.dirname = function dirname(path) {
 
 /**
  * @function list
- * Returns an array of file names in the given directory.
+ * @description Returns an array of file names in the given directory.
  * @param path {string}
  * The path of the directory.
  * @returns {array}
@@ -209,7 +209,7 @@ exports.list = function list(path) {
 
 /** 
  * @function open
- *   Returns a stream providing access to the contents of a file.
+ * @description Returns a stream providing access to the contents of a file.
  * @param path {string}
  *   The path of the file to open.
  * @param [mode] {string}
@@ -269,7 +269,7 @@ exports.open = function open(filename, mode) {
 
 /**
  * @function remove
- *  Removes a file from the file system.  To remove directories, use `rmdir`.
+ * @description Removes a file from the file system.  To remove directories, use `rmdir`.
  * @param path {string}
  *   The path of the file to remove.
  */
@@ -281,7 +281,7 @@ exports.remove = function remove(path) {
 
 /**
  * @function
- *  Makes a new directory named by the given path.  Any subdirectories that do not
+ * @description  Makes a new directory named by the given path.  Any subdirectories that do not
  *  exist are also created.  `mkpath` can be called multiple times on the same
  *  path.
  * @param path {string}
@@ -297,7 +297,7 @@ exports.mkpath = function mkpath(path) {
 
 /** 
  * @function rmdir
- *   Removes a directory from the file system.  If the directory is not empty, an
+ * @description   Removes a directory from the file system.  If the directory is not empty, an
  *   exception is thrown.
  * @param path {string}
  *   The path of the directory to remove.
