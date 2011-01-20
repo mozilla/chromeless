@@ -273,9 +273,11 @@ function startApp(jQuery, window) {
         // insert params into invocation line and documentation
         if (f.params && f.params.length) {
           var ps = func.find(".params");
+          var fpd = func.find(".paramdoc");
           for (var i = 0; i < f.params.length; i++) {
             var param = f.params[i];
             console.log(param);
+            // add parameter to invocation line
             var p = $('<span><span class="type"></span><span class="name"></span></span>');
             if (param.type) p.find(".type").text(param.type);
             else p.find(".type").remove();
@@ -283,6 +285,17 @@ function startApp(jQuery, window) {
             console.log(ps.length);
             if (ps.children().size()) $("<span>, </span>").appendTo(ps);
             ps.append(p);
+
+            // separate parameter documentation
+            var p = $('<tr><td class="paramname"></td><td class="paramdesc"></td></tr>');
+            p.find(".paramname").text(param.name);
+            var desc = "";
+            if (param.type) desc += "(" + param.type + ") ";
+            if (param.description) desc = converter.makeHtml(desc + param.description);
+            else desc += "no documentation available";
+            p.find(".paramdesc").html(desc);
+            console.log(param);
+            fpd.append(p);
           }
         }
         
@@ -300,6 +313,7 @@ function startApp(jQuery, window) {
         p = module.properties[p];
         var prop = $("#templates .one-property").clone();        
         if (p.type) prop.find(".type").text(p.type);
+        else prop.find(".type").remove();
         prop.find(".varname").text(moduleName);
         prop.find(".propName").text(name);
         if (!p.description) {

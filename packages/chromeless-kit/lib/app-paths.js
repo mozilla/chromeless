@@ -50,6 +50,7 @@ var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
  * @property profileDir
  * @description The currently active "profile", which is a user specific directory where
  * user scoped application data may reside, such as preferences and history.
+ * @type string
  */
 exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
 
@@ -58,6 +59,7 @@ exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
  * @description The path where the *browser code* of the application resides on disk.
  * For an installed application this usually be nested inside of a system wide installation path.
  * This path should be expected to be read-only.
+ * @type string
  */
 exports.browserCodeDir = dirsvc.get("resource:app", Ci.nsIFile).path;
 
@@ -76,18 +78,21 @@ try {
 /**
  * @property desktopDir
  * @description The path to the user's desktop.
+ * @type string
  */
 exports.desktopDir = dirsvc.get("Desk", Ci.nsIFile).path;
 
 /**
  * @property userHomeDir
  * @description The path to the currently logged in user's home directory.
+ * @type string
  */
 exports.userHomeDir =  dirsvc.get("Home", Ci.nsIFile).path;
 
 /**
  * @property profileRootDir
  * @description XXX I don't know.
+ * @type string
  */
 exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;
 
@@ -95,18 +100,21 @@ exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;
  * @property pluginsDir
  * @description The path to the directory where web plugins will be loaded for this
  * application. 
+ * @type string
  */
 exports.pluginsDir =  dirsvc.get("APlugns", Ci.nsIFile).path;
 
 /**
  * @property curDir
  * @description The current working directory of the chromeless application process.
+ * @type string
  */
 exports.curDir =  dirsvc.get("CurProcD", Ci.nsIFile).path;
 
 /**
  * @property curDir
  * @description The system's temporary directory.
+ * @type string
  */
 exports.tmpDir =  dirsvc.get("TmpD", Ci.nsIFile).path;
 

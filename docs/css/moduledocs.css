@@ -24,12 +24,31 @@
     font-weight: bold;
 }
 
-.one-property .description, .one-function .description {
+.one-property .description, .one-function .description, .one-function .paramdoc {
     margin: 1em;
 }
 
-.one-function .type {
+.one-function {
+    margin-bottom: 1em;
+}
+
+.one-function .type, .one-property .type {
     color: gray;
     margin-right: .65em;
 }
 
+.one-function .paramdoc, .paramdoc tr, .one-function .paramdoc td {
+    border: none;
+    padding: 0;
+    vertical-align: top;
+}
+
+.one-function .paramdoc td p {
+    margin-bottom: .7em;
+}
+
+.one-function .paramdoc .paramname {
+    font-size: 1.1em;
+    font-style: italic;
+    width: 6em;
+}
