@@ -51,7 +51,6 @@ class DocExtractor():
         # line after the doc block.  designed for commonjs modules (note the 'exports').
         self.findExports_pat = re.compile('^\s*exports\.(\w+)\s+', re.M);
 
-
         self.descriptionMarker = "@description"
         self.functionMarker = "@function"
         self.moduleMarker = "@module"
@@ -92,6 +91,7 @@ class DocExtractor():
         if not self._isMarker(cur):
             raise RuntimeError("Found text where marker was expected: %s" % (cur[:20] + "..."))
         elif cur == self.moduleMarker:
+            currentObj["type"] = 'module'
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt describes the module
@@ -100,15 +100,15 @@ class DocExtractor():
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.functionMarker, (cur[:20] + "...")))
                 if m.group(1):
-                    data["module"] = name
+                    currentObj["name"] = m.group(1)
                 else:
                     if m.group(2):
-                        data["module"] = m.group(2)
+                        currentObj["name"] = m.group(2)
                     if m.group(3):
-                        if 'desc' in data:
-                            data['desc'] = data['desc'] + "\n\n" + m.group(3)
+                        if 'desc' in currentObj:
+                            currentObj['desc'] = currentObj['desc'] + "\n\n" + m.group(3)
                         else:
-                            data['desc'] = m.group(3)
+                            currentObj['desc'] = m.group(3)
             else:
                 # in this case we'll have to guess the function name
                 pass
@@ -255,7 +255,10 @@ class DocExtractor():
         # or func/prop description
         if not self._isMarker(tokens[0]):
             if firstBlock:
-                data['desc'] = tokens.pop(0)
+                # in the first block case we'll guess that this
+                # is module doc
+                curObj['type'] = 'module'
+                curObj['desc'] = tokens.pop(0)
             else:
                 curObj['desc'] = tokens.pop(0)
 
@@ -282,6 +285,13 @@ class DocExtractor():
                 if 'properties' not in data:
                     data['properties'] = [ ]
                 data['properties'].append(curObj)
+            elif curObj['type'] == 'module':
+                if 'desc' in curObj:
+                    if 'desc' in data:
+                        curObj['desc'] = "\n\n".join(data['desc'], curObj['desc'])
+                    data['desc'] = curObj['desc']
+                if 'name' in curObj:
+                    data['module'] = curObj['name']
             else:
                 raise RuntimeError("I don't know what to do with a: %s" % curObj['type'])
 

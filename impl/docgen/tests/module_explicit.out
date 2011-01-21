@@ -1,0 +1,5 @@
+{
+  "desc": "In YUIDOC like fashion, it's completely allowable to have\nthe first comment block of a file provide module level\ndocumentation.  One may also...\n\n... use the <at>description tag to explicitly provide module level\ndocumentation, or they may combine both mechanisms (top commenting\n(and desc tag).  In the latter case, docs will be concatenated\nwith a couple newlines.", 
+  "filename": "tests/module_explicit.js", 
+  "module": "module_explicit_renamed"
+}
