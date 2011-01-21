@@ -103,11 +103,14 @@ exports.exists = function exists(filename) {
  * will be dereferenced and information about the underlying file will be returned
  *
  * @param path {string} The path to a file.
- * @returns {object} Returns an object with information about the file, including
- *     * `type` - either 'file' or 'directory'
- *     * `numEntries` - (for directories), the number of files in the directory.
- *     * `size` - (for files), the size of the file in bytes.
- *     * `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.
+ * @returns {object}
+ * Returns an object with information about the file, including:
+ *
+ *  + `type` - either 'file' or 'directory'
+ *  + `numEntries` - (for directories), the number of files in the directory.
+ *  + `size` - (for files), the size of the file in bytes.
+ *  + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.
+ *
  * @throws if file doesn't exist
  */
 exports.stat = function stat(filename) {
