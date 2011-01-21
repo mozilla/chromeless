@@ -1,7 +1,6 @@
 function startApp(jQuery, window) {
   var $ = jQuery;
   var document = window.document;
-  var packages = null;
   var apidocs = null;
   var currentHash = "";
   var shouldFadeAndScroll = true;
@@ -231,42 +230,46 @@ function startApp(jQuery, window) {
   }
 
   function showModuleDetail(pkgName, moduleName) {
-    var module = apidocs.classmap[moduleName];
+    console.log(pkgName);
+    console.log(moduleName);
+    var module = apidocs[pkgName].modules[moduleName];
     var entry = $("#templates .module-detail").clone();
 
     entry.find(".package a")
-      .text(module.module)
+      .text(pkgName)
       .attr('href', "#package/" + pkgName);
 
-    entry.find(".module").text(module.shortname);
+    entry.find(".module").text(module.module);
 
     var converter = new Showdown.converter();
 
-    if (module.description) {
-      entry.find(".docs").html(converter.makeHtml(module.description));      
+    if (module.desc) {
+      entry.find(".docs").html(converter.makeHtml(module.desc));
     }
 
-    if (module.methods) {
+    if (module.functions) {
       var funcs = entry.find(".functions");
       $("<h2>Functions</h2>").appendTo(funcs);
 
-      var sortedMethods = sortedKeys(module.methods);
+      var nameToIx = {};
+      for (var i = 0; i < module.functions.length; i++) {
+        nameToIx[module.functions[i].name] = i;
+      }
+      var sortedMethods = sortedKeys(nameToIx);
       for (var f in sortedMethods) {
         var name = sortedMethods[f];
-        f = module.methods[name];
-        var func = $("#templates .one-function").clone();        
+        f = module.functions[nameToIx[name]];
+        var func = $("#templates .one-function").clone();
         func.find(".varname").text(moduleName);
         func.find(".funcName").text(name);
-        if (!f.description) {
-          f.description = "no documentation available for this function";
+        if (!f.desc) {
+          f.desc = "no documentation available for this function";
         }
-        func.find(".description").html(converter.makeHtml(f.description));
-        
-        // extract return type.  hokey, yuidoc parser should do this for us
-        try {
-          var rv = f.returns.match(/^{([^}]*)}/)[1]
-          func.find(".returnValue").text(rv);
-        } catch(e) {
+        func.find(".description").html(converter.makeHtml(f.desc));
+
+        if (f.returns && f.returns.type) {
+          func.find(".returnValue").text(f.returns.type);
+        } else {
           func.find(".type").remove();
         }
 
@@ -276,13 +279,11 @@ function startApp(jQuery, window) {
           var fpd = func.find(".paramdoc");
           for (var i = 0; i < f.params.length; i++) {
             var param = f.params[i];
-            console.log(param);
             // add parameter to invocation line
             var p = $('<span><span class="type"></span><span class="name"></span></span>');
             if (param.type) p.find(".type").text(param.type);
             else p.find(".type").remove();
             if (param.name) p.find(".name").text(param.name);
-            console.log(ps.length);
             if (ps.children().size()) $("<span>, </span>").appendTo(ps);
             ps.append(p);
 
@@ -291,10 +292,9 @@ function startApp(jQuery, window) {
             p.find(".paramname").text(param.name);
             var desc = "";
             if (param.type) desc += "(" + param.type + ") ";
-            if (param.description) desc = converter.makeHtml(desc + param.description);
+            if (param.desc) desc = converter.makeHtml(desc + param.desc);
             else desc += "no documentation available";
             p.find(".paramdesc").html(desc);
-            console.log(param);
             fpd.append(p);
           }
         }
@@ -308,18 +308,25 @@ function startApp(jQuery, window) {
     if (module.properties) {
       var props = entry.find(".properties");
       $("<h2>Properties</h2>").appendTo(props);
-      for (var p in module.properties) {
-        var name = p;
-        p = module.properties[p];
+
+      var nameToIx = {};
+      for (var i = 0; i < module.properties.length; i++) {
+        nameToIx[module.properties[i].name] = i;
+      }
+      var sortedProps = sortedKeys(nameToIx);
+
+      for (var p in sortedProps) {
+        var name = sortedProps[p];
+        p = module.properties[nameToIx[name]];
         var prop = $("#templates .one-property").clone();        
         if (p.type) prop.find(".type").text(p.type);
         else prop.find(".type").remove();
         prop.find(".varname").text(moduleName);
         prop.find(".propName").text(name);
-        if (!p.description) {
-          p.description = "no documentation available for this property";
+        if (!p.desc) {
+          p.desc = "no documentation available for this property";
         }
-        prop.find(".description").text(p.description);
+        prop.find(".description").text(p.desc);
         prop.appendTo(props);
       }
       props.appendTo(entry);
@@ -332,18 +339,13 @@ function startApp(jQuery, window) {
 
   function listModules(pkg, entry) {
     var libs = [];
-    if (pkg.lib) {
-      for (var x in pkg.lib) { 
-        libDir = pkg.lib[x];
-        var modules = getModules(pkg.files[libDir]);
-        libs = libs.concat(modules);
-      }
+    if (pkg.modules) {
+      libs = sortedKeys(pkg.modules);
     }
     var modules = entry.find(".modules");
     if (libs.length > 0) {
       modules.text("");
     }
-    libs.sort();
     var count = 0;
     for (var x in libs) {
       moduleName = libs[x];
@@ -413,14 +415,6 @@ function startApp(jQuery, window) {
     finalizeSetup();
   }
 
-  function processPackages(packagesJSON) {
-    packages = packagesJSON;
-    jQuery.ajax({url: "packages/apidocs.json",
-                 dataType: "json",
-                 success: processAPIDocs,
-                 error: onPackageError});
-  }
-
   function finalizeSetup() {
     checkHash();
     if ("onhashchange" in window) {
@@ -464,15 +458,15 @@ function startApp(jQuery, window) {
   function showAPIRef(name) {
       if (name === 'api-by-package') {
         var entry = $("#templates .package-list").clone();
-        var sortedPackageNames = sortedKeys(packages);
+        var sortedPackageNames = sortedKeys(apidocs);
         for (p in sortedPackageNames) {
           p = sortedPackageNames[p];
           var item = $("#templates .one-package").clone();
           item.find(".name a")
-            .text(packages[p].name)
-            .attr('href', "#package/" + packages[p].name);
-          item.find(".description").text(packages[p].description);
-          var count = listModules(packages[p], item);
+            .text(apidocs[p].name)
+            .attr('href', "#package/" + apidocs[p].name);
+          item.find(".description").text(apidocs[p].desc);
+          var count = listModules(apidocs[p], item);
           item.find(".number").text(count);
           item.appendTo(entry);
         }
@@ -516,10 +510,10 @@ function startApp(jQuery, window) {
   linkDeveloperGuide();
   linkAPIReference();
 
-  // XXX: we should combine output into a single json file
-  jQuery.ajax({url: "packages/index.json",
+  // pull in the json formated api doc database
+  jQuery.ajax({url: "packages/apidocs.json",
                dataType: "json",
-               success: processPackages,
+               success: processAPIDocs,
                error: onPackageError});
 
   $("a[href]").live("click", function () {

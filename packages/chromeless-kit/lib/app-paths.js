@@ -36,9 +36,8 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * @class app-paths
- * @description Returns various paths that are pertinent to the
- * currently running application and logged in user.
+ * Returns various paths that are pertinent to the currently running
+ * application and logged in user.
  */
 
 const {Cc,Ci,Cr} = require("chrome");
@@ -47,9 +46,9 @@ var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
              .getService(Ci.nsIProperties);
 
 /**
- * @property profileDir
- * @description The currently active "profile", which is a user specific directory where
+ * The currently active *profile*, which is a user specific directory where
  * user scoped application data may reside, such as preferences and history.
+ *
  * @type string
  */
 exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;

@@ -1,26 +1,18 @@
 import os
-import time
-import threading
-import socket
-import urllib
-import urllib2
 import copy
 import shutil
-import traceback
+import re
 
 from cuddlefish import packaging
 from cuddlefish import Bunch
-from cuddlefish import apiparser
-from cuddlefish import apirenderer
 import simplejson as json
 
+from _extract import DocExtractor
 
 class DocGen(object):
-    def __init__(self, env_root, expose_privileged_api=True):
+    def __init__(self, env_root):
         self.env_root = env_root
-        self.expose_privileged_api = expose_privileged_api
         self.root = os.path.join(self.env_root, 'docs')
-        self.index = os.path.join(self.root, 'index.html')
 
     def _get_files_in_dir(self, path):
         data = {}
@@ -54,8 +46,7 @@ class DocGen(object):
 
 
 def generate_static_docs(env_root, output_dir):
-    docgen = DocGen(env_root=env_root,
-                    expose_privileged_api=False)
+    docgen = DocGen(env_root=env_root)
 
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
@@ -69,65 +60,45 @@ def generate_static_docs(env_root, output_dir):
             if n.endswith("~"):
                 os.unlink(os.path.join(dirpath, n))
 
-    # then copy docs from each package
+    # Now let's generate documentation
     os.mkdir(os.path.join(output_dir, "packages"))
-
     pkg_cfg = docgen.build_pkg_cfg()
 
-    # starting with the (generated) index file
-    index = json.dumps(docgen.build_pkg_index(pkg_cfg))
-    index_path = os.path.join(output_dir, "packages", 'index.json')
-    open(index_path, 'w').write(index)
+    # iterate through each package and generate docs for it
+    extractor = DocExtractor()
 
-    # and every doc-like thing in the package
-    pkgs = { }
+    apidocs = {}
     for pkg_name, pkg in pkg_cfg['packages'].items():
-        pkgs[pkg_name] = pkg.root_dir 
+        path = os.path.join(pkg.root_dir, "lib")
+        oldPath = os.getcwd()
+        os.chdir(path)
 
-    from _yuidoc_parse import DocParser 
-    dp = DocParser(pkgs, ( "jsdoc", "js" ));
-    apidocs = json.dumps(dp.data)
+        apidocs[pkg_name] = {
+            "name": pkg_name
+            }
+        if 'description' in pkg:
+            apidocs[pkg_name]['desc'] = pkg.description 
+
+        # now we'll walk the lib dir and generate documenation for each module
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                if f[-3:] == ".js":
+                    # now get the lib/ relative path of this module
+                    relpath = os.path.join(root,f)[len(path)+1:]
+                    try:
+                        moduleDocs = extractor.extract(relpath)
+                        # insert module documentation into the great map
+                        if not 'modules' in apidocs[pkg_name]:
+                            apidocs[pkg_name]['modules'] = { }
+
+                        apidocs[pkg_name]['modules'][moduleDocs['module']] = moduleDocs
+
+                    except Exception as e:
+                        print "WARNING, skipping module due to malformed docs (%s/lib/%s):" % (pkg_name, relpath)
+                        print "  %s" % re.sub("\n", " ", str(e))
+                        pass
+
+        os.chdir(oldPath)
+
     apidocs_path = os.path.join(output_dir, "packages", 'apidocs.json')
-    open(apidocs_path, 'w').write(apidocs)
-
-
-        # dest_dir = os.path.join(output_dir, "packages", pkg_name)
-        # if not os.path.exists(dest_dir):
-        #     os.mkdir(dest_dir)
-
-        # # TODO: This is a DRY violation from main.js. We should
-        # # really move the common logic/names to cuddlefish.packaging.
-        # src_readme = os.path.join(src_dir, "README.md")
-        # if os.path.exists(src_readme):
-        #     shutil.copyfile(src_readme,
-        #                     os.path.join(dest_dir, "README.md"))
-
-        # docs_src_dir = os.path.join(src_dir, "docs")
-        # docs_dest_dir = os.path.join(dest_dir, "docs")
-        # if not os.path.exists(docs_dest_dir):
-        #     os.mkdir(docs_dest_dir)
-        # for (dirpath, dirnames, filenames) in os.walk(docs_src_dir):
-        #     assert dirpath.startswith(docs_src_dir)
-        #     relpath = dirpath[len(docs_src_dir)+1:]
-        #     for dirname in dirnames:
-        #         dest_path = os.path.join(docs_dest_dir, relpath, dirname)
-        #         if not os.path.exists(dest_path):
-        #             os.mkdir(dest_path)
-        #     for filename in filenames:
-        #         if filename.endswith("~"):
-        #             continue
-        #         src_path = os.path.join(dirpath, filename)
-        #         dest_path = os.path.join(docs_dest_dir, relpath, filename)
-        #         shutil.copyfile(src_path, dest_path)
-        #         if filename.endswith(".md"):
-        #             # parse and JSONify the API docs
-        #             docs_md = open(src_path, 'r').read()
-        #             docs_parsed = list(apiparser.parse_hunks(docs_md))
-        #             docs_json = json.dumps(docs_parsed)
-        #             open(dest_path + ".json", "w").write(docs_json)
-        #             # write the HTML div files
-        #             docs_div = apirenderer.json_to_div(docs_parsed, src_path)
-        #             open(dest_path + ".div.html", "w").write(docs_div)
-        #             # write the standalone HTML files
-        #             docs_html = apirenderer.json_to_html(docs_parsed, src_path)
-        #             open(dest_path + ".html", "w").write(docs_html)
+    open(apidocs_path, 'w').write(json.dumps(apidocs, sort_keys=True, indent=2))
