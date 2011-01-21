@@ -1,0 +1,11 @@
+{
+  "desc": "A module with a basic function definition in it,\nbut without explicit mention of the name of the function\ngiven the heuristic name guessing stuff.", 
+  "filename": "tests/function_omit_name.js", 
+  "functions": [
+    {
+      "desc": "a function which converts URLs to filenames", 
+      "name": "toFilename"
+    }
+  ], 
+  "module": "function_omit_name"
+}

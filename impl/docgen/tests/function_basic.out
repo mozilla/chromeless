@@ -1,0 +1,11 @@
+{
+  "desc": "A module with a basic function definition in it", 
+  "filename": "tests/function_basic.js", 
+  "functions": [
+    {
+      "desc": "a function which converts URLs to filenames", 
+      "name": "toFilename"
+    }
+  ], 
+  "module": "function_basic"
+}
