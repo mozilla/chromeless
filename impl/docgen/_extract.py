@@ -281,8 +281,12 @@ class DocExtractor():
                     data['functions'] = [ ]
                 data['functions'].append(curObj)
             elif curObj['type'] == 'property':
-                curObj['type'] = curObj['dataType']
-                del curObj['dataType']
+                if 'dataType' in curObj:
+                    curObj['type'] = curObj['dataType']
+                    del curObj['dataType']
+                else:
+                    del curObj['type']
+
                 if 'properties' not in data:
                     data['properties'] = [ ]
                 data['properties'].append(curObj)
