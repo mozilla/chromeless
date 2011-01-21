@@ -349,7 +349,10 @@ if __name__ == '__main__':
     for test in tests:
         print "Running '%s'..." % test
         failed = False
-        got = de.extract(os.path.join(testDir, test + ".js"))
+        try:
+            got = de.extract(os.path.join(testDir, test + ".js"))
+        except Exception as e:
+            got = { "exception_type": str(type(e)), "args": e.args }
         want = None
         try:
             with open(os.path.join(testDir, test + ".out"), "r") as f:
