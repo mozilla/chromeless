@@ -282,6 +282,9 @@ function startApp(jQuery, window) {
           } else {
             func.find(".returnvalue").remove();
           }
+        } else {
+          func.find(".invocation .type").remove();
+          func.find(".returnvalue").remove();
         }
 
         // insert params into invocation line and documentation
