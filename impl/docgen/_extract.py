@@ -34,7 +34,7 @@ class DocExtractor():
 
         # parse a parameter :
         #   @property <name> <{type}> <description>
-        self.param_pat = re.compile('^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$', re.S);
+        self.param_pat = re.compile('^(?:([\w.\[\]]+)\s*(?:{(\w+)})|(?:{(\w+)})\s*([\w.\[\]]+))\s*(.*)$', re.S);
 
         # parse properties, similar to params but we also support a type
         #   @property [name] [{type}]
@@ -177,10 +177,11 @@ class DocExtractor():
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.paramMarker, (nxt[:20] + "...")))
                 p = { }
-                p['name'] = m.group(1)
-                if m.group(2):
-                    p['type'] = m.group(2)
-                p['desc'] = m.group(3)
+                # We allow name type or type name
+                p['name'] = m.group(1) if m.group(1) else m.group(4)
+                if m.group(2) or m.group(3):
+                    p['type'] = m.group(2) if m.group(2) else m.group(3)
+                p['desc'] = m.group(5)
 
                 if not 'params' in currentObj:
                     currentObj['params'] = [ ]
