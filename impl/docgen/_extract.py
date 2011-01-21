@@ -34,7 +34,7 @@ class DocExtractor():
 
         # parse a parameter :
         #   @property <name> <{type}> <description>
-        self.param_pat = re.compile('^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$', re.S); 
+        self.param_pat = re.compile('^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$', re.S);
 
         # parse properties, similar to params but we also support a type
         #   @property [name] [{type}]
@@ -49,7 +49,7 @@ class DocExtractor():
 
         # heuristic type and name guessing stuff, applied to the first non-whitespace
         # line after the doc block.  designed for commonjs modules (note the 'exports').
-        self.findExports_pat = re.compile('^\s*exports\.(\w+)\s+', re.M);
+        self.findExports_pat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
 
         self.descriptionMarker = "@description"
         self.functionMarker = "@function"
@@ -232,7 +232,7 @@ class DocExtractor():
         guessedName = None
         guessedType = None
         # first let's see if there's an exports statement after the block
-        m = self.findExports_pat.match(context)
+        m = self.findExports_pat.search(context)
         if m:
             guessedName = m.group(1)
 
@@ -339,9 +339,17 @@ if __name__ == '__main__':
 
     # create a list of the tests to run (.js files in tests/ dir)
     tests = []
-    for x in os.listdir(testDir):
-        if x.endswith(".js"):
-            tests.append(x[:-3])
+
+    # allow invoker on command line to pass in tests explicitly for
+    # selective testing
+    if len (sys.argv) > 1:
+        for x in sys.argv[1:]:
+            x = os.path.basename(x)
+            tests.append(x[:-3] if x.endswith(".js") else x)
+    else:
+        for x in os.listdir(testDir):
+            if x.endswith(".js"):
+                tests.append(x[:-3])
 
     # now run!
     ranTests = 0
@@ -373,7 +381,6 @@ if __name__ == '__main__':
 
             # diff does poorly when newlines are ommitted, let's fix that
             diff = [l if len(l) > 0 and l[-1] == '\n' else l + "\n" for l in diff]
-
             diffText = '    '.join(diff)
 
             if len(diffText):
