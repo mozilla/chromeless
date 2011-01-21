@@ -267,10 +267,21 @@ function startApp(jQuery, window) {
         }
         func.find(".description").html(converter.makeHtml(f.desc));
 
-        if (f.returns && f.returns.type) {
-          func.find(".returnValue").text(f.returns.type);
-        } else {
-          func.find(".type").remove();
+        // insert return value docs
+        if (f.returns) {
+          if (f.returns.type) {
+            func.find(".invocation .type").text(f.returns.type);
+          } else {
+            func.find(".invocation .type").remove();
+          }
+          
+          if (f.returns.desc) {
+            console.log(f.returns.desc);
+            console.log(converter.makeHtml(f.returns.desc));
+            func.find(".returndoc").html(converter.makeHtml(f.returns.desc));
+          } else {
+            func.find(".returnvalue").remove();
+          }
         }
 
         // insert params into invocation line and documentation
@@ -297,6 +308,9 @@ function startApp(jQuery, window) {
             p.find(".paramdesc").html(desc);
             fpd.append(p);
           }
+        } else {
+          // remove the parameters section entirely if they don't exist
+          func.find(".parameters").remove();
         }
         
         func.appendTo(funcs);

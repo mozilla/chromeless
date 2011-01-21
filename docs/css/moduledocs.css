@@ -24,7 +24,7 @@
     font-weight: bold;
 }
 
-.one-property .description, .one-function .description, .one-function .paramdoc {
+.one-property .description, .one-function .description, .one-function .parameters, .one-function .returnvalue {
     margin: 1em;
 }
 
@@ -35,6 +35,10 @@
 .one-function .type, .one-property .type {
     color: gray;
     margin-right: .65em;
+}
+
+.one-function .paramdoc {
+    margin-top: 1em;
 }
 
 .one-function .paramdoc, .paramdoc tr, .one-function .paramdoc td {
@@ -51,4 +55,8 @@
     font-size: 1.1em;
     font-style: italic;
     width: 6em;
+}
+
+.one-function .littleheading {
+    font-weight: bold;
 }
