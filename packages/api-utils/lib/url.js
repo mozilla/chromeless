@@ -34,6 +34,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * A URL parsing library and some utility routines to convert between native
+ * paths.  Includes a class representation of URLs that may be used in
+ * many other modules.
+ */
+
 const {Cc,Ci,Cr} = require("chrome");
 
 var ios = Cc['@mozilla.org/network/io-service;1']
@@ -66,6 +72,13 @@ function resolveResourceURI(uri) {
   return resolved;
 }
 
+
+/**
+ * build a URL from a filename.
+ * @param {string} path The path to convert.
+ * @returns {string}
+ * A string representation of a URL.
+ */
 let fromFilename = exports.fromFilename = function fromFilename(path) {
   var file = Cc['@mozilla.org/file/local;1']
              .createInstance(Ci.nsILocalFile);
@@ -73,6 +86,12 @@ let fromFilename = exports.fromFilename = function fromFilename(path) {
   return ios.newFileURI(file).spec;
 };
 
+/**
+ * build a filename from a url.
+ * @param {string} path The path to convert.
+ * @returns {string}
+ * A string representation of a URL.
+ */
 let toFilename = exports.toFilename = function toFilename(url) {
   var uri = newURI(url);
   if (uri.scheme == "resource")
@@ -93,6 +112,24 @@ let toFilename = exports.toFilename = function toFilename(url) {
   throw new Error("cannot map to filename: " + url);
 };
 
+/**
+ * @class URL
+ * A class which parses a url and exposes its various
+ * components separately.
+ */
+
+/**
+ * @constructor
+ *
+ * The URL constructor creates an object that represents a URL,  verifying that
+ * the provided string is a valid URL in the process.
+ *
+ * @param {string} url A string to be converted into a URL.
+ * @param {string} [base] A optional base url which will be used to resolve the
+ * `url` argument if it is a relative url.
+ *
+ * @throws If `source` is not a valid URI.
+ */
 function URL(url, base) {
   var uri = newURI(url, base);
 
@@ -111,11 +148,39 @@ function URL(url, base) {
     port = uri.port == -1 ? null : uri.port;
   } catch (e if e.result == Cr.NS_ERROR_FAILURE) {}
 
+
+  /**
+   * @property {string} scheme
+   * The name of the protocol in the URL.
+   */
   this.__defineGetter__("scheme", function() uri.scheme);
+  /**
+   * @property {string} userPass
+   * The username:password part of the URL, `null` if not present.
+   */
   this.__defineGetter__("userPass", function() userPass);
+  /**
+   * @property {string} host
+   * The host of the URL, `null` if not present.
+   */
   this.__defineGetter__("host", function() host);
+  /**
+   * @property {integer} port
+   * The port number of the URL, `null` if none was specified.
+   */
   this.__defineGetter__("port", function() port);
+  /**
+   * @property {string} path
+   * The path component of the URL.
+   */
   this.__defineGetter__("path", function() uri.path);
+  /**
+   * @function toString
+   * Converts a URL to a string.
+   * @returns {string} The URL as a string.
+   */
   this.toString = function URL_toString() uri.spec;
 };
+/** @endclass */
+
 exports.URL = require("api-utils").publicConstructor(URL);
