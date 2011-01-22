@@ -53,6 +53,7 @@ class DocExtractor():
 
         self.classMarker = "@class"
         self.classEndMarker = "@endclass"
+        self.constructorMarker = "@constructor"
         self.descriptionMarker = "@description"
         self.functionMarker = "@function"
         self.moduleMarker = "@module"
@@ -65,6 +66,7 @@ class DocExtractor():
         self.markers = (
             self.classMarker,
             self.classEndMarker,
+            self.constructorMarker,
             self.descriptionMarker,
             self.functionMarker,
             self.moduleMarker,
@@ -150,6 +152,15 @@ class DocExtractor():
 
         elif cur == self.classEndMarker:
             currentObj["type"] = 'classend'
+
+        elif cur == self.constructorMarker:
+            currentObj["type"] = 'constructor'
+            if self._currentClass == None:
+                raise RuntimeError("A constructor must be defined inside a class")
+
+            nxt = self._popNonMarker(tokens)
+            if nxt:
+                currentObj['desc'] = nxt
 
         elif cur == self.functionMarker:
             currentObj["type"] = 'function'
@@ -323,6 +334,9 @@ class DocExtractor():
                 if 'functions' not in data:
                     data['functions'] = [ ]
                 data['functions'].append(curObj)
+            elif curObj['type'] == 'constructor':
+                del curObj['type']
+                data['constructor'] = curObj
             elif curObj['type'] == 'property':
                 if 'dataType' in curObj:
                     curObj['type'] = curObj['dataType']
