@@ -286,7 +286,6 @@ class DocExtractor():
         # data structure rather than the global data structure for
         # this module
         if not self._currentClass == None:
-            print "IN CLASS: %s" % str(self._currentClass)
             data = data['classes'][self._currentClass]
 
         tokens = self.tokenize_pat.split(block)
