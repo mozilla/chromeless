@@ -1,0 +1,100 @@
+{
+  "classes": [
+    {
+      "constructor": {
+        "desc": "The URL constructor creates an object that represents a URL,  verifying that\nthe provided string is a valid URL in the process.", 
+        "params": [
+          {
+            "desc": "A string to be converted into a URL.", 
+            "name": "url", 
+            "type": "string"
+          }, 
+          {
+            "desc": "A optional base url which will be used to resolve the\n`url` argument if it is a relative url.", 
+            "name": "[base]", 
+            "type": "string"
+          }
+        ], 
+        "throws": [
+          {
+            "desc": "If `source` is not a valid URI."
+          }
+        ]
+      }, 
+      "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+      "functions": [
+        {
+          "desc": "Converts a URL to a string.", 
+          "name": "toString", 
+          "returns": {
+            "desc": "The URL as a string.", 
+            "type": "string"
+          }
+        }
+      ], 
+      "name": "URL", 
+      "properties": [
+        {
+          "desc": "The name of the protocol in the URL.", 
+          "name": "scheme", 
+          "type": "string"
+        }, 
+        {
+          "desc": "The username:password part of the URL, `null` if not present.", 
+          "name": "userPass", 
+          "type": "string"
+        }, 
+        {
+          "desc": "The host of the URL, `null` if not present.", 
+          "name": "host", 
+          "type": "string"
+        }, 
+        {
+          "desc": "The port number of the URL, `null` if none was specified.", 
+          "name": "port", 
+          "type": "integer"
+        }, 
+        {
+          "desc": "The path component of the URL.", 
+          "name": "path", 
+          "type": "string"
+        }
+      ]
+    }
+  ], 
+  "desc": "A test of generation of documentation for nested classes.\n(test data is a snapshot in time of a url parsing library)", 
+  "filename": "tests/class_full.js", 
+  "functions": [
+    {
+      "desc": "build a URL from a filename.", 
+      "name": "fromPath", 
+      "params": [
+        {
+          "desc": "The path to convert.", 
+          "name": "path", 
+          "type": "string"
+        }
+      ], 
+      "returns": {
+        "desc": "A string representation of a URL.", 
+        "type": "string"
+      }
+    }, 
+    {
+      "desc": "build a filename from a url.", 
+      "name": "toPath", 
+      "params": [
+        {
+          "desc": "The path to convert.", 
+          "name": "path", 
+          "type": "string"
+        }
+      ], 
+      "returns": {
+        "desc": "A string representation of a URL.", 
+        "type": "string"
+      }
+    }
+  ], 
+  "module": "class_full"
+}

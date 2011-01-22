@@ -14,6 +14,7 @@
       "name": "URL", 
       "properties": [
         {
+          "desc": "the foo property of my url classs", 
           "name": "foo", 
           "type": "string"
         }

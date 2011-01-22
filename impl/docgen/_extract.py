@@ -33,7 +33,7 @@ class DocExtractor():
         self.function_pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
 
         # parse a parameter :
-        #   @property <name> <{type}> <description>
+        #   @param <name> <{type}> <description>
         self.param_pat = re.compile('^(?:([\w.\[\]]+)\s*(?:{(\w+)})|(?:{(\w+)})\s*([\w.\[\]]+))\s*(.*)$', re.S);
 
         # parse properties, similar to params but we also support a type
@@ -192,9 +192,9 @@ class DocExtractor():
                                        (self.propertyMarker, (nxt[:20] + "...")))
                 if m.group(1):
                     currentObj['name'] = m.group(1)
-                elif m.group(2):
-                    currentObj['type'] = m.group(2)
-                elif m.group(3):
+                if m.group(2):
+                    currentObj['dataType'] = m.group(2)
+                if m.group(3):
                     currentObj['desc'] = m.group(3)
             else:
                 # in this case we'll have to guess the function name
