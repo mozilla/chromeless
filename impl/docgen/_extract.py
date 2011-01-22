@@ -285,7 +285,8 @@ class DocExtractor():
         # when we're parsing classes, we'll modify the classes nested
         # data structure rather than the global data structure for
         # this module
-        if self._currentClass:
+        if not self._currentClass == None:
+            print "IN CLASS: %s" % str(self._currentClass)
             data = data['classes'][self._currentClass]
 
         tokens = self.tokenize_pat.split(block)

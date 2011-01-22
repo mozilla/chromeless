@@ -1,0 +1,26 @@
+{
+  "classes": [
+    {
+      "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+      "functions": [
+        {
+          "desc": "the foo property of my url classs", 
+          "name": "bar", 
+          "returns": {
+            "desc": "nothing"
+          }
+        }
+      ], 
+      "name": "URL", 
+      "properties": [
+        {
+          "name": "foo", 
+          "type": "string"
+        }
+      ]
+    }
+  ], 
+  "desc": "A simple class with a property and a function", 
+  "filename": "tests/class_with_prop_and_func.js", 
+  "module": "class_with_prop_and_func"
+}
