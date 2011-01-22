@@ -296,6 +296,7 @@ class DocExtractor():
         # when we're parsing classes, we'll modify the classes nested
         # data structure rather than the global data structure for
         # this module
+        globalData = data
         if not self._currentClass == None:
             data = data['classes'][self._currentClass]
 
@@ -362,11 +363,11 @@ class DocExtractor():
 
             elif curObj['type'] == 'module':
                 if 'desc' in curObj:
-                    if 'desc' in data:
-                        curObj['desc'] = "\n\n".join(data['desc'], curObj['desc'])
-                    data['desc'] = curObj['desc']
+                    if 'desc' in globalData:
+                        curObj['desc'] = "\n\n".join([globalData['desc'], curObj['desc']])
+                    globalData['desc'] = curObj['desc']
                 if 'name' in curObj:
-                    data['module'] = curObj['name']
+                    globalData['module'] = curObj['name']
             else:
                 raise RuntimeError("I don't know what to do with a: %s" % curObj['type'])
 
