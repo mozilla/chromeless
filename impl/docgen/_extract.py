@@ -27,7 +27,7 @@ class DocExtractor():
         # is a space before it
         self.tokenize_pat = re.compile('^\s?(@\w\w*)', re.M);
 
-        # parse a function:
+        # parse a function/module/class:
         # @function [name]
         # [description]
         self.function_pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
@@ -51,6 +51,8 @@ class DocExtractor():
         # line after the doc block.  designed for commonjs modules (note the 'exports').
         self.findExports_pat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
 
+        self.classMarker = "@class"
+        self.classEndMarker = "@endclass"
         self.descriptionMarker = "@description"
         self.functionMarker = "@function"
         self.moduleMarker = "@module"
@@ -61,6 +63,8 @@ class DocExtractor():
         self.typeMarker = "@type"
 
         self.markers = (
+            self.classMarker,
+            self.classEndMarker,
             self.descriptionMarker,
             self.functionMarker,
             self.moduleMarker,
@@ -70,6 +74,11 @@ class DocExtractor():
             self.throwsMarker,
             self.typeMarker
             )
+
+        # a little bit of context that allows us to understand when we're parsing classes
+        # XXX: we could make this an array and a couple code tweaks if we cared
+        # about nested classes at some point
+        self._currentClass = None
 
     def _isMarker(self, tok):
         return tok in self.markers
@@ -98,7 +107,7 @@ class DocExtractor():
                 m = self.function_pat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
-                                       (self.functionMarker, (cur[:20] + "...")))
+                                       (self.moduleMarker, (cur[:20] + "...")))
                 if m.group(1):
                     currentObj["name"] = m.group(1)
                 else:
@@ -113,6 +122,34 @@ class DocExtractor():
                 # in this case we'll have to guess the function name
                 pass
 
+        elif cur == self.classMarker:
+            currentObj["type"] = 'classstart'
+            nxt = self._popNonMarker(tokens)
+            if nxt:
+                # nxt describes the module
+                m = self.function_pat.match(nxt)
+                if not m:
+                    raise RuntimeError("Malformed args to %s: %s" %
+                                       (self.classMarker, (cur[:20] + "...")))
+                if m.group(1):
+                    currentObj["name"] = m.group(1)
+                else:
+                    if m.group(2):
+                        currentObj["name"] = m.group(2)
+                    else:
+                        raise RuntimeError("A class must have a name")
+
+                    if m.group(3):
+                        if 'desc' in currentObj:
+                            currentObj['desc'] = currentObj['desc'] + "\n\n" + m.group(3)
+                        else:
+                            currentObj['desc'] = m.group(3)
+            else:
+                # in this case we'll have to guess the function name
+                pass
+
+        elif cur == self.classEndMarker:
+            currentObj["type"] = 'classend'
 
         elif cur == self.functionMarker:
             currentObj["type"] = 'function'
@@ -245,6 +282,12 @@ class DocExtractor():
         return guessedName, guessedType
 
     def _analyzeBlock(self, block, context, firstBlock, data):
+        # when we're parsing classes, we'll modify the classes nested
+        # data structure rather than the global data structure for
+        # this module
+        if self._currentClass:
+            data = data['classes'][self._currentClass]
+
         tokens = self.tokenize_pat.split(block)
 
         # remove all whitespace strings
@@ -290,6 +333,19 @@ class DocExtractor():
                 if 'properties' not in data:
                     data['properties'] = [ ]
                 data['properties'].append(curObj)
+            elif curObj['type'] == 'classstart':
+                if not 'classes' in data:
+                    data['classes'] = [ ]
+
+                self._currentClass = len(data['classes'])
+
+                # XXX: check for redefinition?
+                del curObj['type']
+                data['classes'].append(curObj)
+
+            elif curObj['type'] == 'classend':
+                self._currentClass = None
+
             elif curObj['type'] == 'module':
                 if 'desc' in curObj:
                     if 'desc' in data:
@@ -303,6 +359,10 @@ class DocExtractor():
     def extract(self, filename):
         # the data structure we'll build up
         data = {}
+
+        # clear the lil' context flag that lets us know when we're parsing
+        # classes (class definitions cannot span files)
+        self._currentClass = None
 
         # first determine the module name, it's always the same as the file name
         mod = os.path.basename(filename)
