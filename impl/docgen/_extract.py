@@ -37,9 +37,16 @@ class DocExtractor():
         self.param_pat = re.compile('^(?:([\w.\[\]]+)\s*(?:{(\w+)})|(?:{(\w+)})\s*([\w.\[\]]+))\s*(.*)$', re.S);
 
         # parse properties, similar to params but we also support a type
-        #   @property [name] [{type}]
+        # We support three forms:
+        #   @property <name> <{type}> [description]
+        #   @property <{type}> <name> [description]
+        #   @property [name]
         #   [description]
-        self.prop_pat =  re.compile('^([\w.\[\]]+)?\s*(?:{(\w+)})?\s*(.*)$', re.S);
+        self.prop_pat =  re.compile(
+            '(?:^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$)|' +
+            '(?:^{(\w+)}\s*([\w.\[\]]+)\s*(.*)$)|' +
+            '(?:^([\w.\[\]]+)?\s*(.*)$)',
+            re.S);
 
         # parse returns clause (also works for @throws!)
         # @return [{type}] [description]
@@ -192,10 +199,19 @@ class DocExtractor():
                                        (self.propertyMarker, (nxt[:20] + "...")))
                 if m.group(1):
                     currentObj['name'] = m.group(1)
-                if m.group(2):
                     currentObj['dataType'] = m.group(2)
-                if m.group(3):
-                    currentObj['desc'] = m.group(3)
+                    if m.group(3):
+                        currentObj['desc'] = m.group(3)
+                elif m.group(4):
+                    currentObj['dataType'] = m.group(4)
+                    currentObj['name'] = m.group(5)
+                    if m.group(6):
+                        currentObj['desc'] = m.group(6)
+                else:
+                    if m.group(7):
+                        currentObj['name'] = m.group(7)
+                    if m.group(8):
+                        currentObj['desc'] = m.group(8)
             else:
                 # in this case we'll have to guess the function name
                 pass
