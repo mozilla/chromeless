@@ -125,7 +125,7 @@ let toFilename = exports.toFilename = function toFilename(url) {
  * the provided string is a valid URL in the process.
  *
  * @param {string} url A string to be converted into a URL.
- * @param {string} [base] A optional base url which will be used to resolve the
+ * @param {string} [base] An optional base url which will be used to resolve the
  * `url` argument if it is a relative url.
  *
  * @throws If `source` is not a valid URI.
@@ -176,7 +176,7 @@ function URL(url, base) {
   this.__defineGetter__("path", function() uri.path);
   /**
    * @function toString
-   * Converts a URL to a string.
+   * Converts URL class contents to a string.
    * @returns {string} The URL as a string.
    */
   this.toString = function URL_toString() uri.spec;

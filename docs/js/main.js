@@ -4,6 +4,7 @@ function startApp(jQuery, window) {
   var apidocs = null;
   var currentHash = "";
   var shouldFadeAndScroll = true;
+  var converter = new Showdown.converter();
 
   const DEFAULT_HASH = "guide/welcome";
   const IDLE_PING_DELAY = 500;
@@ -12,7 +13,7 @@ function startApp(jQuery, window) {
 
   function sortedKeys(obj) {
     var arr = [];
-    for (e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
+    for (var e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
     arr.sort();
     return arr;
   }
@@ -229,6 +230,152 @@ function startApp(jQuery, window) {
     queuedContent = null;
   }
 
+  // build an object which maps names to indexes for an array of
+  // objects which contain a .name property 
+  function buildNameToIxMap(arr) {
+    var nameToIx = {};
+    for (var i = 0; i < arr.length; i++) {
+      nameToIx[arr[i].name] = i;
+    }
+    return nameToIx;
+  }
+
+  function populateFunctions(domElem, moduleName, functions) {
+    var nameToIx = buildNameToIxMap(functions);
+    var sortedMethods = sortedKeys(nameToIx);
+    for (var f in sortedMethods) {
+      var name = sortedMethods[f];
+      f = functions[nameToIx[name]];
+      var func = $("#templates .one-function").clone();
+      func.find(".varname").text(moduleName);
+      func.find(".funcName").text(name);
+      if (!f.desc) {
+        f.desc = "no documentation available for this function";
+      }
+      func.find(".description").html(converter.makeHtml(f.desc));
+
+      // insert return value docs
+      if (f.returns) {
+        if (f.returns.type) {
+          func.find(".invocation .type").text(f.returns.type);
+        } else {
+          func.find(".invocation .type").remove();
+        }
+
+        if (f.returns.desc) {
+          console.log(f.returns.desc);
+          console.log(converter.makeHtml(f.returns.desc));
+          func.find(".returndoc").html(converter.makeHtml(f.returns.desc));
+        } else {
+          func.find(".returnvalue").remove();
+        }
+      } else {
+        func.find(".invocation .type").remove();
+        func.find(".returnvalue").remove();
+      }
+
+      // insert params into invocation line and documentation
+      if (f.params && f.params.length) {
+        var ps = func.find(".params");
+        var fpd = func.find(".paramdoc");
+        for (var i = 0; i < f.params.length; i++) {
+          var param = f.params[i];
+          // add parameter to invocation line
+          var p = $('<span><span class="type"></span><span class="name"></span></span>');
+          if (param.type) p.find(".type").text(param.type);
+          else p.find(".type").remove();
+          if (param.name) p.find(".name").text(param.name);
+          if (ps.children().size()) $("<span>, </span>").appendTo(ps);
+          ps.append(p);
+
+          // separate parameter documentation
+          var p = $('<tr><td class="paramname"></td><td class="paramdesc"></td></tr>');
+          p.find(".paramname").text(param.name);
+          var desc = "";
+          if (param.type) desc += "(" + param.type + ") ";
+          if (param.desc) desc = converter.makeHtml(desc + param.desc);
+          else desc += "no documentation available";
+          p.find(".paramdesc").html(desc);
+          fpd.append(p);
+        }
+      } else {
+        // remove the parameters section entirely if they don't exist
+        func.find(".parameters").remove();
+      }
+
+      func.appendTo(domElem);
+    }
+  }
+
+  function populateProperties(domElem, moduleName, properties) {
+    var nameToIx = buildNameToIxMap(properties);
+    var sortedProps = sortedKeys(nameToIx);
+
+    for (var p in sortedProps) {
+      var name = sortedProps[p];
+      p = properties[nameToIx[name]];
+      var prop = $("#templates .one-property").clone();
+      if (p.type) prop.find(".type").text(p.type);
+      else prop.find(".type").remove();
+      prop.find(".varname").text(moduleName);
+      prop.find(".propName").text(name);
+      if (!p.desc) {
+        p.desc = "no documentation available for this property";
+      }
+      prop.find(".description").html(converter.makeHtml(p.desc));
+      prop.appendTo(domElem);
+    }
+  }
+
+  function populateClasses(domElem, moduleName, classes) {
+    var nameToIx = buildNameToIxMap(classes);
+    var sortedClasses = sortedKeys(nameToIx);
+
+    for (var c in sortedClasses) {
+      c = classes[nameToIx[sortedClasses[c]]];
+
+      var t = $("#templates .class-detail").clone();
+      t.find(".varname").text(moduleName);
+      t.find(".name").text(c.name);
+
+      if (c.desc) {
+        t.find(".docs").html(converter.makeHtml(c.desc));
+      } else {
+        t.find(".docs").remove();
+      }
+
+      if (c.constructor) {
+        // we'll treat constructors like a normal functions, but use the classname
+        // as the function name
+        var classCopy = $.extend(true, {}, c.constructor);
+        classCopy.name = c.name;
+        populateFunctions(t.find(".constructor"), moduleName, [ classCopy ]);
+      } else {
+        t.find(".constructor").remove();
+      }
+
+      if (c.properties) {
+        populateProperties(t.find(".properties"), moduleName + "." + c.name, c.properties);
+      } else {
+        t.find(".properties").remove();
+      }
+
+      if (c.functions) {
+        populateFunctions(t.find(".functions"), moduleName + "." + c.name, c.functions);
+      } else {
+        t.find(".functions").remove();
+      }
+
+      // XXX: for when we/if implement nested class support
+      // if (c.classes) {
+      //   ...
+      // } else {
+        t.find(".classes").remove();
+      // }
+      domElem.append(t);
+    }
+  }
+
   function showModuleDetail(pkgName, moduleName) {
     console.log(pkgName);
     console.log(moduleName);
@@ -241,8 +388,6 @@ function startApp(jQuery, window) {
 
     entry.find(".module").text(module.module);
 
-    var converter = new Showdown.converter();
-
     if (module.desc) {
       entry.find(".docs").html(converter.makeHtml(module.desc));
     }
@@ -250,103 +395,19 @@ function startApp(jQuery, window) {
     if (module.functions) {
       var funcs = entry.find(".functions");
       $("<h2>Functions</h2>").appendTo(funcs);
-
-      var nameToIx = {};
-      for (var i = 0; i < module.functions.length; i++) {
-        nameToIx[module.functions[i].name] = i;
-      }
-      var sortedMethods = sortedKeys(nameToIx);
-      for (var f in sortedMethods) {
-        var name = sortedMethods[f];
-        f = module.functions[nameToIx[name]];
-        var func = $("#templates .one-function").clone();
-        func.find(".varname").text(moduleName);
-        func.find(".funcName").text(name);
-        if (!f.desc) {
-          f.desc = "no documentation available for this function";
-        }
-        func.find(".description").html(converter.makeHtml(f.desc));
-
-        // insert return value docs
-        if (f.returns) {
-          if (f.returns.type) {
-            func.find(".invocation .type").text(f.returns.type);
-          } else {
-            func.find(".invocation .type").remove();
-          }
-          
-          if (f.returns.desc) {
-            console.log(f.returns.desc);
-            console.log(converter.makeHtml(f.returns.desc));
-            func.find(".returndoc").html(converter.makeHtml(f.returns.desc));
-          } else {
-            func.find(".returnvalue").remove();
-          }
-        } else {
-          func.find(".invocation .type").remove();
-          func.find(".returnvalue").remove();
-        }
-
-        // insert params into invocation line and documentation
-        if (f.params && f.params.length) {
-          var ps = func.find(".params");
-          var fpd = func.find(".paramdoc");
-          for (var i = 0; i < f.params.length; i++) {
-            var param = f.params[i];
-            // add parameter to invocation line
-            var p = $('<span><span class="type"></span><span class="name"></span></span>');
-            if (param.type) p.find(".type").text(param.type);
-            else p.find(".type").remove();
-            if (param.name) p.find(".name").text(param.name);
-            if (ps.children().size()) $("<span>, </span>").appendTo(ps);
-            ps.append(p);
-
-            // separate parameter documentation
-            var p = $('<tr><td class="paramname"></td><td class="paramdesc"></td></tr>');
-            p.find(".paramname").text(param.name);
-            var desc = "";
-            if (param.type) desc += "(" + param.type + ") ";
-            if (param.desc) desc = converter.makeHtml(desc + param.desc);
-            else desc += "no documentation available";
-            p.find(".paramdesc").html(desc);
-            fpd.append(p);
-          }
-        } else {
-          // remove the parameters section entirely if they don't exist
-          func.find(".parameters").remove();
-        }
-        
-        func.appendTo(funcs);
-      }
-      funcs.appendTo(entry);
-      
+      populateFunctions(funcs, moduleName, module.functions);
     }
 
     if (module.properties) {
       var props = entry.find(".properties");
       $("<h2>Properties</h2>").appendTo(props);
+      populateProperties(props, moduleName, module.properties);
+    }
 
-      var nameToIx = {};
-      for (var i = 0; i < module.properties.length; i++) {
-        nameToIx[module.properties[i].name] = i;
-      }
-      var sortedProps = sortedKeys(nameToIx);
-
-      for (var p in sortedProps) {
-        var name = sortedProps[p];
-        p = module.properties[nameToIx[name]];
-        var prop = $("#templates .one-property").clone();        
-        if (p.type) prop.find(".type").text(p.type);
-        else prop.find(".type").remove();
-        prop.find(".varname").text(moduleName);
-        prop.find(".propName").text(name);
-        if (!p.desc) {
-          p.desc = "no documentation available for this property";
-        }
-        prop.find(".description").text(p.desc);
-        prop.appendTo(props);
-      }
-      props.appendTo(entry);
+    if (module.classes) {
+      var classes = entry.find(".classes");
+      $("<h2>Classes</h2>").appendTo(classes);
+      populateClasses(classes, moduleName, module.classes);
     }
 
     queueMainContent(entry, function () {
@@ -476,7 +537,7 @@ function startApp(jQuery, window) {
       if (name === 'api-by-package') {
         var entry = $("#templates .package-list").clone();
         var sortedPackageNames = sortedKeys(apidocs);
-        for (p in sortedPackageNames) {
+        for (var p in sortedPackageNames) {
           p = sortedPackageNames[p];
           var item = $("#templates .one-package").clone();
           item.find(".name a")
