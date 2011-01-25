@@ -7,7 +7,113 @@
         "filename": "app-strings.js", 
         "module": "StringBundle"
       }, 
+      "addCollectionProperty": {
+        "desc": "Adds a collection property to the given object.  Setting the property to a\nscalar value empties the collection and adds the value.  Setting it to an\narray empties the collection and adds all the items in the array.", 
+        "filename": "collection.js", 
+        "module": "addCollectionProperty"
+      }, 
       "byte-streams": {
+        "classes": [
+          {
+            "constructor": {
+              "desc": "Creates a binary input stream that reads bytes from a backing stream.", 
+              "params": [
+                {
+                  "desc": "The backing stream, an [`nsIInputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIInputStream.idl).", 
+                  "name": "inputStream", 
+                  "type": "stream"
+                }
+              ]
+            }, 
+            "functions": [
+              {
+                "desc": "Closes both the stream and its backing stream.", 
+                "name": "close", 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }, 
+              {
+                "desc": "Reads bytes from the stream.", 
+                "name": "read", 
+                "params": [
+                  {
+                    "desc": "The number of bytes to read.  If not given, the remainder of the entire stream\nis read.", 
+                    "name": "[numBytes]", 
+                    "type": "number"
+                  }
+                ], 
+                "returns": {
+                  "desc": "A string containing the bytes read.  If the stream is at the end, returns the\nempty string.", 
+                  "type": "string"
+                }, 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }
+            ], 
+            "name": "ByteReader", 
+            "properties": [
+              {
+                "desc": "True if the stream is closed.", 
+                "name": "closed", 
+                "type": "boolean"
+              }
+            ]
+          }, 
+          {
+            "constructor": {
+              "desc": "Creates a binary output stream that writes bytes to a backing stream.", 
+              "params": [
+                {
+                  "desc": "The backing stream, an [nsIOutputStream](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).", 
+                  "name": "outputStream", 
+                  "type": "stream"
+                }
+              ]
+            }, 
+            "functions": [
+              {
+                "desc": "Closes both the stream and its backing stream.", 
+                "name": "close", 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }, 
+              {
+                "desc": "Writes a string to the stream.", 
+                "name": "write", 
+                "params": [
+                  {
+                    "desc": "The string to write.", 
+                    "name": "str", 
+                    "type": "string"
+                  }
+                ], 
+                "throws": [
+                  {
+                    "desc": "if the stream is closed"
+                  }
+                ]
+              }
+            ], 
+            "name": "ByteWriter", 
+            "properties": [
+              {
+                "desc": "True if the stream is closed.", 
+                "name": "closed", 
+                "type": "boolean"
+              }
+            ]
+          }
+        ], 
+        "desc": "The `byte-streams` module provides streams for reading and writing bytes.", 
         "filename": "byte-streams.js", 
         "module": "byte-streams"
       }, 
@@ -198,6 +304,11 @@
         "filename": "find-tests-e10s-adapter.js", 
         "module": "find-tests-e10s-adapter"
       }, 
+      "friendlyError": {
+        "desc": "Returns an Error instance that is a more descriptive version of the raw XPCOM\nerrOrResult.  opts is used by some exceptions to include helpful info in\ntheir messages such as a filename, and as such its properties depend on the\ntype of exception being thrown.  opts need not be defined for errors that\ndon't use it.  See below for a list of supported options.\n\nIf there is no friendly version of errOrResult, then if it's an nsIException,\nan Error whose message is errOrResult's message is returned; if it's a\nresult, an Error with a simple numeric message is returned; and if it's an\nError, it itself is returned.", 
+        "filename": "xpcom.js", 
+        "module": "friendlyError"
+      }, 
       "function": {
         "desc": "Takes a function and returns a wrapped one instead, calling which will call\noriginal function in the next turn of event loop. This is basically utility\nto do `setTimeout(function() { ... }, 0)`, with a difference that returned\nfunction is reused, instead of creating a new one each time. This also allows\nto use this functions as event listeners.", 
         "filename": "utils/function.js", 
@@ -232,6 +343,30 @@
       "preferences-service": {
         "filename": "preferences-service.js", 
         "module": "preferences-service"
+      }, 
+      "publicConstructor": {
+        "desc": "Returns a function C that creates instances of privateCtor.  C may be called\nwith or without the new keyword.  The prototype of each instance returned\nfrom C is C.prototype, and C.prototype is an object whose prototype is\nprivateCtor.prototype.  Instances returned from C will therefore be instances\nof both C and privateCtor.  Additionally, the constructor of each instance\nreturned from C is C.", 
+        "filename": "api-utils.js", 
+        "functions": [
+          {
+            "desc": "Returns a validated options dictionary given some requirements.  If any of\nthe requirements are not met, an exception is thrown.", 
+            "name": "validateOptions", 
+            "params": [
+              {
+                "desc": "An object, the options dictionary to validate.  It's not modified.\n        If it's null or otherwise falsey, an empty object is assumed.", 
+                "name": "options"
+              }, 
+              {
+                "desc": "An object whose keys are the expected keys in options.  Any key in\n        options that is not present in requirements is ignored.  Each value\n        in requirements is itself an object describing the requirements of\n        its key.  There are four optional keys in this object:\n          map: A function that's passed the value of the key in options.\n               map's return value is taken as the key's value in the final\n               validated options, is, and ok.  If map throws an exception\n               it's caught and discarded, and the key's value is its value in\n               options.\n          is:  An array containing any number of the typeof type names.  If\n               the key's value is none of these types, it fails validation.\n               Arrays and null are identified by the special type names\n               \"array\" and \"null\"; \"object\" will not match either.  No type\n               coercion is done.\n          ok:  A function that's passed the key's value.  If it returns\n               false, the value fails validation.\n          msg: If the key's value fails validation, an exception is thrown.\n               This string will be used as its message.  If undefined, a\n               generic message is used, unless is is defined, in which case\n               the message will state that the value needs to be one of the\n               given types.", 
+                "name": "requirements"
+              }
+            ], 
+            "returns": {
+              "desc": "An object whose keys are those keys in requirements that are also in\n        options and whose values are the corresponding return values of map\n        or the corresponding values in options.  Note that any keys not\n        shared by both requirements and options are not in the returned\n        object."
+            }
+          }
+        ], 
+        "module": "publicConstructor"
       }, 
       "registry": {
         "filename": "utils/registry.js", 
@@ -275,6 +410,43 @@
         "filename": "windows/tabs.js", 
         "module": "tabs"
       }, 
+      "text-streams": {
+        "classes": [
+          {
+            "constructor": {
+              "params": [
+                {
+                  "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
+                  "name": "inputStream"
+                }, 
+                {
+                  "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
+                  "name": "charset"
+                }
+              ]
+            }, 
+            "desc": "An input stream that reads text from a backing stream using a given text\nencoding.", 
+            "functions": [
+              {
+                "desc": "Reads a string from the stream.  If the stream is closed, an exception is\nthrown.", 
+                "name": "read", 
+                "params": [
+                  {
+                    "desc": "The number of characters to read.  If not given, the remainder of\n        the stream is read.", 
+                    "name": "numChars"
+                  }
+                ], 
+                "returns": {
+                  "desc": "The string read.  If the stream is already at EOS, returns the\n        empty string."
+                }
+              }
+            ], 
+            "name": "TextReader"
+          }
+        ], 
+        "filename": "text-streams.js", 
+        "module": "text-streams"
+      }, 
       "thumbnail": {
         "desc": "Creates canvas element with a thumbnail of the passed window.", 
         "filename": "utils/thumbnail.js", 
@@ -284,7 +456,6 @@
             "name": "getThumbnailURIForWindow", 
             "params": [
               {
-                "desc": "", 
                 "name": "window", 
                 "type": "Window"
               }
@@ -425,6 +596,11 @@
         "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
         "filename": "xul-app.js", 
         "module": "versionInRange"
+      }, 
+      "windowIterator": {
+        "desc": "An iterator for XUL windows currently in the application.", 
+        "filename": "window-utils.js", 
+        "module": "windowIterator"
       }, 
       "xhr": {
         "filename": "xhr.js", 
