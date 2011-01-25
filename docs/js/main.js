@@ -362,7 +362,7 @@ function startApp(jQuery, window) {
     }
     var count = 0;
     for (var x in libs) {
-      moduleName = libs[x];
+      var moduleName = libs[x];
       var module = $('<li class="module"></li>');
       var hash = "#module/" + pkg.name + "/" + moduleName;
       $('<a target="_self"></a>')
@@ -382,12 +382,22 @@ function startApp(jQuery, window) {
 
     entry.find(".name").text(name);
 
-    // XXX: we need a nice way that package level documentation can
-    // be included...  Previously there was a README.md file that
-    // could be associated with packages.  That seems like a fine
-    // thing to revive...  Alternately we could introduce a tag
-    // for package docs?  options are abundant
-    listModules(pkg, entry);
+    var libs = [];
+    if (pkg.modules) {
+      libs = sortedKeys(pkg.modules);
+    }
+    for (var x in libs) {
+      var moduleName = libs[x];
+      var n = $("<div/>").addClass("module-name").text(moduleName);
+      n.appendTo(entry);
+      linkNode(n, "#module/" + name + "/" + moduleName);
+
+      if (pkg.modules[moduleName].desc) {
+        $("<div/>").addClass("module-desc")
+          .html(converter.makeHtml(pkg.modules[moduleName].desc)).
+          appendTo(entry);
+      }
+    }
 
     queueMainContent(entry, function () {
       showMainContent(entry, null);
@@ -451,14 +461,10 @@ function startApp(jQuery, window) {
   }
 
   function linkNode(node, url) {
-    var p = node.parent();
     node.replaceWith($('<a target="_self"></a>')
                      .attr("href", url)
                      .append(node.clone()));
   }
-
-  
-
 
   function showAPIRef(name, context) {
       if (name === 'api-by-package') {

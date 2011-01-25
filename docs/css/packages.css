@@ -27,3 +27,13 @@
     color: gray;
     font-size: .9em;
 }
+
+.package-detail .module-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-top: 1em;
+}
+
+.package-detail .module-desc {
+    margin: 0 2em 0 2em;
+}
