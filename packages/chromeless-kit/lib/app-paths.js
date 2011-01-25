@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is
  *   Lloyd Hilaiel <lloyd@mozilla.com>.
- * 
+ *
  * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
@@ -90,7 +90,11 @@ exports.userHomeDir =  dirsvc.get("Home", Ci.nsIFile).path;
 
 /**
  * @property profileRootDir
- * @description XXX I don't know.
+ * @description In chromeless, *profiles* are specially named directories stored
+ * in a user scoped location.  Support for multiple profiles is built in at a very
+ * low level, and the basic mechanism by which profiles are supported is a two
+ * level directory structure.  This property provides the path to the "outer" or
+ * "root" profile directory, under which different profiles reside.
  * @type string
  */
 exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;

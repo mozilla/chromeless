@@ -376,39 +376,41 @@ function startApp(jQuery, window) {
     }
   }
 
-  function showModuleDetail(pkgName, moduleName) {
-    console.log(pkgName);
-    console.log(moduleName);
-    var module = apidocs[pkgName].modules[moduleName];
-    var entry = $("#templates .module-detail").clone();
-
-    entry.find(".package a")
+  function populateModuleDocs(domElem, pkgName, module) {
+    domElem.find(".package a")
       .text(pkgName)
       .attr('href', "#package/" + pkgName);
 
-    entry.find(".module").text(module.module);
+    domElem.find(".module").text(module.module);
 
     if (module.desc) {
-      entry.find(".docs").html(converter.makeHtml(module.desc));
+      domElem.find(".docs").html(converter.makeHtml(module.desc));
     }
 
     if (module.functions) {
-      var funcs = entry.find(".functions");
+      var funcs = domElem.find(".functions");
       $("<h2>Functions</h2>").appendTo(funcs);
-      populateFunctions(funcs, moduleName, module.functions);
+      populateFunctions(funcs, module.module, module.functions);
     }
 
     if (module.properties) {
-      var props = entry.find(".properties");
+      var props = domElem.find(".properties");
       $("<h2>Properties</h2>").appendTo(props);
-      populateProperties(props, moduleName, module.properties);
+      populateProperties(props, module.module, module.properties);
     }
 
     if (module.classes) {
-      var classes = entry.find(".classes");
+      var classes = domElem.find(".classes");
       $("<h2>Classes</h2>").appendTo(classes);
-      populateClasses(classes, moduleName, module.classes);
+      populateClasses(classes, module.module, module.classes);
     }
+  }
+
+  function showModuleDetail(pkgName, moduleName) {
+    var module = apidocs[pkgName].modules[moduleName];
+    var entry = $("#templates .module-detail").clone();
+
+    populateModuleDocs(entry, pkgName, module);
 
     queueMainContent(entry, function () {
       showMainContent(entry);
@@ -552,9 +554,27 @@ function startApp(jQuery, window) {
           showMainContent(entry);
         });
       } else if (name === 'api-full-listing') {
-        var entry = $("#templates .full-api").clone();
-        queueMainContent(entry, function () {
-          showMainContent(entry);
+        var fullApi = $("#templates .full-api").clone();
+
+        // for now we'll simply concatenate all modules docs onto
+        // a single page
+        var pkgs = sortedKeys(apidocs);
+
+        for (var p in pkgs) {
+          p = pkgs[p];
+          var modules = sortedKeys(apidocs[p].modules);
+          for (var m in modules) {
+            m = modules[m];
+            var modObj = apidocs[p].modules[m];
+            var entry = $("#templates .module-detail").clone();
+            console.log(p);
+            populateModuleDocs(entry, p, modObj);
+            fullApi.append(entry);
+          }
+        }
+
+        queueMainContent(fullApi, function () {
+          showMainContent(fullApi);
         });
       }
   }
