@@ -54,8 +54,7 @@ var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
 exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
 
 /**
- * @property browserCodeDir
- * @description The path where the *browser code* of the application resides on disk.
+ * The path where the *browser code* of the application resides on disk.
  * For an installed application this usually be nested inside of a system wide installation path.
  * This path should be expected to be read-only.
  * @type string
@@ -63,10 +62,9 @@ exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
 exports.browserCodeDir = dirsvc.get("resource:app", Ci.nsIFile).path;
 
 /**
- * @property startMenuDir
- * @type string
- * @description On windows, the path to the start menu where shortcuts may be installed.
+ * On windows, the path to the start menu where shortcuts may be installed.
  * `null` on other platforms.
+ * @type string
  */
 try {
     // will fail if we're not on windows (no start menu dir)
@@ -75,22 +73,19 @@ try {
     exports.startMenuDir = null;
 }
 /**
- * @property desktopDir
- * @description The path to the user's desktop.
+ * The path to the user's desktop.
  * @type string
  */
 exports.desktopDir = dirsvc.get("Desk", Ci.nsIFile).path;
 
 /**
- * @property userHomeDir
- * @description The path to the currently logged in user's home directory.
+ * The path to the currently logged in user's home directory.
  * @type string
  */
 exports.userHomeDir =  dirsvc.get("Home", Ci.nsIFile).path;
 
 /**
- * @property profileRootDir
- * @description In chromeless, *profiles* are specially named directories stored
+ * In chromeless, *profiles* are specially named directories stored
  * in a user scoped location.  Support for multiple profiles is built in at a very
  * low level, and the basic mechanism by which profiles are supported is a two
  * level directory structure.  This property provides the path to the "outer" or
@@ -100,23 +95,20 @@ exports.userHomeDir =  dirsvc.get("Home", Ci.nsIFile).path;
 exports.profileRootDir =  dirsvc.get("DefProfRt", Ci.nsIFile).path;
 
 /**
- * @property pluginsDir
- * @description The path to the directory where web plugins will be loaded for this
- * application. 
+ * The path to the directory where web plugins will be loaded for this
+ * application.
  * @type string
  */
 exports.pluginsDir =  dirsvc.get("APlugns", Ci.nsIFile).path;
 
 /**
- * @property curDir
- * @description The current working directory of the chromeless application process.
+ * The current working directory of the chromeless application process.
  * @type string
  */
 exports.curDir =  dirsvc.get("CurProcD", Ci.nsIFile).path;
 
 /**
- * @property curDir
- * @description The system's temporary directory.
+ * The system's temporary directory.
  * @type string
  */
 exports.tmpDir =  dirsvc.get("TmpD", Ci.nsIFile).path;

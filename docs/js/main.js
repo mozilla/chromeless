@@ -134,7 +134,6 @@ function startApp(jQuery, window) {
   }
 
   function renderPkgAPI(pkg, source_filename, div_filename, where, donecb) {
-    console.log("render pkg api");
     if (pkgHasFile(pkg, source_filename)) {
       var options = {
         url: pkgFileUrl(pkg, div_filename) + ".html",
@@ -154,7 +153,6 @@ function startApp(jQuery, window) {
         }
       };
       jQuery.ajax(options);
-      console.log("fetching: " + options.url);
     } else {
       donecb(null);
     }
@@ -263,8 +261,6 @@ function startApp(jQuery, window) {
         }
 
         if (f.returns.desc) {
-          console.log(f.returns.desc);
-          console.log(converter.makeHtml(f.returns.desc));
           func.find(".returndoc").html(converter.makeHtml(f.returns.desc));
         } else {
           func.find(".returnvalue").remove();
@@ -443,7 +439,7 @@ function startApp(jQuery, window) {
   }
 
   function showPackageDetail(name) {
-    var pkg = packages[name];
+    var pkg = apidocs[name];
     var entry = $("#templates .package-detail").clone();
     var filename = "README.md";
 
@@ -567,11 +563,52 @@ function startApp(jQuery, window) {
             m = modules[m];
             var modObj = apidocs[p].modules[m];
             var entry = $("#templates .module-detail").clone();
-            console.log(p);
             populateModuleDocs(entry, p, modObj);
             fullApi.append(entry);
           }
         }
+
+        // now a handler for text-change events on the filter box
+        fullApi.find(".filter_container input").keyup(function(e) {
+          var key = $(this).val().trim().toLowerCase();
+
+          // a selector that describes all of the non-atoms.  that is, things to
+          // hide when a filter is applied
+          var nonAtoms = ".module-detail > .name," +
+            ".module-detail > .example," +
+            ".module-detail > .docs," +
+            ".module-detail h2," +
+            ".class-detail > .classname," +
+            ".class-detail > .docs," +
+            ".class-detail .littleheading";
+
+          // if it's the empty string, show everything
+          if ("" === key) {
+            $(nonAtoms).show();
+            $(".one-function, .one-property").show();
+            $(".class-detail").css("margin-left", "2em");
+
+          } else {
+            // search properties
+            function hideIfNotMatch() {
+              if ($(this).text().toLowerCase().indexOf(key) < 0) {
+                $(this).hide();
+              } else {
+                $(this).show();
+              }
+            }
+            // hide all non-atoms
+            $(nonAtoms).each(function() { $(this).hide(); });
+
+            // a little trick for nested classes, unindent them so they
+            // appear reasonably in searches
+            $(".class-detail").css("margin-left", "0em");
+
+            // and check to see if the string sought occurs within
+            // a documented property or function
+            $(".one-function, .one-property").each(hideIfNotMatch);
+          }
+        });
 
         queueMainContent(fullApi, function () {
           showMainContent(fullApi);

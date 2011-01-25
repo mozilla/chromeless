@@ -1,138 +1,94 @@
-/*
-Some global styles for api_refernece
-*/
+.module-detail > div.name {
+    font-weight: bold;
+    font-size: 2em;
+}
 
-.api_reference p
-  {
-  margin-top: 0px;
-  margin-bottom: 5px;
-  }
+.module-detail .package a {
+    color: gray;
+}
 
-.api_reference .datatype
-  {
-  font-style: italic;
-  }
+.module-detail .example {
+    width: 100%;
+    background: #ccc;
+    padding: .5em;
+    background-color: .2em;
+    margin: 2em;
+}
 
-/***
-HEADINGS
-Text title for some collection of API elements, like "Properties" or "Methods".
-***/
+.one-property .invocation, .one-function .invocation {
+    font-family: Monaco, Lucida Console, monospace;
+    font-size: 1.1em;
+}
 
-/* generic style for all headers */
-.api_header
-  {
-  font-weight: bold;
-  }
+.one-property .invocation .propName, .one-function .invocation .funcName {
+    font-weight: bold;
+}
 
-/* top level heading: something like "API Reference" */
-h2.api_header
-  {
-  font-size: 200%;
-  margin-top:30px;
-  margin-bottom:10px;
-  }
+.one-property .description, .one-function .description, .one-function .parameters, .one-function .returnvalue {
+    margin: 1em;
+    margin-left: 2em;
+}
 
-/* next-level heading: something like "Classes", "Global Functions" */
-h3.api_header
-  {
-  font-size: 150%;
-  margin-top:20px;
-  margin-bottom:10px;
-  padding: 3px;
-  border: solid 1px #EEE;
-  background: #EEE;
-  }
+.one-function {
+    margin-bottom: 1em;
+}
 
-/* next-level heading: something like "Methods", "Object properties" */
-.api_reference>.api_component_group>.api_component>.api_component_group>.api_header
-  {
-  font-size: 125%;
-  margin-top:20px;
-  margin-bottom:5px;
-  border-bottom: solid 2px #EEE;
-  }
+.one-function .type, .one-property .type {
+    color: gray;
+    margin-right: .65em;
+}
 
-/***
-NAMES
-Name of some API component, like widget or postMessage()
-***/
+.one-function .paramdoc {
+    margin-top: 1em;
+}
 
-/* default style for all names */
-.api_name
-  {
-  font-weight: bold;
-  }
+.one-function .paramdoc, .paramdoc tr, .one-function .paramdoc td {
+    border: none;
+    padding: 0;
+    vertical-align: top;
+}
 
-/* top level api component: module-level classes,functions, properties */
-h4.api_name
-  {
-  font-weight: normal;
-  font-size: 150%;
-  padding: 3px;
-  border: solid 1px #EEE;
-  background: #EEE;
-  margin-bottom:5px;
-  }
+.one-function .paramdoc td p {
+    margin-bottom: .7em;
+}
 
-/* next level API component: methods or object properties */
-.api_reference>.api_component_group>.api_component>.api_component_group>.api_component>.api_name
-  {
-  font-size: 120%;
-  font-weight: bold;
-  margin-bottom:0px;
-  }
+.one-function .paramdoc .paramname {
+    font-size: 1.1em;
+    font-style: italic;
+    width: 6em;
+}
 
-/***
-Spacing components and component groups
-***/
+.one-function .littleheading, .class-detail .littleheading {
+    font-weight: bold;
+}
 
-/*
-Top level API component, like a global class, function, or property
-*/
-.api_reference>.api_component_group>.api_component
-  {
-  margin-bottom: 50px;
-  }
+.class-detail .littleheading {
+    margin: 1em 0 1em;
+}
 
-/*
-Next-level API component, like a class method
-*/
-.api_reference>.api_component_group>.api_component>.api_component_group>.api_component
-  {
-  margin-bottom: 20px;
-  }
+.class-detail {
+    margin-left: 2em;
+}
 
-/*
-All collections of API components
-*/
-.api_component_group
-  {
-  margin-bottom: 30px;
-  }
+.class-detail .classname {
+    font-family: Monaco, Lucida Console, monospace;
+    font-size: 1.5em;
+}
 
-/***PARAMETERS and RETURNS***/
-/*
-Parameters and returns have a grey background
-*/
-.parameter_set, .returns
-  {
-  background-color: #EEE;
-  }
+.full-api .filter_container {
+    width: 100%;
+    background-color: #333;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    align: center;
+    padding: 10px;
+    margin: 1em;
+}
 
-/*
-Parameter components are divided by a thin border
-*/
-.parameter_set .api_component
-  {
-  padding: 3px;
-  border-top: 2px solid rgba(255,255,255,.3);
-  }
-
-/*
-Subcomponents of parameters are indented
-*/
-.parameter_set>.api_component>.api_component
- {
-  padding-left: 20px;
- }
-
+.full-api .prompt {
+    color:#eee;
+    font-style: italic;
+    font-size: 1.2em;
+    padding-right: 10px;
+}
