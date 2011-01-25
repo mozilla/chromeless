@@ -1,0 +1,12 @@
+{
+  "desc": "A module with a single property, and type before name", 
+  "filename": "tests/property_type_first.js", 
+  "module": "property_type_first", 
+  "properties": [
+    {
+      "desc": "The port number of the URL, `null` if none was specified.", 
+      "type": "integer",
+      "name": "port"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "classes": [
+    {
+      "constructor": {
+        "desc": "This is the constructor of the class", 
+        "params": [
+          {
+            "desc": "it accepts a bar argument of type foo", 
+            "name": "bar", 
+            "type": "foo"
+          }
+        ]
+      }, 
+      "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+      "name": "URL"
+    }
+  ], 
+  "desc": "A test of basic class parsing", 
+  "filename": "tests/class_with_constructor.js", 
+  "module": "class_with_constructor"
+}

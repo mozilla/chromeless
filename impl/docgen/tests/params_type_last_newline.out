@@ -1,0 +1,18 @@
+{
+  "desc": "A function which contains parameters expressed\nwith name before type.", 
+  "filename": "tests/params_type_last_newline.js", 
+  "functions": [
+    {
+      "desc": "a function which converts URLs to filenames.", 
+      "name": "toFilename", 
+      "params": [
+        {
+          "desc": "The url to convert", 
+          "name": "url", 
+          "type": "string"
+        }
+      ]
+    }
+  ], 
+  "module": "params_type_last_newline"
+}

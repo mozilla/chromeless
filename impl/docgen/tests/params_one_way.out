@@ -1,0 +1,18 @@
+{
+  "desc": "A function which contains parameters expressed\nwith type before param name.", 
+  "filename": "tests/params_one_way.js", 
+  "functions": [
+    {
+      "desc": "a function which converts URLs to filenames.", 
+      "name": "toFilename", 
+      "params": [
+        {
+          "desc": "The url to convert", 
+          "name": "url", 
+          "type": "string"
+        }
+      ]
+    }
+  ], 
+  "module": "params_one_way"
+}

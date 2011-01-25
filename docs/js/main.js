@@ -1,14 +1,21 @@
 function startApp(jQuery, window) {
   var $ = jQuery;
   var document = window.document;
-  var packages = null;
+  var apidocs = null;
   var currentHash = "";
   var shouldFadeAndScroll = true;
+  var converter = new Showdown.converter();
 
   const DEFAULT_HASH = "guide/welcome";
-  const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
   const DOCUMENT_TITLE_ROOT = "Chromeless Documentation";
+
+  function sortedKeys(obj) {
+    var arr = [];
+    for (var e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
+    arr.sort();
+    return arr;
+  }
 
   function checkHash() {
     var hash = window.location.hash;
@@ -30,14 +37,19 @@ function startApp(jQuery, window) {
       break;
     case "module":
       var pkgName = parts[1];
-      var moduleName = parts.slice(2).join("/");
-      showModuleDetail(pkgName, moduleName);
+      var moduleName = parts[2];
+      var selectedFunction = (parts.length > 3) ? parts.slice(3).join("/") : null;
+      showModuleDetail(pkgName, moduleName, selectedFunction);
       documentName = moduleName;
       break;
     case "guide":
       showGuideDetail(parts[1]);
       documentName = $('#' + parts[1]).text();
       break;
+    case "apiref":
+      var context = (parts.length > 2) ? parts[2] : null;
+      showAPIRef(parts[1], context);
+      documentName = $('#' + parts[1]).text();
     }
     if (documentName.length > 0) {
       document.title = documentName + " - " + DOCUMENT_TITLE_ROOT;
@@ -63,24 +75,6 @@ function startApp(jQuery, window) {
     return modules;
   }
 
-  function pkgFileUrl(pkg, filename) {
-    return "packages/" + pkg.name + "/" + filename;
-  }
-
-  function pkgHasFile(pkg, filename) {
-    var parts = filename.split("/");
-    var dirNames = parts.slice(0, -1);
-    var filePart = parts.slice(-1)[0];
-    var dir = pkg.files;
-    for (var i = 0; i < dirNames.length; i++) {
-      if (dirNames[i] in dir && !('size' in dir[dirNames[i]]))
-        dir = dir[dirNames[i]];
-      else
-        return false;
-    }
-    return (filePart in dir);
-  }
-
   function fixInternalLinkTargets(query) {
     query.find("a").each(
       function() {
@@ -90,29 +84,6 @@ function startApp(jQuery, window) {
       });
   }
 
-  function getPkgFile(pkg, filename, filter, cb) {
-    if (pkgHasFile(pkg, filename)) {
-      var options = {
-        url: pkgFileUrl(pkg, filename),
-        dataType: "text",
-        success: function(text) {
-          if (filter)
-            try {
-              text = filter(text);
-            } catch (e) {
-              text = null;
-            }
-          cb(text);
-        },
-        error: function() {
-          cb(null);
-        }
-      };
-      jQuery.ajax(options);
-    } else
-      cb(null);
-  }
-
   function onPkgAPIError(req, where, source_filename) {
     var errorDisplay = $("#templates .module-parse-error").clone();
     errorDisplay.find(".filename").text(source_filename);
@@ -120,33 +91,6 @@ function startApp(jQuery, window) {
     where.empty().append(errorDisplay);
     errorDisplay.hide();
     errorDisplay.fadeIn();
-  }
-
-  function renderPkgAPI(pkg, source_filename, div_filename, where, donecb) {
-    console.log("render pkg api");
-    if (pkgHasFile(pkg, source_filename)) {
-      var options = {
-        url: pkgFileUrl(pkg, div_filename) + ".html",
-        dataType: "html",
-        success: function(div_text) {
-          try {
-            $(where).empty();
-            $(div_text).appendTo(where)
-          } catch (e) {
-            $(where).text("Oops, API docs renderer failed: " + e);
-          }
-          donecb("success");
-        },
-        error: function (req) {
-          onPkgAPIError(req, where, source_filename);
-          donecb("show_error");
-        }
-      };
-      jQuery.ajax(options);
-      console.log("fetching: " + options.url);
-    } else {
-      donecb(null);
-    }
   }
 
   function showSidenotes(query) {
@@ -174,20 +118,10 @@ function startApp(jQuery, window) {
 
   function queueMainContent(query, onDone) {
     queuedContent = query;
-    function doIt() {
-      $("#sidenotes").empty();
-      $("#right-column").empty().append(query);
-      onDone();
-    }
-    if (shouldFadeAndScroll) {
-      scrollToTop(function () {
-        $("#main-content").fadeOut(100, doIt);
-      });
-    }
-    else {
-      $("#main-content").hide();
-      doIt();
-    }
+    $("#main-content").hide();
+    $("#sidenotes").empty();
+    $("#right-column").empty().append(query);
+    onDone();
   }
 
   function scrollToTop(onDone) {
@@ -219,83 +153,254 @@ function startApp(jQuery, window) {
     queuedContent = null;
   }
 
-  function showModuleDetail(pkgName, moduleName) {
-    var pkg = packages[pkgName];
-    var entry = $("#templates .module-detail").clone();
-    var source_filename = "docs/" + moduleName + ".md";
-    var json_filename = "docs/" + moduleName + ".md.json";
-    var div_filename = "docs/" + moduleName + ".md.div";
+  // build an object which maps names to indexes for an array of
+  // objects which contain a .name property 
+  function buildNameToIxMap(arr) {
+    var nameToIx = {};
+    for (var i = 0; i < arr.length; i++) {
+      nameToIx[arr[i].name] = i;
+    }
+    return nameToIx;
+  }
 
-    entry.find(".name").text(moduleName);
+  function populateFunctions(domElem, moduleName, functions) {
+    var nameToIx = buildNameToIxMap(functions);
+    var sortedMethods = sortedKeys(nameToIx);
+    for (var f in sortedMethods) {
+      var name = sortedMethods[f];
+      f = functions[nameToIx[name]];
+      var func = $("#templates .one-function").clone();
+      func.find(".varname").text(moduleName);
+      func.find(".funcName").text(name);
+      func.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
+      if (!f.desc) {
+        f.desc = "no documentation available for this function";
+      }
+      func.find(".description").html(converter.makeHtml(f.desc));
+
+      // insert return value docs
+      if (f.returns) {
+        if (f.returns.type) {
+          func.find(".invocation .type").text(f.returns.type);
+        } else {
+          func.find(".invocation .type").remove();
+        }
+
+        if (f.returns.desc) {
+          func.find(".returndoc").html(converter.makeHtml(f.returns.desc));
+        } else {
+          func.find(".returnvalue").remove();
+        }
+      } else {
+        func.find(".invocation .type").remove();
+        func.find(".returnvalue").remove();
+      }
+
+      // insert params into invocation line and documentation
+      if (f.params && f.params.length) {
+        var ps = func.find(".params");
+        var fpd = func.find(".paramdoc");
+        for (var i = 0; i < f.params.length; i++) {
+          var param = f.params[i];
+          // add parameter to invocation line
+          var p = $('<span><span class="type"></span><span class="name"></span></span>');
+          if (param.type) p.find(".type").text(param.type);
+          else p.find(".type").remove();
+          if (param.name) p.find(".name").text(param.name);
+          if (ps.children().size()) $("<span>, </span>").appendTo(ps);
+          ps.append(p);
+
+          // separate parameter documentation
+          var p = $('<tr><td class="paramname"></td><td class="paramdesc"></td></tr>');
+          p.find(".paramname").text(param.name);
+          var desc = "";
+          if (param.type) desc += "(" + param.type + ") ";
+          if (param.desc) desc = converter.makeHtml(desc + param.desc);
+          else desc += "no documentation available";
+          p.find(".paramdesc").html(desc);
+          fpd.append(p);
+        }
+      } else {
+        // remove the parameters section entirely if they don't exist
+        func.find(".parameters").remove();
+      }
+
+      func.appendTo(domElem);
+    }
+  }
+
+  function populateProperties(domElem, moduleName, properties) {
+    var nameToIx = buildNameToIxMap(properties);
+    var sortedProps = sortedKeys(nameToIx);
+
+    for (var p in sortedProps) {
+      var name = sortedProps[p];
+      p = properties[nameToIx[name]];
+      var prop = $("#templates .one-property").clone();
+      if (p.type) prop.find(".type").text(p.type);
+      else prop.find(".type").remove();
+      prop.find(".varname").text(moduleName);
+      prop.find(".propName").text(name);
+      prop.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
+      if (!p.desc) {
+        p.desc = "no documentation available for this property";
+      }
+      prop.find(".description").html(converter.makeHtml(p.desc));
+      prop.appendTo(domElem);
+    }
+  }
+
+  function populateClasses(domElem, moduleName, classes) {
+    var nameToIx = buildNameToIxMap(classes);
+    var sortedClasses = sortedKeys(nameToIx);
+
+    for (var c in sortedClasses) {
+      c = classes[nameToIx[sortedClasses[c]]];
+
+      var t = $("#templates .class-detail").clone();
+      t.find(".varname").text(moduleName);
+      t.find(".name").text(c.name);
+
+      if (c.desc) {
+        t.find(".docs").html(converter.makeHtml(c.desc));
+      } else {
+        t.find(".docs").remove();
+      }
+
+      if (c.constructor) {
+        // we'll treat constructors like a normal functions, but use the classname
+        // as the function name
+        var classCopy = $.extend(true, {}, c.constructor);
+        classCopy.name = c.name;
+        populateFunctions(t.find(".constructor"), moduleName, [ classCopy ]);
+      } else {
+        t.find(".constructor").remove();
+      }
+
+      if (c.properties) {
+        populateProperties(t.find(".properties"), moduleName + "." + c.name, c.properties);
+      } else {
+        t.find(".properties").remove();
+      }
+
+      if (c.functions) {
+        populateFunctions(t.find(".functions"), moduleName + "." + c.name, c.functions);
+      } else {
+        t.find(".functions").remove();
+      }
+
+      // XXX: for when we/if implement nested class support
+      // if (c.classes) {
+      //   ...
+      // } else {
+        t.find(".classes").remove();
+      // }
+      domElem.append(t);
+    }
+  }
+
+  function populateModuleDocs(domElem, pkgName, module) {
+    domElem.find(".package a")
+      .text(pkgName)
+      .attr('href', "#package/" + pkgName);
+
+    domElem.find(".module").text(module.module);
+
+    if (module.desc) {
+      domElem.find(".docs").html(converter.makeHtml(module.desc));
+    }
+
+    if (module.functions) {
+      var funcs = domElem.find(".functions");
+      $("<h2>Functions</h2>").appendTo(funcs);
+      populateFunctions(funcs, module.module, module.functions);
+    }
+
+    if (module.properties) {
+      var props = domElem.find(".properties");
+      $("<h2>Properties</h2>").appendTo(props);
+      populateProperties(props, module.module, module.properties);
+    }
+
+    if (module.classes) {
+      var classes = domElem.find(".classes");
+      $("<h2>Classes</h2>").appendTo(classes);
+      populateClasses(classes, module.module, module.classes);
+    }
+  }
+
+  function showModuleDetail(pkgName, moduleName, selectedFunction) {
+    var module = apidocs[pkgName].modules[moduleName];
+    var entry = $("#templates .module-detail").clone();
+
+    populateModuleDocs(entry, pkgName, module);
+
     queueMainContent(entry, function () {
-      renderPkgAPI(pkg, source_filename, div_filename, entry.find(".docs"),
-                   function(please_display) {
-                     showMainContent(entry, pkgFileUrl(pkg, source_filename));
-                   });
+      showMainContent(entry);
+
+      // shall we set scrolltop?
+      if (selectedFunction != null) {
+        var sf = "#" + selectedFunction.replace(/\./g, "\\.");
+        $(sf).each(function() {
+          // scroll to the selected function
+          $('html, body').animate({scrollTop:$(this).offset().top}, 500);
+          // and highlight it
+          $(this).parent().css('background-color', '#ffc');
+        });
+      }
     });
   }
 
   function listModules(pkg, entry) {
     var libs = [];
-    if (pkg.lib) {
-      pkg.lib.forEach(
-        function(libDir) {
-          var modules = getModules(pkg.files[libDir]);
-          libs = libs.concat(modules);
-        });
+    if (pkg.modules) {
+      libs = sortedKeys(pkg.modules);
     }
     var modules = entry.find(".modules");
     if (libs.length > 0) {
       modules.text("");
     }
-    libs.sort();
-    libs.forEach(
-      function(moduleName) {
-        var module = $('<li class="module"></li>');
-        var hash = "#module/" + pkg.name + "/" + moduleName;
-        $('<a target="_self"></a>')
-          .attr("href", hash)
-          .text(moduleName)
-          .appendTo(module);
-        modules.append(module);
-        modules.append(document.createTextNode(' '));
-      });
+    var count = 0;
+    for (var x in libs) {
+      var moduleName = libs[x];
+      var module = $('<li class="module"></li>');
+      var hash = "#module/" + pkg.name + "/" + moduleName;
+      $('<a target="_self"></a>')
+        .attr("href", hash)
+        .text(moduleName)
+        .appendTo(module);
+      modules.append(module);
+      modules.append(document.createTextNode(' '));
+      count++
+    }
+    return count;
   }
 
   function showPackageDetail(name) {
-    var pkg = packages[name];
+    var pkg = apidocs[name];
     var entry = $("#templates .package-detail").clone();
-    var filename = "README.md";
 
-    var authors = [];
-    if (pkg.author)
-      authors.push(pkg.author);
-    if (pkg.contributors)
-      authors = authors.concat(pkg.contributors);
+    entry.find(".name").text(name);
 
-    var dependencies = pkg.dependencies;
+    var libs = [];
+    if (pkg.modules) {
+      libs = sortedKeys(pkg.modules);
+    }
+    for (var x in libs) {
+      var moduleName = libs[x];
+      var n = $("<div/>").addClass("module-name").text(moduleName);
+      n.appendTo(entry);
+      linkNode(n, "#module/" + name + "/" + moduleName);
 
-    entry.find(".name").text(pkg.name);
-    if (authors.length)
-      entry.find(".authors").text(authors.join("\n"));
-    if (pkg.license)
-      entry.find(".license").text(pkg.license);
-    if (pkg.version)
-      entry.find(".version").text(pkg.version);
-    if (dependencies && dependencies.length)
-      entry.find(".dependencies").text(dependencies.join("\n"));
-    else
-      entry.find(".dependencies").parent().parent().remove();
-
-    listModules(pkg, entry);
+      if (pkg.modules[moduleName].desc) {
+        $("<div/>").addClass("module-desc")
+          .html(converter.makeHtml(pkg.modules[moduleName].desc)).
+          appendTo(entry);
+      }
+    }
 
     queueMainContent(entry, function () {
-      getPkgFile(pkg, filename, markdownToHtml,
-                 function(html) {
-                   if (html)
-                     entry.find(".docs").html(html);
-                   showMainContent(entry, pkgFileUrl(pkg, filename));
-                 });
+      showMainContent(entry, null);
     });
   }
 
@@ -310,40 +415,8 @@ function startApp(jQuery, window) {
     finalizeSetup();
   }
 
-  function processPackages(packagesJSON) {
-    packages = packagesJSON;
-
-    var sortedPackages = [];
-    for (name in packages)
-      sortedPackages.push(name);
-    sortedPackages.sort();
-    var entries = $("<div></div>");
-    var lowLevelEntries = $("<div></div>");
-    $("#package-reference").after(entries);
-    $("#more-packages").after(lowLevelEntries);
-    entries.hide();
-    lowLevelEntries.hide();
-    sortedPackages.forEach(
-      function(name) {
-        var pkg = packages[name];
-        var entry = $("#templates .package-entry").clone();
-        var hash = "#package/" + pkg.name;
-        entry.find(".name").text(pkg.name).attr("href", hash);
-        entry.find(".description").text(pkg.description);
-
-        listModules(pkg, entry);
-
-        if ('keywords' in pkg && pkg.keywords.indexOf &&
-            pkg.keywords.indexOf('jetpack-low-level') != -1)
-          lowLevelEntries.append(entry);
-        else
-          entries.append(entry);
-      });
-    entries.fadeIn();
-    $("#more-packages").one('click', function() {
-      $(this).hide();
-      lowLevelEntries.slideDown();
-    });
+  function processAPIDocs(apidocsJSON) {
+    apidocs = apidocsJSON;
     finalizeSetup();
   }
 
@@ -387,6 +460,155 @@ function startApp(jQuery, window) {
     });
   }
 
+  function linkNode(node, url) {
+    node.replaceWith($('<a target="_self"></a>')
+                     .attr("href", url)
+                     .append(node.clone()));
+  }
+
+  function showAPIRef(name, context) {
+      if (name === 'api-by-package') {
+        var entry = $("#templates .package-list").clone();
+        var sortedPackageNames = sortedKeys(apidocs);
+        for (var p in sortedPackageNames) {
+          p = sortedPackageNames[p];
+          var item = $("#templates .one-package").clone();
+          item.find(".name a")
+            .text(apidocs[p].name)
+            .attr('href', "#package/" + apidocs[p].name);
+          item.find(".description").text(apidocs[p].desc);
+          var count = listModules(apidocs[p], item);
+          item.find(".number").text(count);
+          item.appendTo(entry);
+        }
+        queueMainContent(entry, function () {
+          showMainContent(entry);
+        });
+      } else if (name === 'api-full-listing') {
+        var fullApi = $("#templates .full-api").clone();
+
+        // for now we'll simply concatenate all modules docs onto
+        // a single page
+        var pkgs = sortedKeys(apidocs);
+
+        for (var p in pkgs) {
+          p = pkgs[p];
+          var modules = sortedKeys(apidocs[p].modules);
+          for (var m in modules) {
+            m = modules[m];
+            var modObj = apidocs[p].modules[m];
+            var entry = $("#templates .module-detail").clone();
+            populateModuleDocs(entry, p, modObj);
+
+            // let's get linky.  Make module names linkable.
+            entry.find(".name > .module").each(function() {
+              linkNode($(this),  "#module/" + p + "/" + m);
+            });
+
+            // now link all functions and properties to the proper module
+            // page so a user is one click away from search results to full
+            // module documentation
+            entry.find(".invocation").each(function() {
+              var url = "#module/" + p + "/" + m + "/";
+              docId = $(this).find(".varname").text() + "." + 
+                      $(this).find(".propName, .funcName").text();
+              // chomp off the first bit as it makes for an ugly url
+              docId = docId.split(".").slice(1).join(".");
+              url += docId;
+              linkNode($(this), url);
+            });
+
+            fullApi.append(entry);
+          }
+        }
+
+        var performSearch = function(keys) {
+          var keys = keys.trim().toLowerCase().split(" ");
+
+          // a selector that describes all of the non-atoms.  that is, things to
+          // hide when a filter is applied
+          var nonAtoms = "#main-content .module-detail > .name," +
+            "#main-content .module-detail > .example," +
+            "#main-content .module-detail > .docs," +
+            "#main-content .module-detail h2," +
+            "#main-content .class-detail > .classname," +
+            "#main-content .class-detail > .docs," +
+            "#main-content .class-detail .littleheading";
+
+          // if it's the empty string, show everything
+          if (keys.length === 1 && "" === keys[0]) {
+            $(nonAtoms).show();
+            $("#main-content .one-function, #main-content .one-property").show();
+            $("#main-content .class-detail").css("margin-left", "2em");
+
+            // if the last state contained text, then let's add a blank search
+            // to the history
+            var parts = currentHash.split("/");
+            if (parts.length > 2 && parts[2].length > 0) {
+              currentHash = "#apiref/api-full-listing";
+              window.location.hash = currentHash;
+            }
+          } else {
+            // search properties
+            function hideIfNotMatch() {
+              var match = true;
+              for (var i = 0; i < keys.length; i++) {
+                match = ($(this).text().toLowerCase().indexOf(keys[i]) >= 0);
+                if (!match) break;
+              }
+              if (match) {
+                $(this).show();
+              } else {
+                $(this).hide();
+              }
+            }
+            // hide all non-atoms
+            $(nonAtoms).each(function() { $(this).hide(); });
+
+            // a little trick for nested classes, unindent them so they
+            // appear reasonably in searches
+            $("#main-content .class-detail").css("margin-left", "0em");
+
+            // and check to see if the string sought occurs within
+            // a documented property or function
+            $("#main-content .one-function, #main-content .one-property").each(hideIfNotMatch);
+          }
+        }
+
+        // update history when/if user clicks on inside listing
+        fullApi.click(function(e) {
+          text = $(".filter_container input").val().trim();
+          if (text.length > 0) {
+            currentHash = "#apiref/api-full-listing/" + text;
+            window.location.hash = currentHash;
+          }
+        });
+
+        // now a handler for text-change events on the filter box
+        fullApi.find(".filter_container input").keyup(function() {
+          performSearch($(this).val());
+        });
+
+        // make the clear button active
+        fullApi.find(".filter_container .clear").click(function() {
+          $(".filter_container input").val("");
+          performSearch("");
+        });
+
+        queueMainContent(fullApi, function () {
+          // and start with a search if context is non empty
+          if (context != null) {
+            $(".filter_container input").val(context);
+            performSearch(context);
+          } else {
+            // ensure filter box is empty, some browsers don't
+          }
+          showMainContent(fullApi);
+        });
+      }
+  }
+
+
   function linkDeveloperGuide() {
     $(".link").each(
       function() {
@@ -400,55 +622,26 @@ function startApp(jQuery, window) {
       });
   }
 
-  var isPingWorking = true;
-
-  function sendIdlePing() {
-    jQuery.ajax({url:"api/idle",
-                 // This success function won't actually get called
-                 // for a really long time because it's a long poll.
-                 success: scheduleNextIdlePing,
-                 error: function(req) {
-                   if (req.status == 501 || req.status == 404)
-                     // The server either isn't implementing idle, or
-                     // we're being served from static files; just bail
-                     // and stop pinging this API endpoint.
-                     return;
-                   if (id) {
-                     window.clearTimeout(id);
-                     id = null;
-                     if (isPingWorking) {
-                       isPingWorking = false;
-                       $("#cannot-ping").slideDown();
-                     }
-                   }
-                   scheduleNextIdlePing();
-                 }});
-    var id = window.setTimeout(
+  function linkAPIReference() {
+    $(".apiref").each(
       function() {
-        // This is our "real" success function: basically, if we
-        // haven't received an error in IDLE_PING_DELAY ms, then
-        // we should assume success and hide the #cannot-ping
-        // element.
-        if (id) {
-          id = null;
-          if (!isPingWorking) {
-            isPingWorking = true;
-            $("#cannot-ping").slideUp();
-          }
+        if ($(this).children().length == 0) {
+          var hash = "#apiref/" + $(this).attr("id");
+          var hyperlink = $('<a target="_self"></a>');
+          hyperlink.attr("href", hash).text($(this).text());
+          $(this).text("");
+          $(this).append(hyperlink);
         }
-      }, IDLE_PING_DELAY);
+      });
   }
 
-  function scheduleNextIdlePing() {
-    window.setTimeout(sendIdlePing, IDLE_PING_DELAY);
-  }
-
-  if (window.location.protocol != "file:")
-    scheduleNextIdlePing();
   linkDeveloperGuide();
-  jQuery.ajax({url: "packages/index.json",
+  linkAPIReference();
+
+  // pull in the json formated api doc database
+  jQuery.ajax({url: "packages/apidocs.json",
                dataType: "json",
-               success: processPackages,
+               success: processAPIDocs,
                error: onPackageError});
 
   $("a[href]").live("click", function () {

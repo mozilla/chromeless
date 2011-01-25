@@ -1,0 +1,11 @@
+{
+  "desc": "A module to test implicit property documentation,\nwhere the developer provides only a description", 
+  "filename": "tests/property_omit_name_and_tag.js", 
+  "module": "property_omit_name_and_tag", 
+  "properties": [
+    {
+      "desc": "a property which exposes a name to you", 
+      "name": "name"
+    }
+  ]
+}

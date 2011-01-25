@@ -37,6 +37,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * Provides access to the local filesystem.
+ */
+
 const {Cc,Ci,Cr} = require("chrome");
 const byteStreams = require("byte-streams");
 const textStreams = require("text-streams");
@@ -84,10 +88,31 @@ function ensureExists(file) {
   }
 }
 
+/**
+ * Returns true if a file exists at the given path and false otherwise.
+ *
+ * @param path {string} The path to a file.
+ * @returns {boolean} True if the file exists and false otherwise.
+ */
 exports.exists = function exists(filename) {
   return MozFile(filename).exists();
 };
 
+/**
+ * Given a path returns metadata about the file or directory.  If the path is a symlink it
+ * will be dereferenced and information about the underlying file will be returned
+ *
+ * @param path {string} The path to a file.
+ * @returns {object}
+ * Returns an object with information about the file, including:
+ *
+ *  + `type` - either 'file' or 'directory'
+ *  + `numEntries` - (for directories), the number of files in the directory.
+ *  + `size` - (for files), the size of the file in bytes.
+ *  + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.
+ *
+ * @throws if file doesn't exist
+ */
 exports.stat = function stat(filename) {
     var stats = { };
     var file = MozFile(filename);
@@ -110,6 +135,14 @@ exports.stat = function stat(filename) {
     return stats;
 };
 
+/**
+ * Opens a file in text mode and returns a string containing its entire contents.
+ *
+ * @param path {string}
+ * The path of the file to read.
+ * @returns {string}
+ * A string containing the file's entire contents.
+ */
 exports.read = function read(filename) {
   var stream = exports.open(filename);
   try {
@@ -122,6 +155,16 @@ exports.read = function read(filename) {
   return str;
 };
 
+/**
+ * Takes a variable number of strings, joins them on the file system's path
+ * separator, and returns the result.
+ *
+ * @param ... {strings}
+ * A variable number of strings to join.
+ * @returns {string}
+ * A single string formed by joining the strings on the file system's path
+ * separator.
+ */
 exports.join = function join(base) {
   if (arguments.length < 2)
     throw new Error("need at least 2 args");
@@ -131,10 +174,26 @@ exports.join = function join(base) {
   return base.path;
 };
 
+/**
+ * Returns the path of the directory containing the given file.
+ *
+ * @param path {string}
+ *   The path of a file.
+ * @returns {string}
+ *   The path of the directory containing the file.
+ */
 exports.dirname = function dirname(path) {
   return MozFile(path).parent.path;
 };
 
+/**
+ * Returns an array of file names in the given directory.
+ *
+ * @param path {string}
+ * The path of the directory.
+ * @returns {array}
+ * An array of file names.  Each is a basename, not a full path.
+ */
 exports.list = function list(path) {
   var file = MozFile(path);
   ensureDir(file);
@@ -150,6 +209,27 @@ exports.list = function list(path) {
   return entryNames;
 };
 
+/**
+ * Returns a stream providing access to the contents of a file.
+ *
+ * @param path {string}
+ * The path of the file to open.
+ *
+ * @param [mode] {string}
+ * An optional string, each character of which describes a characteristic of the
+ * returned stream.  If the string contains `"r"`, the file is opened in
+ * read-only mode.  `"w"` opens the file in write-only mode.  `"b"` opens the
+ * file in binary mode.  If `"b"` is not present, the file is opened in text
+ * mode, and its contents are assumed to be UTF-8.  If *`mode`* is not given,
+ * `"r"` is assumed, and the file is opened in read-only text mode.
+ *
+ * @returns {stream}
+ * A stream that can be used to access or modify the contents of the file.  See
+ * [`text-streams`](#module/api-utils/text-streams) and
+ * [`byte-streams`](#module/api-utils/byte-streams) for more information.
+ * Opened files should always be closed after use by calling `close` on the
+ * returned stream.
+ */
 exports.open = function open(filename, mode) {
   var file = MozFile(filename);
   if (typeof(mode) !== "string")
@@ -191,12 +271,24 @@ exports.open = function open(filename, mode) {
          new textStreams.TextReader(stream);
 };
 
+/**
+ * Removes a file from the file system.  To remove directories, use `rmdir`.
+ *
+ * @param path {string} The path of the file to remove.
+ */
 exports.remove = function remove(path) {
   var file = MozFile(path);
   ensureFile(file);
   file.remove(false);
 };
 
+/**
+ * Makes a new directory named by the given path.  Any subdirectories that do not
+ * exist are also created.  `mkpath` can be called multiple times on the same
+ * path.
+ *
+ * @param path {string} The path to create.
+ */
 exports.mkpath = function mkpath(path) {
   var file = MozFile(path);
   if (!file.exists())
@@ -205,6 +297,12 @@ exports.mkpath = function mkpath(path) {
     throw new Error("The path already exists and is not a directory: " + path);
 };
 
+/** 
+ * Removes a directory from the file system.  If the directory is not empty, an
+ * exception is thrown.
+ *
+ * @param path {string} The path of the directory to remove.
+ */
 exports.rmdir = function rmdir(path) {
   var file = MozFile(path);
   ensureDir(file);

@@ -1,0 +1,11 @@
+{
+  "classes": [
+    {
+      "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+      "name": "URL"
+    }
+  ], 
+  "desc": "This is a module who's wierd, it has its declaration\ninside of a class declaration.  We could make this an error,\nbut why?", 
+  "filename": "tests/module_inside_class.js", 
+  "module": "names_changed"
+}
