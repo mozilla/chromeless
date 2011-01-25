@@ -74,24 +74,6 @@ function startApp(jQuery, window) {
     return modules;
   }
 
-  function pkgFileUrl(pkg, filename) {
-    return "packages/" + pkg.name + "/" + filename;
-  }
-
-  function pkgHasFile(pkg, filename) {
-    var parts = filename.split("/");
-    var dirNames = parts.slice(0, -1);
-    var filePart = parts.slice(-1)[0];
-    var dir = pkg.files;
-    for (var i = 0; i < dirNames.length; i++) {
-      if (dirNames[i] in dir && !('size' in dir[dirNames[i]]))
-        dir = dir[dirNames[i]];
-      else
-        return false;
-    }
-    return (filePart in dir);
-  }
-
   function fixInternalLinkTargets(query) {
     query.find("a").each(
       function() {
@@ -101,29 +83,6 @@ function startApp(jQuery, window) {
       });
   }
 
-  function getPkgFile(pkg, filename, filter, cb) {
-    if (pkgHasFile(pkg, filename)) {
-      var options = {
-        url: pkgFileUrl(pkg, filename),
-        dataType: "text",
-        success: function(text) {
-          if (filter)
-            try {
-              text = filter(text);
-            } catch (e) {
-              text = null;
-            }
-          cb(text);
-        },
-        error: function() {
-          cb(null);
-        }
-      };
-      jQuery.ajax(options);
-    } else
-      cb(null);
-  }
-
   function onPkgAPIError(req, where, source_filename) {
     var errorDisplay = $("#templates .module-parse-error").clone();
     errorDisplay.find(".filename").text(source_filename);
@@ -131,31 +90,6 @@ function startApp(jQuery, window) {
     where.empty().append(errorDisplay);
     errorDisplay.hide();
     errorDisplay.fadeIn();
-  }
-
-  function renderPkgAPI(pkg, source_filename, div_filename, where, donecb) {
-    if (pkgHasFile(pkg, source_filename)) {
-      var options = {
-        url: pkgFileUrl(pkg, div_filename) + ".html",
-        dataType: "html",
-        success: function(div_text) {
-          try {
-            $(where).empty();
-            $(div_text).appendTo(where)
-          } catch (e) {
-            $(where).text("Oops, API docs renderer failed: " + e);
-          }
-          donecb("success");
-        },
-        error: function (req) {
-          onPkgAPIError(req, where, source_filename);
-          donecb("show_error");
-        }
-      };
-      jQuery.ajax(options);
-    } else {
-      donecb(null);
-    }
   }
 
   function showSidenotes(query) {
@@ -441,37 +375,18 @@ function startApp(jQuery, window) {
   function showPackageDetail(name) {
     var pkg = apidocs[name];
     var entry = $("#templates .package-detail").clone();
-    var filename = "README.md";
+    
+    entry.find(".name").text(name);
 
-    var authors = [];
-    if (pkg.author)
-      authors.push(pkg.author);
-    if (pkg.contributors)
-      authors = authors.concat(pkg.contributors);
-
-    var dependencies = pkg.dependencies;
-
-    entry.find(".name").text(pkg.name);
-    if (authors.length)
-      entry.find(".authors").text(authors.join("\n"));
-    if (pkg.license)
-      entry.find(".license").text(pkg.license);
-    if (pkg.version)
-      entry.find(".version").text(pkg.version);
-    if (dependencies && dependencies.length)
-      entry.find(".dependencies").text(dependencies.join("\n"));
-    else
-      entry.find(".dependencies").parent().parent().remove();
-
+    // XXX: we need a nice way that package level documentation can
+    // be included...  Previously there was a README.md file that
+    // could be associated with packages.  That seems like a fine
+    // thing to revive...  Alternately we could introduce a tag
+    // for package docs?  options are abundant
     listModules(pkg, entry);
 
     queueMainContent(entry, function () {
-      getPkgFile(pkg, filename, markdownToHtml,
-                 function(html) {
-                   if (html)
-                     entry.find(".docs").html(html);
-                   showMainContent(entry, pkgFileUrl(pkg, filename));
-                 });
+      showMainContent(entry, null);
     });
   }
 
