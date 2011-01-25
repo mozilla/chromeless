@@ -7,7 +7,6 @@ function startApp(jQuery, window) {
   var converter = new Showdown.converter();
 
   const DEFAULT_HASH = "guide/welcome";
-  const IDLE_PING_DELAY = 500;
   const CHECK_HASH_DELAY = 100;
   const DOCUMENT_TITLE_ROOT = "Chromeless Documentation";
 
@@ -23,6 +22,8 @@ function startApp(jQuery, window) {
     if (hash.length <= 1)
       hash = "#" + DEFAULT_HASH;
     if (hash != currentHash) {
+      console.log("currentHash: " + currentHash);
+      console.log("hash:        " + hash);
       currentHash = hash;
       onHash(currentHash.slice(1));
     }
@@ -38,8 +39,9 @@ function startApp(jQuery, window) {
       break;
     case "module":
       var pkgName = parts[1];
-      var moduleName = parts.slice(2).join("/");
-      showModuleDetail(pkgName, moduleName);
+      var moduleName = parts[2];
+      var selectedFunction = (parts.length > 3) ? parts.slice(3).join("/") : null;
+      showModuleDetail(pkgName, moduleName, selectedFunction);
       documentName = moduleName;
       break;
     case "guide":
@@ -47,7 +49,8 @@ function startApp(jQuery, window) {
       documentName = $('#' + parts[1]).text();
       break;
     case "apiref":
-      showAPIRef(parts[1]);
+      var context = (parts.length > 2) ? parts[2] : null;
+      showAPIRef(parts[1], context);
       documentName = $('#' + parts[1]).text();
     }
     if (documentName.length > 0) {
@@ -122,15 +125,15 @@ function startApp(jQuery, window) {
       $("#right-column").empty().append(query);
       onDone();
     }
-    if (shouldFadeAndScroll) {
+/*    if (shouldFadeAndScroll) {
       scrollToTop(function () {
         $("#main-content").fadeOut(100, doIt);
       });
     }
-    else {
+    else { */
       $("#main-content").hide();
       doIt();
-    }
+//    }
   }
 
   function scrollToTop(onDone) {
@@ -181,6 +184,7 @@ function startApp(jQuery, window) {
       var func = $("#templates .one-function").clone();
       func.find(".varname").text(moduleName);
       func.find(".funcName").text(name);
+      func.find(".invocation").attr('id', moduleName + "." + name);
       if (!f.desc) {
         f.desc = "no documentation available for this function";
       }
@@ -249,6 +253,7 @@ function startApp(jQuery, window) {
       else prop.find(".type").remove();
       prop.find(".varname").text(moduleName);
       prop.find(".propName").text(name);
+      prop.find(".invocation").attr('id', moduleName + "." + name);
       if (!p.desc) {
         p.desc = "no documentation available for this property";
       }
@@ -336,7 +341,7 @@ function startApp(jQuery, window) {
     }
   }
 
-  function showModuleDetail(pkgName, moduleName) {
+  function showModuleDetail(pkgName, moduleName, selectedFunction) {
     var module = apidocs[pkgName].modules[moduleName];
     var entry = $("#templates .module-detail").clone();
 
@@ -344,6 +349,19 @@ function startApp(jQuery, window) {
 
     queueMainContent(entry, function () {
       showMainContent(entry);
+
+      console.log("show'd");
+      // shall we set scrolltop?
+      console.log("sf: " + selectedFunction);
+      if (selectedFunction != null) {
+        var sf = "#" + selectedFunction.replace(/\./g, "\\.");
+        $(sf).each(function() {
+          // scroll to the selected function
+          $('html, body').animate({scrollTop:$(this).offset().top}, 500);
+          // and highlight it
+          $(this).parent().css('background-color', '#ffc');
+        });
+      }
     });
   }
 
@@ -375,7 +393,7 @@ function startApp(jQuery, window) {
   function showPackageDetail(name) {
     var pkg = apidocs[name];
     var entry = $("#templates .package-detail").clone();
-    
+
     entry.find(".name").text(name);
 
     // XXX: we need a nice way that package level documentation can
@@ -446,7 +464,14 @@ function startApp(jQuery, window) {
     });
   }
 
-  function showAPIRef(name) {
+  function linkNode(node, url) {
+    var p = node.parent();
+    node.replaceWith($('<a target="_self"></a>')
+                     .attr("href", url)
+                     .append(node.clone()));
+  }
+
+  function showAPIRef(name, context) {
       if (name === 'api-by-package') {
         var entry = $("#templates .package-list").clone();
         var sortedPackageNames = sortedKeys(apidocs);
@@ -479,29 +504,45 @@ function startApp(jQuery, window) {
             var modObj = apidocs[p].modules[m];
             var entry = $("#templates .module-detail").clone();
             populateModuleDocs(entry, p, modObj);
+
+            // let's get linky.  Make module names linkable.
+            entry.find(".name > .module").each(function() {
+              linkNode($(this),  "#module/" + p + "/" + m);
+            });
+
+            // now link all functions and properties to the proper module
+            // page so a user is one click away from search results to full
+            // module documentation
+            entry.find(".invocation").each(function() {
+              var url = "#module/" + p + "/" + m + "/";
+              url += $(this).find(".varname").text() + ".";
+              url += $(this).find(".propName, .funcName").text();
+              linkNode($(this), url);
+            });
+
             fullApi.append(entry);
           }
         }
 
-        // now a handler for text-change events on the filter box
-        fullApi.find(".filter_container input").keyup(function(e) {
-          var keys = $(this).val().trim().toLowerCase().split(" ");
+        var performSearch = function(keys) {
+          console.log(keys);
+          var keys = keys.trim().toLowerCase().split(" ");
 
           // a selector that describes all of the non-atoms.  that is, things to
           // hide when a filter is applied
-          var nonAtoms = ".module-detail > .name," +
-            ".module-detail > .example," +
-            ".module-detail > .docs," +
-            ".module-detail h2," +
-            ".class-detail > .classname," +
-            ".class-detail > .docs," +
-            ".class-detail .littleheading";
+          var nonAtoms = "#main-content .module-detail > .name," +
+            "#main-content .module-detail > .example," +
+            "#main-content .module-detail > .docs," +
+            "#main-content .module-detail h2," +
+            "#main-content .class-detail > .classname," +
+            "#main-content .class-detail > .docs," +
+            "#main-content .class-detail .littleheading";
 
           // if it's the empty string, show everything
           if (keys.length === 1 && "" === keys[0]) {
             $(nonAtoms).show();
-            $(".one-function, .one-property").show();
-            $(".class-detail").css("margin-left", "2em");
+            $("#main-content .one-function, #main-content .one-property").show();
+            $("#main-content .class-detail").css("margin-left", "2em");
 
           } else {
             // search properties
@@ -522,19 +563,38 @@ function startApp(jQuery, window) {
 
             // a little trick for nested classes, unindent them so they
             // appear reasonably in searches
-            $(".class-detail").css("margin-left", "0em");
+            $("#main-content .class-detail").css("margin-left", "0em");
 
             // and check to see if the string sought occurs within
             // a documented property or function
-            $(".one-function, .one-property").each(hideIfNotMatch);
+            $("#main-content .one-function, #main-content .one-property").each(hideIfNotMatch);
+          }
+        }
+
+        // update history when/if user clicks on inside listing
+        fullApi.click(function(e) {
+          text = $(".filter_container input").val().trim();
+          if (text.length > 0) {
+            currentHash = "#apiref/api-full-listing/" + text;
+            window.location.hash = currentHash;
           }
         });
 
+        // now a handler for text-change events on the filter box
+        fullApi.find(".filter_container input").keyup(function(e) {
+          performSearch($(this).val());
+        });
+
         queueMainContent(fullApi, function () {
+          // and start with a search if context is non empty
+          if (context != null) {
+            performSearch(context);
+          }
           showMainContent(fullApi);
         });
       }
   }
+
 
   function linkDeveloperGuide() {
     $(".link").each(

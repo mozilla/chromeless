@@ -92,3 +92,7 @@
     font-size: 1.2em;
     padding-right: 10px;
 }
+
+.full-api a {
+    text-decoration: none;
+}
