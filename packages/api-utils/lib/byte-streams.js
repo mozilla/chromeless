@@ -40,11 +40,36 @@
 exports.ByteReader = ByteReader;
 exports.ByteWriter = ByteWriter;
 
+/**
+ * The `byte-streams` module provides streams for reading and writing bytes.
+ */
+
 const {Cc, Ci} = require("chrome");
 
 // This just controls the maximum number of bytes we read in at one time.
 const BUFFER_BYTE_LEN = 0x8000;
 
+/**
+ * @class ByteReader
+ */
+
+/**
+ * @function close
+ * Closes both the stream and its backing stream.
+ * @throws If the stream is already closed.
+ */
+
+/**
+ * @property {boolean} closed
+ * True if the stream is closed.
+ */
+
+/**
+ * @constructor
+ * Creates a binary input stream that reads bytes from a backing stream.
+ * @param {stream} inputStream
+ * The backing stream, an [`nsIInputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIInputStream.idl).
+ */
 function ByteReader(inputStream) {
   const self = this;
 
@@ -54,6 +79,17 @@ function ByteReader(inputStream) {
 
   let manager = new StreamManager(this, stream);
 
+  /**
+   * @function read
+   * Reads bytes from the stream. 
+   * @param [numBytes] {number}
+   * The number of bytes to read.  If not given, the remainder of the entire stream
+   * is read.
+   * @returns {string}
+   * A string containing the bytes read.  If the stream is at the end, returns the
+   * empty string.
+   * @throws If the stream is already closed.
+   */
   this.read = function ByteReader_read(numBytes) {
     manager.ensureOpened();
     if (typeof(numBytes) !== "number")
@@ -79,6 +115,27 @@ function ByteReader(inputStream) {
   };
 }
 
+/** @endclass */
+
+/** @class ByteWriter */
+
+/**
+ * @function close
+ * Closes both the stream and its backing stream.
+ * @throws If the stream is already closed.
+ */
+
+/**
+ * @property {boolean} closed
+ * True if the stream is closed.
+ */
+
+/**
+ * @constructor
+ * Creates a binary output stream that writes bytes to a backing stream.
+ * @param outputStream {stream}
+ * The backing stream, an [nsIOutputStream](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).
+ */
 function ByteWriter(outputStream) {
   const self = this;
 
@@ -88,6 +145,13 @@ function ByteWriter(outputStream) {
 
   let manager = new StreamManager(this, stream);
 
+  /**
+   * @function write
+   * Writes a string to the stream.
+   * @throws if the stream is closed
+   * @param str {string}
+   * The string to write. 
+   */
   this.write = function ByteWriter_write(str) {
     manager.ensureOpened();
     try {
@@ -99,6 +163,7 @@ function ByteWriter(outputStream) {
   };
 }
 
+/** @endclass */
 
 // This manages the lifetime of stream, a ByteReader or ByteWriter.  It defines
 // closed and close() on stream and registers an unload listener that closes
