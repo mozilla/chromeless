@@ -485,7 +485,7 @@ function startApp(jQuery, window) {
 
         // now a handler for text-change events on the filter box
         fullApi.find(".filter_container input").keyup(function(e) {
-          var key = $(this).val().trim().toLowerCase();
+          var keys = $(this).val().trim().toLowerCase().split(" ");
 
           // a selector that describes all of the non-atoms.  that is, things to
           // hide when a filter is applied
@@ -498,7 +498,7 @@ function startApp(jQuery, window) {
             ".class-detail .littleheading";
 
           // if it's the empty string, show everything
-          if ("" === key) {
+          if (keys.length === 1 && "" === keys[0]) {
             $(nonAtoms).show();
             $(".one-function, .one-property").show();
             $(".class-detail").css("margin-left", "2em");
@@ -506,10 +506,15 @@ function startApp(jQuery, window) {
           } else {
             // search properties
             function hideIfNotMatch() {
-              if ($(this).text().toLowerCase().indexOf(key) < 0) {
-                $(this).hide();
-              } else {
+              var match = true;
+              for (var i = 0; i < keys.length; i++) {
+                match = ($(this).text().toLowerCase().indexOf(keys[i]) >= 0);
+                if (!match) break;
+              }
+              if (match) {
                 $(this).show();
+              } else {
+                $(this).hide();
               }
             }
             // hide all non-atoms
