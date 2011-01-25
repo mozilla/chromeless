@@ -32,11 +32,7 @@ class DocExtractor():
         # [description]
         self.function_pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
 
-        # parse a parameter :
-        #   @param <name> <{type}> <description>
-        self.param_pat = re.compile('^(?:([\w.\[\]]+)\s*(?:{(\w+)})|(?:{(\w+)})\s*([\w.\[\]]+))\s*(.*)$', re.S);
-
-        # parse properties, similar to params but we also support a type
+        # parse properties or params.
         # We support three forms:
         #   @property <name> <{type}> [description]
         #   @property <{type}> <name> [description]
@@ -67,6 +63,7 @@ class DocExtractor():
         self.paramMarker = "@param"
         self.propertyMarker = "@property"
         self.returnsMarker = "@returns"
+        self.returnMarker = "@return"
         self.throwsMarker = "@throws"
         self.typeMarker = "@type"
 
@@ -80,6 +77,7 @@ class DocExtractor():
             self.paramMarker,
             self.propertyMarker,
             self.returnsMarker,
+            self.returnMarker,
             self.throwsMarker,
             self.typeMarker
             )
@@ -233,19 +231,29 @@ class DocExtractor():
                 # XXX: should this really be fatal?
                 raise RuntimeError("@type without any content encountered")
         elif cur == self.paramMarker:
-            nxt = self._peekTok(tokens)
-            if not self._isMarker(nxt):
-                nxt = tokens.pop(0)
-                m = self.param_pat.match(nxt)
+            nxt = self._popNonMarker(tokens)
+            if nxt:
+                # nxt now describes the param
+                m = self.prop_pat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
-                                       (self.paramMarker, (nxt[:20] + "...")))
+                                       (cur, (nxt[:20] + "...")))
                 p = { }
-                # We allow name type or type name
-                p['name'] = m.group(1) if m.group(1) else m.group(4)
-                if m.group(2) or m.group(3):
-                    p['type'] = m.group(2) if m.group(2) else m.group(3)
-                p['desc'] = m.group(5)
+                if m.group(1):
+                    p['name'] = m.group(1)
+                    p['type'] = m.group(2)
+                    if m.group(3):
+                        p['desc'] = m.group(3)
+                elif m.group(4):
+                    p['type'] = m.group(4)
+                    p['name'] = m.group(5)
+                    if m.group(6):
+                        p['desc'] = m.group(6)
+                else:
+                    if m.group(7):
+                        p['name'] = m.group(7)
+                    if m.group(8):
+                        p['desc'] = m.group(8)
 
                 if not 'params' in currentObj:
                     currentObj['params'] = [ ]
@@ -253,14 +261,14 @@ class DocExtractor():
             else:
                 # in this case we'll have to guess the function name
                 pass
-        elif cur == self.returnsMarker:
+        elif cur == self.returnsMarker or cur == self.returnMarker:
             nxt = self._peekTok(tokens)
             if not self._isMarker(nxt):
                 nxt = tokens.pop(0)
                 m = self.return_pat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
-                                       (self.returnsMarker, (nxt[:20] + "...")))
+                                       (cur, (nxt[:20] + "...")))
                 rv = { }
                 if m.group(1):
                     rv['type'] = m.group(1)
