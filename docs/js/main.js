@@ -22,8 +22,6 @@ function startApp(jQuery, window) {
     if (hash.length <= 1)
       hash = "#" + DEFAULT_HASH;
     if (hash != currentHash) {
-      console.log("currentHash: " + currentHash);
-      console.log("hash:        " + hash);
       currentHash = hash;
       onHash(currentHash.slice(1));
     }
@@ -120,20 +118,10 @@ function startApp(jQuery, window) {
 
   function queueMainContent(query, onDone) {
     queuedContent = query;
-    function doIt() {
-      $("#sidenotes").empty();
-      $("#right-column").empty().append(query);
-      onDone();
-    }
-/*    if (shouldFadeAndScroll) {
-      scrollToTop(function () {
-        $("#main-content").fadeOut(100, doIt);
-      });
-    }
-    else { */
-      $("#main-content").hide();
-      doIt();
-//    }
+    $("#main-content").hide();
+    $("#sidenotes").empty();
+    $("#right-column").empty().append(query);
+    onDone();
   }
 
   function scrollToTop(onDone) {
@@ -184,7 +172,7 @@ function startApp(jQuery, window) {
       var func = $("#templates .one-function").clone();
       func.find(".varname").text(moduleName);
       func.find(".funcName").text(name);
-      func.find(".invocation").attr('id', moduleName + "." + name);
+      func.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
       if (!f.desc) {
         f.desc = "no documentation available for this function";
       }
@@ -253,7 +241,7 @@ function startApp(jQuery, window) {
       else prop.find(".type").remove();
       prop.find(".varname").text(moduleName);
       prop.find(".propName").text(name);
-      prop.find(".invocation").attr('id', moduleName + "." + name);
+      prop.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
       if (!p.desc) {
         p.desc = "no documentation available for this property";
       }
@@ -350,9 +338,7 @@ function startApp(jQuery, window) {
     queueMainContent(entry, function () {
       showMainContent(entry);
 
-      console.log("show'd");
       // shall we set scrolltop?
-      console.log("sf: " + selectedFunction);
       if (selectedFunction != null) {
         var sf = "#" + selectedFunction.replace(/\./g, "\\.");
         $(sf).each(function() {
@@ -471,6 +457,9 @@ function startApp(jQuery, window) {
                      .append(node.clone()));
   }
 
+  
+
+
   function showAPIRef(name, context) {
       if (name === 'api-by-package') {
         var entry = $("#templates .package-list").clone();
@@ -515,8 +504,11 @@ function startApp(jQuery, window) {
             // module documentation
             entry.find(".invocation").each(function() {
               var url = "#module/" + p + "/" + m + "/";
-              url += $(this).find(".varname").text() + ".";
-              url += $(this).find(".propName, .funcName").text();
+              docId = $(this).find(".varname").text() + "." + 
+                      $(this).find(".propName, .funcName").text();
+              // chomp off the first bit as it makes for an ugly url
+              docId = docId.split(".").slice(1).join(".");
+              url += docId;
               linkNode($(this), url);
             });
 
@@ -525,7 +517,6 @@ function startApp(jQuery, window) {
         }
 
         var performSearch = function(keys) {
-          console.log(keys);
           var keys = keys.trim().toLowerCase().split(" ");
 
           // a selector that describes all of the non-atoms.  that is, things to
@@ -544,6 +535,13 @@ function startApp(jQuery, window) {
             $("#main-content .one-function, #main-content .one-property").show();
             $("#main-content .class-detail").css("margin-left", "2em");
 
+            // if the last state contained text, then let's add a blank search
+            // to the history
+            var parts = currentHash.split("/");
+            if (parts.length > 2 && parts[2].length > 0) {
+              currentHash = "#apiref/api-full-listing";
+              window.location.hash = currentHash;
+            }
           } else {
             // search properties
             function hideIfNotMatch() {
@@ -581,14 +579,23 @@ function startApp(jQuery, window) {
         });
 
         // now a handler for text-change events on the filter box
-        fullApi.find(".filter_container input").keyup(function(e) {
+        fullApi.find(".filter_container input").keyup(function() {
           performSearch($(this).val());
+        });
+
+        // make the clear button active
+        fullApi.find(".filter_container .clear").click(function() {
+          $(".filter_container input").val("");
+          performSearch("");
         });
 
         queueMainContent(fullApi, function () {
           // and start with a search if context is non empty
           if (context != null) {
+            $(".filter_container input").val(context);
             performSearch(context);
+          } else {
+            // ensure filter box is empty, some browsers don't
           }
           showMainContent(fullApi);
         });
