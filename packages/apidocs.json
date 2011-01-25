@@ -1,0 +1,675 @@
+{
+  "api-utils": {
+    "desc": "Foundational infrastructure and utilities.", 
+    "modules": {
+      "StringBundle": {
+        "desc": "A bundle of strings.", 
+        "filename": "app-strings.js", 
+        "module": "StringBundle"
+      }, 
+      "byte-streams": {
+        "filename": "byte-streams.js", 
+        "module": "byte-streams"
+      }, 
+      "content": {
+        "filename": "content.js", 
+        "module": "content"
+      }, 
+      "cuddlefish": {
+        "filename": "cuddlefish.js", 
+        "module": "cuddlefish"
+      }, 
+      "dom": {
+        "filename": "windows/dom.js", 
+        "module": "dom"
+      }, 
+      "e10s": {
+        "filename": "e10s.js", 
+        "module": "e10s"
+      }, 
+      "errors": {
+        "filename": "errors.js", 
+        "module": "errors"
+      }, 
+      "events": {
+        "filename": "tabs/events.js", 
+        "module": "events"
+      }, 
+      "file": {
+        "desc": "Provides access to the local filesystem.", 
+        "filename": "file.js", 
+        "functions": [
+          {
+            "desc": "Returns true if a file exists at the given path and false otherwise.", 
+            "name": "exists", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "True if the file exists and false otherwise.", 
+              "type": "boolean"
+            }
+          }, 
+          {
+            "desc": "Given a path returns metadata about the file or directory.  If the path is a symlink it\nwill be dereferenced and information about the underlying file will be returned", 
+            "name": "stat", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Returns an object with information about the file, including:\n\n + `type` - either 'file' or 'directory'\n + `numEntries` - (for directories), the number of files in the directory.\n + `size` - (for files), the size of the file in bytes.\n + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.", 
+              "type": "object"
+            }, 
+            "throws": [
+              {
+                "desc": "if file doesn't exist"
+              }
+            ]
+          }, 
+          {
+            "desc": "Opens a file in text mode and returns a string containing its entire contents.", 
+            "name": "read", 
+            "params": [
+              {
+                "desc": "The path of the file to read.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string containing the file's entire contents.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Takes a variable number of strings, joins them on the file system's path\nseparator, and returns the result.", 
+            "name": "join", 
+            "params": [
+              {
+                "desc": "A variable number of strings to join.", 
+                "name": "...", 
+                "type": "strings"
+              }
+            ], 
+            "returns": {
+              "desc": "A single string formed by joining the strings on the file system's path\nseparator.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Returns the path of the directory containing the given file.", 
+            "name": "dirname", 
+            "params": [
+              {
+                "desc": "The path of a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The path of the directory containing the file.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Returns an array of file names in the given directory.", 
+            "name": "list", 
+            "params": [
+              {
+                "desc": "The path of the directory.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "An array of file names.  Each is a basename, not a full path.", 
+              "type": "array"
+            }
+          }, 
+          {
+            "desc": "Returns a stream providing access to the contents of a file.", 
+            "name": "open", 
+            "params": [
+              {
+                "desc": "The path of the file to open.", 
+                "name": "path", 
+                "type": "string"
+              }, 
+              {
+                "desc": "An optional string, each character of which describes a characteristic of the\nreturned stream.  If the string contains `\"r\"`, the file is opened in\nread-only mode.  `\"w\"` opens the file in write-only mode.  `\"b\"` opens the\nfile in binary mode.  If `\"b\"` is not present, the file is opened in text\nmode, and its contents are assumed to be UTF-8.  If *`mode`* is not given,\n`\"r\"` is assumed, and the file is opened in read-only text mode.", 
+                "name": "[mode]", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A stream that can be used to access or modify the contents of the file.  See\n[`text-streams`](#module/api-utils/text-streams) and\n[`byte-streams`](#module/api-utils/byte-streams) for more information.\nOpened files should always be closed after use by calling `close` on the\nreturned stream.", 
+              "type": "stream"
+            }
+          }, 
+          {
+            "desc": "Removes a file from the file system.  To remove directories, use `rmdir`.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "The path of the file to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "desc": "Makes a new directory named by the given path.  Any subdirectories that do not\nexist are also created.  `mkpath` can be called multiple times on the same\npath.", 
+            "name": "mkpath", 
+            "params": [
+              {
+                "desc": "The path to create.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "desc": "Removes a directory from the file system.  If the directory is not empty, an\nexception is thrown.", 
+            "name": "rmdir", 
+            "params": [
+              {
+                "desc": "The path of the directory to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "module": "file"
+      }, 
+      "find-tests": {
+        "filename": "find-tests.js", 
+        "module": "find-tests"
+      }, 
+      "find-tests-e10s-adapter": {
+        "filename": "find-tests-e10s-adapter.js", 
+        "module": "find-tests-e10s-adapter"
+      }, 
+      "function": {
+        "desc": "Takes a function and returns a wrapped one instead, calling which will call\noriginal function in the next turn of event loop. This is basically utility\nto do `setTimeout(function() { ... }, 0)`, with a difference that returned\nfunction is reused, instead of creating a new one each time. This also allows\nto use this functions as event listeners.", 
+        "filename": "utils/function.js", 
+        "module": "function"
+      }, 
+      "getFaviconURIForLocation": {
+        "desc": "Takes URI of the page and returns associated favicon URI.\nIf page under passed uri has no favicon then base64 encoded data URI of\ndefault faveicon is returned.", 
+        "filename": "utils/data.js", 
+        "module": "getFaviconURIForLocation"
+      }, 
+      "hidden-frame": {
+        "filename": "hidden-frame.js", 
+        "module": "hidden-frame"
+      }, 
+      "loader": {
+        "desc": "Trait provides private `_window` property and requires `_onLoad` property\nthat will be called when `_window` is loaded. If `_window` property value\nis changed with already loaded window `_onLoad` still will be called.", 
+        "filename": "windows/loader.js", 
+        "module": "loader"
+      }, 
+      "match-pattern": {
+        "filename": "match-pattern.js", 
+        "module": "match-pattern"
+      }, 
+      "memory": {
+        "filename": "memory.js", 
+        "module": "memory"
+      }, 
+      "plain-text-console": {
+        "filename": "plain-text-console.js", 
+        "module": "plain-text-console"
+      }, 
+      "preferences-service": {
+        "filename": "preferences-service.js", 
+        "module": "preferences-service"
+      }, 
+      "registry": {
+        "filename": "utils/registry.js", 
+        "module": "registry"
+      }, 
+      "securable-module": {
+        "filename": "securable-module.js", 
+        "module": "securable-module"
+      }, 
+      "self": {
+        "filename": "self.js", 
+        "module": "self"
+      }, 
+      "self-e10s-adapter": {
+        "filename": "self-e10s-adapter.js", 
+        "module": "self-e10s-adapter"
+      }, 
+      "symbiont": {
+        "desc": "This trait is layered on top of `Worker` and in contrast to symbiont\nWorker constructor requires `content` option that represents content\nthat will be loaded in the provided frame, if frame is not provided\nWorker will create hidden one.", 
+        "filename": "content/symbiont.js", 
+        "module": "symbiont"
+      }, 
+      "tab": {
+        "desc": "Trait used to create tab wrappers.", 
+        "filename": "tabs/tab.js", 
+        "module": "tab"
+      }, 
+      "tab-browser": {
+        "desc": "**************** TabModule ********************", 
+        "filename": "tab-browser.js", 
+        "functions": [
+          {
+            "desc": "TabModule\n\nConstructor for a module that implements the tabs API", 
+            "name": "TabModule"
+          }
+        ], 
+        "module": "tab-browser"
+      }, 
+      "tabs": {
+        "desc": "This is a trait that is used in composition of window wrapper. Trait tracks\ntab related events of the wrapped window in order to keep truck of open\ntabs and maintain their wrappers. Every new tab is gets wrapped and jetpack\ntype event is emitted.", 
+        "filename": "windows/tabs.js", 
+        "module": "tabs"
+      }, 
+      "thumbnail": {
+        "desc": "Creates canvas element with a thumbnail of the passed window.", 
+        "filename": "utils/thumbnail.js", 
+        "functions": [
+          {
+            "desc": "Creates Base64 encoded data URI of the thumbnail for the passed window.", 
+            "name": "getThumbnailURIForWindow", 
+            "params": [
+              {
+                "desc": "", 
+                "name": "window", 
+                "type": "Window"
+              }
+            ], 
+            "returns": {
+              "desc": "", 
+              "type": "String"
+            }
+          }
+        ], 
+        "module": "thumbnail"
+      }, 
+      "timer": {
+        "filename": "timer.js", 
+        "module": "timer"
+      }, 
+      "timer-e10s-adapter": {
+        "filename": "timer-e10s-adapter.js", 
+        "module": "timer-e10s-adapter"
+      }, 
+      "traceback": {
+        "filename": "traceback.js", 
+        "module": "traceback"
+      }, 
+      "unit-test": {
+        "filename": "unit-test.js", 
+        "module": "unit-test"
+      }, 
+      "unit-test-finder": {
+        "filename": "unit-test-finder.js", 
+        "module": "unit-test-finder"
+      }, 
+      "unload": {
+        "filename": "unload.js", 
+        "module": "unload"
+      }, 
+      "url": {
+        "classes": [
+          {
+            "constructor": {
+              "desc": "The URL constructor creates an object that represents a URL,  verifying that\nthe provided string is a valid URL in the process.", 
+              "params": [
+                {
+                  "desc": "A string to be converted into a URL.", 
+                  "name": "url", 
+                  "type": "string"
+                }, 
+                {
+                  "desc": "An optional base url which will be used to resolve the\n`url` argument if it is a relative url.", 
+                  "name": "[base]", 
+                  "type": "string"
+                }
+              ], 
+              "throws": [
+                {
+                  "desc": "If `source` is not a valid URI."
+                }
+              ]
+            }, 
+            "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+            "functions": [
+              {
+                "desc": "Converts URL class contents to a string.", 
+                "name": "toString", 
+                "returns": {
+                  "desc": "The URL as a string.", 
+                  "type": "string"
+                }
+              }
+            ], 
+            "name": "URL", 
+            "properties": [
+              {
+                "desc": "The name of the protocol in the URL.", 
+                "name": "scheme", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The username:password part of the URL, `null` if not present.", 
+                "name": "userPass", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The host of the URL, `null` if not present.", 
+                "name": "host", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The port number of the URL, `null` if none was specified.", 
+                "name": "port", 
+                "type": "integer"
+              }, 
+              {
+                "desc": "The path component of the URL.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "desc": "A URL parsing library and some utility routines to convert between native\npaths.  Includes a class representation of URLs that may be used in\nmany other modules.", 
+        "filename": "url.js", 
+        "functions": [
+          {
+            "desc": "build a URL from a filename.", 
+            "name": "fromFilename", 
+            "params": [
+              {
+                "desc": "The path to convert.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string representation of a URL.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "build a filename from a url.", 
+            "name": "toFilename", 
+            "params": [
+              {
+                "desc": "The path to convert.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string representation of a URL.", 
+              "type": "string"
+            }
+          }
+        ], 
+        "module": "url"
+      }, 
+      "versionInRange": {
+        "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
+        "filename": "xul-app.js", 
+        "module": "versionInRange"
+      }, 
+      "xhr": {
+        "filename": "xhr.js", 
+        "module": "xhr"
+      }
+    }, 
+    "name": "api-utils"
+  }, 
+  "chromeless": {
+    "desc": "Chromeless Browser Dev Kit based on Jetpack SDK. Application development made easy.", 
+    "modules": {
+      "main": {
+        "filename": "main.js", 
+        "module": "main"
+      }
+    }, 
+    "name": "chromeless"
+  }, 
+  "chromeless-kit": {
+    "desc": "Miscellaneous Modules", 
+    "modules": {
+      "Tray": {
+        "desc": "Empty the tray of all this application's tray items", 
+        "filename": "ui/tray.js", 
+        "module": "Tray"
+      }, 
+      "app-paths": {
+        "desc": "Returns various paths that are pertinent to the currently running\napplication and logged in user.", 
+        "filename": "app-paths.js", 
+        "module": "app-paths", 
+        "properties": [
+          {
+            "desc": "The currently active *profile*, which is a user specific directory where\nuser scoped application data may reside, such as preferences and history.", 
+            "name": "profileDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path where the *browser code* of the application resides on disk.\nFor an installed application this usually be nested inside of a system wide installation path.\nThis path should be expected to be read-only.", 
+            "name": "browserCodeDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the user's desktop.", 
+            "name": "desktopDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the currently logged in user's home directory.", 
+            "name": "userHomeDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "In chromeless, *profiles* are specially named directories stored\nin a user scoped location.  Support for multiple profiles is built in at a very\nlow level, and the basic mechanism by which profiles are supported is a two\nlevel directory structure.  This property provides the path to the \"outer\" or\n\"root\" profile directory, under which different profiles reside.", 
+            "name": "profileRootDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the directory where web plugins will be loaded for this\napplication.", 
+            "name": "pluginsDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The current working directory of the chromeless application process.", 
+            "name": "curDir", 
+            "type": "string"
+          }, 
+          {
+            "desc": "The system's temporary directory.", 
+            "name": "tmpDir", 
+            "type": "string"
+          }
+        ]
+      }, 
+      "canvas-proxy": {
+        "filename": "canvas-proxy.js", 
+        "module": "canvas-proxy"
+      }, 
+      "chromeless-sandbox-window": {
+        "filename": "chromeless-sandbox-window.js", 
+        "module": "chromeless-sandbox-window"
+      }, 
+      "console-service": {
+        "filename": "console-service.js", 
+        "module": "console-service"
+      }, 
+      "custom-protocol": {
+        "filename": "custom-protocol.js", 
+        "module": "custom-protocol"
+      }, 
+      "dictionary": {
+        "filename": "dictionary.js", 
+        "module": "dictionary"
+      }, 
+      "errors": {
+        "filename": "errors.js", 
+        "module": "errors"
+      }, 
+      "getCurrentWindow": {
+        "desc": "Return the current window. This function does not exist outside of the context of a window.", 
+        "filename": "ui.js", 
+        "functions": [
+          {
+            "desc": "Return the application's main window", 
+            "name": "getMainWindow"
+          }, 
+          {
+            "desc": "Return the user's idle time (for the desktop, not just the application)", 
+            "name": "getIdleTime"
+          }, 
+          {
+            "desc": "Return the application's main MenuItem or null if none is set.", 
+            "name": "getMenu"
+          }, 
+          {
+            "desc": "Set a menu for the application", 
+            "name": "setMenu"
+          }, 
+          {
+            "desc": "Return this application's context menu or null if none is set.", 
+            "name": "getContextMenu"
+          }, 
+          {
+            "desc": "Set the application's context menu", 
+            "name": "setContextMenu"
+          }, 
+          {
+            "desc": "Create a new menu", 
+            "name": "createMenu"
+          }, 
+          {
+            "desc": "Create a new menu item.", 
+            "name": "createMenuItem"
+          }, 
+          {
+            "desc": "Create a new separator menu item.", 
+            "name": "createSeperatorMenuItem"
+          }, 
+          {
+            "desc": "Create a new CheckMenuItem object.", 
+            "name": "createCheckMenuItem"
+          }, 
+          {
+            "desc": "Set the application icon's badge text.", 
+            "name": "setBadge"
+          }, 
+          {
+            "desc": "Set the application icon's badge image.", 
+            "name": "setBadgeImage"
+          }, 
+          {
+            "desc": "Set the dock icon", 
+            "name": "setDockIcon"
+          }, 
+          {
+            "desc": "Set the dock menu", 
+            "name": "setDockMenu"
+          }, 
+          {
+            "desc": "Set the application's icon", 
+            "name": "setIcon"
+          }, 
+          {
+            "desc": "Create and add a tray icon", 
+            "name": "addTray"
+          }, 
+          {
+            "desc": "Empty the tray of all this application's tray items", 
+            "name": "clearTray"
+          }, 
+          {
+            "desc": "create a UI dialog", 
+            "name": "showDialog"
+          }
+        ], 
+        "module": "getCurrentWindow", 
+        "properties": [
+          {
+            "desc": "Return a list of currently open windows.", 
+            "name": "getWindows"
+          }
+        ]
+      }, 
+      "hidden-frame-xulrunner": {
+        "filename": "hidden-frame-xulrunner.js", 
+        "module": "hidden-frame-xulrunner"
+      }, 
+      "iframe-as-browser": {
+        "filename": "iframe-as-browser.js", 
+        "module": "iframe-as-browser"
+      }, 
+      "menu": {
+        "filename": "ui/menu.js", 
+        "module": "menu"
+      }, 
+      "menuitem": {
+        "filename": "ui/menuitem.js", 
+        "module": "menuitem"
+      }, 
+      "session-store": {
+        "filename": "session-store.js", 
+        "module": "session-store"
+      }, 
+      "simple-feature": {
+        "filename": "simple-feature.js", 
+        "module": "simple-feature"
+      }
+    }, 
+    "name": "chromeless-kit"
+  }, 
+  "development-mode": {
+    "desc": "Adds Jetpack SDK development functionality to a program.", 
+    "modules": {
+      "bootstrap": {
+        "filename": "bootstrap.js", 
+        "module": "bootstrap"
+      }, 
+      "main": {
+        "filename": "main.js", 
+        "module": "main"
+      }
+    }, 
+    "name": "development-mode"
+  }, 
+  "nsjetpack": {
+    "desc": "Jetpack binary component.", 
+    "modules": {
+      "nsjetpack": {
+        "filename": "nsjetpack.js", 
+        "module": "nsjetpack"
+      }
+    }, 
+    "name": "nsjetpack"
+  }, 
+  "test-harness": {
+    "desc": "A harness for running Jetpack tests.", 
+    "modules": {
+      "harness": {
+        "filename": "harness.js", 
+        "module": "harness"
+      }, 
+      "run-tests": {
+        "filename": "run-tests.js", 
+        "module": "run-tests"
+      }
+    }, 
+    "name": "test-harness"
+  }
+}

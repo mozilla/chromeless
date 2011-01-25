@@ -1,1 +1,0 @@
-[["version", 2], ["markdown", "The `plain-text-console` module provides a minimalist implementation\nof the `console` global, which simply logs all messages to\nstandard output.\n\nFor documentation on the `console` global, see the [Globals]\nappendix.\n\n  [Globals]: #guide/globals\n"]]

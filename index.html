@@ -6,6 +6,8 @@
   <link rel="stylesheet" type="text/css" media="all"
         href="css/base.css" />
   <link rel="stylesheet" type="text/css" media="all"
+        href="css/packages.css" />
+  <link rel="stylesheet" type="text/css" media="all"
         href="css/apidocs.css" />
   <title>Chromeless Documentation</title>
 </head>
@@ -32,19 +34,19 @@
       <ol id="examples">
       </ol>
 
-      <div class="section" id="reference-header">Reference</div>
+      <div class="section" id="reference-header">API</div>
       <ol id="reference">
+        <li class="apiref" id="api-by-package">Browse</li>
+        <li class="apiref" id="api-full-listing">Full Reference</li>
       </ol>
 
       <div class="section" id="appendices-header">Appendices</div>
       <ol id="appendices">
         <li class="link" id="credits">Credits</li>
+        <li class="link" id="3psw">Third Party Software</li>
       </ol>
 
     </div>
-
-    <h2 id="package-reference">Package Reference</h2>
-    <div id="more-packages">More...</div>
   </div>
   <div id="main-content">
     <div id="right-column">
@@ -62,7 +64,62 @@
 </div>
 <div id="templates">
   <div class="module-detail">
-    <div class="docs"><p>This module has no documentation.</p></div>
+    <div class="name">
+      <span class="package"><a target="_self"></a></span> / <span class="module"></span>
+    </div>
+    <div class="example">
+      <code> var <span class="module"></span> = require('<span class="module"></span>');</code>
+    </div>
+    <div class="docs">
+    </div>
+    <div class="properties">
+    </div>
+    <div class="functions">
+    </div>
+    <div class="classes">
+    </div>
+  </div>
+  <div class="class-detail">
+    <div class="classname">
+      <span class="varname"></span>.<span class="name"></span>
+    </div>
+    <div class="docs">
+    </div>
+    <div class="constructor">
+      <div class="littleheading">Constructor</div>
+    </div>
+    <div class="properties">
+      <div class="littleheading">Properties</div>
+    </div>
+    <div class="functions">
+      <div class="littleheading">Functions</div>
+    </div>
+    <div class="classes">
+      <div class="littleheading">Classes</div>
+    </div>
+  </div>
+  <div class="one-property">
+    <div class="invocation">
+      <span class="type"></span><span class="varname"></span>.<span class="propName"></span>
+    </div>
+    <div class="description">
+    </div>
+  </div>
+  <div class="one-function">
+    <div class="invocation">
+      <span class="type"></span><span class="varname"></span>.<span class="funcName"></span>(<span class="params"></span>)
+    </div>
+    <div class="description">
+    </div>
+    <div class="parameters">
+      <div class="littleheading">Parameters:</div>
+      <table class="paramdoc">
+      </table>
+    </div>
+    <div class="returnvalue">
+      <div class="littleheading">Return Value:</div>
+      <div class="returndoc"></div>
+    </div>
   </div>
   <div class="module-parse-error">
     <h1>Parse Error in <span class="filename"></span></h1>
@@ -70,29 +127,7 @@
   </div>
   <div class="package-detail">
     <h1>Package &ldquo;<span class="name"></span>&rdquo;</h1>
-    <table class="meta-table">
-      <tr>
-        <td><span class="meta-header">Authors</span></td>
-        <td><span class="authors">Unknown</span></td>
-      </tr>
-      <tr>
-        <td><span class="meta-header">Version</span></td>
-        <td><span class="version">Unknown</span></td>
-      </tr>
-      <tr>
-        <td><span class="meta-header">License</span></td>
-        <td><span class="license">Unknown</span></td>
-      </tr>
-      <tr>
-        <td><span class="meta-header">Dependencies</span></td>
-        <td><span class="dependencies">none</span></td>
-      </tr>
-      <tr>
-        <td><span class="meta-header">Modules</span></td>
-        <td><ul class="modules">none</ul></td>
-      </tr>
-    </table>
-    <div class="docs"><p>This package has no documentation.</p></div>
+    <ul class="modules">none</ul>
   </div>
   <div class="guide-section">
     <h1 class="name"></h1>
@@ -102,6 +137,21 @@
     <a class="name" target="_self"></a>
     <span class="description"></span>
     <ul class="modules"></ul>
+  </div>
+  <div class="package-list">
+    <h1 class="name">Available Packages</h1>
+  </div>
+  <div class="one-package">
+    <span class="name"><a target="_self"></a></span>
+    --
+    <span class="description"></span> <span class="numfiles">(<span class="number"></span> modules)</span>
+    <ul class="modules"></ul>
+  </div>
+  <div class="full-api">
+    <h1 class="name">Chromeless API Reference</h1>
+    <div class="filter_container">
+      <span class="prompt">Filter by keyword:</span><input type="text" size="40"></input>
+    </div>
   </div>
 </div>
 </body>

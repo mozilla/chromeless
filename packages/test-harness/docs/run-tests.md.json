@@ -1,1 +1,0 @@
-[["version", 2], ["markdown", "<span class=\"aside\">\nFor more information on testing in the Jetpack SDK, see the\n[Packaging](#guide/packaging) tutorial.\n</span>\n\nThis module contains the package's main Jetpack Program, which does a\nbit of high-level setup and then delegates test finding and running to\nthe `harness` module.\n"]]
