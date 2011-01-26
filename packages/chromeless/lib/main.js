@@ -46,6 +46,37 @@ const file = require("file");
 
 var appWindow = null; 
 
+function enableDebuggingOutputToConsole() {
+  var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
+    .getService(Ci.jsdIDebuggerService);
+
+  jsd.errorHook = {
+    onError: function(message, fileName, lineNo, colNo, flags, errnum, exc) {
+      // check message type
+      var jsdIErrorHook = Ci.jsdIErrorHook;
+      var messageType;       
+      if (flags & jsdIErrorHook.REPORT_ERROR)
+        messageType = "Error";
+      if (flags & jsdIErrorHook.REPORT_WARNING)
+        messageType = "Warning";
+      if (flags & jsdIErrorHook.REPORT_EXCEPTION)
+        messageType = "Uncaught-Exception";
+      if (flags & jsdIErrorHook.REPORT_STRICT)
+        messageType += "-Strict";
+
+      // for now we decide NOT to show any other message than Error or Exception:
+      if (flags & jsdIErrorHook.REPORT_ERROR || flags & jsdIErrorHook.REPORT_EXCEPTION)
+        console.log(messageType + ": '" + message + "' in file '" + fileName + "' at line " + lineNo + ", col " + colNo + " (" + errnum + ")\n");
+
+      //return false;   // trigger debugHook
+      return true; //if you do not wish to trigger debugHook
+    }
+  };
+
+  jsd.on();
+}
+
+
 function requireForBrowser(moduleName) {
     console.log("browser HTML requires: " + moduleName);
     try {
@@ -58,36 +89,39 @@ function requireForBrowser(moduleName) {
 }
 
 exports.main = function main(options) {
-    var call = options.staticArgs;
+  var call = options.staticArgs;
 
-    var contentWindow = require("chromeless-sandbox-window");
+  var contentWindow = require("chromeless-sandbox-window");
 
-    // convert browser url into a file url
-    var startPage = require('url').fromFilename(call.appBasePath);
-    // remove trailing slashes first
-    startPage = startPage.replace(/[\/]+$/, "") + "/" + call.browser;
+  // convert browser url into a file url
+  var startPage = require('url').fromFilename(call.appBasePath);
+  // remove trailing slashes first
+  startPage = startPage.replace(/[\/]+$/, "") + "/" + call.browser;
 
-    console.log("Loading browser using = " + startPage);
+  console.log("Loading browser using = " + startPage);
 
-    /* Page window height and width is fixed, it won't be and it also
-       should be smart, so HTML browser developer can change it when
-       they set inner document width and height */
+  /* for now we always enable debug output to console.  At some point
+   * we should make it configurable via appinfo.json */
+  enableDebuggingOutputToConsole();
 
-    appWindow = new contentWindow.Window({
-        url: startPage,
-        width: 800,
-        height: 600,
-        injectProps : {
-            require: requireForBrowser,
-            console: {
-                log: function(x) { console.log(x); }
-            },
-            exit: function() {
-                console.log("window.exit() called...");
-                appWindow.close();
-            }
-        }
-    });
+  /* Page window height and width is fixed, it won't be and it also
+     should be smart, so HTML browser developer can change it when
+     they set inner document width and height */
+  appWindow = new contentWindow.Window({
+    url: startPage,
+    width: 800,
+    height: 600,
+    injectProps : {
+      require: requireForBrowser,
+      console: {
+        log: function(x) { console.log(x); }
+      },
+      exit: function() {
+        console.log("window.exit() called...");
+        appWindow.close();
+      }
+    }
+  });
 };
 
 exports.onUnload = function (reason) {
