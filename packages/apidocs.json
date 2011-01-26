@@ -698,6 +698,52 @@
         "filename": "errors.js", 
         "module": "errors"
       }, 
+      "favicon": {
+        "desc": "Tools for accessing favicons, which use a local cache to minimize\nnetwork requests", 
+        "filename": "favicon.js", 
+        "functions": [
+          {
+            "desc": "Given the URI of a page, query the local cache for a\nfavicon.", 
+            "name": "getCached", 
+            "params": [
+              {
+                "desc": "The URI of the page for which a favicon is desired.", 
+                "name": "uri", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The favicon as a data URL.  If no such favicon is in the cache,\nnull is returned.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Get a default favicon image.", 
+            "name": "getDefault", 
+            "returns": {
+              "desc": "A data URL containing a default favicon image", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Fetch the favicon for a particular page.  This function will return\nthe favicon from the cache if available, but otherwise will issue a\nnetwork request to attempt to fetch a site's favicon.", 
+            "name": "fetch", 
+            "params": [
+              {
+                "desc": "The page for which a favicon will be fetched.", 
+                "name": "uri", 
+                "type": "string"
+              }, 
+              {
+                "desc": "A callback that will be invoked once the fetch is\n  complete.  Will be passed a single string argument which is a data url\n  containing the favicon requested.  If the icon couldn't be fetched or\n  is not available, a default will be returned.", 
+                "name": "cb", 
+                "type": "function"
+              }
+            ]
+          }
+        ], 
+        "module": "favicon"
+      }, 
       "getCurrentWindow": {
         "desc": "Return the current window. This function does not exist outside of the context of a window.", 
         "filename": "ui.js", 
