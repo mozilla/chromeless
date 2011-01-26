@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <title>favicon fetcher</title>
+    <style type="text/css" media="screen">
+    </style>
+  </head>
+  <body>
+    This Page gets favicons for you.
+    <form><input id="urlinput" type="text" value="http://google.com"/><button id="go">go</button>
+    <div id="faviconArea">
+    </div>
+  </body>
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+var favicon = require("favicon");
+
+// the ready handler would run once the browser process was initialized?
+$(document).ready(function() {
+    function fetch() {
+        // invoked when the user hits the go button or hits enter in url box
+        var url = $.trim($("#urlinput").val());
+        $("#faviconArea").empty();
+        favicon.fetch(url, function(dataURL) {
+            var img = $("<img>").attr("src", dataURL);
+            $("#faviconArea").append(img);
+        });
+    }
+
+    $("form").submit(function() { fetch(); return false; });
+});
+
+  </script>
+</html>
