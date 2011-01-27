@@ -239,6 +239,24 @@ var beetFs = {
          });
        loader.require("program");
      }
+
+    // Confirm callback-based require works from an instantiated loader.
+    // want to be back in api-utils/tests directory instead of
+    // what rootDir is now:
+    // api-utils/tests/interoperablejs-read-only/compliance/
+    var moduleDir = rootDir.parent.parent;
+    moduleDir.append("modules"),
+    loader = new SecurableModule.Loader(
+         {rootPath: moduleDir,
+          defaultPrincipal: "system",
+          globals: {sys: {print: log}}
+         });
+
+    loader.require(["subtract"], function (subtract) {
+      assert.isEqual(2, subtract(3, 1),
+                      "subtract module works with callback-style require");
+    });
+
    };
 
    if (global.window) {

@@ -47,14 +47,14 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 let hostFrame, hostDocument, hiddenWindow, isHostFrameReady = false;
 
-if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
+/*if (!require("xul-app").isOneOf(["Firefox", "Thunderbird"])) {
   throw new Error([
     "The hidden-frame module currently supports only Firefox and Thunderbird. ",
     "In the future, we would like it to support other applications, however. ",
     "Please see https://bugzilla.mozilla.org/show_bug.cgi?id=546740 for more ",
     "information."
   ].join(""));
-}
+}*/
 
 let appShellService = Cc["@mozilla.org/appshell/appShellService;1"].
                         getService(Ci.nsIAppShellService);

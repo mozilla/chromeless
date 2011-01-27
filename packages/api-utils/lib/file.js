@@ -52,6 +52,9 @@ const OPEN_FLAGS = {
   EXCL: 0x80
 };
 
+var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
+             .getService(Ci.nsIProperties);
+
 function MozFile(path) {
   var file = Cc['@mozilla.org/file/local;1']
              .createInstance(Ci.nsILocalFile);
@@ -86,28 +89,6 @@ function ensureExists(file) {
 
 exports.exists = function exists(filename) {
   return MozFile(filename).exists();
-};
-
-exports.stat = function stat(filename) {
-    var stats = { };
-    var file = MozFile(filename);
-    ensureExists(file);
-    if (file.isDirectory()) {
-        stats.type = 'directory';
-        var dirEnum = file.directoryEntries;
-        stats.numEntries = 0;
-        while (dirEnum.hasMoreElements()) {
-            stats.numEntries++;
-            dirEnum.getNext();
-        }
-    } else {
-        // For now we don't differentiate between symlinks and files
-        stats.type = 'file';
-        stats.size = file.fileSize;
-        stats.lastModified = file.lastModifiedTime;
-    }
-    file = null;
-    return stats;
 };
 
 exports.read = function read(filename) {

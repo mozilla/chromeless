@@ -61,12 +61,27 @@ var chrome = {
   },
   call: function(name) {
     var result = callMessage.apply(this, arguments);
+
     if (result.length > 1)
       throw new Error("More than one result received for call '" + name +
                       "': " + result.length);
+
     if (result.length == 0)
       throw new Error("No receiver registered for call '" + name + "'");
-    return result[0];
+
+    if (result[0].exception) {
+      throw Object.create(Error.prototype, {
+        message: { value: result[0].exception.message, enumerable: true },
+        fileName: { value: result[0].exception.fileName, enumerable: true },
+        lineNumber: { value: result[0].exception.lineNumber, enumerable: true },
+        // Concatenate the stack from the other process with one from this
+        // process, so callers have access to the full stack.
+        stack: { value: result[0].exception.stack + (new Error()).stack,
+                 enumerable: true }
+      });
+    }
+
+    return result[0].returnValue;
   }
 };
 

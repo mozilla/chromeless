@@ -20,9 +20,11 @@ order they were added.  For example, the following code...
 
 ... would print this to the console:
 
-    1
-    2
-    3
+<pre>
+  1
+  2
+  3
+</pre>
 
 Iteration proceeds over a copy of the collection made before iteration begins,
 so it is safe to mutate the collection during iteration; doing so does not

@@ -43,10 +43,9 @@ exports.testPackagingGetModuleInfo = function(test) {
                    'info.packageName works');
   test.assertEqual(info.packageData, packaging.getURLForData(""),
                    'info.packageData works');
-  test.assert(Array.isArray(info.dependencies),
-              'info.dependencies is an Array');
-  test.assert(info.dependencies.length > 0,
-              'module "run-tests" has dependencies');
+  test.assert("observer-service" in info.dependencies);
+  test.assertEqual(info.dependencies["observer-service"].url,
+                   "resource://testpkgs-api-utils-lib/observer-service.js");
   test.assert(info.needsChrome,
               'module "run-tests" needs chrome');
 

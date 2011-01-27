@@ -62,7 +62,7 @@ function AddonProcess(jetpack) {
     if (name in syncListeners)
       throw new Error("call already registered for '" + name + "'");
     syncListeners[name] = true;
-    jetpack.registerReceiver(name, errors.catchAndLog(cb));
+    jetpack.registerReceiver(name, errors.catchAndReturn(cb));
   };
 
   this.send = function() {
