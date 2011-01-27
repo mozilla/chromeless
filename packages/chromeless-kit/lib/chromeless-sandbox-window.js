@@ -123,7 +123,7 @@ var blankXul = ('<?xml version="1.0"?>' +
                 ' type="text/css"?> ' +
                 '<window style="padding: 0; border: 0; margin: 0; background-color:transparent;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
                 '<toolbox style="padding: 0; border: 0; margin: 0;">' +
-                '<menubar style="padding: 0; border: 0; margin: 0;">' +
+                '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
                 '<menu id="file-menu" label="File">' +
                 '<menupopup id="file-popup">' +
                 '<menu id="new-menu" label="New">' +
@@ -187,7 +187,7 @@ Window.prototype = {
         var browser = this._window.document.createElement("browser");
         browser.setAttribute("id", "main-window");
         browser.setAttribute("disablehistory", "indeed");
-        browser.setAttribute("type", "content");
+        browser.setAttribute("type", "content-primary");
         browser.setAttribute("style", "background:none;background-color:transparent ! important");
         browser.setAttribute("flex", "1");
         browser.setAttribute("height", "100%");
@@ -227,3 +227,7 @@ require("unload").when(
   function() {
     gWindows.slice().forEach(function(window) { window.close(); });
   });
+
+// an internal export.  what's the proper way to prevent browsercode from
+// getting at this?
+exports.AllWindows = gWindows;
