@@ -27,7 +27,7 @@ observers.add("content-document-global-created", function(subject, url) {
       // XXX: this ad-hoc data isn't making it from chrome (us)
       // to content (browser HTML) in 2.0b8pre.  is that a
       // regression in gecko or a security feature?
-      evt.url = subject.window.location.href;
+      evt.wrappedJSObject.url = subject.window.location.href;
       //evt.window = subject.window;
 
       // This is a proposal for us to send the experimental-dom 
