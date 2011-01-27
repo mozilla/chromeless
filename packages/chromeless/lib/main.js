@@ -41,8 +41,7 @@
 // here in this main app context. Search for Ci, we current expose Ci
 // to the developers HTML browser.
 
-const {Ci,Cc} = require("chrome");
-const file = require("file");
+const {Ci, Cc, Cr, Cu} = require("chrome");
 
 var appWindow = null; 
 
@@ -50,8 +49,9 @@ function requireForBrowser(moduleName) {
     console.log("browser HTML requires: " + moduleName);
     try {
   	    return require(moduleName);
-    } catch(e) {
-        console.log("require of '"+moduleName+"' failed: " + e);
+    }
+    catch(e) {
+        console.log("require of '" + moduleName + "' failed: " + e);
         // re-throw to the developer to give them an opportunity to handle the error
         throw e;
     }
@@ -61,11 +61,30 @@ exports.main = function main(options) {
     var call = options.staticArgs;
 
     var contentWindow = require("chromeless-sandbox-window");
-
-    // convert browser url into a file url
-    var startPage = require('url').fromFilename(call.appBasePath);
-    // remove trailing slashes first
-    startPage = startPage.replace(/[\/]+$/, "") + "/" + call.browser;
+        // convert browser url into a resource:// url
+        // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
+        t           = call.browser.split("/"),
+        file        = t.pop();
+        rootPath    = call.appBasePath.replace(/[\/]+$/, "") + "/" + t.join("/"),
+        startPage   = "resource://app/" + file,
+    
+        ios         = Cc["@mozilla.org/network/io-service;1"]
+                      .getService(Ci.nsIIOService),
+        resProtocol = ios.getProtocolHandler("resource")
+                      .QueryInterface(Ci.nsIResProtocolHandler),
+    
+        environment = Cc["@mozilla.org/process/environment;1"]
+                      .getService(Ci.nsIEnvironment),
+        resRoot     = Cc["@mozilla.org/file/local;1"]
+                      .createInstance(Ci.nsILocalFile),
+    resRoot.initWithPath(rootPath);
+    
+    resProtocol.setSubstitution("app", ios.newFileURI(resRoot));
+    
+    // register chrome://* URIs
+    let cr = Cc["@mozilla.org/chrome/chrome-registry;1"]
+             .getService(Ci.nsIChromeRegistry);
+    cr.checkForNewChrome();
 
     console.log("Loading browser using = " + startPage);
 
