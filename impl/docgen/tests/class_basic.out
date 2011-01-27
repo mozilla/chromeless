@@ -1,0 +1,11 @@
+{
+  "classes": [
+    {
+      "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+      "name": "URL"
+    }
+  ], 
+  "desc": "A test of basic class parsing", 
+  "filename": "tests/class_basic.js", 
+  "module": "class_basic"
+}

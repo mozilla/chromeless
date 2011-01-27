@@ -75,7 +75,7 @@ const TERMINATE_EVENTS = ["load", "error", "abort"];
 // Read-only properties of XMLHttpRequest objects that we want to
 // directly delegate to.
 const READ_ONLY_PROPS = ["readyState", "responseText", "responseXML",
-                         "status", "statusText"];
+                         "status", "statusText", "mozResponseArrayBuffer"];
 
 // Methods of XMLHttpRequest that we want to directly delegate to.
 const DELEGATED_METHODS = ["abort", "getAllResponseHeaders",

@@ -1,0 +1,1 @@
+from _docgen import generate_static_docs

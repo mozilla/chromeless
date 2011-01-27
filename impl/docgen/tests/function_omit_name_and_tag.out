@@ -1,0 +1,11 @@
+{
+  "desc": "A module with a basic function definition in it,\nwhich omits all tags, letting the system figure out\nwhat we mean.", 
+  "filename": "tests/function_omit_name_and_tag.js", 
+  "functions": [
+    {
+      "desc": "a function which converts URLs to filenames", 
+      "name": "toFilename"
+    }
+  ], 
+  "module": "function_omit_name_and_tag"
+}

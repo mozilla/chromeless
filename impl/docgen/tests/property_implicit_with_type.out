@@ -1,0 +1,12 @@
+{
+  "desc": "A module to test implicit property documentation,\nwhere the developer provides only a description", 
+  "filename": "tests/property_implicit_with_type.js", 
+  "module": "property_implicit_with_type", 
+  "properties": [
+    {
+      "desc": "a property which exposes a name to you", 
+      "name": "name", 
+      "type": "string"
+    }
+  ]
+}

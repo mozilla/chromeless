@@ -341,10 +341,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         test_cfx(env_root, options.verbose)
         return
     elif command == "sdocs":
-        import cuddlefish.docgen
+        import docgen
         import chromeless
         dirname = os.path.join(chromeless.Dirs().build_dir, "docs")
-        cuddlefish.docgen.generate_static_docs(env_root, dirname)
+        docgen.generate_static_docs(env_root, dirname)
         print "Created docs in %s." % dirname
         return
 

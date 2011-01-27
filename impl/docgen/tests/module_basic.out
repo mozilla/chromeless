@@ -1,0 +1,5 @@
+{
+  "desc": "This is a basic module, it doens't explicitly specify it's own name\nand it uses the short form for doc-wide comments.\n\n  // this is code, it uses some markdown!", 
+  "filename": "tests/module_basic.js", 
+  "module": "module_basic"
+}

@@ -37,9 +37,25 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * My module description
+ * @module misc
+ */
+
+/**
+ * My class description
+ * @class Misc
+ */
+
 const {Cc, Ci} = require("chrome");
 var mainWin = require("window-utils");
 
+
+/**
+ * My method description
+ * @method fullscreen
+ * @param {bool} fake this is a fake parameter
+ */
 exports.fullscreen = function flipFullScreen() {
    mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
 }

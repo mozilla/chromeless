@@ -51,17 +51,21 @@ const DEFAULT_CHARSET = "UTF-8";
 exports.TextReader = TextReader;
 exports.TextWriter = TextWriter;
 
-/**
+/** @class TextReader
  * An input stream that reads text from a backing stream using a given text
  * encoding.
+ */ 
+
+/**
+ * @constructor
  *
  * @param inputStream
- *        The stream is backed by this nsIInputStream.  It must already be
- *        opened.
+ *   The stream is backed by this nsIInputStream.  It must already be
+ *   opened.
  * @param charset
- *        Text in inputStream is expected to be in this character encoding.  If
- *        not given, "UTF-8" is assumed.  See nsICharsetConverterManager.idl for
- *        documentation on how to determine other valid values for this.
+ *   Text in inputStream is expected to be in this character encoding.  If
+ *   not given, "UTF-8" is assumed.  See nsICharsetConverterManager.idl for
+ *   documentation on how to determine other valid values for this.
  */
 function TextReader(inputStream, charset) {
   const self = this;
@@ -75,6 +79,7 @@ function TextReader(inputStream, charset) {
   let manager = new StreamManager(this, stream);
 
   /**
+   * @function read
    * Reads a string from the stream.  If the stream is closed, an exception is
    * thrown.
    *
@@ -118,6 +123,7 @@ function TextReader(inputStream, charset) {
     return str;
   };
 }
+/** @endclass */
 
 /**
  * A buffered output stream that writes text to a backing stream using a given
