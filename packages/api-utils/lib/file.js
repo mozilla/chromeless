@@ -129,6 +129,8 @@ exports.stat = function stat(filename) {
         // For now we don't differentiate between symlinks and files
         stats.type = 'file';
         stats.size = file.fileSize;
+        stats.file = file; 
+        stats.leafName = file.QueryInterface(Ci.nsIFile).leafName; 
         stats.lastModified = file.lastModifiedTime;
     }
     file = null;
