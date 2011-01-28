@@ -124,20 +124,6 @@ var blankXul = ('<?xml version="1.0"?>' +
                 '<window style="padding: 0; border: 0; margin: 0; background-color:transparent;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
                 '<toolbox style="padding: 0; border: 0; margin: 0;">' +
                 '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
-                '<menu id="file-menu" label="File">' +
-                '<menupopup id="file-popup">' +
-                '<menu id="new-menu" label="New">' +
-                '<menupopup id="new-popup">' +
-                '<menuitem label="Window"/>' +
-                '<menuitem label="Message"/>' +
-                '</menupopup>' +
-                '</menu>' +
-                '<menuitem label="Open"/>' +
-                '<menuitem label="Save"/>' +
-                '<menuseparator/>' +
-                '<menuitem label="Exit"/>' +
-                '</menupopup>' +
-                '</menu>' +
                 '</menubar>' +
                 '</toolbox>' +
                 '</window>');

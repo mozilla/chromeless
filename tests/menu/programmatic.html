@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <title>menu specifier/title>
+  </head>
+  <body>
+    A simple test of menu interaction.
+  </body>
+  <script type="text/javascript">
+
+var menu = require('menu');
+// create a top level 'File menu'
+var file = new menu.Menu();
+file.label = "File";
+
+// add a "New Window" item to "File"
+var item = new menu.MenuItem();
+item.label = "New Window";
+item.shortcut = "n";
+file.items = [ item ];
+
+// add a "New Tab" item to "File"
+item = new menu.MenuItem();
+item.label = "New Tab";
+item.shortcut = "t";
+// icons are supported for all items, and may be urls (data or app)
+item.icon = 'app://icons/new_tab.png';
+file.items.append(item);
+
+// now let's create a "View" menu
+var view = new menu.Menu();
+item = new menu.Menu();
+item.label = "Toolbars";
+// items are nested, you can now add as many menuitems as
+// you like to item.items
+// ...
+
+// once all the menus are built up, we can set them application wide
+// using the read/write 'mainMenu' property
+menu.mainMenu = [ file, view ];
+
+// and register a callback to be invoked when the user selects something
+menu.addListener(function(selection) {
+  console.log("user selected: " + selection.join(" - "));
+});
+
+  </script>
+</html>
