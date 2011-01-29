@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Drag files to the OS </title>
+    <style type="text/css" media="screen">
+	.fileitem { 
+		border:1px solid black;
+		padding:.51em;
+		margin-bottom:.5em;
+
+	} 
+    </style>
+
+  </head>
+  <body >
+     <h2>Drag a file from here:</h2>
+     <ol id="files">
+     </ol>  
+  </body>
+  <script type="text/javascript" src="dragdrop.js"></script>
+  <script type="text/javascript" charset="utf-8">
+
+    var desktopPath = require('app-paths').desktopDir; 
+    var filesOnDesktop = require('file').list(desktopPath);
+    var orderedList = document.getElementById('files');
+    var i=0;
+
+    for (x in filesOnDesktop) {
+      var e = document.createElement('li');
+      e.setAttribute('class','fileitem fileindex'+i);
+      e.setAttribute('draggable','true');
+      e.innerHTML = filesOnDesktop[x];
+      orderedList.appendChild(e);
+      i++;
+    }
+    dragEnable();
+
+  </script>
+</html>
+
