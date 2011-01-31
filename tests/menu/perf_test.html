@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>menu specifier</title>
+  </head>
+  <body>
+    A test of menu update timing.
+
+    <div>
+      <form>
+        Menu depth: <input id="depth" type="text" size="3"></input>
+        Branch Factor: <input id="branching" type="text" size="3"></input>
+        <input type="submit" value="update menus"></input>
+      </form>
+  </body>
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+function buildMenu(depth, branchFactor) {
+  var m = [ ];
+  for (var i = 0; i < branchFactor; i++) {
+    if (depth > 0) {
+      m.push({ label: "Item " + i, children: buildMenu(depth - 1, branchFactor) });
+    } else {
+      m.push({ label: "Leaf " + i });
+    }
+  }
+  return m;
+}
+
+var menu = require('menu');
+menu.appMenu = buildMenu(3, 10);
+
+// and register a callback to be invoked when the user selects something
+menu.addListener(function(selection) {
+  console.log("user selected: " + selection.join(" - "));
+});
+
+$(document).ready(function() {
+  $("form").submit(function() {
+    var depth = parseInt($("#depth").val().trim());
+    var branch = parseInt($("#branching").val().trim());
+    menu.appMenu = buildMenu(depth, branch);
+    return false;
+  });
+});
+
+
+  </script>
+</html>
