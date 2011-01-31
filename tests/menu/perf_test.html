@@ -11,17 +11,28 @@
         Branch Factor: <input id="branching" type="text" size="3"></input>
         <input type="submit" value="update menus"></input>
       </form>
+      <button>do 100 menu updates</button>
   </body>
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
+
 function buildMenu(depth, branchFactor) {
   var m = [ ];
   for (var i = 0; i < branchFactor; i++) {
+    var id = makeid();
     if (depth > 0) {
-      m.push({ label: "Item " + i, children: buildMenu(depth - 1, branchFactor) });
+      m.push({ label: id, children: buildMenu(depth - 1, branchFactor) });
     } else {
-      m.push({ label: "Leaf " + i });
+      m.push({ label: id });
     }
   }
   return m;
@@ -37,10 +48,26 @@ menu.addListener(function(selection) {
 
 $(document).ready(function() {
   $("form").submit(function() {
+    var startTime = new Date();
     var depth = parseInt($("#depth").val().trim());
     var branch = parseInt($("#branching").val().trim());
     menu.appMenu = buildMenu(depth, branch);
+    // we assume our async handler won't be hit till the menu update is complete!
+    setTimeout(function() {
+      console.log("update took " + (new Date() - startTime) + "ms");
+    }, 1);
     return false;
+  });
+
+  $("button").click(function() {
+    var i = 100;
+    var startTime = new Date();
+    function doUpdate() {
+      menu.appMenu = buildMenu(1, 8);
+      if (--i > 0) setTimeout(doUpdate, 0);
+      else console.log("100 updates took " + (new Date() - startTime) + "ms"); 
+    }
+    doUpdate();
   });
 });
 
