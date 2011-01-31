@@ -46,33 +46,47 @@ const {Ci, Cc, Cr, Cu} = require("chrome");
 var appWindow = null; 
 
 function enableDebuggingOutputToConsole() {
-  var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
-    .getService(Ci.jsdIDebuggerService);
-
-  jsd.errorHook = {
-    onError: function(message, fileName, lineNo, colNo, flags, errnum, exc) {
-      // check message type
-      var jsdIErrorHook = Ci.jsdIErrorHook;
-      var messageType;       
-      if (flags & jsdIErrorHook.REPORT_ERROR)
-        messageType = "Error";
-      if (flags & jsdIErrorHook.REPORT_WARNING)
-        messageType = "Warning";
-      if (flags & jsdIErrorHook.REPORT_EXCEPTION)
-        messageType = "Uncaught-Exception";
-      if (flags & jsdIErrorHook.REPORT_STRICT)
-        messageType += "-Strict";
-
-      // for now we decide NOT to show any other message than Error or Exception:
-      if (flags & jsdIErrorHook.REPORT_ERROR || flags & jsdIErrorHook.REPORT_EXCEPTION)
-        console.log(messageType + ": '" + message + "' in file '" + fileName + "' at line " + lineNo + ", col " + colNo + " (" + errnum + ")\n");
-
-      //return false;   // trigger debugHook
-      return true; //if you do not wish to trigger debugHook
-    }
-  };
-
-  jsd.on();
+    var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
+              .getService(Ci.jsdIDebuggerService);
+    
+    jsd.errorHook = {
+        onError: function(message, fileName, lineNo, colNo, flags, errnum, exc) {
+            // check message type
+            var jsdIErrorHook = Ci.jsdIErrorHook;
+            var messageType;       
+            if (flags & jsdIErrorHook.REPORT_ERROR)
+                messageType = "Error";
+            if (flags & jsdIErrorHook.REPORT_WARNING)
+                messageType = "Warning";
+            if (flags & jsdIErrorHook.REPORT_EXCEPTION)
+                messageType = "Uncaught-Exception";
+            if (flags & jsdIErrorHook.REPORT_STRICT)
+                messageType += "-Strict";
+            
+            // for now we decide NOT to show any other message than Error or Exception:
+            if (flags & jsdIErrorHook.REPORT_ERROR || flags & jsdIErrorHook.REPORT_EXCEPTION)
+                console.log(messageType + ": '" + message + "' in file '" + fileName + "' at line " + lineNo + ", col " + colNo + " (" + errnum + ")\n");
+            
+            //return false;   // trigger debugHook
+            return true; //if you do not wish to trigger debugHook
+        }
+    };
+    
+    // note that debugHook does not _always_ trigger when jsd.errorHook[onError] returns false 
+    // it is not well-known why debugHook sometimes fails to trigger 
+    jsd.debugHook = {
+        onExecute: function(frame, type, rv) {
+            stackTrace = "";
+            for (var f = frame; f; f = f.callingFrame) {
+                stackTrace += "@ " + f.script.fileName + " at line " + f.line + " function " + f.functionName + "\n";
+            }
+            console.log(stackTrace);
+        
+            return Ci.jsdIExecutionHook.RETURN_CONTINUE;
+        }
+    };
+    
+    jsd.on();
 }
 
 
@@ -130,7 +144,9 @@ exports.main = function main(options) {
         injectProps : {
             require: requireForBrowser,
             console: {
-                log: function(x) { console.log(x); }
+                log: function() {
+                    console.log.apply(console, Array.prototype.slice.call(arguments));
+                }
             },
             exit: function() {
                 console.log("window.exit() called...");
