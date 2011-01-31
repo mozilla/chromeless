@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>menu specifier</title>
+  </head>
+  <body>
+    A simple test of menu interaction.
+  </body>
+  <script type="text/javascript">
+
+console.log("hi mom!");
+// an example of setting the main menu
+var menu = require('menu');
+menu.appMenu = [
+  {
+    label: "File",
+    children: [
+      {
+        label: "New Window",
+        shortcut: "n",
+      },
+      {
+        icon: "resource://app/icons/new_tab.png",
+        label: "New Tab",
+        shortcut: "T",
+      }
+    ]
+  },
+  {
+    label: "View",
+    children: [
+      {
+        label: "Toolbars",
+        children: [
+          { label: "Navigation Toolbar" },
+          { label: "Bookmarks Toolbar" },
+          { label: "Add-on Bar" },
+          "separator",
+          { label: "Tabs On Top" }
+        ]
+      }
+    ]
+  }
+];
+
+// and register a callback to be invoked when the user selects something
+menu.addListener(function(selection) {
+  console.log("user selected: " + selection.join(" - "));
+});
+
+// listeners can be selective, too:
+menu.addListener([ "File", "*" ], function(selection) {
+  console.log("OMG!  You selected something in the File menu!");
+});
+
+menu.addListener([ "View", "Toolbars", "Tabs On Top" ], function(selection) {
+  console.log("OMG! OMG! OMG! That's my *favorite* menuitem!");
+});
+
+// and you can delete em!
+var f = function () { console.log("I'm the ouput you'll *NEVER* see") };
+menu.addListener(f);
+menu.removeListener(f);
+
+  </script>
+</html>
