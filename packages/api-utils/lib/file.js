@@ -98,7 +98,13 @@ function ensureExists(file) {
  * @returns {boolean} True if the file exists and false otherwise.
  */
 exports.exists = function exists(filename) {
-  return MozFile(filename).exists();
+  try {
+    var file = MozFile(filename);
+    return file.exists();
+  }
+  catch (ex) {
+    return false;
+  }
 };
 
 /**

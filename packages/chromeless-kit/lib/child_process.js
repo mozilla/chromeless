@@ -42,46 +42,68 @@ const {Cc, Ci}       = require("chrome"),
 let GUID = 0;
 
 exports.spawn = function(command, args, options) {
-    return new ChildProcess(command, args, options);
+    var child = ChildProcess();
+    return child.run(command, args, options);
 }
 
-function ChildProcess(command, args, options) {
-    let guid = ++GUID
-    let child = processes[guid] = {
-        __proto__: ChildProcess.prototype,
-        _guid: guid
-    };
-    this.stdin  = new Stream();
-    this.stdout = new Stream();
-    this.stderr = new Stream();
-    
-    // create an nsILocalFile for the executable
-    var file = Cc["@mozilla.org/file/local;1"]
-               .createInstance(Ci.nsILocalFile);
-    file.initWithPath(command);
-    
-    // create an nsIProcess
-    this._process = Cc["@mozilla.org/process/util;1"]
-                  .createInstance(Ci.nsIProcess);
-    this._process.init(file);
-    
-    // Run the process.
-    // If first param is true, calling thread will be blocked until
-    // called process terminates.
-    var _self = this;
-    var termObserver = {
-        observe: function terminationObserved(subject, topic, data) {
-            _self._emit("exit", (topic === "process-finished") ? 0 : -1);
+function inspect(o) {
+    var s = "";
+    for (var i in o) {
+        try {
+            s += i + ": " + o[i] + "\n";
         }
-    };
-    this._process.runAsync(args, args.length, termObserver);
+        catch (ex) {
+            s += "Cannot inspect property: " + i + "\n";
+        }
+    }
+    console.log(s);
+}
 
-    return child;
+function ChildProcess() {
+    let guid = ++ GUID
+    return processes[guid] = {
+        __proto__: ChildProcess.prototype,
+        _guid: ++ guid
+    }
 }
 
 ChildProcess.prototype = {
     __proto__: EventEmitter.prototype,
     constructor: ChildProcess,
+    _process: null,
+    stdin: null,
+    stdout: null,
+    stderr: null,
+    
+    run: function(command, args, options) {
+        this.stdin  = Stream();
+        this.stdout = Stream();
+        this.stderr = Stream();
+        
+        // create an nsILocalFile for the executable
+        var file = Cc["@mozilla.org/file/local;1"]
+                   .createInstance(Ci.nsILocalFile);
+        file.initWithPath(command);
+        
+        // create an nsIProcess
+        this._process = Cc["@mozilla.org/process/util;1"]
+                      .createInstance(Ci.nsIProcess);
+        this._process.init(file);
+        
+        // Run the process.
+        // If first param is true, calling thread will be blocked until
+        // called process terminates.
+        var _self = this;
+        var termObserver = {
+            observe: this.receiveSignal.bind(this)
+        };
+        this._process.runAsync(args, args.length, termObserver);
+    },
+    
+    receiveSignal: function(subject, topic, data) {
+        // @todo check with Irakli (@gozala) why _emit does not exist in this context
+        //this._emit("exit", (topic === "process-finished") ? 0 : -1);
+    },
     
     /**
      * Stops the server from accepting new connections. This function is
@@ -89,13 +111,19 @@ ChildProcess.prototype = {
      * 'close' event.
      */
     destroy: function() {
+        if (this._process) {
+            this._process.kill();
+            this._process = null;
+        }
         this.stdin.destroy();
         this.stdout.destroy();
         this.stderr.destroy();
         this._removeAllListeners("exit")
-        delete servers[this._guid]
+        delete processes[this._guid];
     }
-};
+}
+
+exports.ChildProcess = ChildProcess;
 
 require("unload").when(function unload() {
     for each(let process in processes) process.destroy()

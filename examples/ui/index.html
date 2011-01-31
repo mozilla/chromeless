@@ -45,11 +45,16 @@
             function start() {}
             
             function showNotification() {
+                
                 ui.showNotification("Sample Notification", "Contents of the notification!", null, true, function() {
                     alert("Notification clicked!");
                 }, function() {
                     alert("Notification hidden!");
                 });
+            }
+            
+            function attention() {
+                ui.getAttention();
             }
             
             function beep() {
@@ -60,14 +65,26 @@
                 var sound = document.location.href.replace("index.html", "") + "office_lobby.mp3";
                 ui.playSound(sound);
             }
+            
+            function addTray() {
+                var icon = document.location.href.replace("index.html", "") + "firefox.ico";
+                ui.addTray(icon, "UI Kit");
+            }
+            
+            function addMenu() {
+                ui.getMenu();
+            }
         </script>
     </head>
     <body onload="start()">
         <div id="outer">
             <div id="browserContentArea">
                 <button onclick="showNotification()">Display notification</button>
+                <button onclick="attention()">Attention!</button>
                 <button onclick="beep()">Sound a BEEP</button>
                 <button onclick="playSound()">Play an MP3</button>
+                <button onclick="addTray()">Update tray/ dock icon</button>
+                <button onclick="addMenu()">Update the application menu</button>
             </div>
         </div>
     </body>

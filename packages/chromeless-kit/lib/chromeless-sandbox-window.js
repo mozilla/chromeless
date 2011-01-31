@@ -52,6 +52,7 @@ function Window(options) {
   var features = ["",
                   "width=" + options.width,
                   "height=" + options.height,
+                  "resizable",
                   "centerscreen"];
 
   if (options.titleBar == false) features.push("titlebar=no");
