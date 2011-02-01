@@ -13,7 +13,7 @@ console.log("refindex = "+refIndex);
  		//var fileName = file.path.split("/");
 		//var onlyName = fileName[fileName.length-1];
  		//require('misc').setDragData(e,file,onlyName);
- 		require('misc').setDragData(e,file,leafName);
+ 		require('dragdrop').setDragData(e,file,leafName, "copy", function(s) { console.log("success!") }, function (e) { console.log("error" + e) } );
 
                 var image = document.createElement("img");
                 image.setAttribute("border", "0");
