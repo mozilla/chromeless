@@ -37,27 +37,43 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
-/* 
-
-   Design developers says : expectDrag("file",fileName,success,error);
-
-*/
+/**
+ * Tools for enhancing drag and drop session. It makes possible to associate 
+ * a file with an existing drag session, and to write a file to the disk
+ * when the drop happens in the OS folder. 
+ */
 
 const {Cc,Ci,Cr} = require("chrome");
 
-exports.setDragData = function setDragData(e,file,fileName,mode,success,error) { 
+function MozFile(path) {
+  var file = Cc['@mozilla.org/file/local;1']
+             .createInstance(Ci.nsILocalFile);
+  file.initWithPath(path);
+  return file;
+}
+
+/**
+ * Given an existing drag event, associates a system file, a mode of 
+ * operation ( not yet implemented, default is to write a new file ), 
+ * and developer's callback for success or error ( when the drag fails .)
+ * @param {event} currentEvent the existing drag session event. 
+ * @param {string} fullPath is a native path to the file.
+ * @param {string} leafName is the string name to be given to the copy of the file.
+ * @param {string} mode is string that indicates what operation to perform. Only "write" is supported and this parameter is not yet checked. 
+ * @param {function} callback for success. 
+ * @param {function} callback for error. 
+ */
+
+exports.setDragData = function setDragData(currentEvent,fullPath,leafName,mode,success,error) { 
    // mode is = copy..  see dataProvider 
    var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-   var URL = ios.newFileURI(file).spec;
+   var URL = ios.newFileURI(MozFile(fullPath)).spec;
 
-   e.dataTransfer.setData("text/x-moz-url", URL);
-   e.dataTransfer.setData("application/x-moz-file-promise-url", URL);
-   e.dataTransfer.setData("application/x-moz-file-promise-filename", fileName);
-   e.dataTransfer.mozSetDataAt('application/x-moz-file-promise', new dataProvider(success,error), 0, Ci.nsISupports);
-   //e.dataTransfer.setData('application/x-moz-file-promise', new dataProvider(), 0, Ci.nsISupports);
-   //e.dataTransfer.mozSetDataAt("application/x-moz-file-promise", null, 0);
-   e.dataTransfer.effectAllowed="copyMove";
+   currentEvent.dataTransfer.setData("text/x-moz-url", URL);
+   currentEvent.dataTransfer.setData("application/x-moz-file-promise-url", URL);
+   currentEvent.dataTransfer.setData("application/x-moz-file-promise-filename", leafName);
+   currentEvent.dataTransfer.mozSetDataAt('application/x-moz-file-promise', new dataProvider(success,error), 0, Ci.nsISupports);
+   currentEvent.dataTransfer.effectAllowed="copyMove";
 
 } 
 
