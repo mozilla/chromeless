@@ -1,4 +1,109 @@
 {
+  "addon-kit": {
+    "desc": "Add-on development made easy.", 
+    "modules": {
+      "clipboard": {
+        "filename": "clipboard.js", 
+        "module": "clipboard"
+      }, 
+      "notifications": {
+        "filename": "notifications.js", 
+        "module": "notifications"
+      }, 
+      "request": {
+        "classes": [
+          {
+            "constructor": {
+              "desc": "This constructor creates a request object that can be used to make network\nrequests. The constructor takes a single parameter `options` which is used to\nset several properties on the resulting `Request`.", 
+              "params": [
+                {
+                  "desc": "Contains the following properties:\n\n**url** (*string*)\n\nThis is the url to which the request will be made.\n\n**[onComplete]** (*function*)\n\nThis function will be called when the request has received a response (or in\nterms of XHR, when `readyState == 4`). The function is passed a `Response`\nobject.\n\n**[headers]** (*object*)\n\nAn unordered collection of name/value pairs representing headers to send\nwith the request.\n\n**[content]** (*string*,*object*)\n\nThe content to send to the server. If `content` is a string, it\nshould be URL-encoded (use `encodeURIComponent`). If `content` is\nan object, it should be a collection of name/value pairs. Nested\nobjects & arrays should encode safely.\n\nFor `GET` requests, the query string (`content`) will be appended\nto the URL. For `POST` requests, the query string will be sent as\nthe body of the request.\n\n**[contentType]** (*string*)\n\nThe type of content to send to the server. This explicitly sets the\n`Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
+                  "name": "options", 
+                  "type": "object"
+                }
+              ]
+            }, 
+            "desc": "The `Request` object is used to make `GET` or `POST` network requests. It is\nconstructed with a URL to which the request is sent. Optionally the user may\nspecify a collection of headers and content to send alongside the request and\na callback which will be executed once the request completes.\n\nOnce a `Request` object has been created a `GET` request can be executed by\ncalling its `get()` method, or a `POST` request by calling its `post()` method.\n\nWhen the server completes the request, the `Request` object emits a \"complete\"\nevent.  Registered event listeners are passed a `Response` object.\n\nEach `Request` object is designed to be used once. Once `GET` or `POST` are\ncalled, attempting to call either will throw an error.\n\nSince the request is not being made by any particular website, requests made\nhere are not subject to the same-domain restriction that requests made in web\npages are subject to.\n\nWith the exception of `response`, all of a `Request` object's properties\ncorrespond with the options in the constructor. Each can be set by simply\nperforming an assignment. However, keep in mind that the same validation rules\nthat apply to `options` in the constructor will apply during assignment. Thus,\neach can throw if given an invalid value.\n\nThe example below shows how to use Request to get the most recent public tweet.\n\n    var Request = require('request').Request;\n    var latestTweetRequest = Request({\n      url: \"http://api.twitter.com/1/statuses/public_timeline.json\",\n      onComplete: function (response) {\n        var tweet = response.json[0];\n        console.log(\"User: \" + tweet.user.screen_name);\n        console.log(\"Tweet: \" + tweet.text);\n      }\n    });\n\n    // Be a good consumer and check for rate limiting before doing more.\n    Request({\n      url: \"http://api.twitter.com/1/account/rate_limit_status.json\",\n      onComplete: function (response) {\n        if (response.json.remaining_hits) {\n          latestTweetRequest.get();\n        } else {\n          console.log(\"You have been rate limited!\");\n        }\n      }\n    }).get();", 
+            "functions": [
+              {
+                "desc": "Make a `GET` request.", 
+                "name": "get", 
+                "returns": {
+                  "desc": "", 
+                  "type": "Request"
+                }
+              }, 
+              {
+                "desc": "Make a `GET` request.", 
+                "name": "post", 
+                "returns": {
+                  "desc": "", 
+                  "type": "Request"
+                }
+              }
+            ], 
+            "name": "Request", 
+            "properties": [
+              {
+                "name": "url", 
+                "type": "string"
+              }, 
+              {
+                "desc": "{string,object}", 
+                "name": "content"
+              }, 
+              {
+                "name": "contentType", 
+                "type": "string"
+              }, 
+              {
+                "name": "response", 
+                "type": "Response"
+              }
+            ]
+          }, 
+          {
+            "desc": "The Response object contains the response to a network request issued using a\n`Request` object. It is returned by the `get()` or `post()` method of a\n`Request` object.\n\nAll members of a `Response` object are read-only.", 
+            "name": "Response", 
+            "properties": [
+              {
+                "desc": "The content of the response as plain text.", 
+                "name": "text", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The HTTP response status code (e.g. *200*).", 
+                "name": "status", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The HTTP response status line (e.g. *OK*).", 
+                "name": "statusText", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The content of the response as a JavaScript object. The value will be `null`\nif the document cannot be processed by `JSON.parse`.", 
+                "name": "json", 
+                "type": "object"
+              }, 
+              {
+                "desc": "The HTTP response headers represented as key/value pairs.", 
+                "name": "headers", 
+                "type": "object"
+              }
+            ]
+          }
+        ], 
+        "filename": "request.js", 
+        "module": "request"
+      }, 
+      "simple-storage": {
+        "filename": "simple-storage.js", 
+        "module": "simple-storage"
+      }
+    }, 
+    "name": "addon-kit"
+  }, 
   "api-utils": {
     "desc": "Foundational infrastructure and utilities.", 
     "modules": {
@@ -694,6 +799,49 @@
         "filename": "dictionary.js", 
         "module": "dictionary"
       }, 
+      "dragdrop": {
+        "desc": "Tools for enhancing drag and drop session. It makes possible to associate \na file with an existing drag session, and to write a file to the disk\nwhen the drop happens in the OS folder.", 
+        "filename": "dragdrop.js", 
+        "functions": [
+          {
+            "desc": "Given an existing drag event, associates a system file, a mode of \noperation ( not yet implemented, default is to write a new file ), \nand developer's callback for success or error ( when the drag fails .)", 
+            "name": "setDragData", 
+            "params": [
+              {
+                "desc": "the existing drag session event.", 
+                "name": "currentEvent", 
+                "type": "event"
+              }, 
+              {
+                "desc": "is a native path to the file.", 
+                "name": "fullPath", 
+                "type": "string"
+              }, 
+              {
+                "desc": "is the string name to be given to the copy of the file.", 
+                "name": "leafName", 
+                "type": "string"
+              }, 
+              {
+                "desc": "is string that indicates what operation to perform. Only \"write\" is supported and this parameter is not yet checked.", 
+                "name": "mode", 
+                "type": "string"
+              }, 
+              {
+                "desc": "for success.", 
+                "name": "callback", 
+                "type": "function"
+              }, 
+              {
+                "desc": "for error.", 
+                "name": "callback", 
+                "type": "function"
+              }
+            ]
+          }
+        ], 
+        "module": "dragdrop"
+      }, 
       "errors": {
         "filename": "errors.js", 
         "module": "errors"
@@ -844,6 +992,10 @@
       "menuitem": {
         "filename": "ui/menuitem.js", 
         "module": "menuitem"
+      }, 
+      "misc": {
+        "filename": "misc.js", 
+        "module": "misc"
       }, 
       "session-store": {
         "filename": "session-store.js", 
