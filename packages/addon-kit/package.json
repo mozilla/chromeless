@@ -1,0 +1,13 @@
+{
+    "name": "addon-kit",
+    "description": "Add-on development made easy.",
+    "keywords": ["javascript", "engine", "platform", "xulrunner"],
+    "author": "Atul Varma (http://toolness.com/) <atul@mozilla.com>",
+    "contributors": [
+        "Myk Melez (http://melez.com/) <myk@mozilla.org>",
+        "Daniel Aquino <mr.danielaquino@gmail.com>"
+    ],
+    "version": "1.0b3pre",
+    "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
+    "dependencies": ["api-utils"]
+}

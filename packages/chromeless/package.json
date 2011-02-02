@@ -11,7 +11,8 @@
     "version": "0.1", 
     "dependencies": [
         "api-utils", 
-        "chromeless-kit"
+        "chromeless-kit",
+        "addon-kit"
     ], 
     "keywords": [
         "javascript", 

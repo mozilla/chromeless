@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>Request Demo</title>
+  </head>
+  <body>
+    A demonstration of cross domain requests.
+
+    <pre id="output">
+    </pre>
+  </body>
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+$(document).ready(function() {
+  var Request = require('request').Request;
+  var latestTweetRequest = Request({
+    url: "http://api.twitter.com/1/statuses/public_timeline.json",
+    onComplete: function (response) {
+      console.log("... request complete!");
+      var tweet = response.json[0];
+      $("#output").text("User: " + tweet.user.screen_name + "\n" +
+                        "Tweet: " + tweet.text);
+    }
+  });
+  console.log("issuing latest tweet request...");
+  latestTweetRequest.get();
+});
+
+  </script>
+</html>
