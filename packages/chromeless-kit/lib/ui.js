@@ -36,7 +36,11 @@
 
 const {Cc, Ci} = require("chrome");
 //var windows = require("windows");
-var mainWin = require("window-utils");
+      errors = require("errors");
+      timer = require("timer");
+      notifications = require("ui/notifications");
+      menus = require("ui/context-menu");
+      windows = require("chromeless-sandbox-window");
 
 /**
  * Return the current window. This function does not exist outside of the context of a window.
@@ -49,7 +53,7 @@ exports.getCurrentWindow = function getCurrentWindow() {
  * Return the application's main window
  */
 exports.getMainWindow = function getMainWindow() {
-    return mainWin.activeWindow;
+    return windows.AllWindows[0]._window;
 };
 
 /**
@@ -71,7 +75,9 @@ exports.getIdleTime = function getIdleTime() {
  * Return the application's main MenuItem or null if none is set.
  */
 exports.getMenu = function getMenu() {
-    //@todo
+    return this.getMainWindow().document.getElementById("theMenuBar");
+    //while (menuBar.firstChild)
+    //    menuBar.removeChild(menuBar.firstChild);
 };
 
 /**
@@ -169,8 +175,16 @@ var crtTray;
  * Create and add a tray icon
  */
 exports.addTray = function addTray(icon, hint, menu) {
+    var tray = new require("ui/tray");
+    inspect(tray);
     if (!crtTray)
-        crtTray = new require("ui/tray").Tray(icon, hint, menu);
+        crtTray = new tray.Tray();
+    if (icon)
+        crtTray.setIcon(icon);
+    if (hint)
+        crtTray.setHint(hint);
+    if (menu)
+        crtTray.setMenu(menu);
     return crtTray;
 };
 
@@ -188,16 +202,53 @@ exports.showDialog = function showDialog() {
     //@todo
 };
 
-exports.showNotification = function showNotification(title, text, imageURI, textClickable, onClick, onFinish) {
-    var alerts = Cc["@mozilla.org/alerts-service;1"].getService(Ci.nsIAlertsService);
-    alerts.showAlertNotification(imageURI, title, text, !!textClickable, "", {
+/**
+ * Get notification box ("yellow bar").
+ * Courtesy of bug 533649.
+ */
+function getNotificationBox() {
+    /*let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+             .getService(Ci.nsIWindowMediator),
+        chromeWindow = wm.getMostRecentWindow("navigator"),
+        notificationBox = chromeWindow.getNotificationBox(tabs.activeTab.contentWindow);*/
+    //let chromeWindow = exports.getMainWindow();
+    //inspect(chromeWindow.document.contentWindow);
+    //let notificationBox = chromeWindow.getNotificationBox(chromeWindow.contentWindow);
+    //return notificationBox;
+}
+
+exports.showNotification = function showNotification(title, text, imageURI, textClickable, onClick, onFinish, data) {
+    try {
+        notifications.notify({
+            title: title,
+            iconURL: imageURI,
+            text: text,
+            onClick: onClick
+        });
+    }
+    catch (e) {
+        return;
+        let nb = getNotificationBox(),
+            notification = nb.appendNotification(
+                text,
+                'jetpack-notification-box',
+                imageURI || 'chrome://browser/skin/Info.png',
+                nb.PRIORITY_INFO_MEDIUM,
+                []
+            );
+        timer.setTimeout(function() {
+            notification.close();
+        }, 10 * 1000);
+    }
+    /*let alertObserver = {
         observe: function(subject, topic, data) {
             if ((topic === "alertclickcallback") && !!textClickable)
                 onClick && onClick();
             else if (topic === "alertfinished")
                 onFinish && onFinish();
         }
-    });
+    };
+    gAlertServ.showAlertNotification(imageURI, title, text, !!textClickable, data, alertObserver);*/
 };
 
 exports.beep = function beep() {
@@ -216,7 +267,13 @@ exports.playSound = function playSound(soundURI) {
     }
 }
 
-
+exports.getAttention = function getAttention(times) {
+    let win = exports.getMainWindow();
+    if (typeof times == "number")
+        win.getAttentionWithCycleCount(times);
+    else
+        win.getAttention();
+};
 
 
 
