@@ -94,11 +94,12 @@ exports.bind = function enhanceIframe(frame, parentDoc) {
 }
 
 exports.stopload = function stopContentLoadIframe(frame) { 
-
  var webNav= frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
-
  webNav.stop(webNav.STOP_ALL);
+} 
 
+exports.title = function getIframeTitle(frame) { 
+ return frame.contentDocument.title;
 } 
 
 
