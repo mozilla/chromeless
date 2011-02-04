@@ -36,17 +36,18 @@
 
 const {Cc,Ci} = require("chrome");
 var ui = require("ui");
+var paths = require("app-paths");
 
 /**
  * Empty the tray of all this application's tray items
  */
-exports.Tray = function Tray(icon, hint, menu) {
-    if (icon)
+var Tray = function() {
+    /*if (icon)
         this.setIcon(icon);
     if (hint)
         this.setHint(hint);
     if (menu)
-        this.setMenu(menu);
+        this.setMenu(menu);*/
 };
 
 (function() {
@@ -65,10 +66,21 @@ exports.Tray = function Tray(icon, hint, menu) {
      * Sets a TrayItem's icon
      */
     this.setIcon = function setIcon(appIcon) {
-        var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-        var iconUri = ioService.newFileURI(appIcon);
+        appIcon = decodeURIComponent(appIcon);
+        if (appIcon.indexOf("file://") > -1)
+            appIcon = appIcon.replace(/^.*browser_code\//, "");
+        if (appIcon.indexOf(paths.browserCodeDir) === -1) {
+            appIcon = paths.browserCodeDir.replace(/[\/]+$/, "") + "/browser_code/" 
+                + appIcon.replace(/^[\/]+/, "");
+        }
         
-        this._icon = ui.getIcon();
+        var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+        file.initWithPath(appIcon);
+        
+        var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+        var iconUri = ioService.newFileURI(file);
+        
+        this._icon = ui.setIcon();
         this._icon.title = this._hint;
         this._icon.imageSpec = iconUri.spec;
         this._icon.show();
@@ -118,3 +130,5 @@ exports.Tray = function Tray(icon, hint, menu) {
         return this;
     };
 }).call(Tray.prototype);
+
+exports.Tray = Tray;

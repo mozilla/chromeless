@@ -36,6 +36,40 @@
 
 const {Cc,Ci} = require("chrome");
 
+// console object
+var formatRegExp = /%[sdj]/g;
+function format(f) {
+  var util = require('api-utils');
+
+  if (typeof f !== 'string') {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(util.inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var str = String(f).replace(formatRegExp, function(x) {
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j': return JSON.stringify(args[i++]);
+      default:
+        return x;
+    }
+  });
+  for (var len = args.length, x = args[i]; i < len; x = args[++i]) {
+    if (x === null || typeof x !== 'object') {
+      str += ' ' + x;
+    } else {
+      str += ' ' + util.inspect(x);
+    }
+  }
+  return str;
+}
+
 function stringify(arg) {
   try {
     return String(arg);
@@ -50,9 +84,9 @@ function stringifyArgs(args) {
 }
 
 function message(print, level, args) {
-  print(level + ": " + stringifyArgs(args) + "\n");
+  print(level + ": " + format.apply(this, args) + "\n");
 }
-
+var gprint;
 var Console = exports.PlainTextConsole = function PlainTextConsole(print) {
   if (!print)
     print = dump;
@@ -63,7 +97,7 @@ var Console = exports.PlainTextConsole = function PlainTextConsole(print) {
                 .getService(Ci.nsIPrefBranch);
     prefs.setBoolPref("browser.dom.window.dump.enabled", true);
   }
-  this.print = print;
+  this.print = gprint = print;
 };
 
 Console.prototype = {
