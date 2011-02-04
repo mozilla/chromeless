@@ -93,6 +93,15 @@ exports.bind = function enhanceIframe(frame, parentDoc) {
   return uniqueId; 
 }
 
+exports.stopload = function stopContentLoadIframe(frame) { 
+
+ var webNav= frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
+
+ webNav.stop(webNav.STOP_ALL);
+
+} 
+
+
 function hookProgress(frame, parentDoc) { 
   var window = frame.contentWindow;
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
