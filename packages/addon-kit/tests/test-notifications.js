@@ -1,6 +1,6 @@
-/* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
-/* ***** BEGIN LICENSE BLOCK *****
+/* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+ * vim:set ts=2 sw=2 sts=2 et filetype=javascript
+ * ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -21,7 +21,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Marcio Galli <mgalli@mgalli.com>
+ *   Drew Willcoxon <adw@mozilla.com> (Original Author)
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,15 +37,40 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const {Cc,Ci,Cr} = require("chrome");
+exports.testOnClick = function (test) {
+  let [loader, mockAlertServ] = makeLoader(test);
+  let notifs = loader.require("notifications");
+  let data = "test data";
+  let opts = {
+    onClick: function (clickedData) {
+      test.assertEqual(this, notifs, "|this| should be notifications module");
+      test.assertEqual(clickedData, data,
+                       "data passed to onClick should be correct");
+    },
+    data: data,
+    title: "test title",
+    text: "test text",
+    iconURL: "test icon URL"
+  };
+  notifs.notify(opts);
+  mockAlertServ.click();
+  loader.unload();
+};
 
-var mainWin = require("window-utils");
-
-exports.fullscreen = function flipFullScreen() {
-   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
-}
-
-exports.fixupuri = function fixUpURI(url) { 
-   return Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup).createFixupURI(url,0).spec;;
-} 
-
+// Returns [loader, mockAlertService].
+function makeLoader(test) {
+  let loader = test.makeSandboxedLoader();
+  let mockAlertServ = {
+    showAlertNotification: function (imageUrl, title, text, textClickable,
+                                     cookie, alertListener, name) {
+      this._cookie = cookie;
+      this._alertListener = alertListener;
+    },
+    click: function () {
+      this._alertListener.observe(null, "alertclickcallback", this._cookie);
+    }
+  };
+  let scope = loader.findSandboxForModule("notifications").globalScope;
+  scope.notify = mockAlertServ.showAlertNotification.bind(mockAlertServ);
+  return [loader, mockAlertServ];
+};

@@ -1,27 +1,26 @@
             function handleDragStart(e) {
 		var refIndex = parseInt(e.target.getAttribute("class").split("fileindex")[1]); 
-console.log("refindex = "+refIndex);
 		var fullPath = require('file').join(desktopPath, filesOnDesktop[refIndex ]);
 		var fs = require('file').stat(fullPath);
+
+                if(fs.type == "file") { 
+/*
   		var file = fs.file;
  		var leafName = fs.leafName;
-
-                console.log("Starting drag...to "+leafName);
-
-                // We try to set the drag type in the chrome part 
-                // so we do not get a security exception
- 		//var fileName = file.path.split("/");
-		//var onlyName = fileName[fileName.length-1];
- 		//require('misc').setDragData(e,file,onlyName);
- 		require('misc').setDragData(e,file,leafName);
-
-                var image = document.createElement("img");
-                image.setAttribute("border", "0");
-                image.setAttribute("src", "images/question.png");
-                image.setAttribute("width", "48");
-                image.setAttribute("height", "48");
-                e.dataTransfer.setDragImage(image, 25, 25);
-
+*/
+                   console.log("Starting drag...to "+fullPath);
+                   var leafName = filesOnDesktop[refIndex];
+                   require('dragdrop').setDragData(e,fullPath,leafName, "copy", function(s) { console.log("success!") }, function (e) { console.log("error" + e) } );
+                   var image = document.createElement("img");
+                   image.setAttribute("border", "0");
+                   image.setAttribute("src", "images/question.png");
+                   image.setAttribute("width", "48");
+                   image.setAttribute("height", "48");
+                   e.dataTransfer.setDragImage(image, 25, 25);
+   
+               } else { 
+                   console.log("I can only associate files to the drag, for now...");
+               } 
             }
             
             function handleDragEnd(e) {
