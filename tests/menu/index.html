@@ -27,8 +27,10 @@ var file = new menu.Menu({
         }),
         new menu.Menu({
             label: "New Tab",
-            hotkey: "accel-T",
-            type: "checkbox"
+            children: [
+                new menu.Menu({ label: "In the current window" }),
+                new menu.Menu({ label: "In a new window" }),
+            ]
         })
     ]
 });
@@ -48,6 +50,7 @@ var view = new menu.Menu({
 //console.log(view);
 view.children.splice(0, 1);
 view.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
+console.log(view);
 view.children.sort(function(a, b) {
     a = a.label;
     b = b.label;
