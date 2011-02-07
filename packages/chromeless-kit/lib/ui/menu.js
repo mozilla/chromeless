@@ -37,6 +37,7 @@
 const {Cc, Ci, Cr} = require("chrome"),
       utils   = require("api-utils"),
       hotkeys = require("hotkey"),
+      ui      = require("ui"),
       _slice  = Array.prototype.slice;
 
 function mixin(obj, mixin) {
@@ -165,8 +166,8 @@ var Menu = function(struct) {
         if (!this.drawn || this.children.length || !this.hotkey)
             return;
 
-        let id = "menu_" + this.label.toLowerCase().replace(/\s/g, "_");
-        hotkeys.register(id, this.hotkey, commandHandler.bind(this));
+        let id = "menu_" + ui.getUUID();
+        hotkeys.register(this.hotkey, commandHandler.bind(this), id);
         this.node.setAttribute("key", id);
     };
     
