@@ -70,7 +70,7 @@ var Menu = function(struct) {
     this.parentNode = null;
     mixin(this, struct);
     this.children = this.children && this.children.length ? this.children : [];
-    
+
     if (this.children.length) {
         // verify proper mutual exclusivity
         let _self = this;
@@ -85,7 +85,7 @@ var Menu = function(struct) {
 
     this.children = new SubMenu(this.children, this);
     setParent.call(this, this.parent);
-    
+
     let propMap   = {
             hotkey: "key"
         },
@@ -108,7 +108,7 @@ var Menu = function(struct) {
             this.node.setAttribute(propMap[prop] || prop, val);
         });
     });
-    
+
     ["checked", "autocheck", "name"].forEach(function(prop) {
         this.__defineGetter__(prop, function() { return eval(prop); });
         this.__defineSetter__(prop, function(val) {
@@ -161,7 +161,21 @@ var Menu = function(struct) {
         }
         return this.node;
     };
-    
+
+    this.redraw = function() {
+        if (!this.drawn)
+            return this.parent && this.parent.drawn ? this.setParent(this.parent) : null;
+        let hasChildren = this.children.length;
+        if (!hasChildren || (hasChildren && this.node.tagName.toLowerCase() == "menu"))
+            return; // no redraw needed, already the right setup!
+
+        this.parentNode.removeChild(this.node);
+        this.drawn = false;
+        this.hotkey = this.image = this.disabled = this.type 
+            = this.checked = this.autocheck = this.name = null;
+        this.draw();
+    };
+
     this.setHotkey = function() {
         if (!this.drawn || this.children.length || !this.hotkey)
             return;
@@ -170,7 +184,7 @@ var Menu = function(struct) {
         hotkeys.register(this.hotkey, commandHandler.bind(this), id);
         this.node.setAttribute("key", id);
     };
-    
+
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -204,7 +218,7 @@ var SubMenu = function(nodes, parent) {
         this.drawn = true;
         return this.node;
     };
-    
+
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -218,7 +232,7 @@ var SubMenu = function(nodes, parent) {
         delete this.node;
         this.drawn = false;
     };
-    
+
     /**
      * Adds one or more elements to the end of an array and returns the new 
      * length of the array.
@@ -230,8 +244,10 @@ var SubMenu = function(nodes, parent) {
             ++this.length;
             args[i].setParent(this);
         }
+        this.parent.redraw && this.parent.redraw();
+        return this.length;
     };
-    
+
     var _self = this;
 
     ["reverse", "shift", "sort", "splice", "unshift"].forEach(function(func) {
@@ -263,7 +279,7 @@ var SubMenu = function(nodes, parent) {
             this.push(el);
         }
     };
-    
+
     this.setParent = setParent;
 }).call(SubMenu.prototype);
 
@@ -283,7 +299,7 @@ var Separator = function(parent) {
         this.drawn = true;
         return this.node;
     };
-    
+
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -291,7 +307,7 @@ var Separator = function(parent) {
         delete this.node;
         this.drawn = false;
     };
-    
+
     this.setParent = setParent;
 }).call(Separator.prototype);
 
