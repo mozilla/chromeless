@@ -44,7 +44,7 @@ function format(f) {
   if (typeof f !== 'string') {
     var objects = [];
     for (var i = 0; i < arguments.length; i++) {
-      objects.push(util.inspect(arguments[i]));
+      objects.push('\n' + util.inspect(arguments[i]));
     }
     return objects.join(' ');
   }
@@ -64,7 +64,7 @@ function format(f) {
     if (x === null || typeof x !== 'object') {
       str += ' ' + x;
     } else {
-      str += ' ' + util.inspect(x);
+      str += ' \n' + util.inspect(x);
     }
   }
   return str;

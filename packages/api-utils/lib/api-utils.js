@@ -47,7 +47,7 @@ const VALID_TYPES = [
   "number",
   "object",
   "string",
-  "undefined",
+  "undefined"
 ];
 
 /**
@@ -193,14 +193,14 @@ function format(f) {
       case '%d': return Number(args[i++]);
       case '%j': 
         let val;
-        ++i;
+        //++i;
         try {
             val = JSON.stringify(args[i]);
         }
         catch (ex) {
-            val = String(args[i]) || "[" + ex.message + "]";
+            val = String(args[i]) || '[' + ex.message + ']';
         }
-        return val;
+        return typeof val == "undefined"  ? String(args[i]) : val;
       default:
         return x;
     }
@@ -214,7 +214,7 @@ exports.inspect = function(obj, depth){
   let out = [],
       cons = obj.constructor,
       name = cons.name,
-      proto = obj.__proto__,
+      proto = Object.getPrototypeOf(obj),
       depth = depth || 0,
       indent = Array(depth + 1).join('  ');
 
@@ -233,26 +233,31 @@ exports.inspect = function(obj, depth){
       desc = Object.getOwnPropertyDescriptor(obj, key);
     }
     catch (ex) {
-      out.push(format(indent + '  \033[90m.%s [WrappedNative Object]\033[0m', key));
+      out.push(format(indent + '  \033[90m.%s [object WrappedNative]\033[0m', key));
     }
     if (!desc)
-        return;
-    if (desc.get) out.push(format(indent + '  \033[90m.%s\033[0m', key));
-    if (desc.set) out.push(format(indent + '  \033[90m.%s=\033[0m', key));
+      return;
+    if (desc.get)
+      out.push(format(indent + '  \033[90m.%s\033[0m', key));
+    if (desc.set)
+      out.push(format(indent + '  \033[90m.%s=\033[0m', key));
     if ('function' == typeof desc.value) {
-      let str = desc.value.toString();
-      let params = str.match(/^function *\((.*?)\)/),
+      let str = String(desc.value);
+          params = str.match(/^function *\((.*?)\)/),
           val = params
             ? params[1].split(/ *, */).map(function(param){
                 return '\033[0m' + param + '\033[90m';
               }).join(', ')
             : '';
-      out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, val));
-    } else if (undefined !== desc.value) {
-      out.push(format(indent + '  \033[90m.%s %j\033[0m', key, desc.value));
+      out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, String(val)));
+    }
+    else if (undefined !== desc.value) {
+      out.push(format(indent + '  \033[90m.%s %s\033[0m', key, desc.value));
     }
   });
 
-  out.push(exports.inspect(proto, ++depth));
+  let next = exports.inspect(proto, ++depth);
+  if (next)
+    out.push(next);
   return out.join('\n');
 };
