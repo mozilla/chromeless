@@ -34,12 +34,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const {Cc, Ci} = require("chrome");
-//var windows = require("windows");
-      errors = require("errors");
-      timer = require("timer");
-      notifications = require("ui/notifications");
-      menus = require("ui/context-menu");
+const {Cc, Ci} = require("chrome"),
+//      windows = require("windows"),
+      errors = require("errors"),
+      timer = require("timer"),
+      notifications = require("ui/notifications"),
       windows = require("chromeless-sandbox-window");
 
 /**

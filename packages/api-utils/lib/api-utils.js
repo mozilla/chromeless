@@ -182,3 +182,77 @@ function requirementError(key, requirement) {
   }
   return new Error(msg);
 }
+
+var formatRegExp = /%[sdj]/g;
+function format(f) {
+  let i = 1,
+      args = arguments;
+  let str = String(f).replace(formatRegExp, function(x) {
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j': 
+        let val;
+        ++i;
+        try {
+            val = JSON.stringify(args[i]);
+        }
+        catch (ex) {
+            val = String(args[i]) || "[" + ex.message + "]";
+        }
+        return val;
+      default:
+        return x;
+    }
+  });
+  return str;
+}
+
+exports.inspect = function(obj, depth){
+  if (!obj) return;
+
+  let out = [],
+      cons = obj.constructor,
+      name = cons.name,
+      proto = obj.__proto__,
+      depth = depth || 0,
+      indent = Array(depth + 1).join('  ');
+
+  if (0 == depth) {
+    if ('function' == typeof obj) {
+      name = '[' + name + ': ' + obj.name + ']';
+    } else {
+      name = '[' + name + ']';
+    }
+  }
+
+  out.push(format(indent + '\033[33m%s\033[0m', name));
+  Object.keys(obj).sort().forEach(function(key){
+    let desc;
+    try {
+      desc = Object.getOwnPropertyDescriptor(obj, key);
+    }
+    catch (ex) {
+      out.push(format(indent + '  \033[90m.%s [WrappedNative Object]\033[0m', key));
+    }
+    if (!desc)
+        return;
+    if (desc.get) out.push(format(indent + '  \033[90m.%s\033[0m', key));
+    if (desc.set) out.push(format(indent + '  \033[90m.%s=\033[0m', key));
+    if ('function' == typeof desc.value) {
+      let str = desc.value.toString();
+      let params = str.match(/^function *\((.*?)\)/),
+          val = params
+            ? params[1].split(/ *, */).map(function(param){
+                return '\033[0m' + param + '\033[90m';
+              }).join(', ')
+            : '';
+      out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, val));
+    } else if (undefined !== desc.value) {
+      out.push(format(indent + '  \033[90m.%s %j\033[0m', key, desc.value));
+    }
+  });
+
+  out.push(exports.inspect(proto, ++depth));
+  return out.join('\n');
+};

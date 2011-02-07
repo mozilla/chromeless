@@ -35,12 +35,13 @@
  * ***** END LICENSE BLOCK ***** */
 
 const {Cc, Ci, Cr} = require("chrome"),
-      utils = require("api-utils"),
-      _slice = Array.prototype.slice;
+      utils   = require("api-utils"),
+      hotkeys = require("hotkey"),
+      _slice  = Array.prototype.slice;
 
 function mixin(obj, mixin) {
-    for (var key in mixin)
-        obj[key] = mixin[key];
+    for (let key in mixin)
+        obj[key.toLowerCase()] = mixin[key];
 };
 
 function setParent(parent) {
@@ -48,19 +49,18 @@ function setParent(parent) {
         return;
     this.parent = parent;
     if (((parent instanceof Menu) || (parent instanceof SubMenu)) && parent.drawn) {
-        console.log("SETTING PARENT PROPERLY OF A CHILD");
         this.parentNode = parent.node;
         this.draw();
     }
-    else if (parent.parentNode) {
+    else if (parent.ownerDocument) {
         this.parentNode = parent;
         this.draw();
     }
     if (this.length) {
         for (let i = 0, l = this.length; i < l; ++i)
-            item.setParent && item.setParent(this);
+            this[i].setParent && this[i].setParent(this);
     }
-    if (this.children)
+    if (this.children && this.children.length)
         this.children.setParent(this);
 }
 
@@ -73,7 +73,7 @@ var Menu = function(struct) {
     if (this.children.length) {
         // verify proper mutual exclusivity
         let _self = this;
-        var offending = ["shortcut","icon","enabled"].filter(function(f) {
+        var offending = ["hotkey", "image", "enabled", "onclick", "name"].filter(function(f) {
             return _self[f] != undefined;
         });
         if (offending.length > 0) {
@@ -81,30 +81,195 @@ var Menu = function(struct) {
                 offending.join("' nor '") + "'";
         }
     }
+
     this.children = new SubMenu(this.children, this);
     setParent.call(this, this.parent);
+    
+    let propMap   = {
+            hotkey: "key"
+        },
+        _self     = this,
+        hotkey    = this.hotkey,
+        image     = this.image,
+        type      = this.type,
+        checked   = this.checked,
+        autocheck = this.autocheck,
+        disabled  = this.disabled,
+        name      = this.name;
+    ["hotkey", "image", "type", "disabled"].forEach(function(prop) {
+        this.__defineGetter__(prop, function() { return eval(prop); });
+        this.__defineSetter__(prop, function(val) {
+            eval(prop + " = val");
+            if (!this.drawn || this.children.length)
+                return;
+            if (prop == "hotkey")
+                return this.setHotkey();
+            this.node.setAttribute(propMap[prop] || prop, val);
+        });
+    });
+    
+    ["checked", "autocheck", "name"].forEach(function(prop) {
+        this.__defineGetter__(prop, function() { return eval(prop); });
+        this.__defineSetter__(prop, function(val) {
+            eval(prop + " = val");
+            if (!this.drawn || this.children.length || "checkbox|radio".indexOf(val) === -1)
+                return;
+            this.node.setAttribute(propMap[prop] || prop, val);
+        });
+    });
 };
 
 (function() {
+    function commandHandler(e) {
+        this["onclick"] && this["onclick"](e);
+    }
+
     this.draw = function() {
         if (this.drawn)
             return;
             
         // generate a menu and a menu popup
-        this.node = this.parentNode.ownerDocument.createElement("menu");
-        this.node.className = "menu-iconic";
-        this.node.setAttribute("label", this.caption);
+        let hasChildren = this.children.length;
+        this.node = this.parentNode.ownerDocument.createElement(hasChildren ? "menu" : "menuitem");
+        this.node.className = hasChildren ? "menu-iconic" : "menuitem-iconic";
+        this.node.setAttribute("label", this.label);
+        this.parentNode.appendChild(this.node);
+
+        this.drawn = true;
+
+        if (hasChildren) {
+            this.children.setParent(this);
+        }
+        else {
+            if (this.hotkey)
+                this.setHotkey();
+            if (this.image)
+                this.node.setAttribute("image", this.image);
+            if (this.disabled)
+                this.node.setAttribute("disabled", this.disabled);
+            if (this.type) {
+                this.node.setAttribute("type", this.type);
+                if (this.checked)
+                    this.node.setAttribute("checked", this.checked);
+                if (this.autocheck)
+                    this.node.setAttribute("autocheck", this.autocheck);
+                if (this.name)
+                    this.node.setAttribute("name", this.name);
+            }
+            this.node.addEventListener("command", commandHandler.bind(this), true);
+        }
+        return this.node;
+    };
+    
+    this.setHotkey = function() {
+        if (!this.drawn || this.children.length || !this.hotkey)
+            return;
+
+        let id = "menu_" + this.label.toLowerCase().replace(/\s/g, "_");
+        hotkeys.register(id, this.hotkey, commandHandler.bind(this));
+        this.node.setAttribute("key", id);
+    };
+    
+    this.destroy = function() {
+        if (!this.drawn)
+            return;
+        if (this.children.length)
+            this.children.detroy();
+        this.parentNode.removeChild(this.node);
+        delete this.node;
+        this.drawn = false;
+    };
+    
+    this.setParent = setParent;
+}).call(Menu.prototype);
+
+var SubMenu = function(nodes, parent) {
+    this.drawn = false;
+    this.parent = parent;
+    this.parentNode = null;
+    
+    this.length = 0;
+    setParent.apply(this, parent);
+    this.push.apply(this, nodes);
+};
+
+(function() {
+    this.draw = function() {
+        if (this.drawn || !this.parent.drawn)
+            return;
+
+        this.node = this.parentNode.ownerDocument.createElement("menupopup");
         this.parentNode.appendChild(this.node);
         this.drawn = true;
         return this.node;
     };
+    
+    this.destroy = function() {
+        if (!this.drawn)
+            return;
+        this.parentNode.removeChild(this.node);
+        // make sure to destroy leafs too:
+        for (let i = 0, l = this.length; i < l; ++i) {
+            this[i].detroy();
+            --this.length;
+            delete this[i];
+        }
+        delete this.node;
+        this.drawn = false;
+    };
+    
+    /**
+     * Adds one or more elements to the end of an array and returns the new 
+     * length of the array.
+     */
+    this.push = function() {
+        var args = _slice.call(arguments);
+        for (let i = 0, l = args.length; i < l; ++i) {
+            this[this.length] = args[i];
+            ++this.length;
+            args[i].setParent(this);
+        }
+    };
+    
+    var _self = this;
 
+    ["reverse", "shift", "sort", "splice", "unshift"].forEach(function(func) {
+        _self[func] = function() {
+            let els = this.toArray();
+            els[func].apply(els, _slice.call(arguments));
+            this.fromArray(els);
+        };
+    });
+
+    this.toArray = function() {
+        var mock = [];
+        for (let i = 0, l = this.length; i < l; ++i)
+            mock.push(this[i]);
+        return mock;
+    };
+
+    this.fromArray = function(arr) {
+        let i, l, el, next;
+        for (i = 0, l = this.length; i < l; ++i) {
+            if (arr.indexOf(this[i]) === -1)
+                this[i].destroy();
+            delete this[i];
+        }
+        this.length = 0;
+        for (i = 0, l = arr.length; i < l; ++i) {
+            el = arr[i];
+            next = arr[i + 1];
+            this.push(el);
+        }
+    };
+    
     this.setParent = setParent;
-}).call(Menu.prototype);
+}).call(SubMenu.prototype);
 
 var Separator = function(parent) {
     this.drawn = false;
     this.parentNode = null;
+    this.label = "-";
     setParent.call(this, parent);
 };
 
@@ -117,94 +282,17 @@ var Separator = function(parent) {
         this.drawn = true;
         return this.node;
     };
-
+    
+    this.destroy = function() {
+        if (!this.drawn)
+            return;
+        this.parentNode.removeChild(this.node);
+        delete this.node;
+        this.drawn = false;
+    };
+    
     this.setParent = setParent;
 }).call(Separator.prototype);
-
-var SubMenu = function(nodes, parent) {
-    this.drawn = false;
-    this.parent = parent;
-    this.parentNode = null;
-    setParent.call(this, parent);
-    this.push.apply(this, nodes);
-};
-
-(function() {
-    this.draw = function() {
-        if (this.drawn || !this.parent.drawn)
-            return;
-        console.log("drawing submenu..." + this.parentNode.nodeType);
-        console.log(this.parentNode);
-        this.node = this.parentNode.ownerDocument.createElement("menupopup");
-        this.parentNode.appendChild(this.node);
-        this.drawn = true;
-        return this.node;
-    };
-    
-    var _pop = this.pop;
-    /**
-     * Removes the last element from an array and returns that element.
-     */
-    this.pop = function(item) {
-        _pop.call(this, item);
-        
-    };
-    
-    var _push = this.push;
-    /**
-     * Adds one or more elements to the end of an array and returns the new length of the array.
-     */
-    this.push = function() {
-        var args = _slice.call(arguments);
-        _push.apply(this, args);
-    };
-    
-    var _reverse = this.reverse;
-    /**
-     * Reverses the order of the elements of an array -- the first becomes the 
-     * last, and the last becomes the first.
-     */
-    this.reverse = function() {
-        _reverse.call(this);
-    };
-    
-    var _shift = this.shift;
-    /**
-     * Removes the first element from an array and returns that element.
-     */
-    this.shift = function() {
-        shift.call(this);
-    };
-    
-    var _sort = this.sort;
-    /**
-     * Sorts the elements of an array.
-     */
-    this.sort = function(helper) {
-        _sort.call(this, helper);
-    };
-    
-    var _splice = this.splice;
-    /**
-     * Adds and/or removes elements from an array.
-     */
-    this.splice = function() {
-        var args = _slice.call(arguments);
-        _splice.apply(this, args);
-    };
-    
-    var _unshift = this.unshift;
-    /**
-     * Adds one or more elements to the front of an array and returns the new 
-     * length of the array.
-     */
-    this.unshift = function() {
-        var args = _slice.call(arguments);
-        _unshift.apply(this, args);
-    };
-
-    this.setParent = setParent;
-}).call(SubMenu.prototype = Array.prototype);
 
 exports.Menu = utils.publicConstructor(Menu);
 exports.Separator = utils.publicConstructor(Separator);
