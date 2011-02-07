@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>menu specifier</title>
+  </head>
+  <body>
+    A simple test of menu interaction.
+  </body>
+  <script type="text/javascript">
+
+console.log("hi mom!");
+// an example of setting the main menu
+var ui = require("ui"),
+    menu = require("ui/menu");
+
+var file = new menu.Menu({
+    parent: ui.getMenu(),
+    label: "File",
+    children: [
+        new menu.Menu({
+            label: "New Window",
+            hotkey: "accel-n",
+            type: "radio",
+            checked: true,
+            onClick: function(e) {
+                alert("yay!");
+            }
+        }),
+        new menu.Menu({
+            label: "New Tab",
+            hotkey: "accel-T",
+            type: "checkbox"
+        })
+    ]
+});
+
+var view = new menu.Menu({
+    parent: ui.getMenu(),
+    label: "View",
+    children: [
+        new menu.Menu({ label: "Navigation Toolbar" }),
+        new menu.Menu({ label: "Bookmarks Toolbar", hotkey: "accel-d", image: "resource://app/icons/favorite.png" }),
+        new menu.Menu({ label: "Add-on Bar", disabled: true }),
+        new menu.Separator(),
+        new menu.Menu({ label: "Tabs On Top" })
+    ]
+});
+
+//console.log(view);
+view.children.splice(0, 1);
+view.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
+view.children.sort(function(a, b) {
+    a = a.label;
+    b = b.label;
+    if (a.label == "-")
+        return 0;
+    if (a.label < b.label)
+       return -1;
+    if (a.label > b.label)
+       return 1;
+    // a must be equal to b
+    return 0;
+});
+view.children[0].onclick = function() {
+    alert("What are you looking at?!");
+};
+  </script>
+</html>
