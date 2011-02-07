@@ -274,6 +274,8 @@ exports.getAttention = function getAttention(times) {
         win.getAttention();
 };
 
-
-
-
+exports.getUUID = function() {
+    let uuidGenerator = Cc["@mozilla.org/uuid-generator;1"]
+                        .getService(Ci.nsIUUIDGenerator);
+    return uuidGenerator.generateUUID().toString();
+};
