@@ -77,6 +77,7 @@ body {
       <div><button id="reload">R</button></div>
       <div id="urlbox"><form><input id="urlinput" type="text" /></form></div>
       <div id="go"><button id="go">go</button></div>
+      <div id="stop"><button id="stop">stop</button></div>
     </div>
     <div id="browserContentArea">
       <!-- what if iframes were how the browser HTML embedded web content?
@@ -112,6 +113,12 @@ window.addEventListener("experimental-dom-load", function(e) {
 
 // the ready handler would run once the browser process was initialized?
 $(document).ready(function() {
+
+    function stop () { 
+      var frame = document.getElementById("contentFrame");
+      require("iframe-as-browser").stopload(frame);
+    } 
+
     function navigate() {
         // invoked when the user hits the go button or hits enter in url box
         var url = $.trim($("#urlinput").val());
@@ -128,6 +135,7 @@ $(document).ready(function() {
     // navigate to the url specified
     $("#urlbox > form").submit(function() { navigate(); return false; });
     $("#go").click(function() { navigate(); });
+    $("#stop").click(function() { stop(); });
     // reload and go are equivalent.  desired?
     $("#reload").click(function() { navigate(); });
     $("#back").click(function() {

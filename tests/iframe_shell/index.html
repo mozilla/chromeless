@@ -25,6 +25,8 @@
          function (e) {
              document.getElementById("progress").innerHTML=e.percentage;
              document.getElementById("dots").innerHTML+=".";
+             // dump title of the iframe.
+	     document.getElementById("dots").innerHTML+=e.target.contentDocument.title; 
          }
      ,false); 
 
@@ -41,7 +43,7 @@
      },false); 
  
      document.body.appendChild(i);
-     i.src="https://www.google.com";
+     i.src="http://www.google.com";
     } 
 
    </script>
