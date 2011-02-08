@@ -892,6 +892,25 @@
         ], 
         "module": "favicon"
       }, 
+      "fullscreen": {
+        "desc": "Allows one to control fullscreen view for the main application window", 
+        "filename": "fullscreen.js", 
+        "functions": [
+          {
+            "desc": "Size the main application window to consume the full screen", 
+            "name": "enable"
+          }, 
+          {
+            "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
+            "name": "disable"
+          }, 
+          {
+            "desc": "Toggle fullscreen.", 
+            "name": "toggle"
+          }
+        ], 
+        "module": "fullscreen"
+      }, 
       "getCurrentWindow": {
         "desc": "Return the current window. This function does not exist outside of the context of a window.", 
         "filename": "ui.js", 
