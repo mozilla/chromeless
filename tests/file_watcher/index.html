@@ -3,8 +3,8 @@
     <title>WebbyFox</title>
   </head>
   <body >
-   <p> 
-	   Stats about your desktop:
+   <p>
+	 A basic example of watching files:
      <div id="textfile_contents">
      </div>  
    </p>
@@ -12,22 +12,27 @@
   <script type="text/javascript" charset="utf-8">
     // we'll create a text file on the desktop and start
     // watching it for changes
-    var file = require('file');
-    var textFilePath = file.join(require('app-paths').desktopDir,
+    const fs = require('fs');
+    const file = require('file');
+    const path = require('path');
+    var textFilePath = path.join(require('app-paths').desktopDir,
                                  "watchedTextFile.txt"); 
-    var txtFile = file.open(textFilePath, "w");
-    txtFile.write("this is a text file\nYou can write to it and I'll be" +
-                  "watching!");
-    txtFile.close();
+    // try to write the file.  if not, it exists, we'll just watch it.
+    try {
+      file.write(textFilePath,
+                 "this is a text file\nYou can write to it and I'll be" +
+                 "watching!  To mess with this text file go edit : " +
+                 textFilePath);
+    } catch(e) {}
     var lastLastModTime = 0;
     setInterval(function() {
-      var thisLastModTime = file.stat(textFilePath).lastModified;
+      var thisLastModTime = fs.stat(textFilePath).lastModified;
       if (lastLastModTime != thisLastModTime) {
         lastLastModTime = thisLastModTime;
         console.log("file was modified at " + lastLastModTime);
         var d = document.getElementById('textfile_contents');
-        d.innerHTML = file.open(textFilePath, "r").read();
-      }  
+        d.innerHTML = file.read(textFilePath);
+      }
     },700);
   </script>
 </html>
