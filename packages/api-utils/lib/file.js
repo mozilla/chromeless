@@ -40,7 +40,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * Provides access to the local filesystem.
+ * Allows for the reading and writing of files.
  */
 
 const {Cc,Ci,Cr} = require("chrome");
