@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body >
+   <p> 
+	   Files on your desktop:
+     <ol id="files">
+     </ol>  
+   </p>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    const mime = require('mime');
+    [
+      "foo.tar.gz",
+      "foo.tgz",
+      "bar.txt",
+      "baz.PNG",
+      "boo.png",
+      "ooga.js",
+      "hi.json",
+      "js",
+      "exe",
+      "/Users/lth/dev/stuff/myfile.JSON"
+    ].forEach(function(fn) {
+      console.log(fn + ": " + mime.guess(fn));
+    });
+  </script>
+</html>
+
