@@ -37,15 +37,30 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const {Cc,Ci,Cr} = require("chrome");
+/**
+ * Allows one to control fullscreen view for the main application window
+ */
 
 var mainWin = require("window-utils");
 
-exports.fullscreen = function flipFullScreen() {
-   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
-}
+/**
+ * Size the main application window to consume the full screen
+ */
+exports.enable = function() {
+   mainWin.activeWindow.fullScreen=true;
+};
 
-exports.fixupuri = function fixUpURI(url) { 
-   return Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup).createFixupURI(url,0).spec;;
-} 
+/**
+ * Disable fullscreen mode (noop if it wasn't enabled)
+ */
+exports.disable = function() {
+   mainWin.activeWindow.fullScreen=false;
+};
+
+/**
+ * Toggle fullscreen.
+ */
+exports.toggle = function() {
+   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
+};
 
