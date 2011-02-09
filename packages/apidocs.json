@@ -934,122 +934,30 @@
         ], 
         "module": "favicon"
       }, 
-      "fullscreen": {
-        "desc": "Allows one to control fullscreen view for the main application window", 
-        "filename": "fullscreen.js", 
-        "functions": [
-          {
-            "desc": "Size the main application window to consume the full screen", 
-            "name": "enable"
-          }, 
-          {
-            "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
-            "name": "disable"
-          }, 
-          {
-            "desc": "Toggle fullscreen.", 
-            "name": "toggle"
-          }
-        ], 
-        "module": "fullscreen"
-      }, 
-      "getCurrentWindow": {
-        "desc": "Return the current window. This function does not exist outside of the context of a window.", 
-        "filename": "ui.js", 
-        "functions": [
-          {
-            "desc": "Return the application's main window", 
-            "name": "getMainWindow"
-          }, 
-          {
-            "desc": "Return the user's idle time (for the desktop, not just the application)", 
-            "name": "getIdleTime"
-          }, 
-          {
-            "desc": "Return the application's main MenuItem or null if none is set.", 
-            "name": "getMenu"
-          }, 
-          {
-            "desc": "Set a menu for the application", 
-            "name": "setMenu"
-          }, 
-          {
-            "desc": "Return this application's context menu or null if none is set.", 
-            "name": "getContextMenu"
-          }, 
-          {
-            "desc": "Set the application's context menu", 
-            "name": "setContextMenu"
-          }, 
-          {
-            "desc": "Create a new menu", 
-            "name": "createMenu"
-          }, 
-          {
-            "desc": "Create a new menu item.", 
-            "name": "createMenuItem"
-          }, 
-          {
-            "desc": "Create a new separator menu item.", 
-            "name": "createSeperatorMenuItem"
-          }, 
-          {
-            "desc": "Create a new CheckMenuItem object.", 
-            "name": "createCheckMenuItem"
-          }, 
-          {
-            "desc": "Set the application icon's badge text.", 
-            "name": "setBadge"
-          }, 
-          {
-            "desc": "Set the application icon's badge image.", 
-            "name": "setBadgeImage"
-          }, 
-          {
-            "desc": "Set the dock icon", 
-            "name": "setDockIcon"
-          }, 
-          {
-            "desc": "Set the dock menu", 
-            "name": "setDockMenu"
-          }, 
-          {
-            "desc": "Set the application's icon", 
-            "name": "setIcon"
-          }, 
-          {
-            "desc": "Create and add a tray icon", 
-            "name": "addTray"
-          }, 
-          {
-            "desc": "Empty the tray of all this application's tray items", 
-            "name": "clearTray"
-          }, 
-          {
-            "desc": "create a UI dialog", 
-            "name": "showDialog"
-          }
-        ], 
-        "module": "getCurrentWindow", 
-        "properties": [
-          {
-            "desc": "Return a list of currently open windows.", 
-            "name": "getWindows"
-          }
-        ]
-      }, 
-      "hidden-frame-xulrunner": {
-        "filename": "hidden-frame-xulrunner.js", 
-        "module": "hidden-frame-xulrunner"
-      }, 
-      "iframe-as-browser": {
-        "filename": "iframe-as-browser.js", 
-        "module": "iframe-as-browser"
-      }, 
-      "list": {
-        "desc": "Returns an array of file names in the given directory.", 
+      "fs": {
+        "desc": "The fs module provides means to interact with the file system for manipulating\nand querying files and directories.", 
         "filename": "fs.js", 
         "functions": [
+          {
+            "desc": "Returns an array of file names in the given directory.", 
+            "name": "list", 
+            "params": [
+              {
+                "desc": "The path of the directory.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "An array of file names.  Each is a basename, not a full path.", 
+              "type": "array"
+            }, 
+            "throws": [
+              {
+                "desc": "if the path points to something other than a readable directory."
+              }
+            ]
+          }, 
           {
             "desc": "Returns an array of [file object](file.File) in the given directory.", 
             "name": "listObjects", 
@@ -1181,7 +1089,119 @@
             ]
           }
         ], 
-        "module": "list"
+        "module": "fs"
+      }, 
+      "fullscreen": {
+        "desc": "Allows one to control fullscreen view for the main application window", 
+        "filename": "fullscreen.js", 
+        "functions": [
+          {
+            "desc": "Size the main application window to consume the full screen", 
+            "name": "enable"
+          }, 
+          {
+            "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
+            "name": "disable"
+          }, 
+          {
+            "desc": "Toggle fullscreen.", 
+            "name": "toggle"
+          }
+        ], 
+        "module": "fullscreen"
+      }, 
+      "getCurrentWindow": {
+        "desc": "Return the current window. This function does not exist outside of the context of a window.", 
+        "filename": "ui.js", 
+        "functions": [
+          {
+            "desc": "Return the application's main window", 
+            "name": "getMainWindow"
+          }, 
+          {
+            "desc": "Return the user's idle time (for the desktop, not just the application)", 
+            "name": "getIdleTime"
+          }, 
+          {
+            "desc": "Return the application's main MenuItem or null if none is set.", 
+            "name": "getMenu"
+          }, 
+          {
+            "desc": "Set a menu for the application", 
+            "name": "setMenu"
+          }, 
+          {
+            "desc": "Return this application's context menu or null if none is set.", 
+            "name": "getContextMenu"
+          }, 
+          {
+            "desc": "Set the application's context menu", 
+            "name": "setContextMenu"
+          }, 
+          {
+            "desc": "Create a new menu", 
+            "name": "createMenu"
+          }, 
+          {
+            "desc": "Create a new menu item.", 
+            "name": "createMenuItem"
+          }, 
+          {
+            "desc": "Create a new separator menu item.", 
+            "name": "createSeperatorMenuItem"
+          }, 
+          {
+            "desc": "Create a new CheckMenuItem object.", 
+            "name": "createCheckMenuItem"
+          }, 
+          {
+            "desc": "Set the application icon's badge text.", 
+            "name": "setBadge"
+          }, 
+          {
+            "desc": "Set the application icon's badge image.", 
+            "name": "setBadgeImage"
+          }, 
+          {
+            "desc": "Set the dock icon", 
+            "name": "setDockIcon"
+          }, 
+          {
+            "desc": "Set the dock menu", 
+            "name": "setDockMenu"
+          }, 
+          {
+            "desc": "Set the application's icon", 
+            "name": "setIcon"
+          }, 
+          {
+            "desc": "Create and add a tray icon", 
+            "name": "addTray"
+          }, 
+          {
+            "desc": "Empty the tray of all this application's tray items", 
+            "name": "clearTray"
+          }, 
+          {
+            "desc": "create a UI dialog", 
+            "name": "showDialog"
+          }
+        ], 
+        "module": "getCurrentWindow", 
+        "properties": [
+          {
+            "desc": "Return a list of currently open windows.", 
+            "name": "getWindows"
+          }
+        ]
+      }, 
+      "hidden-frame-xulrunner": {
+        "filename": "hidden-frame-xulrunner.js", 
+        "module": "hidden-frame-xulrunner"
+      }, 
+      "iframe-as-browser": {
+        "filename": "iframe-as-browser.js", 
+        "module": "iframe-as-browser"
       }, 
       "menu": {
         "desc": "Allows one to interact with the application menu.  The display of\nthis menu is platform specific.  On OSX the menu appears in the top\nbar as is typical for OSX applications.  On other platforms the\nmenu appears as a toolbar underneath the application's titlebar.\n\nMenus are specified via a javascript data structre, here's an\nexample:\n\n    [\n      {\n        label: \"File\",\n        children: [\n          {\n            label: \"New Window\",\n            shortcut: \"n\",\n          },\n          {\n            icon: \"resource://app/icons/new_tab.png\",\n            label: \"New Tab\",\n            shortcut: \"t\"\n          }\n        ]\n      },\n      {\n        label: \"View\",\n        children: [\n          {\n            label: \"toolbars\",\n            icon: \"resource://app/icons/toolbar.png\",\n            children: [\n               ...\n            ]\n          }\n        ]\n      }\n    ]", 
