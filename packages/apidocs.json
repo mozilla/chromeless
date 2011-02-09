@@ -247,44 +247,140 @@
         "module": "events"
       }, 
       "file": {
+        "classes": [
+          {
+            "constructor": {
+              "name": "File", 
+              "params": [
+                {
+                  "desc": "The path from which to construct a File object.", 
+                  "name": "path", 
+                  "type": "string"
+                }
+              ], 
+              "returns": {
+                "desc": "an object representation of a file", 
+                "type": "File"
+              }
+            }, 
+            "desc": "A file abstraction that allows direct access to meta-data\nabout a file.", 
+            "functions": [
+              {
+                "desc": "Check file existence.", 
+                "name": "exists", 
+                "returns": {
+                  "desc": "true if the file exists.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isWritable", 
+                "returns": {
+                  "desc": "true if the file is writable.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isReadble", 
+                "returns": {
+                  "desc": "true if the file is readable.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isExecutable", 
+                "returns": {
+                  "desc": "true if the file is executable.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isHidden", 
+                "returns": {
+                  "desc": "true if the file is hidden.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isDirectory", 
+                "returns": {
+                  "desc": "true if the file is a directory.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isDirectory", 
+                "returns": {
+                  "desc": "true if the file is a regular file.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isDirectory", 
+                "returns": {
+                  "desc": "true if the file is a symlink.", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "isSpecial", 
+                "returns": {
+                  "desc": "true if the file is a special file (i.e. device)", 
+                  "type": "boolean"
+                }
+              }, 
+              {
+                "name": "toString", 
+                "returns": {
+                  "desc": "concoct a reasonable string representation of a file", 
+                  "type": "string"
+                }
+              }
+            ], 
+            "name": "File", 
+            "properties": [
+              {
+                "desc": "The file's permissions (follows symlinks)", 
+                "name": "permissions"
+              }, 
+              {
+                "desc": "The file's permissions (does not follow symlinks)", 
+                "name": "permissionsOfLink"
+              }, 
+              {
+                "desc": "The last time this file was modified (follows symlinks)", 
+                "name": "lastModifiedTime"
+              }, 
+              {
+                "desc": "The last time this file was modified (does not follow symlinks)", 
+                "name": "lastModifiedTimeOfLink"
+              }, 
+              {
+                "desc": "Size of file in bytes (follows symlinks)", 
+                "name": "fileSize", 
+                "type": "integer"
+              }, 
+              {
+                "desc": "Size of file in bytes (does not follow symlinks)", 
+                "name": "fileSize", 
+                "type": "integer"
+              }, 
+              {
+                "desc": "The absolute path to the file", 
+                "name": "path", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The absolute path to the parent of the file", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
         "desc": "Provides access to the local filesystem.", 
         "filename": "file.js", 
         "functions": [
-          {
-            "desc": "Returns true if a file exists at the given path and false otherwise.", 
-            "name": "exists", 
-            "params": [
-              {
-                "desc": "The path to a file.", 
-                "name": "path", 
-                "type": "string"
-              }
-            ], 
-            "returns": {
-              "desc": "True if the file exists and false otherwise.", 
-              "type": "boolean"
-            }
-          }, 
-          {
-            "desc": "Given a path returns metadata about the file or directory.  If the path is a symlink it\nwill be dereferenced and information about the underlying file will be returned", 
-            "name": "stat", 
-            "params": [
-              {
-                "desc": "The path to a file.", 
-                "name": "path", 
-                "type": "string"
-              }
-            ], 
-            "returns": {
-              "desc": "Returns an object with information about the file, including:\n\n + `type` - either 'file' or 'directory'\n + `numEntries` - (for directories), the number of files in the directory.\n + `size` - (for files), the size of the file in bytes.\n + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.", 
-              "type": "object"
-            }, 
-            "throws": [
-              {
-                "desc": "if file doesn't exist"
-              }
-            ]
-          }, 
           {
             "desc": "Opens a file in text mode and returns a string containing its entire contents.", 
             "name": "read", 
@@ -301,49 +397,23 @@
             }
           }, 
           {
-            "desc": "Takes a variable number of strings, joins them on the file system's path\nseparator, and returns the result.", 
-            "name": "join", 
+            "desc": "Creates a text file and writes the entir contents of a string to\nit.", 
+            "name": "write", 
             "params": [
               {
-                "desc": "A variable number of strings to join.", 
-                "name": "...", 
-                "type": "strings"
-              }
-            ], 
-            "returns": {
-              "desc": "A single string formed by joining the strings on the file system's path\nseparator.", 
-              "type": "string"
-            }
-          }, 
-          {
-            "desc": "Returns the path of the directory containing the given file.", 
-            "name": "dirname", 
-            "params": [
+                "desc": "The path at which the file should be created", 
+                "name": "path"
+              }, 
               {
-                "desc": "The path of a file.", 
-                "name": "path", 
-                "type": "string"
+                "desc": "The content to write.", 
+                "name": "content"
               }
             ], 
-            "returns": {
-              "desc": "The path of the directory containing the file.", 
-              "type": "string"
-            }
-          }, 
-          {
-            "desc": "Returns an array of file names in the given directory.", 
-            "name": "list", 
-            "params": [
+            "throws": [
               {
-                "desc": "The path of the directory.", 
-                "name": "path", 
-                "type": "string"
+                "desc": "if file exists, or cannot be created."
               }
-            ], 
-            "returns": {
-              "desc": "An array of file names.  Each is a basename, not a full path.", 
-              "type": "array"
-            }
+            ]
           }, 
           {
             "desc": "Returns a stream providing access to the contents of a file.", 
@@ -364,39 +434,6 @@
               "desc": "A stream that can be used to access or modify the contents of the file.  See\n[`text-streams`](#module/api-utils/text-streams) and\n[`byte-streams`](#module/api-utils/byte-streams) for more information.\nOpened files should always be closed after use by calling `close` on the\nreturned stream.", 
               "type": "stream"
             }
-          }, 
-          {
-            "desc": "Removes a file from the file system.  To remove directories, use `rmdir`.", 
-            "name": "remove", 
-            "params": [
-              {
-                "desc": "The path of the file to remove.", 
-                "name": "path", 
-                "type": "string"
-              }
-            ]
-          }, 
-          {
-            "desc": "Makes a new directory named by the given path.  Any subdirectories that do not\nexist are also created.  `mkpath` can be called multiple times on the same\npath.", 
-            "name": "mkpath", 
-            "params": [
-              {
-                "desc": "The path to create.", 
-                "name": "path", 
-                "type": "string"
-              }
-            ]
-          }, 
-          {
-            "desc": "Removes a directory from the file system.  If the directory is not empty, an\nexception is thrown.", 
-            "name": "rmdir", 
-            "params": [
-              {
-                "desc": "The path of the directory to remove.", 
-                "name": "path", 
-                "type": "string"
-              }
-            ]
           }
         ], 
         "module": "file"
@@ -584,6 +621,11 @@
       "traceback": {
         "filename": "traceback.js", 
         "module": "traceback"
+      }, 
+      "traits": {
+        "desc": "Work around bug 608959 by defining the _create function here instead of\nimporting it from traits/core.  For docs on this function, see the create\nfunction in that module.\n\nFIXME: remove this workaround in favor of importing the function once that\nbug has been fixed.", 
+        "filename": "traits.js", 
+        "module": "traits"
       }, 
       "unit-test": {
         "filename": "unit-test.js", 
@@ -1004,9 +1046,164 @@
         "filename": "iframe-as-browser.js", 
         "module": "iframe-as-browser"
       }, 
+      "list": {
+        "desc": "Returns an array of file names in the given directory.", 
+        "filename": "fs.js", 
+        "functions": [
+          {
+            "desc": "Returns an array of [file object](file.File) in the given directory.", 
+            "name": "listObjects", 
+            "params": [
+              {
+                "desc": "The path of the directory.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "An array of file objects.", 
+              "type": "array"
+            }, 
+            "throws": [
+              {
+                "desc": "if the path points to something other than a readable directory."
+              }
+            ]
+          }, 
+          {
+            "desc": "Copy a file.", 
+            "name": "copy", 
+            "params": [
+              {
+                "desc": "The Path to the source file", 
+                "name": "from", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The path to the destination file", 
+                "name": "to", 
+                "type": "string"
+              }
+            ], 
+            "throws": [
+              {
+                "desc": "if the operation cannot be completed."
+              }
+            ]
+          }, 
+          {
+            "desc": "Move a file to a new location.", 
+            "name": "move", 
+            "params": [
+              {
+                "desc": "The Path to the source file", 
+                "name": "from", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The path to the destination file", 
+                "name": "to", 
+                "type": "string"
+              }
+            ], 
+            "throws": [
+              {
+                "desc": "if the operation cannot be completed."
+              }
+            ]
+          }, 
+          {
+            "desc": "Returns true if a file exists at the given path and false otherwise.", 
+            "name": "exists", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "True if the file exists and false otherwise.", 
+              "type": "boolean"
+            }
+          }, 
+          {
+            "desc": "Given a path returns metadata about the file or directory.  If the path is a symlink it\nwill be dereferenced and information about the underlying file will be returned", 
+            "name": "stat", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Returns an object with information about the file, including:\n\n + `type` - either 'file' or 'directory'\n + `numEntries` - (for directories), the number of files in the directory.\n + `size` - (for files), the size of the file in bytes.\n + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.", 
+              "type": "object"
+            }, 
+            "throws": [
+              {
+                "desc": "if file doesn't exist"
+              }
+            ]
+          }, 
+          {
+            "desc": "Removes a file from the file system.  To remove directories, use `rmdir`.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "The path of the file to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "desc": "Makes a new directory named by the given path.  Any subdirectories that do not\nexist are also created.  `mkpath` can be called multiple times on the same\npath.", 
+            "name": "mkpath", 
+            "params": [
+              {
+                "desc": "The path to create.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "desc": "Removes a directory from the file system.  If the directory is not empty, an\nexception is thrown.", 
+            "name": "rmdir", 
+            "params": [
+              {
+                "desc": "The path of the directory to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "module": "list"
+      }, 
       "menu": {
-        "filename": "ui/menu.js", 
-        "module": "menu"
+        "desc": "Allows one to interact with the application menu.  The display of\nthis menu is platform specific.  On OSX the menu appears in the top\nbar as is typical for OSX applications.  On other platforms the\nmenu appears as a toolbar underneath the application's titlebar.\n\nMenus are specified via a javascript data structre, here's an\nexample:\n\n    [\n      {\n        label: \"File\",\n        children: [\n          {\n            label: \"New Window\",\n            shortcut: \"n\",\n          },\n          {\n            icon: \"resource://app/icons/new_tab.png\",\n            label: \"New Tab\",\n            shortcut: \"t\"\n          }\n        ]\n      },\n      {\n        label: \"View\",\n        children: [\n          {\n            label: \"toolbars\",\n            icon: \"resource://app/icons/toolbar.png\",\n            children: [\n               ...\n            ]\n          }\n        ]\n      }\n    ]", 
+        "filename": "menu.js", 
+        "functions": [
+          {
+            "desc": "Provide a callback that should be invoked when a user\nselects something from application menus", 
+            "name": "addListener"
+          }, 
+          {
+            "desc": "remove a listener previously set with 'addListener'", 
+            "name": "removeListener"
+          }
+        ], 
+        "module": "menu", 
+        "properties": [
+          {
+            "desc": "A read/write property containing the application's menu", 
+            "name": "appMenu", 
+            "type": "object"
+          }
+        ]
       }, 
       "menuitem": {
         "filename": "ui/menuitem.js", 
@@ -1015,6 +1212,123 @@
       "misc": {
         "filename": "misc.js", 
         "module": "misc"
+      }, 
+      "path": {
+        "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
+        "filename": "path.js", 
+        "functions": [
+          {
+            "desc": "joins any number of path components with the platform appropriate\npath separator.", 
+            "name": "join", 
+            "params": [
+              {
+                "desc": "variable number of parameters to be joined", 
+                "name": "A", 
+                "type": "strings"
+              }
+            ], 
+            "returns": {
+              "desc": "The joined path", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "normalizes a path and splits it into an array of path components", 
+            "name": "split", 
+            "params": [
+              {
+                "desc": "A path to split", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Path components.", 
+              "type": "array"
+            }
+          }, 
+          {
+            "desc": "normalizes an array of path components, properly reducing entries such as\n'..' and blank paths.", 
+            "name": "normalizeArray", 
+            "params": [
+              {
+                "desc": "Path components.", 
+                "name": "components", 
+                "type": "array"
+              }
+            ], 
+            "returns": {
+              "desc": "Normalized path components.", 
+              "type": "array"
+            }
+          }, 
+          {
+            "desc": "normalizes a path.", 
+            "name": "normalize", 
+            "params": [
+              {
+                "desc": "The path to normalize.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A normalized path.", 
+              "type": "stribg"
+            }
+          }, 
+          {
+            "desc": "Given a path, extract the *directory name* component.  For instance,\n`dirname(\"/foo/bar/baz.txt\") --> \"/foo/bar\"`.\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "dirname", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The directory part of the path.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Given a path, extract the filename component.  For instance,\n`basename(\"/foo/bar/baz.txt\") --> \"baz.txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `basename(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "basename", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }, 
+              {
+                "desc": "An extension string, if present and matches the\n                 path, will be removed from the resulting filename.", 
+                "name": "[ext]", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The filename component of the path.", 
+              "type": "string"
+            }
+          }, 
+          {
+            "desc": "Return the extension of a path:\n`extname(\"/foo/bar/baz.txt\") --> \".txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `dirname(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "extname", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The filename component of the path.", 
+              "type": "string"
+            }
+          }
+        ], 
+        "module": "path"
       }, 
       "session-store": {
         "filename": "session-store.js", 
