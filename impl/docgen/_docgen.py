@@ -7,7 +7,7 @@ from cuddlefish import packaging
 from cuddlefish import Bunch
 import simplejson as json
 
-from _extract import DocExtractor
+from docstract import DocStract
 
 class DocGen(object):
     def __init__(self, env_root):
@@ -65,7 +65,7 @@ def generate_static_docs(env_root, output_dir):
     pkg_cfg = docgen.build_pkg_cfg()
 
     # iterate through each package and generate docs for it
-    extractor = DocExtractor()
+    extractor = DocStract()
 
     apidocs = {}
     for pkg_name, pkg in pkg_cfg['packages'].items():
@@ -86,7 +86,7 @@ def generate_static_docs(env_root, output_dir):
                     # now get the lib/ relative path of this module
                     relpath = os.path.join(root,f)[len(path)+1:]
                     try:
-                        moduleDocs = extractor.extract(relpath)
+                        moduleDocs = extractor.extractFromFile(relpath)
                         # insert module documentation into the great map
                         if not 'modules' in apidocs[pkg_name]:
                             apidocs[pkg_name]['modules'] = { }
