@@ -175,7 +175,7 @@ exports.normalizeArray = function(original, keepBlanks) {
  * @returns {stribg} A normalized path.
  */
 exports.normalize = function(path) {
-  return exports.join(exports.split(path));
+  return exports.join(path);
 };
 
 /**
