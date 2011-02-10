@@ -1,7 +1,7 @@
 function handleDragStart(e) {
 	var refIndex = parseInt(e.target.getAttribute("class").split("fileindex")[1]); 
-	var fullPath = require('file').join(desktopPath, filesOnDesktop[refIndex ]);
-	var fs = require('file').stat(fullPath);
+	var fullPath = require('path').join(desktopPath, filesOnDesktop[refIndex ]);
+	var fs = require('fs').stat(fullPath);
 
   if(fs.type == "file") { 
     /*
