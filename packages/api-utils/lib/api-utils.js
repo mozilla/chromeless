@@ -244,7 +244,6 @@ exports.inspect = function(obj, depth, parentsKey) {
     if (desc.set)
       out.push(format(indent + '  \033[90m.%s=\033[0m', key));
     if ('function' == typeof desc.value) {
-      console.log("function", key, desc.value);
       let str = String(desc.value);
           params = str.match(/^function *\((.*?)\)/),
           val = params
@@ -255,12 +254,10 @@ exports.inspect = function(obj, depth, parentsKey) {
       out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, String(val)));
     }
     else if (desc.value !== null && typeof desc.value === 'object') {
-      console.log("object", key, desc.value);
       var nested = exports.inspect(desc.value, depth + 1, key);
       out = out.concat(nested);
     }
     else {
-      console.log(key, desc.value);
       out.push(format(indent + '  \033[90m.%s %s\033[0m', key, desc.value));
     }
   });
