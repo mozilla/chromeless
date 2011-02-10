@@ -145,7 +145,8 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-var misc = require("misc");
+const url = require("url");
+const fullscreen = require("fullscreen");
 var currentBrowser = null; 
 var browserTabs = new Array();
 var currSelected = null; 
@@ -307,13 +308,13 @@ $(document).ready(function() {
     $("#browserHeader form").submit(function(e) {
        if(browserTabs.length<1) newTab();  
        browserUniqueId = $(".browser_selected").attr("id");
-       var url = $.trim($("#awesomeBox").val());
-       $(".browser_selected").attr("src", misc.fixupuri(url));
+       var fragment = $.trim($("#awesomeBox").val());
+       $(".browser_selected").attr("src", url.guess(fragment));
        return false; 
     });
     $("#browserHeader #buttonHome").click(function(e) {
 
-        $(".browser_selected").attr("src", misc.fixupuri("http://mozillalabs.com"));
+        $(".browser_selected").attr("src", url.guess("http://mozillalabs.com"));
         return false; 
     });
     $("#browserHeader #buttonNew").click(function(e) {
@@ -327,7 +328,7 @@ $(document).ready(function() {
         return false; 
     });
     $("#browserHeader #buttonFull").click(function(e) {
-        misc.fullscreen();
+        fullscreen.toggle();
         return false; 
     });
 });

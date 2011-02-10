@@ -9,10 +9,10 @@
     to http://google.com - if the page appears, it's okay. 
    </p>
    <script type="text/javascript">
-     function onload() { 
-       var misc = require("misc");
-       document.getElementById("browser").src=misc.fixupuri("google.com");
-    } 
+     function onload() {
+       const url = require("url");
+       document.getElementById("browser").src=url.guess("google.com");
+    }
 
    </script>
    <iframe id='browser' src="about:blank" width="100%" height="500" style="border:0" >
