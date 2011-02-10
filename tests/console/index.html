@@ -4,13 +4,19 @@
   </head>
   <body >
    <p> 
-	   I will write something to the console. 
+	   <tt>window.console.log</tt> is automatically injected into the application code
+       environment.  This simple page uses it to demonstrate some of its features, like
+       object pretty printing.
    </p>
    <script type="text/javascript" charset="utf-8">
-     var plainTextConsole = require("plain-text-console");
-     dump =  new plainTextConsole.PlainTextConsole();
-     dump.log('hello world to the real console');
      console.log('hello world to the console.log');
+     console.log([ "yeah", "I", "do", "arrays" ]);
+     console.log({ objects: "are rendered pretty too,", and: { nesting: "doesn't scare me" } });
+     console.log({ objects: "are rendered pretty too,",
+                   and: { nesting: "doesn't scare me" },
+                   also: [ "nested", "arrays", "make", "me", "happy", 3.1415, true, null, undefined, false, 0]
+                 });
+     console.log(function (I, like, to, eat, functions, too) { console.log("for real"); });
    </script>
   </body>
 </html>

@@ -208,7 +208,7 @@ function format(f) {
   return str;
 }
 
-exports.inspect = function(obj, depth){
+exports.inspect = function(obj, depth, parentsKey) {
   if (!obj) return;
 
   let out = [],
@@ -224,9 +224,11 @@ exports.inspect = function(obj, depth){
     } else {
       name = '[' + name + ']';
     }
+    out.push(format(indent + '\033[33m%s\033[0m', name));
+  } else {
+    out.push(format(indent + '\033[90m.%s\033[0m \033[33m[%s]\033[0m', parentsKey, name));
   }
 
-  out.push(format(indent + '\033[33m%s\033[0m', name));
   Object.keys(obj).sort().forEach(function(key){
     let desc;
     try {
@@ -242,6 +244,7 @@ exports.inspect = function(obj, depth){
     if (desc.set)
       out.push(format(indent + '  \033[90m.%s=\033[0m', key));
     if ('function' == typeof desc.value) {
+      console.log("function", key, desc.value);
       let str = String(desc.value);
           params = str.match(/^function *\((.*?)\)/),
           val = params
@@ -251,7 +254,13 @@ exports.inspect = function(obj, depth){
             : '';
       out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, String(val)));
     }
-    else if (undefined !== desc.value) {
+    else if (desc.value !== null && typeof desc.value === 'object') {
+      console.log("object", key, desc.value);
+      var nested = exports.inspect(desc.value, depth + 1, key);
+      out = out.concat(nested);
+    }
+    else {
+      console.log(key, desc.value);
       out.push(format(indent + '  \033[90m.%s %s\033[0m', key, desc.value));
     }
   });
