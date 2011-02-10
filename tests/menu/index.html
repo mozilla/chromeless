@@ -7,10 +7,14 @@
   </body>
   <script type="text/javascript">
 
-console.log("hi mom!");
 // an example of setting the main menu
-var ui = require("ui"),
-    menu = require("ui/menu");
+const ui = require("ui"),
+      menu = require("ui/menu");
+
+// a generic handler
+function loggit(x) {
+  console.log("thanks for clicking");
+}
 
 var file = new menu.Menu({
     parent: ui.getMenu(),
@@ -28,8 +32,9 @@ var file = new menu.Menu({
         new menu.Menu({
             label: "New Tab",
             children: [
-                new menu.Menu({ label: "In the current window" }),
-                new menu.Menu({ label: "In a new window" }),
+                new menu.Menu({ label: "In the current window",
+                                onClick: loggit}),
+                new menu.Menu({ label: "In a new window", onClick: loggit}),
             ]
         })
     ]
