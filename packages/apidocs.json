@@ -378,7 +378,7 @@
             ]
           }
         ], 
-        "desc": "Provides access to the local filesystem.", 
+        "desc": "Allows for the reading and writing of files.", 
         "filename": "file.js", 
         "functions": [
           {
@@ -707,6 +707,21 @@
         "filename": "url.js", 
         "functions": [
           {
+            "desc": "given a string (typically the result of human input), attempt to\nguess the well formed URL intended.  For instanced, this function\nwill turn `mozilla.com` into `http://mozilla.com`", 
+            "name": "guess", 
+            "params": [
+              {
+                "desc": "A url fragment", 
+                "name": "fragment", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A guess at a well formed url.", 
+              "type": "string"
+            }
+          }, 
+          {
             "desc": "build a URL from a filename.", 
             "name": "fromFilename", 
             "params": [
@@ -769,11 +784,6 @@
   "chromeless-kit": {
     "desc": "Miscellaneous Modules", 
     "modules": {
-      "Tray": {
-        "desc": "Empty the tray of all this application's tray items", 
-        "filename": "ui/tray.js", 
-        "module": "Tray"
-      }, 
       "app-paths": {
         "desc": "Returns various paths that are pertinent to the currently running\napplication and logged in user.", 
         "filename": "app-paths.js", 
@@ -824,6 +834,11 @@
       "canvas-proxy": {
         "filename": "canvas-proxy.js", 
         "module": "canvas-proxy"
+      }, 
+      "child_process": {
+        "desc": "Stops the server from accepting new connections. This function is\nasynchronous, the server is finally closed when the server emits a\n'close' event.", 
+        "filename": "child_process.js", 
+        "module": "child_process"
       }, 
       "chromeless-sandbox-window": {
         "filename": "chromeless-sandbox-window.js", 
@@ -1204,34 +1219,42 @@
         "module": "iframe-as-browser"
       }, 
       "menu": {
-        "desc": "Allows one to interact with the application menu.  The display of\nthis menu is platform specific.  On OSX the menu appears in the top\nbar as is typical for OSX applications.  On other platforms the\nmenu appears as a toolbar underneath the application's titlebar.\n\nMenus are specified via a javascript data structre, here's an\nexample:\n\n    [\n      {\n        label: \"File\",\n        children: [\n          {\n            label: \"New Window\",\n            shortcut: \"n\",\n          },\n          {\n            icon: \"resource://app/icons/new_tab.png\",\n            label: \"New Tab\",\n            shortcut: \"t\"\n          }\n        ]\n      },\n      {\n        label: \"View\",\n        children: [\n          {\n            label: \"toolbars\",\n            icon: \"resource://app/icons/toolbar.png\",\n            children: [\n               ...\n            ]\n          }\n        ]\n      }\n    ]", 
-        "filename": "menu.js", 
+        "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
+        "filename": "ui/menu.js", 
+        "module": "menu"
+      }, 
+      "mime": {
+        "desc": "Tools for guessing mime types from file extensions/paths.", 
+        "filename": "mime.js", 
         "functions": [
           {
-            "desc": "Provide a callback that should be invoked when a user\nselects something from application menus", 
-            "name": "addListener"
-          }, 
-          {
-            "desc": "remove a listener previously set with 'addListener'", 
-            "name": "removeListener"
+            "desc": "Given a file path (or extension), look up an appropriate mime type.", 
+            "name": "guess", 
+            "params": [
+              {
+                "desc": "(`/foo/bar/baz.txt/) or just a file extension (`exe`)", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "appropriate mime type for input", 
+              "type": "string"
+            }
           }
         ], 
-        "module": "menu", 
+        "module": "mime", 
         "properties": [
           {
-            "desc": "A read/write property containing the application's menu", 
-            "name": "appMenu", 
-            "type": "object"
+            "desc": "The default mime type that will be used when we encounter an unknown extension\ntype.", 
+            "name": "defaultMime"
           }
         ]
       }, 
-      "menuitem": {
-        "filename": "ui/menuitem.js", 
-        "module": "menuitem"
-      }, 
-      "misc": {
-        "filename": "misc.js", 
-        "module": "misc"
+      "net": {
+        "desc": "Called to signify the beginning of an asynchronous request", 
+        "filename": "net.js", 
+        "module": "net"
       }, 
       "path": {
         "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
@@ -1350,6 +1373,41 @@
         ], 
         "module": "path"
       }, 
+      "process": {
+        "filename": "process.js", 
+        "module": "process"
+      }, 
+      "register": {
+        "desc": "Register a global hotkey that executes JS specified [command] when the key\ncombination in [hotkey] is pressed.", 
+        "filename": "hotkey.js", 
+        "functions": [
+          {
+            "dataType": "{void}", 
+            "desc": "Register a global hotkey.", 
+            "name": "unregister", 
+            "params": [
+              {
+                "name": "hotkey", 
+                "type": "string"
+              }, 
+              {
+                "desc": "{string/function} command"
+              }, 
+              {
+                "name": "[id]", 
+                "type": "string"
+              }
+            ], 
+            "throws": [
+              {
+                "desc": "Textual exception that should be caught by the programmer.", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "module": "register"
+      }, 
       "session-store": {
         "filename": "session-store.js", 
         "module": "session-store"
@@ -1357,6 +1415,11 @@
       "simple-feature": {
         "filename": "simple-feature.js", 
         "module": "simple-feature"
+      }, 
+      "tray": {
+        "desc": "Empty the tray of all this application's tray items", 
+        "filename": "ui/tray.js", 
+        "module": "tray"
       }
     }, 
     "name": "chromeless-kit"
