@@ -213,7 +213,7 @@ exports.inspect = function(obj, depth, parentsKey) {
 
   let out = [],
       cons = obj.constructor,
-      name = cons.name,
+      name = cons ? cons.name : "undefined",
       proto = Object.getPrototypeOf(obj),
       depth = depth || 0,
       indent = Array(depth + 1).join('  ');
@@ -253,7 +253,8 @@ exports.inspect = function(obj, depth, parentsKey) {
             : '';
       out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, String(val)));
     }
-    else if (desc.value !== null && typeof desc.value === 'object') {
+    // recurse, unless it's a null object or our depth is > 5
+    else if (desc.value !== null && typeof desc.value === 'object' && (depth < 5)) {
       var nested = exports.inspect(desc.value, depth + 1, key);
       out = out.concat(nested);
     }
