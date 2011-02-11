@@ -1,4 +1,4 @@
-<html>
+ <html>
   <head>
     <title>WebGL Demo</title>
 
@@ -45,14 +45,11 @@ var gThumbImageRef = null; // This is being used by webgl-demo.js
 
 function launchBrowser() { 
     myBrowser = document.createElement("iframe");
-    require("iframe-as-browser").bind(myBrowser,document);
-    myBrowser.addEventListener("experimental-dom-progress", function (e) {
-      if(e.percentage>=100) {
-          thumbnailUpdate();
-      }
+    myBrowser.addEventListener("ChromelessLoadStop", function (e) {
+      thumbnailUpdate();
     },false);
     document.body.appendChild(myBrowser);
-    myBrowser.src = "http://www.google.com/";
+    myBrowser.src = "http://mozillalabs.com/chromeless";
 } 
 
 function thumbnailUpdate() { 
@@ -70,7 +67,7 @@ function thumbnailUpdate() {
        //document.body.appendChild(gThumbImageRef);
     } 
     /* We do this because we need a 64x64 picture even to make  a 
-    texture, required by the webgl demo */
+    * texture, required by the webgl demo */
 
     var square = document.createElement("canvas");
     ctx = square.getContext("2d");
