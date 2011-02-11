@@ -101,10 +101,6 @@ nsBrowserStatusHandler.prototype =
        such as progress updates and so on */
     this.iframeElement = tagElementReference;
     this.parentDocument = parentDocument;
-
-    this.iframeElement.addEventListener("DOMTitleChanged", function (e) {
-        console.log("!!!!  title is " + e.target.title);
-    }, false);
   },
 
   destroy : function()
