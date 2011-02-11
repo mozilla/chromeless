@@ -9,7 +9,7 @@
     <title>WebbyFox</title>
 
     <!-- we can use basic flexbox layout! -->
-    
+
     <link href="security.css" rel="stylesheet" media="screen, projection">
     <style type="text/css" media="screen">
 
@@ -124,7 +124,7 @@ body {
     </div>
     <div id="browserHeader">
         <form>
-	<input class="toolbarItem" id="awesomeBox"  type="text" value="http://www.google.com" />
+	<input class="toolbarItem" id="awesomeBox"  class="security_insecure" type="text" value="http://www.google.com"></input> 
 	<input class="toolbarItem" type="submit" id="buttonGo"  value="go"></input>
 	<button class="toolbarItem" id="buttonNew" >New</button>
 	<button class="toolbarItem" id="buttonHome" >Home</button>
@@ -147,12 +147,10 @@ body {
 
 const url = require("url");
 const fullscreen = require("fullscreen");
+
 var currentBrowser = null; 
 var browserTabs = new Array();
 var currSelected = null; 
-
-var console = require("plain-text-console");
-var dump =  new console.PlainTextConsole();
 
 // If you want to try different browser implementations, replace iframe with the 
 // correct DOM element. 
@@ -190,8 +188,9 @@ function canvasShot(browserRef, thumbImageRef) {
     thumbImageRef.width="1";
     thumbImageRef.height="1";
     thumbImageRef.src=camera.snapshot(browserRef);
+    console.log("canvasShot");
   } catch (i) { 
-    console.dump(i); 
+    console.log(i); 
   } 
 } 
 
@@ -206,31 +205,29 @@ function newTab() {
   browserTabs.push(newBrowser);
   var uniqueId = Math.random();
   var browserUnique = "browser_unique_"+uniqueId;
-  
+
   newBrowser.setAttribute("id",browserUnique);
 
-  // experimental onload to sync thumbnails, 
-  // we may need to send another events for the full onload 
-  // since this 'experimental-dom-loaded' is before scripts 
-  // and images.  
-
-  require("iframe-as-browser").bind(newBrowser,document);
-
-  newBrowser.addEventListener("experimental-dom-load",function (e) { 
+  newBrowser.addEventListener("ChromelessLoadStart",function (e) { 
       var refBrowser = browserUnique; 
       $("#awesomeBox").attr("value",e.target.src); 
+  },false);
+
+  newBrowser.addEventListener("ChromelessDOMSetup",function (e) { 
       thumbnailUpdate(e.target.getAttribute("id")); 
-  },false);
+  }, false);
 
-  newBrowser.addEventListener("experimental-dom-progress", function (e) {
+  newBrowser.addEventListener("ChromelessLoadStop",function (e) { 
+      thumbnailUpdate(e.target.getAttribute("id"));
+  }, false);
+
+  newBrowser.addEventListener("ChromelessLoadProgress", function (e) {
       $("#awesomeBox").attr("style","background: url(bg.png) "+parseInt(e.percentage*42)+"px 0px no-repeat");
-      if(e.percentage>90) { 
-          thumbnailUpdate(e.target.getAttribute("id"));
-      } 
   },false);
 
-  newBrowser.addEventListener("experimental-dom-security", function (e) {
-      $("#awesomeBox").attr("class","security_"+e.detail);
+  newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
+      console.log("ChromelessSecurityChange: " + "security_"+e.state);
+      $("#awesomeBox").removeClass().addClass("security_"+e.state);
   },false);
 
   var thumb = document.createElement("span");
@@ -240,8 +237,8 @@ function newTab() {
   img.setAttribute("class","thumb_img");
   img.setAttribute("align","top");
 
-  img.width="30";
-  img.height="30";
+  $(img).width("30");
+  $(img).height("30");
   img.setAttribute("onclick","changeBrowser(document.getElementById('browser_unique_"+uniqueId+"'),true)");
   thumb.setAttribute("id","thumb_unique_"+uniqueId);
   img.setAttribute("id","image_unique_"+uniqueId);
@@ -310,6 +307,7 @@ $(document).ready(function() {
        browserUniqueId = $(".browser_selected").attr("id");
        var fragment = $.trim($("#awesomeBox").val());
        $(".browser_selected").attr("src", url.guess(fragment));
+       $("#awesomeBox").removeClass().addClass("security_insecure");
        return false; 
     });
     $("#browserHeader #buttonHome").click(function(e) {
