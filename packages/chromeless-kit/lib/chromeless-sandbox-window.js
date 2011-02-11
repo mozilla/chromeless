@@ -29,7 +29,7 @@ observers.add("content-document-global-created", function(subject, url) {
       // generate a custom event to indicate to top level HTML
       // that the initial page load is complete (no scripts yet executed)
       var evt = bcWin.document.createEvent("HTMLEvents");
-      evt.initEvent("ChromlessDOMSetup", true, false);
+      evt.initEvent("ChromelessDOMSetup", true, false);
 
       // dispatch the event on the iframe in question in the context of the
       // parent.  First we have to find the iframe.
@@ -37,6 +37,7 @@ observers.add("content-document-global-created", function(subject, url) {
       for (var i = 0; i < iframes.length; i++) {
         if(subject.window === iframes[i].contentWindow) {
           iframes[i].dispatchEvent(evt);
+
           // hookProgress will set up a listener that will
           // relay further iframe progress events to the application
           // code.  Once hooked, an iframe will continue to emit events
