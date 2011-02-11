@@ -80,8 +80,13 @@ function resolveResourceURI(uri) {
  * @returns {string} A guess at a well formed url.
  */
 exports.guess = function(fragment) {
-  var fixupSvc = Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup);
-  return fixupSvc.createFixupURI(fragment,0).spec;;
+  try {
+    var fixupSvc = Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup);
+    return fixupSvc.createFixupURI(fragment,0).spec;;
+  } catch(e) {
+    // if we can't fix it up, just return it.
+    return fragment;
+  }
 };
 
 /**
