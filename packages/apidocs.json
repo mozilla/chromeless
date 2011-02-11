@@ -1214,9 +1214,43 @@
         "filename": "hidden-frame-xulrunner.js", 
         "module": "hidden-frame-xulrunner"
       }, 
-      "iframe-as-browser": {
-        "filename": "iframe-as-browser.js", 
-        "module": "iframe-as-browser"
+      "iframe-controls": {
+        "desc": "Allows application code to control and inspect iframes", 
+        "filename": "iframe-controls.js", 
+        "functions": [
+          {
+            "desc": "stop the loading of content within an iframe", 
+            "name": "stopload", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ]
+          }, 
+          {
+            "desc": "Access the title of an iframe.", 
+            "name": "title", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ], 
+            "returns": {
+              "desc": "The current title of the content in the iframe.", 
+              "type": "string"
+            }
+          }
+        ], 
+        "module": "iframe-controls"
+      }, 
+      "iframe-progress-hooks": {
+        "desc": "An internal implementation detail.  nothing to see here.", 
+        "filename": "iframe-progress-hooks.js", 
+        "module": "iframe-progress-hooks"
       }, 
       "menu": {
         "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
