@@ -1,8 +1,6 @@
-Chromeless introduces several non-standard DOM events which allow application
-code increased priviledges and visibility.  These custom events are camel cased
-with the prefix `Chromeless` to make it obvious that they're non-standard and 
-prevent collisions with other events.  In addition to standard web events,
-chromless provides:
+Chromeless introduces several non-standard DOM events which allow
+application code increased priviledges and visibility.  In addition to
+standard web events, chromless provides:
 
 **ChromlessLoadStart** - Dispatched on an `iframe` at the time when navigation
 starts.  This event is delivered before any network interaction takes place.
