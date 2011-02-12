@@ -34,6 +34,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * Add shortcut key combinations or "hotkeys" to your application.
+ */
+
 const {Cc, Ci, Cr} = require("chrome"),
       ui = require("ui");
 
