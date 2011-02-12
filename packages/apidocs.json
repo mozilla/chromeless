@@ -1214,6 +1214,63 @@
         "filename": "hidden-frame-xulrunner.js", 
         "module": "hidden-frame-xulrunner"
       }, 
+      "hotkey": {
+        "desc": "Add shortcut key combinations or \"hotkeys\" to your application.", 
+        "filename": "hotkey.js", 
+        "functions": [
+          {
+            "dataType": "{string} Return the ID of the hotkey.", 
+            "desc": "Register a global hotkey that executes JS specified [command] when the key\ncombination in [hotkey] is pressed.", 
+            "name": "register", 
+            "params": [
+              {
+                "desc": "Key combination in the format of 'modifier-key'\n  Examples:\n    accel-s, meta-shift-i, control-alt-d\n  Modifier keynames:\n    shift: The Shift key.\n    alt: The Alt key. On the Macintosh, this is the Option key. On Macintosh \n         this can only be used in conjunction with another modifier, since \n         Alt+Letter combinations are reserved for entering special characters \n         in text.\n    meta: The Meta key. On the Macintosh, this is the Command key.\n    control: The Control key.\n    accel: The key used for keyboard shortcuts on the user's platform, which \n           is Control on Windows and Linux, and Command on Mac. Usually, this \n           would be the value you would use.\n    access: The access key for activating menus and other elements. On Windows, \n            this is the Alt key, used in conjuction with an element's accesskey.\n    any: Indicates that all modifiers preceding it are optional.", 
+                "name": "hotkey", 
+                "type": "string"
+              }, 
+              {
+                "desc": "{String/Function} command Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed."
+              }, 
+              {
+                "desc": "Optional. Unique identifier for this hotkey, which will \n                     auto-generated if not provided.", 
+                "name": "[id]", 
+                "type": "string"
+              }
+            ], 
+            "throws": [
+              {
+                "desc": "Textual exception that should be caught by the programmer.", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "dataType": "{void}", 
+            "desc": "Register a global hotkey.", 
+            "name": "unregister", 
+            "params": [
+              {
+                "name": "hotkey", 
+                "type": "string"
+              }, 
+              {
+                "desc": "{string/function} command"
+              }, 
+              {
+                "name": "[id]", 
+                "type": "string"
+              }
+            ], 
+            "throws": [
+              {
+                "desc": "Textual exception that should be caught by the programmer.", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "module": "hotkey"
+      }, 
       "iframe-controls": {
         "desc": "Allows application code to control and inspect iframes", 
         "filename": "iframe-controls.js", 
@@ -1410,37 +1467,6 @@
       "process": {
         "filename": "process.js", 
         "module": "process"
-      }, 
-      "register": {
-        "desc": "Register a global hotkey that executes JS specified [command] when the key\ncombination in [hotkey] is pressed.", 
-        "filename": "hotkey.js", 
-        "functions": [
-          {
-            "dataType": "{void}", 
-            "desc": "Register a global hotkey.", 
-            "name": "unregister", 
-            "params": [
-              {
-                "name": "hotkey", 
-                "type": "string"
-              }, 
-              {
-                "desc": "{string/function} command"
-              }, 
-              {
-                "name": "[id]", 
-                "type": "string"
-              }
-            ], 
-            "throws": [
-              {
-                "desc": "Textual exception that should be caught by the programmer.", 
-                "type": "string"
-              }
-            ]
-          }
-        ], 
-        "module": "register"
       }, 
       "session-store": {
         "filename": "session-store.js", 
