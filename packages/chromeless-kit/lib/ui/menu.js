@@ -40,11 +40,31 @@ const {Cc, Ci, Cr} = require("chrome"),
       ui      = require("ui"),
       _slice  = Array.prototype.slice;
 
+/**
+ * Mixes all enumerable members of [mixin] into [obj]
+ * 
+ * @param {Object} obj
+ * @param {Object} mixin
+ * @type  {void}
+ * @private
+ */
 function mixin(obj, mixin) {
     for (let key in mixin)
         obj[key.toLowerCase()] = mixin[key];
 };
 
+/**
+ * Sets the parentNode of a Menu, SubMenu or Seperator instance and its children.
+ * When a parentNode is set that is already appended to a rooted XUL node, the
+ * item may be drawn on 'canvas' as well. This is an implementation of lazy 
+ * rendering.
+ * Each instance of Menu, SubMenu and Seperator have this function set as member
+ * property.
+ *
+ * @param {mixed} parent Parent node, which may be a XulElement, Menu or SubMenu
+ * @type  {void}
+ * @private
+ */
 function setParent(parent) {
     if (!parent)
         return;
@@ -65,6 +85,41 @@ function setParent(parent) {
         this.children.setParent(this);
 }
 
+/**
+ * Menu class, which represents any single menu item that should be displayed 
+ * with at least a label.
+ * Example:
+ *     var ui   = require("ui"),
+ *         menu = require("ui/menu");
+ * 
+ *     var file = new menu.Menu({
+ *         parent: ui.getMenu(),
+ *         label: "File",
+ *         children: [
+ *             new menu.Menu({
+ *                 label: "New Window",
+ *                 hotkey: "accel-n",
+ *                 type: "radio",
+ *                 checked: true,
+ *                 onClick: function(e) {
+ *                     alert("yay!");
+ *                 }
+ *             }),
+ *             new menu.Menu({
+ *                 label: "New Tab",
+ *                 children: [
+ *                     new menu.Menu({ label: "In the current window" }),
+ *                     new menu.Menu({ label: "In a new window" }),
+ *                 ]
+ *             })
+ *         ]
+ *     });
+ * 
+ * @constructor
+ * @param {Object} struct a set of options/ properties that will be set on the 
+ *                        menu item. Keys are case-insensitive.
+ * @type  {Menu}
+ */
 var Menu = function(struct) {
     this.drawn = false;
     this.parentNode = null;
@@ -90,6 +145,7 @@ var Menu = function(struct) {
             hotkey: "key"
         },
         _self     = this,
+        label     = this.label,
         hotkey    = this.hotkey,
         image     = this.image,
         type      = this.type,
@@ -97,7 +153,7 @@ var Menu = function(struct) {
         autocheck = this.autocheck,
         disabled  = this.disabled,
         name      = this.name;
-    ["hotkey", "image", "type", "disabled"].forEach(function(prop) {
+    ["label", "hotkey", "image", "type", "disabled"].forEach(function(prop) {
         this.__defineGetter__(prop, function() { return eval(prop); });
         this.__defineSetter__(prop, function(val) {
             eval(prop + " = val");
@@ -125,6 +181,12 @@ var Menu = function(struct) {
         this["onclick"] && this["onclick"](e);
     }
 
+    /**
+     * Draw a menu element to the canvas (a XUL document)
+     * Usually this function is invoked by setParent()
+     * 
+     * @type {void}
+     */
     this.draw = function() {
         if (this.drawn)
             return;
@@ -162,6 +224,13 @@ var Menu = function(struct) {
         return this.node;
     };
 
+    /**
+     * Redraws a menu element to the canvas (a XUL document) if needed.
+     * Usually called called by a function that performs a mutation on a SubMenu
+     * (like push(), shift() or splice()).
+     * 
+     * @type {void}
+     */
     this.redraw = function() {
         if (!this.drawn)
             return this.parent && this.parent.drawn ? this.setParent(this.parent) : null;
@@ -176,6 +245,13 @@ var Menu = function(struct) {
         this.draw();
     };
 
+    /**
+     * Register a globally accessible hotkey for this menu item that invokes 
+     * the 'onClick' handler if set when the key combination is pressed.
+     * @see this.hotkey property
+     * 
+     * @type {void}
+     */
     this.setHotkey = function() {
         if (!this.drawn || this.children.length || !this.hotkey)
             return;
@@ -185,6 +261,12 @@ var Menu = function(struct) {
         this.node.setAttribute("key", id);
     };
 
+    /**
+     * Removes a menu item from the canvas (a XUL document) and does basic 
+     * garbage collection.
+     * 
+     * @type {void}
+     */
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -195,9 +277,47 @@ var Menu = function(struct) {
         this.drawn = false;
     };
     
+    /**
+     * @see #setParent()
+     */
     this.setParent = setParent;
 }).call(Menu.prototype);
 
+/**
+* SubMenu class, which represents a collection of menu items and separators that
+* should be displayed. A SubMenu is defined with the 'children' property of a 
+* Menu object as an Array. Therefore, array-like functions may be used to alter
+* the contents of a SubMenu instance.
+* There is no maximum set to the amount of submenus.
+* Example:
+*     var ui   = require("ui"),
+*         menu = require("ui/menu");
+* 
+*     var file = new menu.Menu({
+*         parent: ui.getMenu(),
+*         label: "File",
+*         children: [
+*             new menu.Menu({
+*                 label: "New Window",
+*                 hotkey: "accel-n",
+*                 type: "radio",
+*                 checked: true,
+*                 onClick: function(e) {
+*                     alert("yay!");
+*                 }
+*             }),
+*             new menu.Separator()
+*         ]
+*     });
+*     file.children.splice(0, 1);
+*     file.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
+* 
+* @constructor
+* @param {Array} nodes  a set of options/ properties that will be set on the 
+*                        menu item. Keys are case-insensitive.
+* @param {Menu}  parent 
+* @type  {SubMenu}
+*/
 var SubMenu = function(nodes, parent) {
     this.drawn = false;
     this.parent = parent;
