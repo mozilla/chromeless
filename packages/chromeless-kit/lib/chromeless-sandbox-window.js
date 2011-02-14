@@ -137,7 +137,7 @@ var xhtmlNs = "http://www.w3.org/1999/xhtml";
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
                 ' type="text/css"?> ' +
-                '<window style="padding: 0; border: 0; margin: 0; background-color:transparent;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
+                '<window style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
                 '<toolbox style="padding: 0; border: 0; margin: 0;">' +
                 '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
                 '</menubar>' +
