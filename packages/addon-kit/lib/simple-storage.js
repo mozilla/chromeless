@@ -38,8 +38,87 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * An extremely simple persistent key/value store.
+ *
+ *  Introduction
+ * ------------
+ *
+ * The simple storage module exports an object called `storage` that is persistent
+ * and private to your application.  It's a normal JavaScript object, and you can treat
+ * it as you would any other.
+ *
+ * To store a value, just assign it to a property on `storage`:
+ *
+ *     var ss = require("simple-storage");
+ *     ss.storage.myArray = [1, 1, 2, 3, 5, 8, 13];
+ *     ss.storage.myBoolean = true;
+ *     ss.storage.myNull = null;
+ *     ss.storage.myNumber = 3.1337;
+ *     ss.storage.myObject = { a: "foo", b: { c: true }, d: null };
+ *     ss.storage.myString = "O frabjous day!";
+ *
+ * You can store array, boolean, number, object, null, and string values.  If you'd
+ * like to store other types of values, you'll first have to convert them to
+ * strings or another one of these types.
+ *
+ * Be careful to set properties on the `storage` object and not the module itself:
+ *
+ *     // This is no good!
+ *     var ss = require("simple-storage");
+ *     ss.foo = "I will not be saved! :(";
+ *
+ * Quotas
+ * ------
+ *
+ * The simple storage available to your application is limited.  Currently this limit is
+ * about five megabytes (5,242,880 bytes).  You can choose to be notified when you
+ * go over quota, and you should respond by reducing the amount of data in storage.
+ * If the user quits the application while you are over quota, all data stored
+ * since the last time you were under quota will not be persisted.  You should not
+ * let that happen.
+ *
+ * To listen for quota notifications, register a listener for the `"OverQuota"`
+ * event.  It will be called when your storage goes over quota.
+ *
+ *     function myOnOverQuotaListener() {
+ *       console.log("Uh oh.");
+ *     }
+ *     ss.on("OverQuota", myOnOverQuotaListener);
+ *
+ * Listeners can also be removed:
+ *
+ *     ss.removeListener("OverQuota", myOnOverQuotaListener);
+ *
+ * To find out how much of your quota you're using, check the module's `quotaUsage`
+ * property.  It indicates the percentage of quota your storage occupies.  If
+ * you're within your quota, it's a number from 0 to 1, inclusive, and if you're
+ * over, it's a number greater than 1.
+ *
+ * Therefore, when you're notified that you're over quota, respond by removing
+ * storage until your `quotaUsage` is less than or equal to 1.  Which particular
+ * data you remove is up to you.  For example:
+ *
+ *     ss.storage.myList = [
+ *       // some long array
+ *     ];
+ *     ss.on("OverQuota", function () {
+ *       while (ss.quotaUsage > 1)
+ *         ss.storage.myList.pop();
+ *     });
+ *
+ * TODOS
+ * -----
+ *
+ * Simple storage is *not*.  For the purposes of chromeless we should remove
+ * this quota and perhaps make it write through, or at least expose a sync()
+ * method.
+ */
+
 const {Cc,Ci} = require("chrome");
 const file = require("file");
+const fs = require("fs");
+const path = require("path");
 const prefs = require("preferences-service");
 const jpSelf = require("self");
 const timer = require("timer");
@@ -57,10 +136,21 @@ const JETPACK_DIR_BASENAME = "jetpack";
 
 
 // simpleStorage.storage
+
+
+/**
+ * @property {object} storage
+ * A special property which may be read or write and is backed
+ * by a (JSON formatted) disk file for persistence.
+ */
 exports.__defineGetter__("storage", function () manager.root);
 exports.__defineSetter__("storage", function (val) manager.root = val);
 
 // simpleStorage.quotaUsage
+/**
+ * @property {XXX} quotaUsage
+ * (read-only) Returns the amount of the quota used by this store
+ */
 exports.__defineGetter__("quotaUsage", function () manager.quotaUsage);
 
 // A generic JSON store backed by a file on disk.  This should be isolated
@@ -107,13 +197,13 @@ JsonStore.prototype = {
   purge: function JsonStore_purge() {
     try {
       // This'll throw if the file doesn't exist.
-      file.remove(this.filename);
+      fs.remove(this.filename);
       let parentPath = this.filename;
       do {
-        parentPath = file.dirname(parentPath);
+        parentPath = path.dirname(parentPath);
         // This'll throw if the dir isn't empty.
-        file.rmdir(parentPath);
-      } while (file.basename(parentPath) !== JETPACK_DIR_BASENAME);
+        fs.rmdir(parentPath);
+      } while (path.basename(parentPath) !== JETPACK_DIR_BASENAME);
     }
     catch (err) {}
   },
@@ -172,7 +262,7 @@ JsonStore.prototype = {
   // never been written, nothing is written and write observers aren't notified.
   _write: function JsonStore__write() {
     // If the store is empty and the file doesn't yet exist, don't write.
-    if (this._isEmpty && !file.exists(this.filename))
+    if (this._isEmpty && !fs.exists(this.filename))
       return;
 
     // If the store is over quota, don't write.  The current under-quota state
@@ -212,7 +302,7 @@ let manager = Trait.compose(EventEmitter, Trait.compose({
     storeFile.append(JETPACK_DIR_BASENAME);
     storeFile.append(jpSelf.id);
     storeFile.append("simple-storage");
-    file.mkpath(storeFile.path);
+    fs.mkpath(storeFile.path);
     storeFile.append("store.json");
     return storeFile.path;
   },
@@ -254,5 +344,22 @@ let manager = Trait.compose(EventEmitter, Trait.compose({
   }
 }))();
 
+/**
+ * set a listener to be notified on interesting, events like when you're
+ * over quota.
+ * @param {string} event
+ * The name of the event to listen for, the only supported event is
+ * `OverQuota`.
+ * @param {function} listener
+ * a function to be invoked when the event fires.
+ */
 exports.on = manager.on;
+/**
+ * remove a listener previously set via the `on` method.
+ * @param {string} event
+ * The name of the event to remove a listener for, the only supported event is
+ * `OverQuota`.
+ * @param {function} listener
+ * a reference to the function that was previously set as a listener with `on`
+ */
 exports.removeListener = manager.removeListener;
