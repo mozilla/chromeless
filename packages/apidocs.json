@@ -98,8 +98,53 @@
         "module": "request"
       }, 
       "simple-storage": {
+        "desc": "An extremely simple persistent key/value store.\n\n Introduction\n------------\n\nThe simple storage module exports an object called `storage` that is persistent\nand private to your application.  It's a normal JavaScript object, and you can treat\nit as you would any other.\n\nTo store a value, just assign it to a property on `storage`:\n\n    var ss = require(\"simple-storage\");\n    ss.storage.myArray = [1, 1, 2, 3, 5, 8, 13];\n    ss.storage.myBoolean = true;\n    ss.storage.myNull = null;\n    ss.storage.myNumber = 3.1337;\n    ss.storage.myObject = { a: \"foo\", b: { c: true }, d: null };\n    ss.storage.myString = \"O frabjous day!\";\n\nYou can store array, boolean, number, object, null, and string values.  If you'd\nlike to store other types of values, you'll first have to convert them to\nstrings or another one of these types.\n\nBe careful to set properties on the `storage` object and not the module itself:\n\n    // This is no good!\n    var ss = require(\"simple-storage\");\n    ss.foo = \"I will not be saved! :(\";\n\nQuotas\n------\n\nThe simple storage available to your application is limited.  Currently this limit is\nabout five megabytes (5,242,880 bytes).  You can choose to be notified when you\ngo over quota, and you should respond by reducing the amount of data in storage.\nIf the user quits the application while you are over quota, all data stored\nsince the last time you were under quota will not be persisted.  You should not\nlet that happen.\n\nTo listen for quota notifications, register a listener for the `\"OverQuota\"`\nevent.  It will be called when your storage goes over quota.\n\n    function myOnOverQuotaListener() {\n      console.log(\"Uh oh.\");\n    }\n    ss.on(\"OverQuota\", myOnOverQuotaListener);\n\nListeners can also be removed:\n\n    ss.removeListener(\"OverQuota\", myOnOverQuotaListener);\n\nTo find out how much of your quota you're using, check the module's `quotaUsage`\nproperty.  It indicates the percentage of quota your storage occupies.  If\nyou're within your quota, it's a number from 0 to 1, inclusive, and if you're\nover, it's a number greater than 1.\n\nTherefore, when you're notified that you're over quota, respond by removing\nstorage until your `quotaUsage` is less than or equal to 1.  Which particular\ndata you remove is up to you.  For example:\n\n    ss.storage.myList = [\n      // some long array\n    ];\n    ss.on(\"OverQuota\", function () {\n      while (ss.quotaUsage > 1)\n        ss.storage.myList.pop();\n    });\n\nTODOS\n-----\n\nSimple storage is *not*.  For the purposes of chromeless we should remove\nthis quota and perhaps make it write through, or at least expose a sync()\nmethod.", 
         "filename": "simple-storage.js", 
-        "module": "simple-storage"
+        "module": "simple-storage", 
+        "properties": [
+          {
+            "desc": "A special property which may be read or write and is backed\nby a (JSON formatted) disk file for persistence.", 
+            "name": "storage", 
+            "type": "object"
+          }, 
+          {
+            "desc": "(read-only) Returns the amount of the quota used by this store", 
+            "name": "quotaUsage", 
+            "type": "XXX"
+          }, 
+          {
+            "desc": "set a listener to be notified on interesting, events like when you're\nover quota.", 
+            "name": "on", 
+            "params": [
+              {
+                "desc": "The name of the event to listen for, the only supported event is\n`OverQuota`.", 
+                "name": "event", 
+                "type": "string"
+              }, 
+              {
+                "desc": "a function to be invoked when the event fires.", 
+                "name": "listener", 
+                "type": "function"
+              }
+            ]
+          }, 
+          {
+            "desc": "remove a listener previously set via the `on` method.", 
+            "name": "removeListener", 
+            "params": [
+              {
+                "desc": "The name of the event to remove a listener for, the only supported event is\n`OverQuota`.", 
+                "name": "event", 
+                "type": "string"
+              }, 
+              {
+                "desc": "a reference to the function that was previously set as a listener with `on`", 
+                "name": "listener", 
+                "type": "function"
+              }
+            ]
+          }
+        ]
       }
     }, 
     "name": "addon-kit"
@@ -1300,6 +1345,27 @@
               "desc": "The current title of the content in the iframe.", 
               "type": "string"
             }
+          }, 
+          {
+            "desc": "inject a function into a web content window", 
+            "name": "inject", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }, 
+              {
+                "desc": "the property of `window.` to which this function shall be\nattached.", 
+                "name": "attachPoint", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The function that will be invoked when content in the\niframe invokes this function.", 
+                "name": "callback", 
+                "type": "function"
+              }
+            ]
           }
         ], 
         "module": "iframe-controls"
