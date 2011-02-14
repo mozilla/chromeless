@@ -48,12 +48,13 @@ var appWindow = null;
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
-    
+
     jsd.errorHook = {
         onError: function(message, fileName, lineNo, colNo, flags, errnum, exc) {
             // check message type
             var jsdIErrorHook = Ci.jsdIErrorHook;
-            var messageType;       
+
+            var messageType;
             if (flags & jsdIErrorHook.REPORT_ERROR)
                 messageType = "Error";
             if (flags & jsdIErrorHook.REPORT_WARNING)
@@ -62,16 +63,16 @@ function enableDebuggingOutputToConsole() {
                 messageType = "Uncaught-Exception";
             if (flags & jsdIErrorHook.REPORT_STRICT)
                 messageType += "-Strict";
-            
+
             // for now we decide NOT to show any other message than Error or Exception:
             if (flags & jsdIErrorHook.REPORT_ERROR || flags & jsdIErrorHook.REPORT_EXCEPTION)
                 console.log(messageType + ": '" + message + "' in file '" + fileName + "' at line " + lineNo + ", col " + colNo + " (" + errnum + ")\n");
-            
+
             //return false;   // trigger debugHook
             return true; //if you do not wish to trigger debugHook
         }
     };
-    
+
     // note that debugHook does not _always_ trigger when jsd.errorHook[onError] returns false 
     // it is not well-known why debugHook sometimes fails to trigger 
     jsd.debugHook = {
@@ -81,11 +82,11 @@ function enableDebuggingOutputToConsole() {
                 stackTrace += "@ " + f.script.fileName + " at line " + f.line + " function " + f.functionName + "\n";
             }
             console.log(stackTrace);
-        
+
             return Ci.jsdIExecutionHook.RETURN_CONTINUE;
         }
     };
-    
+
     jsd.on();
 }
 
@@ -112,31 +113,30 @@ exports.main = function main(options) {
         file        = t.pop();
         rootPath    = call.appBasePath.replace(/[\/]+$/, "") + "/" + t.join("/"),
         startPage   = "resource://app/" + file,
-    
+
         ios         = Cc["@mozilla.org/network/io-service;1"]
                       .getService(Ci.nsIIOService),
         resProtocol = ios.getProtocolHandler("resource")
                       .QueryInterface(Ci.nsIResProtocolHandler),
-    
+
         environment = Cc["@mozilla.org/process/environment;1"]
                       .getService(Ci.nsIEnvironment),
         resRoot     = Cc["@mozilla.org/file/local;1"]
                       .createInstance(Ci.nsILocalFile),
     resRoot.initWithPath(rootPath);
-    
+
     resProtocol.setSubstitution("app", ios.newFileURI(resRoot));
-    
+
     // register chrome://* URIs
     let cr = Cc["@mozilla.org/chrome/chrome-registry;1"]
              .getService(Ci.nsIChromeRegistry);
     cr.checkForNewChrome();
-    
-    /* for now we always enable debug output to console.  At some point
-     * we should make it configurable via appinfo.json */
-    enableDebuggingOutputToConsole();
 
     console.log("Loading browser using = " + startPage);
-    
+
+    // enable debugging by default
+    enableDebuggingOutputToConsole();
+
     /* Page window height and width is fixed, it won't be and it also
        should be smart, so HTML browser developer can change it when
        they set inner document width and height */

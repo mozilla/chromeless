@@ -1,36 +1,39 @@
+#!/usr/bin/env python
 #
-# DocExtractor is a module capable of reading a javascript file specified on the
-# command line, parsing documentation coments from that file (/** */) and returning
-# a data structure containing api documentation for the module.
+# Copyright (c) 2011, Lloyd Hilaiel <lloyd@hilaiel.com>
 #
-# usage:
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
 #
-#   de = DocExtractor()
-#   apidocs = de.extract("somefile.js");
-#
-# Also you can run the module's unit tests by invoking it from the command line
-#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import re
 import os
 
-class DocExtractor():
+class DocStract():
     def __init__(self):
         # the pattern for extracting a documentation block and the next line
-        self.docBlock_pat = re.compile('(/\*\*)(.*?)(\*/)([\s\n]*[^\/\n]*)?', re.S)
+        self.docBlockPat = re.compile('(/\*\*)(.*?)(\*/)([\s\n]*[^\/\n]*)?', re.S)
 
         # after extracting the comment, fix it up (remove *s and leading spaces)
-        self.blockFilter_pat = re.compile('^\s*\* ?', re.M)
+        self.blockFilterPat = re.compile('^\s*\* ?', re.M)
 
         # the pattern used to split a comment block to create our token stream
         # this will currently break if there are ampersands in the comments if there
         # is a space before it
-        self.tokenize_pat = re.compile('^\s?(@\w\w*)', re.M);
+        self.tokenizePat = re.compile('^\s?(@\w\w*)', re.M);
 
         # parse a function/module/class:
         # @function [name]
         # [description]
-        self.function_pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
+        self.functionPat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
 
         # parse properties or params.
         # We support three forms:
@@ -38,7 +41,7 @@ class DocExtractor():
         #   @property <{type}> <name> [description]
         #   @property [name]
         #   [description]
-        self.prop_pat =  re.compile(
+        self.propPat =  re.compile(
             '(?:^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$)|' +
             '(?:^{(\w+)}\s*([\w.\[\]]+)\s*(.*)$)|' +
             '(?:^([\w.\[\]]+)?\s*(.*)$)',
@@ -48,11 +51,11 @@ class DocExtractor():
         # @return [{type}] [description]
         #   or
         # @throws [{type}] [description]
-        self.return_pat = re.compile('^\s*(?:{(\w+)})?\s*(.*)$', re.S);
+        self.returnPat = re.compile('^\s*(?:{(\w+)})?\s*(.*)$', re.S);
 
         # heuristic type and name guessing stuff, applied to the first non-whitespace
         # line after the doc block.  designed for commonjs modules (note the 'exports').
-        self.findExports_pat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
+        self.findExportsPat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
 
         self.classMarker = "@class"
         self.classEndMarker = "@endclass"
@@ -61,6 +64,7 @@ class DocExtractor():
         self.functionMarker = "@function"
         self.moduleMarker = "@module"
         self.paramMarker = "@param"
+        self.paramsMarker = "@params"
         self.propertyMarker = "@property"
         self.returnsMarker = "@returns"
         self.returnMarker = "@return"
@@ -75,6 +79,7 @@ class DocExtractor():
             self.functionMarker,
             self.moduleMarker,
             self.paramMarker,
+            self.paramsMarker,
             self.propertyMarker,
             self.returnsMarker,
             self.returnMarker,
@@ -111,7 +116,7 @@ class DocExtractor():
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt describes the module
-                m = self.function_pat.match(nxt)
+                m = self.functionPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.moduleMarker, (cur[:20] + "...")))
@@ -134,7 +139,7 @@ class DocExtractor():
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt describes the module
-                m = self.function_pat.match(nxt)
+                m = self.functionPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.classMarker, (cur[:20] + "...")))
@@ -172,7 +177,7 @@ class DocExtractor():
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt describes the function
-                m = self.function_pat.match(nxt)
+                m = self.functionPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.functionMarker, (cur[:20] + "...")))
@@ -191,7 +196,7 @@ class DocExtractor():
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt now describes the property
-                m = self.prop_pat.match(nxt)
+                m = self.propPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.propertyMarker, (nxt[:20] + "...")))
@@ -230,11 +235,11 @@ class DocExtractor():
             else:
                 # XXX: should this really be fatal?
                 raise RuntimeError("@type without any content encountered")
-        elif cur == self.paramMarker:
+        elif cur in ( self.paramMarker, self.paramsMarker ):
             nxt = self._popNonMarker(tokens)
             if nxt:
                 # nxt now describes the param
-                m = self.prop_pat.match(nxt)
+                m = self.propPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (cur, (nxt[:20] + "...")))
@@ -265,7 +270,7 @@ class DocExtractor():
             nxt = self._peekTok(tokens)
             if not self._isMarker(nxt):
                 nxt = tokens.pop(0)
-                m = self.return_pat.match(nxt)
+                m = self.returnPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (cur, (nxt[:20] + "...")))
@@ -283,7 +288,7 @@ class DocExtractor():
             if not self._isMarker(nxt):
                 nxt = tokens.pop(0)
                 # yeah, we reuse the return pattern here
-                m = self.return_pat.match(nxt)
+                m = self.returnPat.match(nxt)
                 if not m:
                     raise RuntimeError("Malformed args to %s: %s" %
                                        (self.throwsMarker, (nxt[:20] + "...")))
@@ -305,7 +310,7 @@ class DocExtractor():
         guessedName = None
         guessedType = None
         # first let's see if there's an exports statement after the block
-        m = self.findExports_pat.search(context)
+        m = self.findExportsPat.search(context)
         if m:
             guessedName = m.group(1)
 
@@ -324,7 +329,7 @@ class DocExtractor():
         if not self._currentClass == None:
             data = data['classes'][self._currentClass]
 
-        tokens = self.tokenize_pat.split(block)
+        tokens = self.tokenizePat.split(block)
 
         # remove all whitespace strings
         tokens = [n.strip() for n in tokens if n.strip()]
@@ -395,7 +400,27 @@ class DocExtractor():
             else:
                 raise RuntimeError("I don't know what to do with a: %s" % curObj['type'])
 
-    def extract(self, filename):
+    def extractFromFile(self, filename):
+        # next read the whole file into memory
+        contents = ""
+        with open(filename, "r") as f:
+            contents = f.read()
+
+        data = self.extract(contents)
+
+        # first determine the module name, it's always the same as the file name
+        mod = os.path.basename(filename)
+        dotLoc = mod.rfind(".")
+        if (dotLoc > 0):
+            mod = mod[:dotLoc]
+        if not "module" in data:
+            data["module"] = mod
+        if not "filename" in data:
+            data["filename"] = filename
+
+        return data
+
+    def extract(self, contents):
         # the data structure we'll build up
         data = {}
 
@@ -403,23 +428,10 @@ class DocExtractor():
         # classes (class definitions cannot span files)
         self._currentClass = None
 
-        # first determine the module name, it's always the same as the file name
-        mod = os.path.basename(filename)
-        dotLoc = mod.rfind(".")
-        if (dotLoc > 0):
-            mod = mod[:dotLoc]
-        data["module"] = mod
-        data["filename"] = filename
-
-        # next read the whole file into memory
-        contents = ""
-        with open(filename, "r") as f:
-            contents = f.read()
-
         # now parse out and combine comment blocks
         firstBlock = True
-        for m in self.docBlock_pat.finditer(contents):
-            block = self.blockFilter_pat.sub("", m.group(2)).strip()
+        for m in self.docBlockPat.finditer(contents):
+            block = self.blockFilterPat.sub("", m.group(2)).strip()
             context = m.group(4)
             # data will be mutated!
             self._analyzeBlock(block, context, firstBlock, data)
@@ -428,81 +440,17 @@ class DocExtractor():
         return data
 
 if __name__ == '__main__':
-    # running this file from the command line executes its self tests.
-    import json
     import sys
-    import difflib
+    import json
+    ds = DocStract()
 
-    de = DocExtractor()
-
-    # because docextractor embeds filenames into output files, let's
-    # change into the directory of the script for consistency
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    testDir = "tests"
-
-    # create a list of the tests to run (.js files in tests/ dir)
-    tests = []
-
-    # allow invoker on command line to pass in tests explicitly for
-    # selective testing
-    if len (sys.argv) > 1:
-        for x in sys.argv[1:]:
-            x = os.path.basename(x)
-            tests.append(x[:-3] if x.endswith(".js") else x)
+    docs = None
+    if len (sys.argv) == 2:
+        docs = ds.extractFromFile(sys.argv[1])
+    elif len (sys.argv) == 1:
+        docs = ds.extract(sys.stdin.read())
     else:
-        for x in os.listdir(testDir):
-            if x.endswith(".js"):
-                tests.append(x[:-3])
+        print >> sys.stderr, "Usage: docstract [file]"
+        sys.exit(1)
 
-    # now run!
-    ranTests = 0
-    failedTests = 0
-    for test in tests:
-        print "Running '%s'..." % test
-        failed = False
-        try:
-            got = de.extract(os.path.join(testDir, test + ".js"))
-        except Exception as e:
-            got = { "exception_type": str(type(e)), "args": e.args }
-        want = None
-        try:
-            with open(os.path.join(testDir, test + ".out"), "r") as f:
-                want = json.loads(f.read())
-        except:
-            pass
-
-        gotJSON = json.dumps(got, indent=2, sort_keys=True) + "\n"
-
-        # now let's compare actual with expected
-        if want == None:
-            print  "  FAILED: no expected test output file available (%s.out)" % test
-            failed = True
-        else:
-            wantJSON = json.dumps(want, indent=2, sort_keys=True) + "\n"
-
-            diff = difflib.unified_diff(wantJSON.splitlines(1), gotJSON.splitlines(1), "expected.out", "actual.out")
-
-            # diff does poorly when newlines are ommitted, let's fix that
-            diff = [l if len(l) > 0 and l[-1] == '\n' else l + "\n" for l in diff]
-            diffText = '    '.join(diff)
-
-            if len(diffText):
-                diffText = '    ' + diffText
-                print "  FAILED: actual output doesn't match expected:"
-                print diffText
-                failed = True
-            else:
-                print "  ... passed."
-
-        if failed:
-            failedTests += 1
-            # write actual output to disk, so that it's easy to write new tests
-            actualPath = os.path.join(testDir, test + ".outactual")
-            with open(actualPath, "w+") as f:
-                f.write(gotJSON)
-
-            print "  (expected output left in '%s')" % actualPath
-
-    print "Complete, (%d/%d) tests passed..." % (len(tests) - failedTests, len(tests))
-    sys.exit(failedTests)
+    print json.dumps(docs, indent=2, sort_keys=True) + "\n"

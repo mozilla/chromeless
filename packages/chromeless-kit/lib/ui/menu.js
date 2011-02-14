@@ -116,7 +116,7 @@ function setParent(parent) {
  *     });
  * 
  * @constructor
- * @param {Object} struct a set of options/ properties that will be set on the 
+ * @param {object} struct a set of options/ properties that will be set on the 
  *                        menu item. Keys are case-insensitive.
  * @type  {Menu}
  */
@@ -276,7 +276,7 @@ var Menu = function(struct) {
         delete this.node;
         this.drawn = false;
     };
-    
+
     /**
      * @see #setParent()
      */

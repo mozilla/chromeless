@@ -8,47 +8,59 @@
      This is an initial example, an experimentation to track 
      loading progress of an iframe. 
    </p>
-   <!-- Note _ Dec 2 2010. This only works ( experimental-dom-security events ) 
-        if you create the iframe, do the binding, before you add the iframe 
-        to the body --> 
-
+   <iframe id="myWebContent">
+   </iframe>
    <script type="text/javascript">
-   
-   function start() { 
-     var i = document.createElement("iframe");
-     i.style.width="100%";
-     i.style.height="500px";
-     var fr = require("iframe-as-browser").bind(i, document);
 
-     /* We track progress! */
-     i.addEventListener("experimental-dom-progress",
-         function (e) {
-             document.getElementById("progress").innerHTML=e.percentage;
-             document.getElementById("dots").innerHTML+=".";
-             // dump title of the iframe.
-	     document.getElementById("dots").innerHTML+=e.target.contentDocument.title; 
-         }
-     ,false); 
+function start() {
+  var i = document.getElementById("myWebContent");
+  i.style.width="100%";
+  i.style.height="500px";
 
-     /* We track when the page is loaded! */
-     i.addEventListener("experimental-dom-stop", function (e) {
-         document.getElementById("progress").innerHTML="AHhhhh this page is totally loaded!, just enjoy!";
-         document.getElementById("dots").innerHTML+=".";
-     },false); 
-     i.addEventListener("experimental-dom-load", function (e) {
-         document.getElementById("dots").innerHTML+="loaded";
-     },false); 
-     i.addEventListener("experimental-dom-security",function (e) {
-         document.getElementById("dots").innerHTML+="Security: "+e.detail;
-     },false); 
- 
-     document.body.appendChild(i);
-     i.src="http://www.google.com";
-    } 
+  /* We track progress! */
+
+  i.addEventListener("ChromelessLoadStart", function (e) {
+    console.log("ChromelessLoadStart", e.url);
+    return;
+  }, false);
+
+  i.addEventListener("ChromelessDOMSetup", function (e) {
+    console.log("ChromelessDOMSetup");
+  },false);
+
+  i.addEventListener("ChromelessTitleChanged",function (e) {
+    document.getElementById("title").innerHTML= e.title;
+  },false);
+
+  i.addEventListener("ChromelessLoadProgress", function (e) {
+    console.log("ChromelessLoadProgress: ",  e.percentage);
+    document.getElementById("progress").innerHTML=e.percentage;
+  } ,false);
+
+  i.addEventListener("ChromelessSecurityChange",function (e) {
+    console.log("ChromelessSecurityChange", e.state, e.strength);
+    document.getElementById("security").innerHTML=e.strength + "/" + e.state;
+  },false);
+
+  i.addEventListener("ChromelessLoadStop", function (e) {
+    document.getElementById("progress").innerHTML="100";
+  },false);
+
+  i.addEventListener("ChromelessStatusChanged", function (e) {
+    document.getElementById("status").innerHTML= e.message;
+  }, false);
+
+
+  i.src="http://github.com/mozilla/chromeless";
+}
 
    </script>
    <div style="border:10px solid blue;padding:1em;">
-   Loading a web page: <span id="progress"></span>% <span id="dots"></span>
+    <b>Loading a web page:</b> <span id="progress"></span>% <b>Security:</b> <span id="security">insecure</span>
+    <b>Title:</b> <span id="title">...</span>
+   </div>
+   <div style="border:10px solid blue;padding:1em;">
+    Load Status: <span id="status"></span>
    </div>
 
   </body>

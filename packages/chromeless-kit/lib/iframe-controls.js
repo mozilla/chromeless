@@ -1,5 +1,3 @@
-/* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -37,15 +35,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-const {Cc,Ci,Cr} = require("chrome");
+/** Allows application code to control and inspect iframes */
 
-var mainWin = require("window-utils");
+const {Cc, Ci, Cr} = require("chrome");
 
-exports.fullscreen = function flipFullScreen() {
-   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
-}
+/**
+ * stop the loading of content within an iframe 
+ * @params {IFrameNode} frame An iframe dom node.
+ */
+exports.stopload = function(frame) { 
+  var webNav= frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
+  webNav.stop(webNav.STOP_ALL);
+};
 
-exports.fixupuri = function fixUpURI(url) { 
-   return Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup).createFixupURI(url,0).spec;;
-} 
-
+/**
+ * Access the title of an iframe.  
+ * @params {IFrameNode} frame An iframe dom node.
+ * @returns {string} The current title of the content in the iframe.
+ */
+exports.title = function getIframeTitle(frame) {
+  return frame.contentDocument.title;
+};

@@ -7,7 +7,8 @@ const xpcom = require("xpcom");
 const ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
     .getService(Ci.nsIWindowWatcher);
 
-observers = require("observer-service");
+const observers = require("observer-service");
+const iframeProgressHooks = require('iframe-progress-hooks');
 
 function isTopLevelWindow(w) {
   for (var i = 0; i < gWindows.length; i++) {
@@ -20,31 +21,46 @@ observers.add("content-document-global-created", function(subject, url) {
   if (subject.window.top != subject.window.self) {
     if (isTopLevelWindow(subject.window.parent))
     {
+      // browser code window
+      var bcWin = subject.window.parent;
+      // top level iframe window
+      var ifWin = subject.window.self;
+
       // generate a custom event to indicate to top level HTML
-      // that the initial page load is complete (no scripts yet exectued)
-      var evt = subject.window.parent.document.createEvent("HTMLEvents");  
-      evt.initEvent("experimental-dom-load", true, false);
-      // XXX: this ad-hoc data isn't making it from chrome (us)
-      // to content (browser HTML) in 2.0b8pre.  is that a
-      // regression in gecko or a security feature?
-      evt.wrappedJSObject.url = subject.window.location.href;
-      //evt.window = subject.window;
+      // that the initial page load is complete (no scripts yet executed)
+      var evt = bcWin.document.createEvent("HTMLEvents");
+      evt.initEvent("ChromelessDOMSetup", true, false);
 
-      // This is a proposal for us to send the experimental-dom 
-      // event to the window instead the parent window. This would 
-      // allow us to capture the event from the upper iframe,
-      // which facilitates to keep track of what iframe content 
-      // was updated - helps with multi browser application case  
-      subject.window.parent.dispatchEvent(evt);
-      //subject.window.dispatchEvent(evt);
+      // dispatch the event on the iframe in question in the context of the
+      // parent.  First we have to find the iframe.
+      var iframes = bcWin.document.getElementsByTagName("iframe");
+      for (var i = 0; i < iframes.length; i++) {
+        if(subject.window === iframes[i].contentWindow) {
+          iframes[i].dispatchEvent(evt);
 
-      // this is a top level iframe
-      subject.window.wrappedJSObject.top = subject.window.self;
-      subject.window.wrappedJSObject.parent = subject.window.self;
+          // hookProgress will set up a listener that will
+          // relay further iframe progress events to the application
+          // code.  Once hooked, an iframe will continue to emit events
+          // even when the .src of the iframe changes.  To keep track
+          // of whether the iframe has been hooked, we'll hang state
+          // off the iframe[i] dom node.  this state *should not* be
+          // visibile to app code, because it's not on wrappedJSObject
+          if (iframes[i].__chromelessEventsHooked === undefined) {
+            iframes[i].__chromelessEventsHooked = true;
+            iframeProgressHooks.hookProgress(iframes[i], bcWin.document);
+          }
+          break;
+        }
+      }
+
+      // Top level iframes are used to hold web content.  We'll hide from
+      // the content of an iframe the fact that it has a parent.
+      ifWin.wrappedJSObject.top = ifWin;
+      ifWin.wrappedJSObject.parent = ifWin;
     }
     else
     {
-      // this is a frame nested underneat the top level frame
+      // this is a frame nested underneath the top level frame
       subject.window.wrappedJSObject.top = subject.window.parent.top;
     }
   }

@@ -93,14 +93,14 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-var misc = require("misc");
+const url = require("url");
 // in memory browser history, an array of urls
 var gHistory = [];
 // our current point in history
 var gCurrent = 0;
 
 // capture events when the a child iframe changes and update the location bar
-window.addEventListener("experimental-dom-load", function(e) {
+document.getElementById('contentFrame').addEventListener("ChromelessLoadStart", function(e) {
   $("#urlinput").val(e.url);
   // very rudimentary history management, if the url that has been loaded
   // is not what is currently in history, let's append it, and reset
@@ -116,19 +116,18 @@ $(document).ready(function() {
 
     function stop () { 
       var frame = document.getElementById("contentFrame");
-      require("iframe-as-browser").stopload(frame);
+      require("iframe-controls").stopload(frame);
     } 
 
     function navigate() {
         // invoked when the user hits the go button or hits enter in url box
-        var url = $.trim($("#urlinput").val());
-        // if there's no protocol, let's add the likely one
-        if (url.indexOf("://") < 0) url = "http://" + url;
-        // trigger navigation
-         
-        // As an alternative, one could also use the CommonJS-based, require("misc") 
-        // module that has a misc.fixupuri(url) method which is based in the nsIURIFixup
-        $("#contentFrame").attr("src", url);
+        var input = $.trim($("#urlinput").val());
+        // let's try to turn user input into a well formed url using the
+        // 'url' library's guess function.
+        input = url.guess(input);
+
+        // now trigger navigation
+        $("#contentFrame").attr("src", input);
     }
 
     // both enter in the urlbox and clicking the go button do the same thing,

@@ -35,10 +35,9 @@
  * ***** END LICENSE BLOCK ***** */
 
 const {Cc, Ci} = require("chrome"),
-//      windows = require("windows"),
       errors = require("errors"),
       timer = require("timer"),
-      notifications = require("ui/notifications"),
+      notifications = require("notifications"),
       windows = require("chromeless-sandbox-window");
 
 /**

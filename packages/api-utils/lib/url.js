@@ -72,6 +72,22 @@ function resolveResourceURI(uri) {
   return resolved;
 }
 
+/**
+ * given a string (typically the result of human input), attempt to
+ * guess the well formed URL intended.  For instanced, this function
+ * will turn `mozilla.com` into `http://mozilla.com`
+ * @param {string} fragment A url fragment
+ * @returns {string} A guess at a well formed url.
+ */
+exports.guess = function(fragment) {
+  try {
+    var fixupSvc = Cc["@mozilla.org/docshell/urifixup;1"].getService(Ci.nsIURIFixup);
+    return fixupSvc.createFixupURI(fragment,0).spec;;
+  } catch(e) {
+    // if we can't fix it up, just return it.
+    return fragment;
+  }
+};
 
 /**
  * build a URL from a filename.

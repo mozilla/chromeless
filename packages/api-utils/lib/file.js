@@ -22,6 +22,8 @@
  *   Irakli Gozalishvili <rfobic@gmail.com>
  *   Atul Varma <atul@mozilla.com>
  *   Drew Willcoxon <adw@mozilla.com>
+ *   Mike De Boer <deboer.md@gmail.com>
+ *   Lloyd Hilaiel <lloyd@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,7 +40,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * Provides access to the local filesystem.
+ * Allows for the reading and writing of files.
  */
 
 const {Cc,Ci,Cr} = require("chrome");
@@ -66,23 +68,6 @@ function MozFile(path) {
   return file;
 }
 
-function ensureReadable(file) {
-  if (!file.isReadable())
-    throw new Error("path is not readable: " + file.path);
-}
-
-function ensureDir(file) {
-  ensureExists(file);
-  if (!file.isDirectory())
-    throw new Error("path is not a directory: " + file.path);
-}
-
-function ensureFile(file) {
-  ensureExists(file);
-  if (!file.isFile())
-    throw new Error("path is not a file: " + file.path);
-}
-
 function ensureExists(file) {
   if (!file.exists()) {
     throw xpcom.friendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, {
@@ -91,58 +76,11 @@ function ensureExists(file) {
   }
 }
 
-/**
- * Returns true if a file exists at the given path and false otherwise.
- *
- * @param path {string} The path to a file.
- * @returns {boolean} True if the file exists and false otherwise.
- */
-exports.exists = function exists(filename) {
-  try {
-    var file = MozFile(filename);
-    return file.exists();
-  }
-  catch (ex) {
-    return false;
-  }
-};
-
-/**
- * Given a path returns metadata about the file or directory.  If the path is a symlink it
- * will be dereferenced and information about the underlying file will be returned
- *
- * @param path {string} The path to a file.
- * @returns {object}
- * Returns an object with information about the file, including:
- *
- *  + `type` - either 'file' or 'directory'
- *  + `numEntries` - (for directories), the number of files in the directory.
- *  + `size` - (for files), the size of the file in bytes.
- *  + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.
- *
- * @throws if file doesn't exist
- */
-exports.stat = function stat(filename) {
-    var stats = { };
-    var file = MozFile(filename);
-    ensureExists(file);
-    if (file.isDirectory()) {
-        stats.type = 'directory';
-        var dirEnum = file.directoryEntries;
-        stats.numEntries = 0;
-        while (dirEnum.hasMoreElements()) {
-            stats.numEntries++;
-            dirEnum.getNext();
-        }
-    } else {
-        // For now we don't differentiate between symlinks and files
-        stats.type = 'file';
-        stats.size = file.fileSize;
-        stats.lastModified = file.lastModifiedTime;
-    }
-    file = null;
-    return stats;
-};
+function ensureFile(file) {
+  ensureExists(file);
+  if (!file.isFile())
+    throw new Error("path is not a file: " + file.path);
+}
 
 /**
  * Opens a file in text mode and returns a string containing its entire contents.
@@ -152,8 +90,8 @@ exports.stat = function stat(filename) {
  * @returns {string}
  * A string containing the file's entire contents.
  */
-exports.read = function read(filename) {
-  var stream = exports.open(filename);
+exports.read = function read(path) {
+  var stream = exports.open(path);
   try {
     var str = stream.read();
   }
@@ -164,58 +102,24 @@ exports.read = function read(filename) {
   return str;
 };
 
-/**
- * Takes a variable number of strings, joins them on the file system's path
- * separator, and returns the result.
- *
- * @param ... {strings}
- * A variable number of strings to join.
- * @returns {string}
- * A single string formed by joining the strings on the file system's path
- * separator.
- */
-exports.join = function join(base) {
-  if (arguments.length < 2)
-    throw new Error("need at least 2 args");
-  base = MozFile(base);
-  for (var i = 1; i < arguments.length; i++)
-    base.append(arguments[i]);
-  return base.path;
-};
 
 /**
- * Returns the path of the directory containing the given file.
- *
- * @param path {string}
- *   The path of a file.
- * @returns {string}
- *   The path of the directory containing the file.
+ * Creates a text file and writes the entir contents of a string to
+ * it.
+ * @param path The path at which the file should be created
+ * @param content The content to write.
+ * @throws if file exists, or cannot be created.
  */
-exports.dirname = function dirname(path) {
-  return MozFile(path).parent.path;
-};
+exports.write = function(path, content) {
+    if (MozFile(path).exists()) throw new Error("path exists: " + path);
 
-/**
- * Returns an array of file names in the given directory.
- *
- * @param path {string}
- * The path of the directory.
- * @returns {array}
- * An array of file names.  Each is a basename, not a full path.
- */
-exports.list = function list(path) {
-  var file = MozFile(path);
-  ensureDir(file);
-  ensureReadable(file);
-
-  var entries = file.directoryEntries;
-  var entryNames = [];
-  while(entries.hasMoreElements()) {
-    var entry = entries.getNext();
-    entry.QueryInterface(Ci.nsIFile);
-    entryNames.push(entry.leafName);
-  }
-  return entryNames;
+    var stream = exports.open(path, "w");
+    try {
+        stream.write(content);
+    }
+    finally {
+        stream.close();
+    }
 };
 
 /**
@@ -281,45 +185,85 @@ exports.open = function open(filename, mode) {
 };
 
 /**
- * Removes a file from the file system.  To remove directories, use `rmdir`.
- *
- * @param path {string} The path of the file to remove.
+ * @class File
+ * A file abstraction that allows direct access to meta-data
+ * about a file.
  */
-exports.remove = function remove(path) {
-  var file = MozFile(path);
-  ensureFile(file);
-  file.remove(false);
+function FileWrapper(obj) {
+  if (typeof obj == "string") {
+    obj = MozFile(obj);
+    obj.QueryInterface(Ci.nsIFile);
+  }
+
+  //    this.__defineGetter__("wrappedJSObject", function() obj);
+
+  this.__defineGetter__("leafName", function() obj.leafName);
+  /** @property permissions The file's permissions (follows symlinks) */
+  this.__defineGetter__("permissions", function() obj.permissions);
+  /** @property permissionsOfLink The file's permissions (does not follow symlinks) */
+  this.__defineGetter__("permissionsOfLink", function() obj.permissionsOfLink);
+  /** @property lastModifiedTime The last time this file was modified (follows symlinks) */
+  this.__defineGetter__("lastModifiedTime", function() obj.lastModifiedTime);
+  /** @property lastModifiedTimeOfLink The last time this file was modified (does not follow symlinks) */
+  this.__defineGetter__("lastModifiedTimeOfLink", function() obj.lastModifiedTimeOfLink);
+
+  /** @property {integer} fileSize Size of file in bytes (follows symlinks) */
+  this.__defineGetter__("fileSize", function() obj.fileSize);
+  /** @property {integer} fileSize Size of file in bytes (does not follow symlinks) */
+  this.__defineGetter__("fileSizeOfLink", function() obj.fileSizeOfLink);
+  //this.__defineGetter__("target", function() obj.target);
+  /** @property {string} path The absolute path to the file */
+  this.__defineGetter__("path", function() obj.path);
+
+  /** @property {string} path The absolute path to the parent of the file */
+  this.__defineGetter__("parent", function() obj.parent);
+
+/*
+  this.__defineGetter__("directoryEntries", function() obj.directoryEntries);
+  this.__defineGetter__("followLinks", function() obj.followLinks);
+  this.__defineGetter__("diskSpaceAvailable", function() obj.diskSpaceAvailable);
+  this.__defineGetter__("persistentDescriptor", function() obj.persistentDescriptor);
+*/
+  // mapping of boolean returning functions:
+  /** @function exists
+   *  Check file existence.
+   *  @returns {boolean} true if the file exists.
+   */
+  this.exists = function() obj.exists();
+  /** @function isWritable
+   *  @returns {boolean} true if the file is writable. */
+  this.isWritable = function() obj.isWritable();
+  /** @function isReadble
+   *  @returns {boolean} true if the file is readable. */
+  this.isReadable = function() obj.isReadable();
+  /** @function isExecutable
+   *  @returns {boolean} true if the file is executable. */
+  this.isExecutable = function() obj.isExecutable();
+  /** @function isHidden
+   *  @returns {boolean} true if the file is hidden. */
+  this.isHidden = function() obj.isHidden();
+  /** @function isDirectory
+   *  @returns {boolean} true if the file is a directory. */
+  this.isDirectory = function() obj.isDirectory();
+  /** @function isDirectory
+   *  @returns {boolean} true if the file is a regular file. */
+  this.isFile = function() obj.isFile();
+  /** @function isDirectory
+   *  @returns {boolean} true if the file is a symlink. */
+  this.isSymlink = function() obj.isSymlink();
+  /** @function isSpecial
+   *  @returns {boolean} true if the file is a special file (i.e. device) */
+  this.isSpecial = function() obj.isSpecial();
+
+  /** @function toString
+   *  @returns {string} concoct a reasonable string representation of a file */
+  this.toString = function FileWrapper_toString() obj.path;
 };
 
-/**
- * Makes a new directory named by the given path.  Any subdirectories that do not
- * exist are also created.  `mkpath` can be called multiple times on the same
- * path.
- *
- * @param path {string} The path to create.
+/** @constructor
+ *  @param {string} path The path from which to construct a File object.
+ *  @returns {File} an object representation of a file
  */
-exports.mkpath = function mkpath(path) {
-  var file = MozFile(path);
-  if (!file.exists())
-    file.create(Ci.nsIFile.DIRECTORY_TYPE, 0755); // u+rwx go+rx
-  else if (!file.isDirectory())
-    throw new Error("The path already exists and is not a directory: " + path);
-};
+exports.File = require("api-utils").publicConstructor(FileWrapper);
 
-/** 
- * Removes a directory from the file system.  If the directory is not empty, an
- * exception is thrown.
- *
- * @param path {string} The path of the directory to remove.
- */
-exports.rmdir = function rmdir(path) {
-  var file = MozFile(path);
-  ensureDir(file);
-  try {
-    file.remove(false);
-  }
-  catch (err) {
-    // Bug 566950 explains why we're not catching a specific exception here.
-    throw new Error("The directory is not empty: " + path);
-  }
-};
+/** @endclass */

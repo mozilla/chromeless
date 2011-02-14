@@ -208,12 +208,12 @@ function format(f) {
   return str;
 }
 
-exports.inspect = function(obj, depth){
+exports.inspect = function(obj, depth, parentsKey) {
   if (!obj) return;
 
   let out = [],
       cons = obj.constructor,
-      name = cons.name,
+      name = cons ? cons.name : "undefined",
       proto = Object.getPrototypeOf(obj),
       depth = depth || 0,
       indent = Array(depth + 1).join('  ');
@@ -224,9 +224,12 @@ exports.inspect = function(obj, depth){
     } else {
       name = '[' + name + ']';
     }
+
+    out.push(format(indent + '\033[33m%s\033[0m', name));
+  } else {
+    out.push(format(indent + '\033[90m.%s\033[0m \033[33m[%s]\033[0m', parentsKey, name));
   }
 
-  out.push(format(indent + '\033[33m%s\033[0m', name));
   Object.keys(obj).sort().forEach(function(key){
     let desc;
     try {
@@ -251,7 +254,13 @@ exports.inspect = function(obj, depth){
             : '';
       out.push(format(indent + '  \033[90m.%s(%s)\033[0m', key, String(val)));
     }
-    else if (undefined !== desc.value) {
+
+    // recurse, unless it's a null object or our depth is > 5
+    else if (desc.value !== null && typeof desc.value === 'object' && (depth < 5)) {
+      var nested = exports.inspect(desc.value, depth + 1, key);
+      out = out.concat(nested);
+    }
+    else {
       out.push(format(indent + '  \033[90m.%s %s\033[0m', key, desc.value));
     }
   });

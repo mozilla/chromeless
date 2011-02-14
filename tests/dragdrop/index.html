@@ -19,7 +19,7 @@
   <script type="text/javascript" charset="utf-8">
 
     var desktopPath = require('app-paths').desktopDir; 
-    var filesOnDesktop = require('file').list(desktopPath);
+    var filesOnDesktop = require('fs').list(desktopPath);
     var orderedList = document.getElementById('files');
     var i=0;
 

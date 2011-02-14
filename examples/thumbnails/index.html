@@ -31,23 +31,17 @@ body {
   width:240px;
 }
 
-.security_high { 
+.security_secure { 
    -moz-transition-property: background-color;
    -moz-transition-duration: 1s;
    -moz-transition-delay: 0s;
    background-color:lightblue;
 }  
-.security_low { 
+.security_insecure { 
    -moz-transition-property: background-color;
    -moz-transition-duration: 1s;
    -moz-transition-delay: 0s;
    background-color:yellow;
-}  
-.security_notavailable { 
-   -moz-transition-property: background-color;
-   -moz-transition-duration: 1s;
-   -moz-transition-delay: 0s;
-   background-color:white;
 }  
 .security_broken { 
    -moz-transition-property: background-color;
@@ -159,9 +153,8 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
-var misc    = require("misc");
-var console = require("plain-text-console");
-var dump    =  new console.PlainTextConsole();
+const fullscreen  = require("fullscreen");
+const url         = require("url");
 
 var currentBrowser = null; 
 var currSelected   = null; 
@@ -194,7 +187,7 @@ function canvasShot(browserRef, thumbImageRef) {
     thumbImageRef.height="1";
     thumbImageRef.src=camera.snapshot(browserRef);
   } catch (i) { 
-    dump.log(i); 
+    console.log(i); 
   } 
 } 
 
@@ -206,20 +199,20 @@ function newTab() {
   browserTabs.push(newBrowser);
   newBrowser.setAttribute("id",browserUnique);
 
-  // experimental onload to sync thumbnails, 
-  // we may need to send another events for the full onload 
-  // since this 'experimental-dom-load' is before scripts 
-  // and images.  
+  // Update thumbnails of the iframe when DOM is setup, and
+  // again when the page is fully loaded.
+  newBrowser.addEventListener("ChromelessDOMSetup",function (e) { 
+    syncTabs(browserUnique);
+  },false);
 
-  require("iframe-as-browser").bind(newBrowser,document);
+  // sync again after load is compelete
+  newBrowser.addEventListener("ChromelessLoadStop",function (e) { 
+    syncTabs(browserUnique);
+  },false);
 
-  newBrowser.addEventListener("experimental-dom-load",function (e) { 
-      setTimeout(function() { syncTabs(browserUnique); }, 1000);
-  },true);
-
-  newBrowser.addEventListener("experimental-dom-security", function (e) {
-      $("#awesomeBox").attr("class","security_"+e.detail);
-  },false); 
+  newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
+      $("#awesomeBox").attr("class","security_"+e.state);
+  },false);
 
   var thumb = document.createElement("span");
   var img = document.createElement("img");
@@ -240,15 +233,16 @@ function newTab() {
 
 function syncTabs(refBrowserId) { 
   var uniqueId = refBrowserId.split("browser_unique_")[1];
+
   canvasShot(document.getElementById(refBrowserId),document.getElementById("image_unique_"+uniqueId));
-} 
+}
 
 $(document).ready(function() {
     $("#browserHeader form").submit(function(e) {
        if(browserTabs.length<1) newTab();  
        browserUniqueId = $(".browser_selected").attr("id");
-       var url = $.trim($("#awesomeBox").val());
-       $(".browser_selected").attr("src", misc.fixupuri(url));
+       var fragment = $.trim($("#awesomeBox").val());
+       $(".browser_selected").attr("src", url.guess(fragment));
 
         return false; 
     });
@@ -263,7 +257,7 @@ $(document).ready(function() {
         return false; 
     });
     $("#browserHeader #buttonFull").click(function(e) {
-        misc.fullscreen();
+        fullscreen.toggle();
         return false; 
     });
 });

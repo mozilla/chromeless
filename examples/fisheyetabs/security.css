@@ -1,25 +1,21 @@
-.security_high {
-   -moz-transition-property: background-color;
+.security_secure {
+   -moz-transition-property: border;
    -moz-transition-duration: 1s;
    -moz-transition-delay: 0s;
-   background-color:lightblue;
+   border: 2px solid green;
 }
-.security_low {
-   -moz-transition-property: background-color;
-   -moz-transition-duration: 1s;
-   -moz-transition-delay: 0s;
-   background-color:yellow;
-}
-.security_notavailable {
-   -moz-transition-property: background-color;
-   -moz-transition-duration: 1s;
-   -moz-transition-delay: 0s;
-   background-color:white;
-}
+
 .security_broken {
-   -moz-transition-property: background-color;
+   -moz-transition-property: border;
    -moz-transition-duration: 1s;
    -moz-transition-delay: 0s;
-   background-color:red;
+   border: 2px solid red;
+}
+
+.security_insecure {
+   -moz-transition-property: border;
+   -moz-transition-duration: 1s;
+   -moz-transition-delay: 0s;
+   border: 2px solid yellow;
 }
 

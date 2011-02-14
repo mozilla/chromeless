@@ -1,3 +1,5 @@
+/* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim:set ts=2 sw=2 sts=2 et: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -11,14 +13,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is Escape.
+ * The Original Code is Jetpack.
  *
- * The Initial Developer of the Original Code is Mozilla.
- * Portions created by the Initial Developer are Copyright (C) 2009
+ * The Initial Developer of the Original Code is
+ * the Mozilla Foundation.
+ * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Myk Melez <myk@mozilla.org>
  *   Marcio Galli <mgalli@mgalli.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
@@ -35,12 +37,30 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#content {
-  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser");
-  display: -moz-box;
-  -moz-box-flex: 1;
-  width:100%;
-  height:100%;
-}
+/**
+ * Allows one to control fullscreen view for the main application window
+ */
 
-~     
+var mainWin = require("window-utils");
+
+/**
+ * Size the main application window to consume the full screen
+ */
+exports.enable = function() {
+   mainWin.activeWindow.fullScreen=true;
+};
+
+/**
+ * Disable fullscreen mode (noop if it wasn't enabled)
+ */
+exports.disable = function() {
+   mainWin.activeWindow.fullScreen=false;
+};
+
+/**
+ * Toggle fullscreen.
+ */
+exports.toggle = function() {
+   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
+};
+

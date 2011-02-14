@@ -34,6 +34,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * Add shortcut key combinations or "hotkeys" to your application.
+ */
+
 const {Cc, Ci, Cr} = require("chrome"),
       ui = require("ui");
 
@@ -132,9 +136,9 @@ function getBinding(hotkey, command) {
  * Register a global hotkey that executes JS specified [command] when the key
  * combination in [hotkey] is pressed.
  * 
- * @throws {String} Textual exception that should be caught by the programmer.
+ * @throws {string} Textual exception that should be caught by the programmer.
  * 
- * @param {String} hotkey Key combination in the format of 'modifier-key'
+ * @param {string} hotkey Key combination in the format of 'modifier-key'
  *   Examples:
  *     accel-s, meta-shift-i, control-alt-d
  *   Modifier keynames:
@@ -153,9 +157,9 @@ function getBinding(hotkey, command) {
  *     any: Indicates that all modifiers preceding it are optional.
  * @param {String/Function} command Javascript (may be of type String or Function) 
  *                                  to execute when the hotkey is executed.
- * @param {String} [id] Optional. Unique identifier for this hotkey, which will 
+ * @param {string} [id] Optional. Unique identifier for this hotkey, which will 
  *                      auto-generated if not provided.
- * @type  {String} Return the ID of the hotkey.
+ * @type  {string} Return the ID of the hotkey.
  */
 exports.register = function(hotkey, command, id) {
     let {key, modifiers} = parseHotkey(hotkey);
@@ -185,12 +189,11 @@ exports.register = function(hotkey, command, id) {
 
 /**
  * Register a global hotkey.
- * @see register
- * @throws {String} Textual exception that should be caught by the programmer.
+ * @throws {string} Textual exception that should be caught by the programmer.
  * 
- * @param {String} hotkey
- * @param {String/Function} command
- * @param {String} [id]
+ * @param {string} hotkey
+ * @param {string/function} command
+ * @param {string} [id]
  * @type  {void}
  */
 exports.unregister = function(hotkey, command, id) {
