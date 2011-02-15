@@ -17,7 +17,7 @@ class Appifier(object):
             import _linux as osappifier
         elif s == 'Windows':
             import _win32 as osappifier
- 
+
         self.osappifier = osappifier.OSAppifier()
         self.dirs = chromeless.Dirs()
 
@@ -40,7 +40,7 @@ class Appifier(object):
         if not os.path.isdir(browser_code_dir):
             browser_code_main = os.path.basename(browser_code)
             browser_code_dir = os.path.dirname(browser_code)
-            
+
         # generate the application shell, returning the parameters of its creation
         # (like, the directory it was output into, and where inside that bundle the
         # xulrunner application files should be put)
@@ -81,7 +81,7 @@ class Appifier(object):
             os.makedirs(output_dir)
 
         print "Building xulrunner app in >%s< ..." % output_dir 
-        
+
         # extract information about the application from appinfo.json
         app_info = chromeless.AppInfo(dir=browser_code_dir)
 
@@ -168,6 +168,13 @@ class Appifier(object):
         if verbose:
             print "  ... copying in browser code (%s)" % browser_code_dir 
         shutil.copytree(browser_code_dir, os.path.join(output_dir, "browser_code"))
+
+        # now re-write appinfo
+        if verbose:
+            print "  ... writing application info file"
+
+        with open(os.path.join(output_dir, "browser_code", "appinfo.json"), 'w') as f:
+            f.write(json.dumps(app_info.object, indent=4))
 
         # now munge harness_options a bit to get correct path to browser_code in
         browser_code_path = "browser_code"
