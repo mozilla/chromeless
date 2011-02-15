@@ -178,6 +178,11 @@ var Menu = function(struct) {
 
 (function() {
     function commandHandler(e) {
+        if (!e && "checkbox|radio".indexOf(this.type) > -1) {
+            this.checked = !this.checked;
+            this.node.setAttribute("checked", this.checked);
+        }
+
         this["onclick"] && this["onclick"](e);
     }
 
@@ -284,40 +289,40 @@ var Menu = function(struct) {
 }).call(Menu.prototype);
 
 /**
-* SubMenu class, which represents a collection of menu items and separators that
-* should be displayed. A SubMenu is defined with the 'children' property of a 
-* Menu object as an Array. Therefore, array-like functions may be used to alter
-* the contents of a SubMenu instance.
-* There is no maximum set to the amount of submenus.
-* Example:
-*     var ui   = require("ui"),
-*         menu = require("ui/menu");
-* 
-*     var file = new menu.Menu({
-*         parent: ui.getMenu(),
-*         label: "File",
-*         children: [
-*             new menu.Menu({
-*                 label: "New Window",
-*                 hotkey: "accel-n",
-*                 type: "radio",
-*                 checked: true,
-*                 onClick: function(e) {
-*                     alert("yay!");
-*                 }
-*             }),
-*             new menu.Separator()
-*         ]
-*     });
-*     file.children.splice(0, 1);
-*     file.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
-* 
-* @constructor
-* @param {Array} nodes  a set of options/ properties that will be set on the 
-*                        menu item. Keys are case-insensitive.
-* @param {Menu}  parent 
-* @type  {SubMenu}
-*/
+ * SubMenu class, which represents a collection of menu items and separators that
+ * should be displayed. A SubMenu is defined with the 'children' property of a 
+ * Menu object as an Array. Therefore, array-like functions may be used to alter
+ * the contents of a SubMenu instance.
+ * There is no maximum set to the amount or level of depth of submenus.
+ * Example:
+ *     var ui   = require("ui"),
+ *         menu = require("ui/menu");
+ * 
+ *     var file = new menu.Menu({
+ *         parent: ui.getMenu(),
+ *         label: "File",
+ *         children: [
+ *             new menu.Menu({
+ *                 label: "New Window",
+ *                 hotkey: "accel-n",
+ *                 type: "radio",
+ *                 checked: true,
+ *                 onClick: function(e) {
+ *                     alert("yay!");
+ *                 }
+ *             }),
+ *             new menu.Separator()
+ *         ]
+ *     });
+ *     file.children.splice(0, 1);
+ *     file.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
+ * 
+ * @constructor
+ * @param {Array} nodes  a set of options/ properties that will be set on the 
+ *                        menu item. Keys are case-insensitive.
+ * @param {Menu}  parent parent Menu instance that will show the SubMenu when hovered
+ * @type  {SubMenu}
+ */
 var SubMenu = function(nodes, parent) {
     this.drawn = false;
     this.parent = parent;
@@ -329,6 +334,12 @@ var SubMenu = function(nodes, parent) {
 };
 
 (function() {
+    /**
+     * Draw a submenu element to the canvas (a XUL document)
+     * Usually this function is invoked by setParent()
+     * 
+     * @type {void}
+     */
     this.draw = function() {
         if (this.drawn || !this.parent.drawn)
             return;
@@ -339,6 +350,12 @@ var SubMenu = function(nodes, parent) {
         return this.node;
     };
 
+    /**
+     * Removes a submenu from the canvas (a XUL document), including its children
+     * and does basic garbage collection.
+     * 
+     * @type {void}
+     */
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -378,6 +395,11 @@ var SubMenu = function(nodes, parent) {
         };
     });
 
+    /**
+     * Convert this SubMenu instance to an Array-representation.
+     * 
+     * @type {array}
+     */
     this.toArray = function() {
         var mock = [];
         for (let i = 0, l = this.length; i < l; ++i)
@@ -385,10 +407,17 @@ var SubMenu = function(nodes, parent) {
         return mock;
     };
 
+    /**
+     * (re-)Construct this SubMenu instance with Menu or Separator instances
+     * from array [arr].
+     * 
+     * @param {array} arr an array of Menu or Separator instances.
+     * @type  {void}
+     */
     this.fromArray = function(arr) {
         let i, l, el, next;
         for (i = 0, l = this.length; i < l; ++i) {
-            if (arr.indexOf(this[i]) === -1)
+            if (arr.indexOf(this[i]) > -1)
                 this[i].destroy();
             delete this[i];
         }
@@ -400,9 +429,40 @@ var SubMenu = function(nodes, parent) {
         }
     };
 
+    /**
+     * @see #setParent()
+     */
     this.setParent = setParent;
 }).call(SubMenu.prototype);
 
+/**
+ * Separator class, which represents any single menu item that should be displayed 
+ * with as separator (straight horizontal line).
+ * Example:
+ *     var ui   = require("ui"),
+ *         menu = require("ui/menu");
+ * 
+ *     var file = new menu.Menu({
+ *         parent: ui.getMenu(),
+ *         label: "File",
+ *         children: [
+ *             new menu.Separator(),
+ *             new menu.Separator(),
+ *             new menu.Menu({
+ *                 label: "More Separators!",
+ *                 children: [
+ *                     new menu.Separator(),
+ *                     new menu.Separator(),
+ *                 ]
+ *             })
+ *         ]
+ *     });
+ * 
+ * @constructor
+ * @param {Menu/SubMenu} parent parent Menu or SubMenu instance that will contain 
+ *                              the separator
+ * @type  {Separator}
+ */
 var Separator = function(parent) {
     this.drawn = false;
     this.parentNode = null;
@@ -411,6 +471,12 @@ var Separator = function(parent) {
 };
 
 (function() {
+    /**
+     * Draw a separator element to the canvas (a XUL document)
+     * Usually this function is invoked by setParent()
+     * 
+     * @type {void}
+     */
     this.draw = function() {
         if (this.drawn)
             return;
@@ -420,6 +486,12 @@ var Separator = function(parent) {
         return this.node;
     };
 
+    /**
+     * Removes a separator item from the canvas (a XUL document) and does basic 
+     * garbage collection.
+     * 
+     * @type {void}
+     */
     this.destroy = function() {
         if (!this.drawn)
             return;
@@ -428,6 +500,9 @@ var Separator = function(parent) {
         this.drawn = false;
     };
 
+    /**
+     * @see #setParent()
+     */
     this.setParent = setParent;
 }).call(Separator.prototype);
 

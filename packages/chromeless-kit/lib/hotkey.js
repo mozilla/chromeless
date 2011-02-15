@@ -155,7 +155,7 @@ function getBinding(hotkey, command) {
  *     access: The access key for activating menus and other elements. On Windows, 
  *             this is the Alt key, used in conjuction with an element's accesskey.
  *     any: Indicates that all modifiers preceding it are optional.
- * @param {String/Function} command Javascript (may be of type String or Function) 
+ * @param {string/function} command Javascript (may be of type String or Function) 
  *                                  to execute when the hotkey is executed.
  * @param {string} [id] Optional. Unique identifier for this hotkey, which will 
  *                      auto-generated if not provided.
