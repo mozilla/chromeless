@@ -53,6 +53,11 @@ function validate(manf) {
   }
 
   // commonly used check functions
+  var isInteger = function(x) {
+    return (typeof x === 'number' && Math.ceil(x) == Math.floor(x));
+  };
+
+  // commonly used check functions
   var nonEmptyStringCheck = function(x) {
     if ((typeof x !== 'string') || x.length === 0) errorThrow();
   };
@@ -61,11 +66,11 @@ function validate(manf) {
     if (typeof x !== 'string') errorThrow();
   };
 
-  var isInteger = function(x) {
-    return (typeof x === 'number' && Math.ceil(x) == Math.floor(x));
+  var booleanCheck = function(x) {
+    if (typeof x !== 'boolean') errorThrow();
   };
 
-  var isIntegerCheck = function(x) {
+  var integerCheck = function(x) {
     if (!isInteger(x)) errorThrow();
   };
 
@@ -97,15 +102,23 @@ function validate(manf) {
         return (typeof x === 'string') ? parseInt(x) : x;
       }
     },
+    developer_email: {
+      required: true,
+      check: nonEmptyStringCheck
+    },
+    menubar: {
+      required: false,
+      check: booleanCheck
+    },
     name: {
       required: true,
       check: nonEmptyStringCheck
     },
-    vendor: {
-      required: true,
-      check: nonEmptyStringCheck
+    resizable: {
+      required: false,
+      check: booleanCheck
     },
-    developer_email: {
+    vendor: {
       required: true,
       check: nonEmptyStringCheck
     },

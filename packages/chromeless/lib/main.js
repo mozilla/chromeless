@@ -107,11 +107,11 @@ function requireForBrowser(moduleName) {
 exports.main = function main(options) {
     // access appinfo.json contents for startup parameters
     const ai = appinfo.contents;
-    console.log(ai);
+    console.log("appinfo.json contents: ", ai);
 
     var call = options.staticArgs;
 
-    var contentWindow = require("chromeless-sandbox-window");
+    const contentWindow = require("chromeless-sandbox-window");
 
     // convert browser url into a resource:// url
     // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
@@ -150,6 +150,8 @@ exports.main = function main(options) {
         url: startPage,
         width: 800,
         height: 600,
+        resizable: ai.resizable ? true : false,
+        menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {

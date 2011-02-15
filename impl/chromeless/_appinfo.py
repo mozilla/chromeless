@@ -24,6 +24,10 @@ class AppInfo(object):
 
         self.object = { }
 
+        for prop in parsed_info:
+            self.__dict__[prop] = parsed_info[prop]
+            self.object[prop] = parsed_info[prop]
+
         for prop in app_info_spec.keys():
             self.__dict__[prop] = parsed_info[prop] if prop in parsed_info else app_info_spec[prop]
             self.object[prop] = self.__dict__[prop]

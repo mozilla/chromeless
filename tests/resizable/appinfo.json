@@ -1,0 +1,5 @@
+{
+  "name": "An app with non-resizable main window",
+  "version": "0.1",
+  "resizable": false
+}
