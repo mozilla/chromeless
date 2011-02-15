@@ -41,6 +41,7 @@
  */
 
 const {Cc,Ci,Cr} = require("chrome");
+const path = require('path');
 
 var dirsvc = Cc["@mozilla.org/file/directory_service;1"]
              .getService(Ci.nsIProperties);
@@ -59,7 +60,7 @@ exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
  * This path should be expected to be read-only.
  * @type string
  */
-exports.browserCodeDir = dirsvc.get("resource:app", Ci.nsIFile).path;
+exports.browserCodeDir = path.join(dirsvc.get("resource:app", Ci.nsIFile).path, "browser_code");
 
 /**
  * On windows, the path to the start menu where shortcuts may be installed.
