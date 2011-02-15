@@ -45,12 +45,31 @@ const modifiers = {"shift": 1, "alt": 1, "meta": 1, "control": 1, "accel": 1, "a
 var keySet,
     bindings = {};
 
+/**
+ * Trim and split string [s] with separator [separator] with additional options, 
+ * like limiting the amount of results and lowercase'ing the results.
+ * 
+ * @private
+ * @param {String}  s          text to be split into pieces
+ * @param {String}  separator  character or a set of characters to delimit chunks by
+ * @param {Number}  [limit]    the number of results that will be returned. Defaults to 999
+ * @param {Boolean} bLowerCase cast the results to lowercase
+ * @type  {Array}
+ */
 function splitSafe(s, separator, limit, bLowerCase) {
     return (bLowerCase && (s = s.toLowerCase()) || s)
         .replace(/(?:^\s+|\n|\s+$)/g, "")
         .split(new RegExp("[\\s ]*" + separator + "[\\s ]*", "g"), limit || 999);
 }
 
+/**
+ * Utility function to find the first <keyset> element available in XUL document,
+ * loaded in the current window, or it will append a new one if it does not yet
+ * exist.
+ * 
+ * @private
+ * @type {XULElement}
+ */
 function getKeyset() {
     if (keySet)
         return keySet;
@@ -61,6 +80,15 @@ function getKeyset() {
     return (keySet = doc.getElementsByTagName("window")[0].appendChild(doc.createElement("keyset")));
 }
 
+/**
+ * Utility function that splits a string of characters that defines a hotkey into
+ * modifier keys and the defining key.
+ * Example:
+ *     'accel-shift-b' will return {key: 'b', modifiers: ['accel', 'shift']}
+ * 
+ * @private
+ * @type {Object}
+ */
 function parseHotkey(hotkey) {
     let key,
         keys = splitSafe(hotkey, "\\-", null, true),
@@ -73,6 +101,16 @@ function parseHotkey(hotkey) {
     return {key: key, modifiers: mods};
 }
 
+/**
+ * Utility function that finds a <key> node that is register with [hotkey] and
+ * [command]. We do not traverse the DOM, but use our local lookup table.
+ * 
+ * @private
+ * @param {String} hotkey  a string of characters that defines a hotkey
+ * @param {mixed}  command a command handler that may be a string that references 
+ *                         to a globally exposed function or a Function object
+ * @type  {XULElement}
+ */
 function getBinding(hotkey, command) {
     let bind,
         {key, modifiers} = parseHotkey(hotkey),
@@ -117,7 +155,7 @@ function getBinding(hotkey, command) {
  *     access: The access key for activating menus and other elements. On Windows, 
  *             this is the Alt key, used in conjuction with an element's accesskey.
  *     any: Indicates that all modifiers preceding it are optional.
- * @param {String/Function} command Javascript (may be of type String or Function) 
+ * @param {string/function} command Javascript (may be of type String or Function) 
  *                                  to execute when the hotkey is executed.
  * @param {string} [id] Optional. Unique identifier for this hotkey, which will 
  *                      auto-generated if not provided.

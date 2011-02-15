@@ -174,7 +174,7 @@ var crtTray;
  */
 exports.addTray = function addTray(icon, hint, menu) {
     var tray = new require("ui/tray");
-    inspect(tray);
+    console.log(tray);
     if (!crtTray)
         crtTray = new tray.Tray();
     if (icon)
