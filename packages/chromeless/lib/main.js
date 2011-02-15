@@ -43,6 +43,7 @@
 
 const {Ci, Cc, Cr, Cu} = require("chrome");
 const path = require('path');
+const appinfo = require('appinfo');
 
 var appWindow = null; 
 
@@ -104,6 +105,10 @@ function requireForBrowser(moduleName) {
 }
 
 exports.main = function main(options) {
+    // access appinfo.json contents for startup parameters
+    const ai = appinfo.contents;
+    console.log(ai);
+
     var call = options.staticArgs;
 
     var contentWindow = require("chromeless-sandbox-window");
@@ -113,7 +118,7 @@ exports.main = function main(options) {
     var file        = path.basename(call.browser);
     var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
     var startPage   = "resource://app/" + file;
-    
+
     ios         = Cc["@mozilla.org/network/io-service;1"]
                       .getService(Ci.nsIIOService),
     resProtocol = ios.getProtocolHandler("resource")
