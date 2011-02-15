@@ -42,6 +42,8 @@
 // to the developers HTML browser.
 
 const {Ci, Cc, Cr, Cu} = require("chrome");
+const path = require('path');
+const appinfo = require('appinfo');
 
 var appWindow = null; 
 
@@ -104,25 +106,30 @@ function requireForBrowser(moduleName) {
 }
 
 exports.main = function main(options) {
+    // access appinfo.json contents for startup parameters
+    const ai = appinfo.contents;
+    console.log("appinfo.json contents: ", ai);
+
     var call = options.staticArgs;
 
-    var contentWindow = require("chromeless-sandbox-window");
-        // convert browser url into a resource:// url
-        // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
-        t           = call.browser.split("/"),
-        file        = t.pop();
-        rootPath    = call.appBasePath.replace(/[\/]+$/, "") + "/" + t.join("/"),
-        startPage   = "resource://app/" + file,
+    const contentWindow = require("chromeless-sandbox-window");
 
-        ios         = Cc["@mozilla.org/network/io-service;1"]
+    // convert browser url into a resource:// url
+    // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
+    var file        = path.basename(call.browser);
+    var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
+    var startPage   = "resource://app/" + file;
+
+    ios         = Cc["@mozilla.org/network/io-service;1"]
                       .getService(Ci.nsIIOService),
-        resProtocol = ios.getProtocolHandler("resource")
+    resProtocol = ios.getProtocolHandler("resource")
                       .QueryInterface(Ci.nsIResProtocolHandler),
 
-        environment = Cc["@mozilla.org/process/environment;1"]
+    environment = Cc["@mozilla.org/process/environment;1"]
                       .getService(Ci.nsIEnvironment),
-        resRoot     = Cc["@mozilla.org/file/local;1"]
+    resRoot     = Cc["@mozilla.org/file/local;1"]
                       .createInstance(Ci.nsILocalFile),
+
     resRoot.initWithPath(rootPath);
 
     resProtocol.setSubstitution("app", ios.newFileURI(resRoot));
@@ -132,7 +139,7 @@ exports.main = function main(options) {
              .getService(Ci.nsIChromeRegistry);
     cr.checkForNewChrome();
 
-    console.log("Loading browser using = " + startPage);
+    console.log("Loading browser using: " + startPage);
 
     // enable debugging by default
     enableDebuggingOutputToConsole();
@@ -144,6 +151,8 @@ exports.main = function main(options) {
         url: startPage,
         width: 800,
         height: 600,
+        resizable: ai.resizable ? true : false,
+        menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {

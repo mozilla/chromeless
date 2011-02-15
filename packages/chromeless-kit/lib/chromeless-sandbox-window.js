@@ -137,7 +137,7 @@ var xhtmlNs = "http://www.w3.org/1999/xhtml";
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
                 ' type="text/css"?> ' +
-                '<window style="padding: 0; border: 0; margin: 0; background-color:transparent;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
+                '<window style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
                 '<toolbox style="padding: 0; border: 0; margin: 0;">' +
                 '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
                 '</menubar>' +
@@ -148,14 +148,17 @@ var blankXul = ('<?xml version="1.0"?>' +
 function Window(options) {
   memory.track(this);
 
+  function trueIsYes(x) { return x ? "yes" : "no"; }
+
   var features = ["width=" + options.width,
                   "height=" + options.height,
-                  "menubar=yes",
-                  "resizable=yes",
                   "centerscreen=yes"
                  ];
 
   if (options.titleBar == false) features.push("titlebar=no");
+
+  features.push("resizable=" + trueIsYes(options.resizable));
+  features.push("menubar=" + trueIsYes(options.menubar));
 
   /* We now pass the options.url, which is the user app directly 
   inserting it in the window, instead using the xul browser element 

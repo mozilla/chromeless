@@ -1,0 +1,7 @@
+<script>
+console.log("verifying basic functioning of simple_storage module:");
+const simpleStorage = require('simple-storage');
+console.log("value set in simple storage before writing: ", simpleStorage.storage);
+simpleStorage.storage = "foo";
+console.log("value set in simple storage after writing: ", simpleStorage.storage);
+</script>
