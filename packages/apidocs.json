@@ -29,7 +29,6 @@
                 "desc": "Make a `GET` request.", 
                 "name": "get", 
                 "returns": {
-                  "desc": "", 
                   "type": "Request"
                 }
               }, 
@@ -37,7 +36,6 @@
                 "desc": "Make a `GET` request.", 
                 "name": "post", 
                 "returns": {
-                  "desc": "", 
                   "type": "Request"
                 }
               }
@@ -100,18 +98,7 @@
       "simple-storage": {
         "desc": "An extremely simple persistent key/value store.\n\n Introduction\n------------\n\nThe simple storage module exports an object called `storage` that is persistent\nand private to your application.  It's a normal JavaScript object, and you can treat\nit as you would any other.\n\nTo store a value, just assign it to a property on `storage`:\n\n    var ss = require(\"simple-storage\");\n    ss.storage.myArray = [1, 1, 2, 3, 5, 8, 13];\n    ss.storage.myBoolean = true;\n    ss.storage.myNull = null;\n    ss.storage.myNumber = 3.1337;\n    ss.storage.myObject = { a: \"foo\", b: { c: true }, d: null };\n    ss.storage.myString = \"O frabjous day!\";\n\nYou can store array, boolean, number, object, null, and string values.  If you'd\nlike to store other types of values, you'll first have to convert them to\nstrings or another one of these types.\n\nBe careful to set properties on the `storage` object and not the module itself:\n\n    // This is no good!\n    var ss = require(\"simple-storage\");\n    ss.foo = \"I will not be saved! :(\";\n\nQuotas\n------\n\nThe simple storage available to your application is limited.  Currently this limit is\nabout five megabytes (5,242,880 bytes).  You can choose to be notified when you\ngo over quota, and you should respond by reducing the amount of data in storage.\nIf the user quits the application while you are over quota, all data stored\nsince the last time you were under quota will not be persisted.  You should not\nlet that happen.\n\nTo listen for quota notifications, register a listener for the `\"OverQuota\"`\nevent.  It will be called when your storage goes over quota.\n\n    function myOnOverQuotaListener() {\n      console.log(\"Uh oh.\");\n    }\n    ss.on(\"OverQuota\", myOnOverQuotaListener);\n\nListeners can also be removed:\n\n    ss.removeListener(\"OverQuota\", myOnOverQuotaListener);\n\nTo find out how much of your quota you're using, check the module's `quotaUsage`\nproperty.  It indicates the percentage of quota your storage occupies.  If\nyou're within your quota, it's a number from 0 to 1, inclusive, and if you're\nover, it's a number greater than 1.\n\nTherefore, when you're notified that you're over quota, respond by removing\nstorage until your `quotaUsage` is less than or equal to 1.  Which particular\ndata you remove is up to you.  For example:\n\n    ss.storage.myList = [\n      // some long array\n    ];\n    ss.on(\"OverQuota\", function () {\n      while (ss.quotaUsage > 1)\n        ss.storage.myList.pop();\n    });\n\nTODOS\n-----\n\nSimple storage is *not*.  For the purposes of chromeless we should remove\nthis quota and perhaps make it write through, or at least expose a sync()\nmethod.", 
         "filename": "simple-storage.js", 
-        "module": "simple-storage", 
-        "properties": [
-          {
-            "desc": "A special property which may be read or write and is backed\nby a (JSON formatted) disk file for persistence.", 
-            "name": "storage", 
-            "type": "object"
-          }, 
-          {
-            "desc": "(read-only) Returns the amount of the quota used by this store", 
-            "name": "quotaUsage", 
-            "type": "XXX"
-          }, 
+        "functions": [
           {
             "desc": "set a listener to be notified on interesting, events like when you're\nover quota.", 
             "name": "on", 
@@ -144,6 +131,19 @@
               }
             ]
           }
+        ], 
+        "module": "simple-storage", 
+        "properties": [
+          {
+            "desc": "A special property which may be read or write and is backed\nby a (JSON formatted) disk file for persistence.", 
+            "name": "storage", 
+            "type": "object"
+          }, 
+          {
+            "desc": "(read-only) Returns the amount of the quota used by this store", 
+            "name": "quotaUsage", 
+            "type": "XXX"
+          }
         ]
       }
     }, 
@@ -152,15 +152,41 @@
   "api-utils": {
     "desc": "Foundational infrastructure and utilities.", 
     "modules": {
-      "StringBundle": {
-        "desc": "A bundle of strings.", 
-        "filename": "app-strings.js", 
-        "module": "StringBundle"
-      }, 
-      "addCollectionProperty": {
-        "desc": "Adds a collection property to the given object.  Setting the property to a\nscalar value empties the collection and adds the value.  Setting it to an\narray empties the collection and adds all the items in the array.", 
-        "filename": "collection.js", 
-        "module": "addCollectionProperty"
+      "api-utils": {
+        "filename": "api-utils.js", 
+        "functions": [
+          {
+            "desc": "Returns a function C that creates instances of privateCtor.  C may be called\nwith or without the new keyword.  The prototype of each instance returned\nfrom C is C.prototype, and C.prototype is an object whose prototype is\nprivateCtor.prototype.  Instances returned from C will therefore be instances\nof both C and privateCtor.  Additionally, the constructor of each instance\nreturned from C is C.", 
+            "name": "publicConstructor", 
+            "params": [
+              {
+                "desc": "A constructor.", 
+                "name": "privateCtor"
+              }
+            ], 
+            "returns": {
+              "desc": "A function that makes new instances of privateCtor."
+            }
+          }, 
+          {
+            "desc": "Returns a validated options dictionary given some requirements.  If any of\nthe requirements are not met, an exception is thrown.", 
+            "name": "validateOptions", 
+            "params": [
+              {
+                "desc": "An object, the options dictionary to validate.  It's not modified.\n        If it's null or otherwise falsey, an empty object is assumed.", 
+                "name": "options"
+              }, 
+              {
+                "desc": "An object whose keys are the expected keys in options.  Any key in\n        options that is not present in requirements is ignored.  Each value\n        in requirements is itself an object describing the requirements of\n        its key.  There are four optional keys in this object:\n          map: A function that's passed the value of the key in options.\n               map's return value is taken as the key's value in the final\n               validated options, is, and ok.  If map throws an exception\n               it's caught and discarded, and the key's value is its value in\n               options.\n          is:  An array containing any number of the typeof type names.  If\n               the key's value is none of these types, it fails validation.\n               Arrays and null are identified by the special type names\n               \"array\" and \"null\"; \"object\" will not match either.  No type\n               coercion is done.\n          ok:  A function that's passed the key's value.  If it returns\n               false, the value fails validation.\n          msg: If the key's value fails validation, an exception is thrown.\n               This string will be used as its message.  If undefined, a\n               generic message is used, unless is is defined, in which case\n               the message will state that the value needs to be one of the\n               given types.", 
+                "name": "requirements"
+              }
+            ], 
+            "returns": {
+              "desc": "An object whose keys are those keys in requirements that are also in\n        options and whose values are the corresponding return values of map\n        or the corresponding values in options.  Note that any keys not\n        shared by both requirements and options are not in the returned\n        object."
+            }
+          }
+        ], 
+        "module": "api-utils"
       }, 
       "byte-streams": {
         "classes": [
@@ -295,7 +321,6 @@
         "classes": [
           {
             "constructor": {
-              "name": "File", 
               "params": [
                 {
                   "desc": "The path from which to construct a File object.", 
@@ -354,14 +379,14 @@
                 }
               }, 
               {
-                "name": "isDirectory", 
+                "name": "isFile", 
                 "returns": {
                   "desc": "true if the file is a regular file.", 
                   "type": "boolean"
                 }
               }, 
               {
-                "name": "isDirectory", 
+                "name": "isSymlink", 
                 "returns": {
                   "desc": "true if the file is a symlink.", 
                   "type": "boolean"
@@ -407,7 +432,7 @@
               }, 
               {
                 "desc": "Size of file in bytes (does not follow symlinks)", 
-                "name": "fileSize", 
+                "name": "fileSizeOfLink", 
                 "type": "integer"
               }, 
               {
@@ -417,7 +442,7 @@
               }, 
               {
                 "desc": "The absolute path to the parent of the file", 
-                "name": "path", 
+                "name": "parent", 
                 "type": "string"
               }
             ]
@@ -491,29 +516,9 @@
         "filename": "find-tests-e10s-adapter.js", 
         "module": "find-tests-e10s-adapter"
       }, 
-      "friendlyError": {
-        "desc": "Returns an Error instance that is a more descriptive version of the raw XPCOM\nerrOrResult.  opts is used by some exceptions to include helpful info in\ntheir messages such as a filename, and as such its properties depend on the\ntype of exception being thrown.  opts need not be defined for errors that\ndon't use it.  See below for a list of supported options.\n\nIf there is no friendly version of errOrResult, then if it's an nsIException,\nan Error whose message is errOrResult's message is returned; if it's a\nresult, an Error with a simple numeric message is returned; and if it's an\nError, it itself is returned.", 
-        "filename": "xpcom.js", 
-        "module": "friendlyError"
-      }, 
-      "function": {
-        "desc": "Takes a function and returns a wrapped one instead, calling which will call\noriginal function in the next turn of event loop. This is basically utility\nto do `setTimeout(function() { ... }, 0)`, with a difference that returned\nfunction is reused, instead of creating a new one each time. This also allows\nto use this functions as event listeners.", 
-        "filename": "utils/function.js", 
-        "module": "function"
-      }, 
-      "getFaviconURIForLocation": {
-        "desc": "Takes URI of the page and returns associated favicon URI.\nIf page under passed uri has no favicon then base64 encoded data URI of\ndefault faveicon is returned.", 
-        "filename": "utils/data.js", 
-        "module": "getFaviconURIForLocation"
-      }, 
       "hidden-frame": {
         "filename": "hidden-frame.js", 
         "module": "hidden-frame"
-      }, 
-      "loader": {
-        "desc": "Trait provides private `_window` property and requires `_onLoad` property\nthat will be called when `_window` is loaded. If `_window` property value\nis changed with already loaded window `_onLoad` still will be called.", 
-        "filename": "windows/loader.js", 
-        "module": "loader"
       }, 
       "match-pattern": {
         "filename": "match-pattern.js", 
@@ -531,30 +536,6 @@
         "filename": "preferences-service.js", 
         "module": "preferences-service"
       }, 
-      "publicConstructor": {
-        "desc": "Returns a function C that creates instances of privateCtor.  C may be called\nwith or without the new keyword.  The prototype of each instance returned\nfrom C is C.prototype, and C.prototype is an object whose prototype is\nprivateCtor.prototype.  Instances returned from C will therefore be instances\nof both C and privateCtor.  Additionally, the constructor of each instance\nreturned from C is C.", 
-        "filename": "api-utils.js", 
-        "functions": [
-          {
-            "desc": "Returns a validated options dictionary given some requirements.  If any of\nthe requirements are not met, an exception is thrown.", 
-            "name": "validateOptions", 
-            "params": [
-              {
-                "desc": "An object, the options dictionary to validate.  It's not modified.\n        If it's null or otherwise falsey, an empty object is assumed.", 
-                "name": "options"
-              }, 
-              {
-                "desc": "An object whose keys are the expected keys in options.  Any key in\n        options that is not present in requirements is ignored.  Each value\n        in requirements is itself an object describing the requirements of\n        its key.  There are four optional keys in this object:\n          map: A function that's passed the value of the key in options.\n               map's return value is taken as the key's value in the final\n               validated options, is, and ok.  If map throws an exception\n               it's caught and discarded, and the key's value is its value in\n               options.\n          is:  An array containing any number of the typeof type names.  If\n               the key's value is none of these types, it fails validation.\n               Arrays and null are identified by the special type names\n               \"array\" and \"null\"; \"object\" will not match either.  No type\n               coercion is done.\n          ok:  A function that's passed the key's value.  If it returns\n               false, the value fails validation.\n          msg: If the key's value fails validation, an exception is thrown.\n               This string will be used as its message.  If undefined, a\n               generic message is used, unless is is defined, in which case\n               the message will state that the value needs to be one of the\n               given types.", 
-                "name": "requirements"
-              }
-            ], 
-            "returns": {
-              "desc": "An object whose keys are those keys in requirements that are also in\n        options and whose values are the corresponding return values of map\n        or the corresponding values in options.  Note that any keys not\n        shared by both requirements and options are not in the returned\n        object."
-            }
-          }
-        ], 
-        "module": "publicConstructor"
-      }, 
       "registry": {
         "filename": "utils/registry.js", 
         "module": "registry"
@@ -571,73 +552,22 @@
         "filename": "self-e10s-adapter.js", 
         "module": "self-e10s-adapter"
       }, 
-      "symbiont": {
-        "desc": "This trait is layered on top of `Worker` and in contrast to symbiont\nWorker constructor requires `content` option that represents content\nthat will be loaded in the provided frame, if frame is not provided\nWorker will create hidden one.", 
-        "filename": "content/symbiont.js", 
-        "module": "symbiont"
-      }, 
-      "tab": {
-        "desc": "Trait used to create tab wrappers.", 
-        "filename": "tabs/tab.js", 
-        "module": "tab"
-      }, 
-      "tab-browser": {
-        "desc": "**************** TabModule ********************", 
-        "filename": "tab-browser.js", 
-        "functions": [
-          {
-            "desc": "TabModule\n\nConstructor for a module that implements the tabs API", 
-            "name": "TabModule"
-          }
-        ], 
-        "module": "tab-browser"
-      }, 
-      "tabs": {
-        "desc": "This is a trait that is used in composition of window wrapper. Trait tracks\ntab related events of the wrapped window in order to keep truck of open\ntabs and maintain their wrappers. Every new tab is gets wrapped and jetpack\ntype event is emitted.", 
-        "filename": "windows/tabs.js", 
-        "module": "tabs"
-      }, 
-      "text-streams": {
-        "classes": [
-          {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
-                  "name": "inputStream"
-                }, 
-                {
-                  "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
-                  "name": "charset"
-                }
-              ]
-            }, 
-            "desc": "An input stream that reads text from a backing stream using a given text\nencoding.", 
-            "functions": [
-              {
-                "desc": "Reads a string from the stream.  If the stream is closed, an exception is\nthrown.", 
-                "name": "read", 
-                "params": [
-                  {
-                    "desc": "The number of characters to read.  If not given, the remainder of\n        the stream is read.", 
-                    "name": "numChars"
-                  }
-                ], 
-                "returns": {
-                  "desc": "The string read.  If the stream is already at EOS, returns the\n        empty string."
-                }
-              }
-            ], 
-            "name": "TextReader"
-          }
-        ], 
-        "filename": "text-streams.js", 
-        "module": "text-streams"
-      }, 
       "thumbnail": {
-        "desc": "Creates canvas element with a thumbnail of the passed window.", 
         "filename": "utils/thumbnail.js", 
         "functions": [
+          {
+            "desc": "Creates canvas element with a thumbnail of the passed window.", 
+            "name": "getThumbnailCanvasForWindow", 
+            "params": [
+              {
+                "name": "window", 
+                "type": "Window"
+              }
+            ], 
+            "returns": {
+              "type": "Element"
+            }
+          }, 
           {
             "desc": "Creates Base64 encoded data URI of the thumbnail for the passed window.", 
             "name": "getThumbnailURIForWindow", 
@@ -648,7 +578,6 @@
               }
             ], 
             "returns": {
-              "desc": "", 
               "type": "String"
             }
           }
@@ -666,11 +595,6 @@
       "traceback": {
         "filename": "traceback.js", 
         "module": "traceback"
-      }, 
-      "traits": {
-        "desc": "Work around bug 608959 by defining the _create function here instead of\nimporting it from traits/core.  For docs on this function, see the create\nfunction in that module.\n\nFIXME: remove this workaround in favor of importing the function once that\nbug has been fixed.", 
-        "filename": "traits.js", 
-        "module": "traits"
       }, 
       "unit-test": {
         "filename": "unit-test.js", 
@@ -799,19 +723,32 @@
         ], 
         "module": "url"
       }, 
-      "versionInRange": {
-        "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
-        "filename": "xul-app.js", 
-        "module": "versionInRange"
-      }, 
-      "windowIterator": {
-        "desc": "An iterator for XUL windows currently in the application.", 
+      "window-utils": {
         "filename": "window-utils.js", 
-        "module": "windowIterator"
+        "functions": [
+          {
+            "desc": "An iterator for XUL windows currently in the application.", 
+            "name": "windowIterator", 
+            "returns": {
+              "desc": "A generator that yields XUL windows exposing the\n        nsIDOMWindow interface."
+            }
+          }
+        ], 
+        "module": "window-utils"
       }, 
       "xhr": {
         "filename": "xhr.js", 
         "module": "xhr"
+      }, 
+      "xul-app": {
+        "filename": "xul-app.js", 
+        "module": "xul-app", 
+        "properties": [
+          {
+            "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
+            "name": "versionInRange"
+          }
+        ]
       }
     }, 
     "name": "api-utils"
@@ -845,6 +782,11 @@
             "type": "string"
           }, 
           {
+            "desc": "On windows, the path to the start menu where shortcuts may be installed.\n`null` on other platforms.", 
+            "name": "startMenuDir", 
+            "type": "string"
+          }, 
+          {
             "desc": "The path to the user's desktop.", 
             "name": "desktopDir", 
             "type": "string"
@@ -873,6 +815,22 @@
             "desc": "The system's temporary directory.", 
             "name": "tmpDir", 
             "type": "string"
+          }
+        ]
+      }, 
+      "appinfo": {
+        "desc": "[`appinfo.json`](#guide/startup-parameters) is a small file that contains\nvarious application parameters used in startup and packaging.\n\nThis module give you conveinent read access to this file", 
+        "filename": "appinfo.js", 
+        "module": "appinfo", 
+        "properties": [
+          {
+            "desc": "(read-only) The contents of the `appinfo.json` file as a javascript object", 
+            "name": "contents", 
+            "throws": [
+              {
+                "desc": "upon access if the appinfo.json file is malformed (this should happen\nat application startup, and never during runtime.  In application code this\nexception can be safely ignored)."
+              }
+            ]
           }
         ]
       }, 
@@ -1170,91 +1128,6 @@
         ], 
         "module": "fullscreen"
       }, 
-      "getCurrentWindow": {
-        "desc": "Return the current window. This function does not exist outside of the context of a window.", 
-        "filename": "ui.js", 
-        "functions": [
-          {
-            "desc": "Return the application's main window", 
-            "name": "getMainWindow"
-          }, 
-          {
-            "desc": "Return the user's idle time (for the desktop, not just the application)", 
-            "name": "getIdleTime"
-          }, 
-          {
-            "desc": "Return the application's main MenuItem or null if none is set.", 
-            "name": "getMenu"
-          }, 
-          {
-            "desc": "Set a menu for the application", 
-            "name": "setMenu"
-          }, 
-          {
-            "desc": "Return this application's context menu or null if none is set.", 
-            "name": "getContextMenu"
-          }, 
-          {
-            "desc": "Set the application's context menu", 
-            "name": "setContextMenu"
-          }, 
-          {
-            "desc": "Create a new menu", 
-            "name": "createMenu"
-          }, 
-          {
-            "desc": "Create a new menu item.", 
-            "name": "createMenuItem"
-          }, 
-          {
-            "desc": "Create a new separator menu item.", 
-            "name": "createSeperatorMenuItem"
-          }, 
-          {
-            "desc": "Create a new CheckMenuItem object.", 
-            "name": "createCheckMenuItem"
-          }, 
-          {
-            "desc": "Set the application icon's badge text.", 
-            "name": "setBadge"
-          }, 
-          {
-            "desc": "Set the application icon's badge image.", 
-            "name": "setBadgeImage"
-          }, 
-          {
-            "desc": "Set the dock icon", 
-            "name": "setDockIcon"
-          }, 
-          {
-            "desc": "Set the dock menu", 
-            "name": "setDockMenu"
-          }, 
-          {
-            "desc": "Set the application's icon", 
-            "name": "setIcon"
-          }, 
-          {
-            "desc": "Create and add a tray icon", 
-            "name": "addTray"
-          }, 
-          {
-            "desc": "Empty the tray of all this application's tray items", 
-            "name": "clearTray"
-          }, 
-          {
-            "desc": "create a UI dialog", 
-            "name": "showDialog"
-          }
-        ], 
-        "module": "getCurrentWindow", 
-        "properties": [
-          {
-            "desc": "Return a list of currently open windows.", 
-            "name": "getWindows"
-          }
-        ]
-      }, 
       "hidden-frame-xulrunner": {
         "filename": "hidden-frame-xulrunner.js", 
         "module": "hidden-frame-xulrunner"
@@ -1264,17 +1137,16 @@
         "filename": "hotkey.js", 
         "functions": [
           {
-            "dataType": "{string} Return the ID of the hotkey.", 
             "desc": "Register a global hotkey that executes JS specified [command] when the key\ncombination in [hotkey] is pressed.", 
             "name": "register", 
             "params": [
               {
-                "desc": "Key combination in the format of 'modifier-key'\n  Examples:\n    accel-s, meta-shift-i, control-alt-d\n  Modifier keynames:\n    shift: The Shift key.\n    alt: The Alt key. On the Macintosh, this is the Option key. On Macintosh \n         this can only be used in conjunction with another modifier, since \n         Alt+Letter combinations are reserved for entering special characters \n         in text.\n    meta: The Meta key. On the Macintosh, this is the Command key.\n    control: The Control key.\n    accel: The key used for keyboard shortcuts on the user's platform, which \n           is Control on Windows and Linux, and Command on Mac. Usually, this \n           would be the value you would use.\n    access: The access key for activating menus and other elements. On Windows, \n            this is the Alt key, used in conjuction with an element's accesskey.\n    any: Indicates that all modifiers preceding it are optional.", 
+                "desc": "Key combination in the format of 'modifier-key'\nExamples:\n\n    accel-s, meta-shift-i, control-alt-d\n\nModifier keynames:\n\n + **shift**: The Shift key.\n + **alt**: The Alt key. On the Macintosh, this is the Option key. On Macintosh \n         this can only be used in conjunction with another modifier, since \n         Alt+Letter combinations are reserved for entering special characters \n         in text.\n + **meta**: The Meta key. On the Macintosh, this is the Command key.\n + **control**: The Control key.\n + **accel**: The key used for keyboard shortcuts on the user's platform, which \n           is Control on Windows and Linux, and Command on Mac. Usually, this \n           would be the value you would use.\n + **access**: The access key for activating menus and other elements. On Windows, \n            this is the Alt key, used in conjuction with an element's accesskey.\n + **any**: Indicates that all modifiers preceding it are optional.", 
                 "name": "hotkey", 
                 "type": "string"
               }, 
               {
-                "desc": "{String/Function} command Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed."
+                "desc": "{string/function} command Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed."
               }, 
               {
                 "desc": "Optional. Unique identifier for this hotkey, which will \n                     auto-generated if not provided.", 
@@ -1282,6 +1154,10 @@
                 "type": "string"
               }
             ], 
+            "returns": {
+              "desc": "Return the ID of the hotkey.", 
+              "type": "string"
+            }, 
             "throws": [
               {
                 "desc": "Textual exception that should be caught by the programmer.", 
@@ -1290,7 +1166,6 @@
             ]
           }, 
           {
-            "dataType": "{void}", 
             "desc": "Register a global hotkey.", 
             "name": "unregister", 
             "params": [
@@ -1306,6 +1181,9 @@
                 "type": "string"
               }
             ], 
+            "returns": {
+              "type": "void"
+            }, 
             "throws": [
               {
                 "desc": "Textual exception that should be caught by the programmer.", 
@@ -1376,7 +1254,164 @@
         "module": "iframe-progress-hooks"
       }, 
       "menu": {
-        "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
+        "classes": [
+          {
+            "desc": "Represents any single menu item that should be displayed \nwith at least a label.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Menu({\n                label: \"New Tab\",\n                children: [\n                    new menu.Menu({ label: \"In the current window\" }),\n                    new menu.Menu({ label: \"In a new window\" }),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
+              {
+                "desc": "Draw a menu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "desc": "Redraws a menu element to the canvas (a XUL document) if needed.\nUsually called called by a function that performs a mutation on a SubMenu\n(like `push()`, `shift()` or `splice()`).", 
+                "name": "redraw", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "desc": "Register a globally accessible hotkey for this menu item that invokes \nthe 'onClick' handler if set when the key combination is pressed.", 
+                "name": "setHotKey", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "see": [
+                  "this.hotkey property"
+                ]
+              }, 
+              {
+                "desc": "Removes a menu item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }
+              }
+            ], 
+            "name": "Menu"
+          }, 
+          {
+            "constructor": {
+              "params": [
+                {
+                  "desc": "a set of options/ properties that will be set on the \n                       menu item. Keys are case-insensitive.", 
+                  "name": "nodes", 
+                  "type": "Array"
+                }, 
+                {
+                  "desc": "parent Menu instance that will show the SubMenu when hovered", 
+                  "name": "parent", 
+                  "type": "Menu"
+                }
+              ], 
+              "returns": {
+                "type": "SubMenu"
+              }
+            }, 
+            "desc": "Represents a collection of menu items and separators that\nshould be displayed. A SubMenu is defined with the 'children' property of a \nMenu object as an Array. Therefore, array-like functions may be used to alter\nthe contents of a SubMenu instance.\nThere is no maximum set to the amount or level of depth of submenus.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Separator()\n        ]\n    });\n    file.children.splice(0, 1);\n    file.children.splice(-1, 0, new menu.Menu({ label: \"About...\" }));", 
+            "functions": [
+              {
+                "desc": "Draw a submenu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "desc": "Removes a submenu from the canvas (a XUL document), including its children\nand does basic garbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
+                "name": "push"
+              }, 
+              {
+                "name": "reverse"
+              }, 
+              {
+                "name": "shift"
+              }, 
+              {
+                "name": "sort"
+              }, 
+              {
+                "name": "splice"
+              }, 
+              {
+                "name": "unshift"
+              }, 
+              {
+                "desc": "Convert this SubMenu instance to an Array-representation.", 
+                "name": "toArray", 
+                "returns": {
+                  "type": "array"
+                }
+              }, 
+              {
+                "desc": "(re-)Construct this SubMenu instance with Menu or Separator instances\nfrom array.", 
+                "name": "fromArray", 
+                "params": [
+                  {
+                    "desc": "an array of Menu or Separator instances.", 
+                    "name": "arr", 
+                    "type": "array"
+                  }
+                ], 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ]
+              }
+            ], 
+            "name": "SubMenu"
+          }, 
+          {
+            "constructor": {
+              "params": [
+                {
+                  "desc": "{Menu/SubMenu} parent parent Menu or SubMenu instance that will contain \n                             the separator"
+                }
+              ], 
+              "returns": {
+                "type": "Separator"
+              }
+            }, 
+            "desc": "Represents any single menu item that should be displayed \nwith as separator (straight horizontal line).\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Separator(),\n            new menu.Separator(),\n            new menu.Menu({\n                label: \"More Separators!\",\n                children: [\n                    new menu.Separator(),\n                    new menu.Separator(),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
+              {
+                "desc": "Draw a separator element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "desc": "Removes a separator item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ]
+              }
+            ], 
+            "name": "Separator"
+          }
+        ], 
         "filename": "ui/menu.js", 
         "module": "menu"
       }, 
@@ -1407,11 +1442,6 @@
             "name": "defaultMime"
           }
         ]
-      }, 
-      "net": {
-        "desc": "Called to signify the beginning of an asynchronous request", 
-        "filename": "net.js", 
-        "module": "net"
       }, 
       "path": {
         "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
@@ -1541,11 +1571,6 @@
       "simple-feature": {
         "filename": "simple-feature.js", 
         "module": "simple-feature"
-      }, 
-      "tray": {
-        "desc": "Empty the tray of all this application's tray items", 
-        "filename": "ui/tray.js", 
-        "module": "tray"
       }
     }, 
     "name": "chromeless-kit"
