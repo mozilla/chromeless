@@ -190,7 +190,9 @@ const path = require('path');
 
 var appInfoContents = undefined;
 
-/** (read-only) The contents of the `appinfo.json` file as a javascript object
+/**
+ * @prop contents
+ * (read-only) The contents of the `appinfo.json` file as a javascript object
  * @throws upon access if the appinfo.json file is malformed (this should happen
  * at application startup, and never during runtime.  In application code this
  * exception can be safely ignored).

@@ -206,13 +206,13 @@ function FileWrapper(obj) {
 
   /** @property {integer} fileSize Size of file in bytes (follows symlinks) */
   this.__defineGetter__("fileSize", function() obj.fileSize);
-  /** @property {integer} fileSize Size of file in bytes (does not follow symlinks) */
+  /** @property {integer} fileSizeOfLink Size of file in bytes (does not follow symlinks) */
   this.__defineGetter__("fileSizeOfLink", function() obj.fileSizeOfLink);
   //this.__defineGetter__("target", function() obj.target);
   /** @property {string} path The absolute path to the file */
   this.__defineGetter__("path", function() obj.path);
 
-  /** @property {string} path The absolute path to the parent of the file */
+  /** @property {string} parent The absolute path to the parent of the file */
   this.__defineGetter__("parent", function() obj.parent);
 
 /*
@@ -242,10 +242,10 @@ function FileWrapper(obj) {
   /** @function isDirectory
    *  @returns {boolean} true if the file is a directory. */
   this.isDirectory = function() obj.isDirectory();
-  /** @function isDirectory
+  /** @function isFile
    *  @returns {boolean} true if the file is a regular file. */
   this.isFile = function() obj.isFile();
-  /** @function isDirectory
+  /** @function isSymlink
    *  @returns {boolean} true if the file is a symlink. */
   this.isSymlink = function() obj.isSymlink();
   /** @function isSpecial

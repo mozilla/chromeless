@@ -40,7 +40,7 @@ const {Cc, Ci, Cr} = require("chrome"),
       ui      = require("ui"),
       _slice  = Array.prototype.slice;
 
-/**
+/*
  * Mixes all enumerable members of [mixin] into [obj]
  * 
  * @param {Object} obj
@@ -53,7 +53,7 @@ function mixin(obj, mixin) {
         obj[key.toLowerCase()] = mixin[key];
 };
 
-/**
+/*
  * Sets the parentNode of a Menu, SubMenu or Seperator instance and its children.
  * When a parentNode is set that is already appended to a rooted XUL node, the
  * item may be drawn on 'canvas' as well. This is an implementation of lazy 
@@ -86,9 +86,12 @@ function setParent(parent) {
 }
 
 /**
- * Menu class, which represents any single menu item that should be displayed 
+ * @class Menu
+ * Represents any single menu item that should be displayed 
  * with at least a label.
+ *
  * Example:
+ *
  *     var ui   = require("ui"),
  *         menu = require("ui/menu");
  * 
@@ -114,7 +117,8 @@ function setParent(parent) {
  *             })
  *         ]
  *     });
- * 
+ */
+/*
  * @constructor
  * @param {object} struct a set of options/ properties that will be set on the 
  *                        menu item. Keys are case-insensitive.
@@ -187,6 +191,7 @@ var Menu = function(struct) {
     }
 
     /**
+     * @function draw
      * Draw a menu element to the canvas (a XUL document)
      * Usually this function is invoked by setParent()
      * 
@@ -195,7 +200,7 @@ var Menu = function(struct) {
     this.draw = function() {
         if (this.drawn)
             return;
-            
+
         // generate a menu and a menu popup
         let hasChildren = this.children.length;
         this.node = this.parentNode.ownerDocument.createElement(hasChildren ? "menu" : "menuitem");
@@ -230,9 +235,11 @@ var Menu = function(struct) {
     };
 
     /**
+     * @function redraw
+     *
      * Redraws a menu element to the canvas (a XUL document) if needed.
      * Usually called called by a function that performs a mutation on a SubMenu
-     * (like push(), shift() or splice()).
+     * (like `push()`, `shift()` or `splice()`).
      * 
      * @type {void}
      */
@@ -251,6 +258,7 @@ var Menu = function(struct) {
     };
 
     /**
+     * @function setHotKey
      * Register a globally accessible hotkey for this menu item that invokes 
      * the 'onClick' handler if set when the key combination is pressed.
      * @see this.hotkey property
@@ -267,9 +275,11 @@ var Menu = function(struct) {
     };
 
     /**
+     * @function destroy
+     *
      * Removes a menu item from the canvas (a XUL document) and does basic 
      * garbage collection.
-     * 
+     *
      * @type {void}
      */
     this.destroy = function() {
@@ -282,19 +292,22 @@ var Menu = function(struct) {
         this.drawn = false;
     };
 
-    /**
-     * @see #setParent()
+    /*
+     * @see setParent()
      */
     this.setParent = setParent;
 }).call(Menu.prototype);
 
 /**
- * SubMenu class, which represents a collection of menu items and separators that
+ * @class SubMenu
+ * Represents a collection of menu items and separators that
  * should be displayed. A SubMenu is defined with the 'children' property of a 
  * Menu object as an Array. Therefore, array-like functions may be used to alter
  * the contents of a SubMenu instance.
  * There is no maximum set to the amount or level of depth of submenus.
+ *
  * Example:
+ *
  *     var ui   = require("ui"),
  *         menu = require("ui/menu");
  * 
@@ -316,7 +329,8 @@ var Menu = function(struct) {
  *     });
  *     file.children.splice(0, 1);
  *     file.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
- * 
+ */
+/** 
  * @constructor
  * @param {Array} nodes  a set of options/ properties that will be set on the 
  *                        menu item. Keys are case-insensitive.
@@ -327,7 +341,7 @@ var SubMenu = function(nodes, parent) {
     this.drawn = false;
     this.parent = parent;
     this.parentNode = null;
-    
+
     this.length = 0;
     setParent.apply(this, parent);
     this.push.apply(this, nodes);
@@ -335,6 +349,7 @@ var SubMenu = function(nodes, parent) {
 
 (function() {
     /**
+     * @function draw
      * Draw a submenu element to the canvas (a XUL document)
      * Usually this function is invoked by setParent()
      * 
@@ -351,6 +366,7 @@ var SubMenu = function(nodes, parent) {
     };
 
     /**
+     * @function destroy
      * Removes a submenu from the canvas (a XUL document), including its children
      * and does basic garbage collection.
      * 
@@ -371,6 +387,7 @@ var SubMenu = function(nodes, parent) {
     };
 
     /**
+     * @function push
      * Adds one or more elements to the end of an array and returns the new 
      * length of the array.
      */
@@ -387,6 +404,11 @@ var SubMenu = function(nodes, parent) {
 
     var _self = this;
 
+    /** @function reverse */
+    /** @function shift */
+    /** @function sort */
+    /** @function splice */
+    /** @function unshift */
     ["reverse", "shift", "sort", "splice", "unshift"].forEach(function(func) {
         _self[func] = function() {
             let els = this.toArray();
@@ -396,8 +418,9 @@ var SubMenu = function(nodes, parent) {
     });
 
     /**
+     * @function toArray
      * Convert this SubMenu instance to an Array-representation.
-     * 
+     *
      * @type {array}
      */
     this.toArray = function() {
@@ -408,9 +431,10 @@ var SubMenu = function(nodes, parent) {
     };
 
     /**
+     * @function fromArray
      * (re-)Construct this SubMenu instance with Menu or Separator instances
-     * from array [arr].
-     * 
+     * from array.
+     *
      * @param {array} arr an array of Menu or Separator instances.
      * @type  {void}
      */
@@ -430,15 +454,18 @@ var SubMenu = function(nodes, parent) {
     };
 
     /**
+     * @function setParent
      * @see #setParent()
      */
     this.setParent = setParent;
 }).call(SubMenu.prototype);
 
 /**
- * Separator class, which represents any single menu item that should be displayed 
+ * @class Separator
+ * Represents any single menu item that should be displayed 
  * with as separator (straight horizontal line).
  * Example:
+ * 
  *     var ui   = require("ui"),
  *         menu = require("ui/menu");
  * 
@@ -457,7 +484,8 @@ var SubMenu = function(nodes, parent) {
  *             })
  *         ]
  *     });
- * 
+ */
+/**
  * @constructor
  * @param {Menu/SubMenu} parent parent Menu or SubMenu instance that will contain 
  *                              the separator
@@ -472,6 +500,7 @@ var Separator = function(parent) {
 
 (function() {
     /**
+     * @function draw
      * Draw a separator element to the canvas (a XUL document)
      * Usually this function is invoked by setParent()
      * 
@@ -487,6 +516,7 @@ var Separator = function(parent) {
     };
 
     /**
+     * @function destroy
      * Removes a separator item from the canvas (a XUL document) and does basic 
      * garbage collection.
      * 
@@ -501,6 +531,7 @@ var Separator = function(parent) {
     };
 
     /**
+     * @function setParent
      * @see #setParent()
      */
     this.setParent = setParent;

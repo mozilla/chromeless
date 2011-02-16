@@ -45,7 +45,7 @@ const modifiers = {"shift": 1, "alt": 1, "meta": 1, "control": 1, "accel": 1, "a
 var keySet,
     bindings = {};
 
-/**
+/*
  * Trim and split string [s] with separator [separator] with additional options, 
  * like limiting the amount of results and lowercase'ing the results.
  * 
@@ -62,7 +62,7 @@ function splitSafe(s, separator, limit, bLowerCase) {
         .split(new RegExp("[\\s ]*" + separator + "[\\s ]*", "g"), limit || 999);
 }
 
-/**
+/*
  * Utility function to find the first <keyset> element available in XUL document,
  * loaded in the current window, or it will append a new one if it does not yet
  * exist.
@@ -80,7 +80,7 @@ function getKeyset() {
     return (keySet = doc.getElementsByTagName("window")[0].appendChild(doc.createElement("keyset")));
 }
 
-/**
+/*
  * Utility function that splits a string of characters that defines a hotkey into
  * modifier keys and the defining key.
  * Example:
@@ -101,7 +101,7 @@ function parseHotkey(hotkey) {
     return {key: key, modifiers: mods};
 }
 
-/**
+/*
  * Utility function that finds a <key> node that is register with [hotkey] and
  * [command]. We do not traverse the DOM, but use our local lookup table.
  * 
@@ -139,22 +139,25 @@ function getBinding(hotkey, command) {
  * @throws {string} Textual exception that should be caught by the programmer.
  * 
  * @param {string} hotkey Key combination in the format of 'modifier-key'
- *   Examples:
+ * Examples:
+ *
  *     accel-s, meta-shift-i, control-alt-d
- *   Modifier keynames:
- *     shift: The Shift key.
- *     alt: The Alt key. On the Macintosh, this is the Option key. On Macintosh 
+ *
+ * Modifier keynames:
+ *
+ *  + **shift**: The Shift key.
+ *  + **alt**: The Alt key. On the Macintosh, this is the Option key. On Macintosh 
  *          this can only be used in conjunction with another modifier, since 
  *          Alt+Letter combinations are reserved for entering special characters 
  *          in text.
- *     meta: The Meta key. On the Macintosh, this is the Command key.
- *     control: The Control key.
- *     accel: The key used for keyboard shortcuts on the user's platform, which 
+ *  + **meta**: The Meta key. On the Macintosh, this is the Command key.
+ *  + **control**: The Control key.
+ *  + **accel**: The key used for keyboard shortcuts on the user's platform, which 
  *            is Control on Windows and Linux, and Command on Mac. Usually, this 
  *            would be the value you would use.
- *     access: The access key for activating menus and other elements. On Windows, 
+ *  + **access**: The access key for activating menus and other elements. On Windows, 
  *             this is the Alt key, used in conjuction with an element's accesskey.
- *     any: Indicates that all modifiers preceding it are optional.
+ *  + **any**: Indicates that all modifiers preceding it are optional.
  * @param {string/function} command Javascript (may be of type String or Function) 
  *                                  to execute when the hotkey is executed.
  * @param {string} [id] Optional. Unique identifier for this hotkey, which will 

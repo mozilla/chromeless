@@ -45,6 +45,7 @@ const NS = "http://www.w3.org/1999/xhtml";
 const COLOR = "rgb(255,255,255)";
 
 /**
+ * @function getThumbnailCanvasForWindow
  * Creates canvas element with a thumbnail of the passed window.
  * @param {Window} window
  * @returns {Element}

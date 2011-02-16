@@ -63,6 +63,7 @@ exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
 exports.browserCodeDir = path.join(dirsvc.get("resource:app", Ci.nsIFile).path, "browser_code");
 
 /**
+ * @property startMenuDir
  * On windows, the path to the start menu where shortcuts may be installed.
  * `null` on other platforms.
  * @type string

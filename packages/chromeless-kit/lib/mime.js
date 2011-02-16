@@ -41,9 +41,6 @@
 const {Cc, Ci, Cr} = require("chrome");
 const path = require('path');
 
-/**
- * Default mime type.
- */
 const defaultMime = "application/octet-stream";
 
 /**
@@ -54,9 +51,7 @@ const defaultMime = "application/octet-stream";
 exports.__defineGetter__("defaultMime", function() { return defaultMime; });
 
 
-/**
- * Mime types.
- */
+// Mime type lookup table
 const types = {
     "3gp"   : "video/3gpp",
     "a"     : "application/octet-stream",

@@ -345,6 +345,7 @@ let manager = Trait.compose(EventEmitter, Trait.compose({
 }))();
 
 /**
+ * @function
  * set a listener to be notified on interesting, events like when you're
  * over quota.
  * @param {string} event
@@ -355,6 +356,7 @@ let manager = Trait.compose(EventEmitter, Trait.compose({
  */
 exports.on = manager.on;
 /**
+ * @function
  * remove a listener previously set via the `on` method.
  * @param {string} event
  * The name of the event to remove a listener for, the only supported event is
