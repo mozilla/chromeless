@@ -41,7 +41,7 @@ var formatRegExp = /%[sdj]/g;
 function format(f) {
   var util = require('api-utils');
 
-  if (typeof f !== 'string') {
+  if (typeof f === 'object') {
     var objects = [];
     for (var i = 0; i < arguments.length; i++) {
       objects.push('\n' + util.inspect(arguments[i]));
