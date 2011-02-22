@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body >
+   <p>
+	 A basic example of watching files:
+     <div id="textfile_contents">
+     </div>  
+   </p>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    // we'll create a text file on the desktop and start
+    // watching it for changes
+    const filePicker = require('file-picker');
+    var fp = filePicker.FilePicker("hi!  Pick something");
+    fp.show(function(x) {
+      console.log("you picked: " + x);
+    });
+  </script>
+</html>
+
