@@ -1,0 +1,33 @@
+#right-column h1 {
+    font-size: 2.2em;
+    margin-bottom: 1em;
+}
+
+#right-column h2 {
+    color: #C63717;
+    font-size: 1.7em;
+    margin-bottom: .5em;
+    margin-top: 1em;
+    line-height: 1em;
+}
+
+#right-column h3 {
+    color: #C63717;
+    font-size: 1.3em;
+    margin-bottom: .3em;
+    margin-top: .8em;
+    line-height: 1em;
+}
+
+#right-column {
+    color: #444;
+}
+
+#right-column pre {
+    padding-left: .5em;
+    margin-left: .3em;
+    border: 1px solid #ddd;
+    border-left: 1.8em solid #ddd;
+    line-height: 1.4em;
+}
+

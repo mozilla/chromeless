@@ -3,56 +3,51 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
   <base target="_blank"/>
-  <link rel="stylesheet" type="text/css" media="all"
-        href="css/base.css" />
-  <link rel="stylesheet" type="text/css" media="all"
-        href="css/packages.css" />
-  <link rel="stylesheet" type="text/css" media="all"
-        href="css/apidocs.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="css/base.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="css/left.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="css/right.css" />
   <title>Chromeless Documentation</title>
 </head>
 <body>
 <div id="container">
   <div id="columns">
   <div id="left-column">
-    <h1>Chromeless Docs</h1>
 
-    <h2  class="link" "section" id="welcome">Home</h2>
+    <div class="site-title"> 
+      <img src="img/escape.png">
+      <h1>Chromeless</h1>
+    </div>
 
-    <h2 id="dev-guide-header">Developer Guide <a id="hide-dev-guide-toc">hide</a></h2>
+    <div id="toc">
+      <div class="section">
+        <div class="title" id="dev-guide-header">Developer Guide</div>
+        <div class="section">
+          <div class="title" id="tutorial-header">Tutorial</div>
+          <div class="entry link" id="getting-started">Getting Started</div>
+          <div class="entry link" id="tutorial-first-app">Your First App</div>
+          <div class="entry link" id="tutorial-using-requires">Using require()</div>
+          <div class="entry link" id="tutorial-sharing-your-app">Packaging your app</div>
+        </div>
 
-    <div id="dev-guide-toc">
-      <div class="section" id="tutorial-header">Tutorial</div>
-      <ol id="tutorials">
-        <li class="link" id="getting-started">Getting Started</li>
-        <li class="link" id="tutorial-first-app">Your First App</li>
-        <li class="link" id="tutorial-using-requires">Using require()</li>
-        <li class="link" id="tutorial-sharing-your-app">Packaging your app</li>
-      </ol>
+        <div class="section">
+          <div class="title" id="docs-header">Documentation</div>
+          <div class="entry link" id="startup-parameters">Application Configuration</div>
+          <div class="entry link" id="embedding-web-content">Embedding Web Content</div>
+          <div class="entry link" id="custom-dom-events">Special DOM Events</div>
+        </div>
 
-      <div class="section" id="docs-header">Documentation</div>
-      <ol id="documentation">
-        <li class="link" id="startup-parameters">Application Configuration</li>
-        <li class="link" id="embedding-web-content">Embedding Web Content</li>
-        <li class="link" id="custom-dom-events">Special DOM Events</li>
-      </ol>
+        <div class="section">
+          <div class="title" id="reference-header">API</div>
+          <div class="entry apiref" id="api-by-package">Browse</div>
+          <div class="entry apiref" id="api-full-listing">Full Reference</div>
+        </div>
 
-      <div class="section" id="examples-header">Examples</div>
-      <ol id="examples">
-      </ol>
-
-      <div class="section" id="reference-header">API</div>
-      <ol id="reference">
-        <li class="apiref" id="api-by-package">Browse</li>
-        <li class="apiref" id="api-full-listing">Full Reference</li>
-      </ol>
-
-      <div class="section" id="appendices-header">Appendices</div>
-      <ol id="appendices">
-        <li class="link" id="credits">Credits</li>
-        <li class="link" id="3psw">Third Party Software</li>
-      </ol>
-
+        <div class="section">
+          <div class="title" id="appendices-header">Appendices</div>
+          <div class="entry link" id="credits">Credits</div>
+          <div class="entry link" id="3psw">Third Party Software</div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="main-content">
@@ -64,9 +59,6 @@
   </div>
   <div id="footer">
     <span class="full-name">Chromeless Documentation v0.2</span>
-    <span class="actions">[
-      <a href="" id="view-source">view source</a>
-    ]</span>
   </div>
 </div>
 <div id="templates">
