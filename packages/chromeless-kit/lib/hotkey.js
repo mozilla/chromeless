@@ -38,8 +38,7 @@
  * Add shortcut key combinations or "hotkeys" to your application.
  */
 
-const {Cc, Ci, Cr} = require("chrome"),
-      ui = require("ui");
+const ui = require("ui");
 
 const modifiers = {"shift": 1, "alt": 1, "meta": 1, "control": 1, "accel": 1, "access": 1, "any": 1};
 var keySet,
