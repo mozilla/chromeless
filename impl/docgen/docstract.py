@@ -20,8 +20,12 @@ import types
 
 class DocStract():
     def __init__(self):
-        # the pattern for extracting a documentation block and the next line
-        self.docBlockPat = re.compile('(/\*\*)(.*?)(\*/)([\s\n]*[^\/\n]*)?', re.S)
+        # the patterns for finding and processing documentation blocks (and the source line
+        # Note: these two patterns are identical, except the latter captures groups.  The
+        # first is used to split a source file into chunks of text which are either doc blocks
+        # or source code, the second extracts information from doc blocks.
+        self.docBlockFindPat =    re.compile('(/\*\*  .*?  \*/ (?:[\s\n]*[^\/\n]*)?)', re.S | re.X)
+        self.docBlockProcessPat = re.compile('(/\*\*)(.*?)(\*/)(  [\s\n]*[^\/\n]*)? ', re.S | re.X)
 
         # after extracting the comment, fix it up (remove *s and leading spaces)
         self.blockFilterPat = re.compile('^\s*\* ?', re.M)
@@ -36,19 +40,14 @@ class DocStract():
         # is a space before it
         self.tokenizePat = re.compile('(?<![@\w])(@\w+)', re.M);
 
-        # heuristic type and name guessing stuff, applied to the first
-        # non-whitespace line after the doc block.  designed for commonjs
-        # modules (note the 'exports').
-        self.findExportsPat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
-
         # block types.  Each document block is of one of these types.
         self.blockTypes = {
-            '@class':       self.ClassBlockHandler("@class"),
-            '@endclass':    self.EndClassBlockHandler("@endclass"),
-            '@constructor': self.ConstructorBlockHandler("@constructor"),
-            '@function':    self.FunctionBlockHandler("@function"),
-            '@module':      self.ModuleBlockHandler("@module"),
-            '@property':    self.PropertyBlockHandler("@property")
+            '@class':       ClassBlockHandler("@class"),
+            '@endclass':    EndClassBlockHandler("@endclass"),
+            '@constructor': ConstructorBlockHandler("@constructor"),
+            '@function':    FunctionBlockHandler("@function"),
+            '@module':      ModuleBlockHandler("@module"),
+            '@property':    PropertyBlockHandler("@property")
             }
 
         # tag aliases, direct equivalences.  Note, RHS is normal form.
@@ -74,13 +73,33 @@ class DocStract():
         # lookup table of tag handlers, lil' object that can parse and inject
         # for different tags.
         self.tags = {
-            '@param':  self.ParamTagHandler('@param'),
-            '@desc':   self.DescTagHandler('@desc'),
-            '@return': self.ReturnTagHandler('@return'),
-            '@see':    self.SeeTagHandler('@see'),
-            '@throws': self.ThrowsTagHandler('@throws'),
-            '@type':   self.TypeTagHandler('@type'),
+            '@param':  ParamTagHandler('@param'),
+            '@desc':   DescTagHandler('@desc'),
+            '@return': ReturnTagHandler('@return'),
+            '@see':    SeeTagHandler('@see'),
+            '@throws': ThrowsTagHandler('@throws'),
+            '@type':   TypeTagHandler('@type'),
             }
+
+        # these are a list of functions that examine extraction state and try to guess
+        # what type of construct a documentation block documents
+        self.typeGuessers = [
+            hasGetSetterIsPropertyTypeGuesser,
+            isFunctionIfKeywordInCodeTypeGuesser,
+            firstBlockIsModuleTypeGuesser,
+            assignmentIsProbablyPropertyTypeGuesser,
+            typeWithoutReturnsIsProbablyPropertyTypeGuesser
+            ]
+
+        # these are a list of functions that, given a block type and subsequent chunk of code,
+        # try to guess the name of the construct being documented
+        self.nameGuessers = [
+            standardFunctionNameGuesser,
+            getSetterNameGuesser,
+            objectPropertyNameGuesser,
+            commonJSNameGuesser,
+            assignToPropertyNameGuesser
+            ]
 
         # a little bit of context that allows us to understand when we're parsing classes
         # XXX: we could make this an array and a couple code tweaks if we cared
@@ -145,25 +164,45 @@ class DocStract():
         else:
             raise RuntimeError("unrecognized tag: %s" % cur)
 
-    def _guessBlockType(self, firstBlock, context, tags):
-        guessedName = None
-        guessedType = None
-        # first let's see if there's an exports statement after the block
-        m = self.findExportsPat.search(context)
-        if m:
-            guessedName = m.group(1)
+    def _guessBlockName(self, codeChunk, blockType):
+        # given the first line of source code after the block, and it's type
+        # we'll invoke our name guessers to try to figure out the name of the
+        # construct being documented
 
-            # we'll only try to guess type if there's an exports statement
-            if context.find("function") >= 0: 
-                guessedType = '@function'
-            else:
-                guessedType = '@property'
-        elif firstBlock:
-            guessedType = '@module'
+        # now let's invoke our type guessers, in order
+        for func in self.nameGuessers:
+            t = func(codeChunk, blockType)
+            if t != None:
+                return t
 
-        return guessedName, guessedType
+        return None
 
-    def _analyzeBlock(self, block, context, firstBlock, data):
+    def _guessBlockType(self, firstBlock, codeChunk, context, tags):
+        # first we'll prune possibilities by figuring out which supported blocktypes
+        # are valid in the current context, and support all of the required tags
+        tagSet = set(tags)
+        possibilities = [ ]
+        for bt in self.blockTypes:
+            bt = self.blockTypes[bt]
+            if context not in bt.allowedContexts:
+                continue
+            if not tagSet.issubset(bt.allowedTags):
+                continue
+            possibilities.append(bt.tagName)
+
+        # if we've reduced to exactly one possibility, then we don't need to guess
+        if len(possibilities) == 1:
+            return possibilities[0]
+
+        # now let's invoke our type guessers, in order
+        for func in self.typeGuessers:
+            t = func(firstBlock, codeChunk, context, tags, possibilities)
+            if t != None:
+                return t
+
+        raise RuntimeError("Can't determine what this block documents (from %s)" % ", ".join(possibilities))
+
+    def _analyzeBlock(self, block, codeChunk, firstBlock, data, lineStart, lineEnd):
         # Ye' ol' block analysis process.  block at this point contains
         # a chunk of text that has already had comment markers stripped out.
 
@@ -179,7 +218,7 @@ class DocStract():
         # whitespace on either side of tokens is stripped.  Also, unescape
         # @@tags.
         tokens = self.tokenizePat.split(block)
-        tokens = [n.strip() for n in tokens if n.strip()]
+        tokens = [n.lstrip(" \t").lstrip('\r\n').rstrip() for n in tokens if n.strip()]
         tokens = [self.unescapeTagPat.sub("@", t) for t in tokens]
 
         # Step 2: initialize an object which will hold the intermediate
@@ -201,17 +240,24 @@ class DocStract():
         while len(tokens):
             self._consumeToks(tokens, parseData)
 
-        # Step 6: If the content block type is not known ('property', 'class',
-        #         'function', etc), then let's apply some heuristics to guess
-        #         what the documentation author *really* meant.
-        (guessedName, guessedType) = self._guessBlockType(firstBlock, context, parseData['tagData'].keys())
+        thisContext = "class" if not self._currentClass == None else "global"
 
+        # Step 6: Heuristics!  Apply a set of functions which use the current state of
+        #         documentation extractor and some source code to figure out what
+        #         type of construct  (@function, @property, etc) this documentation
+        #         block is documenting, and what its name is.
+
+        # only invoke guessing logic if type wasn't explicitly declared
         if parseData['blockHandler'] == None:
-            if guessedType == None:
-                raise RuntimeError("Ambiguous documentation block: %s..." % block[:20])
-            elif guessedType not in self.blockTypes:
+            guessedType = self._guessBlockType(firstBlock, codeChunk, thisContext, parseData['tagData'].keys())
+        
+            if guessedType not in self.blockTypes:
                 raise RuntimeError("Don't know how to handle a '%s' documentation block" % guessedType)
             parseData['blockHandler'] = self.blockTypes[guessedType]
+
+        # always try to guess the name, a name guesser has the first interesting line of code
+        # after the documentation block and the type of block (it's string name) to work with
+        guessedName = self._guessBlockName(codeChunk, parseData['blockHandler'].tagName)
 
         # Step 7: Validation phase!  Not all tags are allowed in all types of
         # documentation blocks.  like '@returns' inside a '@classend' block
@@ -219,7 +265,6 @@ class DocStract():
         # sane.
 
         # first check that this doc block type is valid in present context
-        thisContext = "class" if not self._currentClass == None else "global"
         if thisContext not in parseData['blockHandler'].allowedContexts:
             raise RuntimeError("%s not allowed in %s context" %
                                (parseData['blockHandler'].tagName,
@@ -247,6 +292,7 @@ class DocStract():
         if not self._currentClass == None and parseData['blockHandler'].tagName == '@class':
             data = globalData 
 
+        parseData['blockHandler'].setLineNumber(lineStart, lineEnd, doc)
         parseData['blockHandler'].merge(doc, data, guessedName)
 
         # special case for classes!
@@ -285,284 +331,382 @@ class DocStract():
 
         # now parse out and combine comment blocks
         firstBlock = True
-        for m in self.docBlockPat.finditer(contents):
-            block = self.blockFilterPat.sub("", m.group(2)).strip()
-            context = m.group(4)
-            # data will be mutated!
-            self._analyzeBlock(block, context, firstBlock, data)
-            firstBlock = False
+        line = 0
+        for text in self.docBlockFindPat.split(contents):
+            lineStart = line + 1
+            line += text.count('\n')
+
+            # if this isn't a documentation block, carry on
+            m = self.docBlockProcessPat.match(text)
+            if m:
+                block = self.blockFilterPat.sub("", m.group(2)).strip()
+                context = m.group(4).strip()
+                # data will be mutated!
+                try:
+                    self._analyzeBlock(block, context, firstBlock, data, lineStart, line)
+                except RuntimeError, exc:
+                    args = exc.args
+                    if not args:
+                        arg0 = ''
+                    else:
+                        arg0 = args[0]
+                    arg0 += ' at line %s' % lineStart
+                    exc.args = (arg0,) + args[1:]
+                    raise
+                firstBlock = False
 
         return data
 
-    # begin definition of Tag Handler classes.
+# begin definition of Tag Handler classes.
 
-    # TagHandler is the base class for a handler of tags.  This is an
-    # object that is capable of parsing tags and merging them into
-    # the output JSON document.
-    class TagHandler(object):
-        # if takesArg is true, then text may occur after the tag
-        # (it "accepts" a single text blob as an argument)
-        takesArg = False
-        # if takesArg is True, argOptional specifies whether the
-        # argument is required
-        argOptional = False
-        # if mayRecur is True the tag may be specified multiple times
-        # in a single document text blob.
-        mayRecur = False
-        def __init__(self, tagname):
-            self.tagName = tagname
+# TagHandler is the base class for a handler of tags.  This is an
+# object that is capable of parsing tags and merging them into
+# the output JSON document.
+class TagHandler(object):
+    # if takesArg is true, then text may occur after the tag
+    # (it "accepts" a single text blob as an argument)
+    takesArg = False
+    # if takesArg is True, argOptional specifies whether the
+    # argument is required
+    argOptional = False
+    # if mayRecur is True the tag may be specified multiple times
+    # in a single document text blob.
+    mayRecur = False
+    def __init__(self, tagname):
+        self.tagName = tagname
 
-        # the parse method attempts to parse the text blob and returns
-        # any representation of it that it likes.  This method should throw
-        # if there's a syntactic error in the text argument.  text may be
-        # 'None' if the tag accepts no argument.
-        def parse(self, text):
-            return text
+    # the parse method attempts to parse the text blob and returns
+    # any representation of it that it likes.  This method should throw
+    # if there's a syntactic error in the text argument.  text may be
+    # 'None' if the tag accepts no argument.
+    def parse(self, text):
+        return text
 
-        # attach merges the results of parsing a tag into the output
-        # JSON document for a documentation block. `obj` is the value
-        # returned by parse(), and parent is the json document that
-        # the function should mutate
-        def attach(self, obj, parent, blockType):
-            parent[self.tagName[1:]] = obj
+    # attach merges the results of parsing a tag into the output
+    # JSON document for a documentation block. `obj` is the value
+    # returned by parse(), and parent is the json document that
+    # the function should mutate
+    def attach(self, obj, parent, blockType):
+        parent[self.tagName[1:]] = obj
 
-    class ParamTagHandler(TagHandler):
-        mayRecur = True
-        takesArg = True
+class ParamTagHandler(TagHandler):
+    mayRecur = True
+    takesArg = True
 
-        # We support three forms:
-        #   @property <name> <{type}> [description]
-        #   @property <{type}> <name> [description]
-        #   @property [name]
-        #   [description]
-        _pat = re.compile(
-            '(?:^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$)|' +
-            '(?:^{(\w+)}\s*([\w.\[\]]+)\s*(.*)$)|' +
-            '(?:^([\w.\[\]]+)?\s*(.*)$)',
-            re.S);
+    # We support three forms:
+    #   @property <name> <{type}> [description]
+    #   @property <{type}> <name> [description]
+    #   @property [name]
+    #   [description]
+    _pat = re.compile(
+        '(?:^([\w.\[\]]+)\s*(?:{(\w+)})\s*(.*)$)|' +
+        '(?:^{(\w+)}\s*([\w.\[\]]+)\s*(.*)$)|' +
+        '(?:^([\w.\[\]]+)?\s*(.*)$)',
+        re.S);
 
-        def parse(self, text):
-            m = self._pat.match(text)
-            if not m:
-                raise RuntimeError("Malformed args to %s: %s" %
+    def parse(self, text):
+        m = self._pat.match(text)
+        if not m:
+            raise RuntimeError("Malformed args to %s: %s" %
                                    (tag, (text[:20] + "...")))
-            p = { }
+        p = { }
+        if m.group(1):
+            p['name'] = m.group(1)
+            p['type'] = m.group(2)
+            if m.group(3):
+                p['desc'] = m.group(3)
+        elif m.group(4):
+            p['type'] = m.group(4)
+            p['name'] = m.group(5)
+            if m.group(6):
+                p['desc'] = m.group(6)
+        else:
+            if m.group(7):
+                p['name'] = m.group(7)
+            if m.group(8):
+                p['desc'] = m.group(8)
+        return p
+
+    def attach(self, obj, current, blockType):
+        if not 'params' in current:
+            current['params'] = [ ]
+        current['params'].append(obj)
+
+class SeeTagHandler(TagHandler):
+    takesArg = True
+    mayRecur = True
+    def attach(self, obj, current, blockType):
+        if not 'see' in current:
+            current['see'] = [ ]
+        current['see'].append(obj)
+
+class DescTagHandler(TagHandler):
+    takesArg = True
+    mayRecur = True
+    def attach(self, obj, current, blockType):
+        if 'desc' in current:
+            current['desc'] = current['desc'] + "\n\n" + obj
+        else:
+            current['desc'] = obj
+
+class ReturnTagHandler(TagHandler):
+    takesArg = True
+    _pat = re.compile('^\s*(?:{(\w+)})?\s*(.*)$', re.S);
+    _isWordPat = re.compile('^\w+$', re.S);
+
+    def parse(self, text):
+        m = self._pat.match(text)
+        rv = { }
+        if m:
             if m.group(1):
-                p['name'] = m.group(1)
-                p['type'] = m.group(2)
-                if m.group(3):
-                    p['desc'] = m.group(3)
-            elif m.group(4):
-                p['type'] = m.group(4)
-                p['name'] = m.group(5)
-                if m.group(6):
-                    p['desc'] = m.group(6)
-            else:
-                if m.group(7):
-                    p['name'] = m.group(7)
-                if m.group(8):
-                    p['desc'] = m.group(8)
-            return p
+                rv['type'] = m.group(1)
+            if m.group(2):
+                # If the match is a single word, assume it's a
+                # typename
+                if self._isWordPat.match(m.group(2)):
+                    rv['type'] = m.group(2)
+                else:
+                    rv['desc'] = m.group(2)
+        else:
+            raise RuntimeError("Malformed args to %s: %s" %
+                               (self.tagName, (text[:20] + "...")))
 
-        def attach(self, obj, current, blockType):
-            if not 'params' in current:
-                current['params'] = [ ]
-            current['params'].append(obj)
+        return rv
 
-    class SeeTagHandler(TagHandler):
-        takesArg = True
-        mayRecur = True
-        def attach(self, obj, current, blockType):
-            if not 'see' in current:
-                current['see'] = [ ]
-            current['see'].append(obj)
+    def attach(self, obj, current, blockType):
+        # The only way this can occur (returns already defined) is if
+        # someone added an extension that behaves badly, or if @type and
+        # @returns occur in the same block.
+        if 'returns' in current:
+            for k in current['returns']:
+                if k in obj:
+                    raise RuntimeError("Return %s redefined (@type and @returns in " % k +
+                                       "same function block?)")
+        else:
+            current['returns'] = {}
 
-    class DescTagHandler(TagHandler):
-        takesArg = True
-        mayRecur = True
-        def attach(self, obj, current, blockType):
-            if 'desc' in current:
-                current['desc'] = current['desc'] + "\n\n" + obj
-            else:
-                current['desc'] = obj
+        for k in obj:
+            current['returns'][k] = obj[k]
 
-    class ReturnTagHandler(TagHandler):
-        takesArg = True
-        _pat = re.compile('^\s*(?:{(\w+)})?\s*(.*)$', re.S);
-        _isWordPat = re.compile('^\w+$', re.S);
-
-        def parse(self, text):
-            m = self._pat.match(text)
-            rv = { }
-            if m:
-                if m.group(1):
-                    rv['type'] = m.group(1)
-                if m.group(2):
-                    # If the match is a single word, assume it's a
-                    # typename
-                    if self._isWordPat.match(m.group(2)):
-                        rv['type'] = m.group(2)
-                    else:
-                        rv['desc'] = m.group(2)
-            else:
-                print "no match"
+class TypeTagHandler(ReturnTagHandler):
+    # type is special.  it means different things
+    # when it occurs in a '@property' vs. a '@function'
+    # context.  in the former it's the property type, in
+    # the later, it's an alias for '@return'
+    def attach(self, obj, current, blockType):
+        if (blockType == '@property'):
+            if 'desc' in obj or 'type' not in obj:
                 raise RuntimeError("Malformed args to %s: %s" %
-                                   (self.tagName, (text[:20] + "...")))
+                                   (self.tagName, (obj['desc'][:20] + "...")))
+            current['type'] = obj["type"]
+        else:
+            ReturnTagHandler.attach(self, obj, current, blockType)
 
-            return rv
-
-        def attach(self, obj, current, blockType):
-            # The only way this can occur (returns already defined) is if
-            # someone added an extension that behaves badly, or if @type and
-            # @returns occur in the same block.
-            if 'returns' in current:
-                for k in current['returns']:
-                    if k in obj:
-                        raise RuntimeError("Return %s redefined (@type and @returns in " % k +
-                                           "same function block?)")
-            else:
-                current['returns'] = {}
-
-            for k in obj:
-                current['returns'][k] = obj[k]
-
-    class TypeTagHandler(ReturnTagHandler):
-        # type is special.  it means different things
-        # when it occurs in a '@property' vs. a '@function'
-        # context.  in the former it's the property type, in
-        # the later, it's an alias for '@return'
-        def attach(self, obj, current, blockType):
-            if (blockType == '@property'):
-                if 'desc' in obj or 'type' not in obj:
-                    raise RuntimeError("Malformed args to %s: %s" %
-                                       (self.tagName, (obj['desc'][:20] + "...")))
-                current['type'] = obj["type"]
-            else:
-                DocStract.ReturnTagHandler.attach(self, obj, current, blockType)
-
-    class ThrowsTagHandler(ReturnTagHandler):
-        mayRecur = True
-        def attach(self, obj, current, blockType):
-            if 'throws' not in current:
-                current['throws'] = [ ]
-            current['throws'].append(obj)
+class ThrowsTagHandler(ReturnTagHandler):
+    mayRecur = True
+    def attach(self, obj, current, blockType):
+        if 'throws' not in current:
+            current['throws'] = [ ]
+        current['throws'].append(obj)
 
 
-    # a block handler is slightly different than a tag
-    # handler.  Each document block is of a certain type,
-    # it describes *something*.  Block handlers do
-    # everything that TagHandlers do, but also:
-    #  * one block handler per code block, they're mutually
-    #    exclusive (a docblock can't describe a *function*
-    #    AND a *property*)
-    #  * express what tags may occur inside of them
-    #  * express what contexts they may occur in ('global'
-    #    and 'class' are the only two meaninful contexts at
-    #    present).
-    class BlockHandler(TagHandler):
-        allowedTags = [ ]
-        allowedContexts = [ 'global', 'class' ]
-        def merge(self, doc, parent, guessedName):
-            for k in doc:
-                parent[k] = doc[k]
+# a block handler is slightly different than a tag
+# handler.  Each document block is of a certain type,
+# it describes *something*.  Block handlers do
+# everything that TagHandlers do, but also:
+#  * one block handler per code block, they're mutually
+#    exclusive (a docblock can't describe a *function*
+#    AND a *property*)
+#  * express what tags may occur inside of them
+#  * express what contexts they may occur in ('global'
+#    and 'class' are the only two meaninful contexts at
+#    present).
+class BlockHandler(TagHandler):
+    allowedTags = [ ]
+    allowedContexts = [ 'global', 'class' ]
+    def merge(self, doc, parent, guessedName):
+        for k in doc:
+            parent[k] = doc[k]
+    def setLineNumber(self, lineStart, lineEnd, doc):
+        doc['source_lines'] = [ lineStart, lineEnd ]
 
-    class ModuleBlockHandler(BlockHandler):
-        allowedTags = [ '@desc', '@see' ]
-        allowedContexts = [ 'global' ]
-        takesArg = True
-        _pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
-        def parse(self, text):
-            m = self._pat.match(text)
-            if not m:
-                raise RuntimeError("Malformed args to %s: %s" %
-                                   (self.tagName, (text[:20] + "...")))
-            a = { }
-            if m.group(1):
-                a["name"] = m.group(1)
-            else:
-                if m.group(2):
-                    a["name"] = m.group(2)
-                if m.group(3):
-                    a["desc"] = m.group(3)
-            return a
+class ModuleBlockHandler(BlockHandler):
+    allowedTags = [ '@desc', '@see' ]
+    allowedContexts = [ 'global' ]
+    takesArg = True
+    _pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
+    def parse(self, text):
+        m = self._pat.match(text)
+        if not m:
+            raise RuntimeError("Malformed args to %s: %s" %
+                               (self.tagName, (text[:20] + "...")))
+        a = { }
+        if m.group(1):
+            a["name"] = m.group(1)
+        else:
+            if m.group(2):
+                a["name"] = m.group(2)
+            if m.group(3):
+                a["desc"] = m.group(3)
+        return a
 
-        def attach(self, obj, current, blockType):
-            if "name" in obj:
-                current['module'] = obj["name"]
-            if "desc" in obj:
-                if "desc" in current:
-                    obj['desc'] = current['desc'] + "\n\n" + obj['desc']
-                current['desc'] = obj['desc']
+    def attach(self, obj, current, blockType):
+        if "name" in obj:
+            current['module'] = obj["name"]
+        if "desc" in obj:
+            if "desc" in current:
+                obj['desc'] = current['desc'] + "\n\n" + obj['desc']
+            current['desc'] = obj['desc']
 
-    class FunctionBlockHandler(ModuleBlockHandler):
-        allowedTags = [ '@see', '@param', '@return', '@throws', '@desc', '@type' ]
-        allowedContexts = [ 'global', 'class' ]
+class FunctionBlockHandler(ModuleBlockHandler):
+    allowedTags = [ '@see', '@param', '@return', '@throws', '@desc', '@type' ]
+    allowedContexts = [ 'global', 'class' ]
 
-        def attach(self, obj, current, blockType):
-            if "name" in obj:
-                current['name'] = obj["name"]
-            if "desc" in obj:
-                if "desc" in current:
-                    obj['desc'] = current['desc'] + "\n\n" + obj['desc']
-                current['desc'] = obj['desc']
+    def attach(self, obj, current, blockType):
+        if "name" in obj:
+            current['name'] = obj["name"]
+        if "desc" in obj:
+            if "desc" in current:
+                obj['desc'] = current['desc'] + "\n\n" + obj['desc']
+            current['desc'] = obj['desc']
 
-        def merge(self, doc, parent, guessedName):
-            if "name" not in doc:
-                doc['name'] = guessedName
-            if not "functions" in parent:
-                parent["functions"] = []
-            for f in parent["functions"]:
-                if doc["name"] == f['name']:
-                    raise RuntimeError("function '%s' redefined" % doc["name"])
+    def merge(self, doc, parent, guessedName):
+        if "name" not in doc:
+            doc['name'] = guessedName
+        if doc['name'] == None:
+            raise RuntimeError("can't determine function name")                
+        if not "functions" in parent:
+            parent["functions"] = []
+        for f in parent["functions"]:
+            if doc["name"] == f['name']:
+                raise RuntimeError("function '%s' redefined" % doc["name"])
 
-            parent["functions"].append(doc)
+        parent["functions"].append(doc)
 
-    class ConstructorBlockHandler(BlockHandler):
-        allowedTags = [ '@see', '@param', '@throws', '@desc', '@return', '@type' ]
-        takesArg = True
-        argOptional = True
-        allowedContexts = [ 'class' ]
-        def attach(self, obj, current, blockType):
-            if obj:
-                if "desc" in current:
-                    obj = current['desc'] + "\n\n" + obj
-                current['desc'] = obj
+class ConstructorBlockHandler(BlockHandler):
+    allowedTags = [ '@see', '@param', '@throws', '@desc', '@return', '@type' ]
+    takesArg = True
+    argOptional = True
+    allowedContexts = [ 'class' ]
+    def attach(self, obj, current, blockType):
+        if obj:
+            if "desc" in current:
+                obj = current['desc'] + "\n\n" + obj
+            current['desc'] = obj
 
-        def merge(self, doc, parent, guessedName):
-            parent["constructor"] = doc
+    def merge(self, doc, parent, guessedName):
+        parent["constructor"] = doc
 
-    class ClassBlockHandler(FunctionBlockHandler):
-        def merge(self, doc, parent, guessedName):
-            if "name" not in doc:
-                doc['name'] = guessedName
-            if not "classes" in parent:
-                parent["classes"] = []
-            for c in  parent["classes"]:
-                if doc["name"] == c['name']:
-                    raise RuntimeError("class '%s' redefined" % doc["name"])
-            parent["classes"].append(doc)
+class ClassBlockHandler(FunctionBlockHandler):
+    allowedTags = [ '@see', '@desc' ]
+    def merge(self, doc, parent, guessedName):
+        if "name" not in doc:
+            doc['name'] = guessedName
+        if not "classes" in parent:
+            parent["classes"] = []
+        for c in  parent["classes"]:
+            if doc["name"] == c['name']:
+                raise RuntimeError("class '%s' redefined" % doc["name"])
+        parent["classes"].append(doc)
 
-    class EndClassBlockHandler(BlockHandler):
-        def attach(self, obj, current, blockType):
-            pass
-        def merge(self, doc, parent, guessedName):
-            pass
+class EndClassBlockHandler(BlockHandler):
+    def attach(self, obj, current, blockType):
+        pass
+    def merge(self, doc, parent, guessedName):
+        pass
 
-    class PropertyBlockHandler(ParamTagHandler, BlockHandler):
-        allowedTags = [ '@see', '@throws', '@desc', '@type' ]
-        def attach(self, obj, current, blockType):
-            for x in obj:
-                current[x] = obj[x]
+class PropertyBlockHandler(ParamTagHandler, BlockHandler):
+    allowedTags = [ '@see', '@throws', '@desc', '@type' ]
+    def attach(self, obj, current, blockType):
+        for x in obj:
+            current[x] = obj[x]
 
-        def merge(self, doc, parent, guessedName):
-            if "name" not in doc:
-                doc['name'] = guessedName
-            if not "properties" in parent:
-                parent["properties"] = []
-            for p in parent["properties"]:
-                if doc["name"] == p['name']:
-                    raise RuntimeError("property '%s' redefined" % doc["name"])
-            parent["properties"].append(doc)
+    def merge(self, doc, parent, guessedName):
+        if "name" not in doc:
+            doc['name'] = guessedName
+        if doc["name"] == None:
+            raise RuntimeError("can't determine property name")
+        if not "properties" in parent:
+            parent["properties"] = []
+        for p in parent["properties"]:
+            if doc["name"] == p['name']:
+                raise RuntimeError("property '%s' redefined" % doc["name"])
+        parent["properties"].append(doc)
+
+
+# A type guesser that assumes the first documentation block of a source file is
+# probably a '@module' documentation block
+def firstBlockIsModuleTypeGuesser(firstBlock, codeChunk, context, tags, possibilities):
+    if '@module' in possibilities and firstBlock:
+        return '@module'
+    return None
+
+# A type guesser that checks the codeChunk for appearance of the keyword 'function'
+_functionKeywordPat = re.compile('(?<!\w)function(?!\w)');
+def isFunctionIfKeywordInCodeTypeGuesser(firstBlock, codeChunk, context, tags, possibilities):
+    if '@function' in possibilities and _functionKeywordPat.search(codeChunk):
+        return '@function'
+    return None
+
+# A type guesser that assumes '@property' based on the presence of @type and the absence of @return.
+def typeWithoutReturnsIsProbablyPropertyTypeGuesser(firstBlock, codeChunk, context, tags, possibilities):
+    if '@type' in tags and '@return' not in tags and '@property' in possibilities:
+        return '@property'
+    return None
+
+# a guesser which assumes if a documentation block occurs before an assignment, its probably a
+# property (this is a bit questionable, folks)
+_assignmentPat = re.compile('^.*=.*;\s*$', re.M);
+def assignmentIsProbablyPropertyTypeGuesser(firstBlock, codeChunk, context, tags, possibilities):
+    if '@property' in possibilities and _assignmentPat.match(codeChunk):
+        return '@property'
+    return None
+
+_hasGetSetterPat = re.compile('__define[GS]etter__');
+def hasGetSetterIsPropertyTypeGuesser(firstBlock, codeChunk, context, tags, possibilities):
+    if '@property' in possibilities and _hasGetSetterPat.search(codeChunk):
+        return '@property'
+    return None
+
+# A name guesser that looks for exports.XXX and assumes XXX is the name we want
+# define the pattern globally in this module so we don't recompile it all the time
+_findExportsPat = re.compile('(?:^|\s)exports\.(\w+)\s', re.M);
+def commonJSNameGuesser(codeChunk, blockType):
+    m = _findExportsPat.search(codeChunk)
+    if m:
+        return m.group(1)
+    return None
+
+# A name guesser that catches assignment to properties and guesses the name based
+# on that.  like `this.foo` or `stream.bar`.  Very general, but requires rooting
+# at the beginning of line, whereas exports guesser does not
+_findPropPat = re.compile('^\s*\w+\.(\w+)\s*=', re.M);
+def assignToPropertyNameGuesser(codeChunk, blockType):
+    m = _findPropPat.search(codeChunk)
+    if m:
+        return m.group(1)
+    return None
+
+_standardFunctionPat = re.compile('^\s*function\s*(\w+)\(.*$');
+def standardFunctionNameGuesser(codeChunk, blockType):
+    m = _standardFunctionPat.match(codeChunk)
+    if m:
+        return m.group(1)
+    return None
+
+_objectPropertyPat = re.compile('^\s*(\w+)\s*:.*$');
+def objectPropertyNameGuesser(codeChunk, blockType):
+    m = _objectPropertyPat.match(codeChunk)
+    if m:
+        return m.group(1)
+    return None
+
+_getSetterNameGuesserPat = re.compile(r'''__define[GS]etter__\s* \( \s* (?:"(\w+)" | '(\w+)') ''', re.X);
+def getSetterNameGuesser(codeChunk, blockType):
+    m = _getSetterNameGuesserPat.search(codeChunk)
+    if m:
+        return m.group(1) if m.group(1) else m.group(2)
+    return None
 
 
 if __name__ == '__main__':
