@@ -21,6 +21,10 @@
                   "name": "options", 
                   "type": "object"
                 }
+              ], 
+              "source_lines": [
+                122, 
+                161
               ]
             }, 
             "desc": "The `Request` object is used to make `GET` or `POST` network requests. It is\nconstructed with a URL to which the request is sent. Optionally the user may\nspecify a collection of headers and content to send alongside the request and\na callback which will be executed once the request completes.\n\nOnce a `Request` object has been created a `GET` request can be executed by\ncalling its `get()` method, or a `POST` request by calling its `post()` method.\n\nWhen the server completes the request, the `Request` object emits a \"complete\"\nevent.  Registered event listeners are passed a `Response` object.\n\nEach `Request` object is designed to be used once. Once `GET` or `POST` are\ncalled, attempting to call either will throw an error.\n\nSince the request is not being made by any particular website, requests made\nhere are not subject to the same-domain restriction that requests made in web\npages are subject to.\n\nWith the exception of `response`, all of a `Request` object's properties\ncorrespond with the options in the constructor. Each can be set by simply\nperforming an assignment. However, keep in mind that the same validation rules\nthat apply to `options` in the constructor will apply during assignment. Thus,\neach can throw if given an invalid value.\n\nThe example below shows how to use Request to get the most recent public tweet.\n\n    var Request = require('request').Request;\n    var latestTweetRequest = Request({\n      url: \"http://api.twitter.com/1/statuses/public_timeline.json\",\n      onComplete: function (response) {\n        var tweet = response.json[0];\n        console.log(\"User: \" + tweet.user.screen_name);\n        console.log(\"Tweet: \" + tweet.text);\n      }\n    });\n\n    // Be a good consumer and check for rate limiting before doing more.\n    Request({\n      url: \"http://api.twitter.com/1/account/rate_limit_status.json\",\n      onComplete: function (response) {\n        if (response.json.remaining_hits) {\n          latestTweetRequest.get();\n        } else {\n          console.log(\"You have been rate limited!\");\n        }\n      }\n    }).get();", 
@@ -30,34 +34,62 @@
                 "name": "get", 
                 "returns": {
                   "type": "Request"
-                }
+                }, 
+                "source_lines": [
+                  232, 
+                  235
+                ]
               }, 
               {
                 "desc": "Make a `GET` request.", 
                 "name": "post", 
                 "returns": {
                   "type": "Request"
-                }
+                }, 
+                "source_lines": [
+                  241, 
+                  244
+                ]
               }
             ], 
             "name": "Request", 
             "properties": [
               {
                 "name": "url", 
+                "source_lines": [
+                  216, 
+                  216
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "{string,object}", 
-                "name": "content"
+                "name": "content", 
+                "source_lines": [
+                  217, 
+                  217
+                ]
               }, 
               {
                 "name": "contentType", 
+                "source_lines": [
+                  218, 
+                  218
+                ], 
                 "type": "string"
               }, 
               {
                 "name": "response", 
+                "source_lines": [
+                  219, 
+                  219
+                ], 
                 "type": "Response"
               }
+            ], 
+            "source_lines": [
+              71, 
+              121
             ]
           }, 
           {
@@ -67,28 +99,52 @@
               {
                 "desc": "The content of the response as plain text.", 
                 "name": "text", 
+                "source_lines": [
+                  336, 
+                  339
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The HTTP response status code (e.g. *200*).", 
                 "name": "status", 
+                "source_lines": [
+                  345, 
+                  348
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The HTTP response status line (e.g. *OK*).", 
                 "name": "statusText", 
+                "source_lines": [
+                  350, 
+                  353
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The content of the response as a JavaScript object. The value will be `null`\nif the document cannot be processed by `JSON.parse`.", 
                 "name": "json", 
+                "source_lines": [
+                  356, 
+                  360
+                ], 
                 "type": "object"
               }, 
               {
                 "desc": "The HTTP response headers represented as key/value pairs.", 
                 "name": "headers", 
+                "source_lines": [
+                  371, 
+                  374
+                ], 
                 "type": "object"
               }
+            ], 
+            "source_lines": [
+              326, 
+              333
             ]
           }
         ], 
@@ -113,6 +169,10 @@
                 "name": "listener", 
                 "type": "function"
               }
+            ], 
+            "source_lines": [
+              347, 
+              356
             ]
           }, 
           {
@@ -129,6 +189,10 @@
                 "name": "listener", 
                 "type": "function"
               }
+            ], 
+            "source_lines": [
+              358, 
+              366
             ]
           }
         ], 
@@ -137,13 +201,25 @@
           {
             "desc": "A special property which may be read or write and is backed\nby a (JSON formatted) disk file for persistence.", 
             "name": "storage", 
+            "source_lines": [
+              141, 
+              145
+            ], 
             "type": "object"
           }, 
           {
             "desc": "(read-only) Returns the amount of the quota used by this store", 
             "name": "quotaUsage", 
+            "source_lines": [
+              150, 
+              153
+            ], 
             "type": "XXX"
           }
+        ], 
+        "source_lines": [
+          41, 
+          117
         ]
       }
     }, 
@@ -166,7 +242,11 @@
             ], 
             "returns": {
               "desc": "A function that makes new instances of privateCtor."
-            }
+            }, 
+            "source_lines": [
+              53, 
+              64
+            ]
           }, 
           {
             "desc": "Returns a validated options dictionary given some requirements.  If any of\nthe requirements are not met, an exception is thrown.", 
@@ -183,7 +263,11 @@
             ], 
             "returns": {
               "desc": "An object whose keys are those keys in requirements that are also in\n        options and whose values are the corresponding return values of map\n        or the corresponding values in options.  Note that any keys not\n        shared by both requirements and options are not in the returned\n        object."
-            }
+            }, 
+            "source_lines": [
+              76, 
+              110
+            ]
           }
         ], 
         "module": "api-utils"
@@ -199,12 +283,20 @@
                   "name": "inputStream", 
                   "type": "stream"
                 }
+              ], 
+              "source_lines": [
+                67, 
+                72
               ]
             }, 
             "functions": [
               {
                 "desc": "Closes both the stream and its backing stream.", 
                 "name": "close", 
+                "source_lines": [
+                  56, 
+                  61
+                ], 
                 "throws": [
                   {
                     "desc": "If the stream is already closed."
@@ -225,6 +317,10 @@
                   "desc": "A string containing the bytes read.  If the stream is at the end, returns the\nempty string.", 
                   "type": "string"
                 }, 
+                "source_lines": [
+                  82, 
+                  92
+                ], 
                 "throws": [
                   {
                     "desc": "If the stream is already closed."
@@ -237,8 +333,16 @@
               {
                 "desc": "True if the stream is closed.", 
                 "name": "closed", 
+                "source_lines": [
+                  62, 
+                  66
+                ], 
                 "type": "boolean"
               }
+            ], 
+            "source_lines": [
+              52, 
+              55
             ]
           }, 
           {
@@ -250,12 +354,20 @@
                   "name": "outputStream", 
                   "type": "stream"
                 }
+              ], 
+              "source_lines": [
+                133, 
+                138
               ]
             }, 
             "functions": [
               {
                 "desc": "Closes both the stream and its backing stream.", 
                 "name": "close", 
+                "source_lines": [
+                  122, 
+                  127
+                ], 
                 "throws": [
                   {
                     "desc": "If the stream is already closed."
@@ -272,6 +384,10 @@
                     "type": "string"
                   }
                 ], 
+                "source_lines": [
+                  148, 
+                  154
+                ], 
                 "throws": [
                   {
                     "desc": "if the stream is closed"
@@ -284,14 +400,120 @@
               {
                 "desc": "True if the stream is closed.", 
                 "name": "closed", 
+                "source_lines": [
+                  128, 
+                  132
+                ], 
                 "type": "boolean"
               }
+            ], 
+            "source_lines": [
+              120, 
+              121
             ]
           }
         ], 
         "desc": "The `byte-streams` module provides streams for reading and writing bytes.", 
         "filename": "byte-streams.js", 
-        "module": "byte-streams"
+        "module": "byte-streams", 
+        "source_lines": [
+          43, 
+          46
+        ]
+      }, 
+      "collection": {
+        "filename": "collection.js", 
+        "functions": [
+          {
+            "desc": "Adds a collection property to the given object.  Setting the property to a\nscalar value empties the collection and adds the value.  Setting it to an\narray empties the collection and adds all the items in the array.", 
+            "name": "addCollectionProperty", 
+            "params": [
+              {
+                "desc": "The property will be defined on this object.", 
+                "name": "obj"
+              }, 
+              {
+                "desc": "The name of the property.", 
+                "name": "propName"
+              }, 
+              {
+                "desc": "If given, this will be used as the collection's backing array.", 
+                "name": "array"
+              }
+            ], 
+            "source_lines": [
+              42, 
+              53
+            ]
+          }, 
+          {
+            "desc": "A collection is ordered, like an array, but its items are unique, like a set.", 
+            "name": "Collection", 
+            "params": [
+              {
+                "desc": "The collection is backed by an array.  If this is given, it will be\n       used as the backing array.  This way the caller can fully control the\n       collection.  Otherwise a new empty array will be used, and no one but\n       the collection will have access to it.", 
+                "name": "array"
+              }
+            ], 
+            "source_lines": [
+              68, 
+              76
+            ]
+          }, 
+          {
+            "desc": "Provides iteration over the collection.  Items are yielded in the order\nthey were added.", 
+            "name": "__iterator__", 
+            "source_lines": [
+              80, 
+              83
+            ]
+          }, 
+          {
+            "desc": "Adds a single item or an array of items to the collection.  Any items\nalready contained in the collection are ignored.", 
+            "name": "add", 
+            "params": [
+              {
+                "desc": "An item or array of items.", 
+                "name": "itemOrItems"
+              }
+            ], 
+            "returns": {
+              "desc": "The collection."
+            }, 
+            "source_lines": [
+              97, 
+              104
+            ]
+          }, 
+          {
+            "desc": "Removes a single item or an array of items from the collection.  Any items\nnot contained in the collection are ignored.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "An item or array of items.", 
+                "name": "itemOrItems"
+              }
+            ], 
+            "returns": {
+              "desc": "The collection."
+            }, 
+            "source_lines": [
+              115, 
+              122
+            ]
+          }
+        ], 
+        "module": "collection", 
+        "properties": [
+          {
+            "desc": "The number of items in the collection.", 
+            "name": "length", 
+            "source_lines": [
+              90, 
+              92
+            ]
+          }
+        ]
       }, 
       "content": {
         "filename": "content.js", 
@@ -300,6 +522,62 @@
       "cuddlefish": {
         "filename": "cuddlefish.js", 
         "module": "cuddlefish"
+      }, 
+      "data": {
+        "filename": "utils/data.js", 
+        "functions": [
+          {
+            "desc": "Takes URI of the page and returns associated favicon URI.\nIf page under passed uri has no favicon then base64 encoded data URI of\ndefault faveicon is returned.", 
+            "name": "getFaviconURIForLocation", 
+            "params": [
+              {
+                "name": "uri", 
+                "type": "String"
+              }
+            ], 
+            "returns": {
+              "type": "String"
+            }, 
+            "source_lines": [
+              54, 
+              60
+            ]
+          }, 
+          {
+            "desc": "Takes chrome URI and returns content under that URI.", 
+            "name": "getChromeURIContent", 
+            "params": [
+              {
+                "name": "chromeURI", 
+                "type": "String"
+              }
+            ], 
+            "returns": {
+              "type": "String"
+            }, 
+            "source_lines": [
+              76, 
+              80
+            ]
+          }, 
+          {
+            "desc": "Creates a base-64 encoded ASCII string from a string of binary data.", 
+            "name": "base64Encode", 
+            "source_lines": [
+              94, 
+              96
+            ]
+          }, 
+          {
+            "desc": "Decodes a string of data which has been encoded using base-64 encoding.", 
+            "name": "base64Decode", 
+            "source_lines": [
+              100, 
+              102
+            ]
+          }
+        ], 
+        "module": "data"
       }, 
       "dom": {
         "filename": "windows/dom.js", 
@@ -331,7 +609,11 @@
               "returns": {
                 "desc": "an object representation of a file", 
                 "type": "File"
-              }
+              }, 
+              "source_lines": [
+                260, 
+                263
+              ]
             }, 
             "desc": "A file abstraction that allows direct access to meta-data\nabout a file.", 
             "functions": [
@@ -341,110 +623,186 @@
                 "returns": {
                   "desc": "true if the file exists.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  225, 
+                  228
+                ]
               }, 
               {
                 "name": "isWritable", 
                 "returns": {
                   "desc": "true if the file is writable.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  230, 
+                  231
+                ]
               }, 
               {
                 "name": "isReadble", 
                 "returns": {
                   "desc": "true if the file is readable.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  233, 
+                  234
+                ]
               }, 
               {
                 "name": "isExecutable", 
                 "returns": {
                   "desc": "true if the file is executable.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  236, 
+                  237
+                ]
               }, 
               {
                 "name": "isHidden", 
                 "returns": {
                   "desc": "true if the file is hidden.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  239, 
+                  240
+                ]
               }, 
               {
                 "name": "isDirectory", 
                 "returns": {
                   "desc": "true if the file is a directory.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  242, 
+                  243
+                ]
               }, 
               {
                 "name": "isFile", 
                 "returns": {
                   "desc": "true if the file is a regular file.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  245, 
+                  246
+                ]
               }, 
               {
                 "name": "isSymlink", 
                 "returns": {
                   "desc": "true if the file is a symlink.", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  248, 
+                  249
+                ]
               }, 
               {
                 "name": "isSpecial", 
                 "returns": {
                   "desc": "true if the file is a special file (i.e. device)", 
                   "type": "boolean"
-                }
+                }, 
+                "source_lines": [
+                  251, 
+                  252
+                ]
               }, 
               {
                 "name": "toString", 
                 "returns": {
                   "desc": "concoct a reasonable string representation of a file", 
                   "type": "string"
-                }
+                }, 
+                "source_lines": [
+                  255, 
+                  256
+                ]
               }
             ], 
             "name": "File", 
             "properties": [
               {
                 "desc": "The file's permissions (follows symlinks)", 
-                "name": "permissions"
+                "name": "permissions", 
+                "source_lines": [
+                  198, 
+                  198
+                ]
               }, 
               {
                 "desc": "The file's permissions (does not follow symlinks)", 
-                "name": "permissionsOfLink"
+                "name": "permissionsOfLink", 
+                "source_lines": [
+                  200, 
+                  200
+                ]
               }, 
               {
                 "desc": "The last time this file was modified (follows symlinks)", 
-                "name": "lastModifiedTime"
+                "name": "lastModifiedTime", 
+                "source_lines": [
+                  202, 
+                  202
+                ]
               }, 
               {
                 "desc": "The last time this file was modified (does not follow symlinks)", 
-                "name": "lastModifiedTimeOfLink"
+                "name": "lastModifiedTimeOfLink", 
+                "source_lines": [
+                  204, 
+                  204
+                ]
               }, 
               {
                 "desc": "Size of file in bytes (follows symlinks)", 
                 "name": "fileSize", 
+                "source_lines": [
+                  207, 
+                  207
+                ], 
                 "type": "integer"
               }, 
               {
                 "desc": "Size of file in bytes (does not follow symlinks)", 
                 "name": "fileSizeOfLink", 
+                "source_lines": [
+                  209, 
+                  209
+                ], 
                 "type": "integer"
               }, 
               {
                 "desc": "The absolute path to the file", 
                 "name": "path", 
+                "source_lines": [
+                  212, 
+                  212
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The absolute path to the parent of the file", 
                 "name": "parent", 
+                "source_lines": [
+                  215, 
+                  215
+                ], 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              184, 
+              188
             ]
           }
         ], 
@@ -464,7 +822,11 @@
             "returns": {
               "desc": "A string containing the file's entire contents.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              82, 
+              89
+            ]
           }, 
           {
             "desc": "Creates a text file and writes the entir contents of a string to\nit.", 
@@ -478,6 +840,10 @@
                 "desc": "The content to write.", 
                 "name": "content"
               }
+            ], 
+            "source_lines": [
+              103, 
+              109
             ], 
             "throws": [
               {
@@ -503,10 +869,18 @@
             "returns": {
               "desc": "A stream that can be used to access or modify the contents of the file.  See\n[`text-streams`](#module/api-utils/text-streams) and\n[`byte-streams`](#module/api-utils/byte-streams) for more information.\nOpened files should always be closed after use by calling `close` on the\nreturned stream.", 
               "type": "stream"
-            }
+            }, 
+            "source_lines": [
+              122, 
+              142
+            ]
           }
         ], 
-        "module": "file"
+        "module": "file", 
+        "source_lines": [
+          42, 
+          45
+        ]
       }, 
       "find-tests": {
         "filename": "find-tests.js", 
@@ -515,6 +889,45 @@
       "find-tests-e10s-adapter": {
         "filename": "find-tests-e10s-adapter.js", 
         "module": "find-tests-e10s-adapter"
+      }, 
+      "function": {
+        "filename": "utils/function.js", 
+        "functions": [
+          {
+            "desc": "Takes a function and returns a wrapped one instead, calling which will call\noriginal function in the next turn of event loop. This is basically utility\nto do `setTimeout(function() { ... }, 0)`, with a difference that returned\nfunction is reused, instead of creating a new one each time. This also allows\nto use this functions as event listeners.", 
+            "name": "Enqueued", 
+            "source_lines": [
+              40, 
+              46
+            ]
+          }, 
+          {
+            "desc": "Invokes `callee` by passing `params` as an arguments and `self` as `this`\npseudo-variable. Returns value that is returned by a callee.", 
+            "name": "invoke", 
+            "params": [
+              {
+                "desc": "Function to invoke.", 
+                "name": "callee", 
+                "type": "Function"
+              }, 
+              {
+                "desc": "Arguments to invoke function with.", 
+                "name": "params", 
+                "type": "Array"
+              }, 
+              {
+                "desc": "Object to be passed as a `this` pseudo variable.", 
+                "name": "self", 
+                "type": "Object"
+              }
+            ], 
+            "source_lines": [
+              53, 
+              62
+            ]
+          }
+        ], 
+        "module": "function"
       }, 
       "hidden-frame": {
         "filename": "hidden-frame.js", 
@@ -552,6 +965,133 @@
         "filename": "self-e10s-adapter.js", 
         "module": "self-e10s-adapter"
       }, 
+      "text-streams": {
+        "classes": [
+          {
+            "constructor": {
+              "params": [
+                {
+                  "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
+                  "name": "inputStream"
+                }, 
+                {
+                  "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
+                  "name": "charset"
+                }
+              ], 
+              "source_lines": [
+                59, 
+                69
+              ]
+            }, 
+            "desc": "An input stream that reads text from a backing stream using a given text\nencoding.", 
+            "functions": [
+              {
+                "desc": "Reads a string from the stream.  If the stream is closed, an exception is\nthrown.", 
+                "name": "read", 
+                "params": [
+                  {
+                    "desc": "The number of characters to read.  If not given, the remainder of\n        the stream is read.", 
+                    "name": "numChars"
+                  }
+                ], 
+                "returns": {
+                  "desc": "The string read.  If the stream is already at EOS, returns the\n        empty string."
+                }, 
+                "source_lines": [
+                  81, 
+                  91
+                ]
+              }
+            ], 
+            "name": "TextReader", 
+            "source_lines": [
+              54, 
+              58
+            ]
+          }
+        ], 
+        "filename": "text-streams.js", 
+        "functions": [
+          {
+            "desc": "A buffered output stream that writes text to a backing stream using a given\ntext encoding.", 
+            "name": "TextWriter", 
+            "params": [
+              {
+                "desc": "The stream is backed by this nsIOutputStream.  It must already be\n       opened.", 
+                "name": "outputStream"
+              }, 
+              {
+                "desc": "Text will be written to outputStream using this character encoding.\n       If not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl\n       for documentation on how to determine other valid values for this.", 
+                "name": "charset"
+              }
+            ], 
+            "source_lines": [
+              128, 
+              139
+            ]
+          }, 
+          {
+            "desc": "Flushes the backing stream's buffer.", 
+            "name": "flush", 
+            "source_lines": [
+              165, 
+              167
+            ]
+          }, 
+          {
+            "desc": "Writes a string to the stream.  If the stream is closed, an exception is\nthrown.", 
+            "name": "write", 
+            "params": [
+              {
+                "desc": "The string to write.", 
+                "name": "str"
+              }
+            ], 
+            "source_lines": [
+              173, 
+              179
+            ]
+          }, 
+          {
+            "desc": "Writes a string on a background thread.  After the write completes, the\nbacking stream's buffer is flushed, and both the stream and the backing\nstream are closed, also on the background thread.  If the stream is already\nclosed, an exception is thrown immediately.", 
+            "name": "writeAsync", 
+            "params": [
+              {
+                "desc": "The string to write.", 
+                "name": "str"
+              }, 
+              {
+                "desc": "An optional function.  If given, it's called as callback(error) when\n       the write completes.  error is an Error object or undefined if there\n       was no error.  Inside callback, |this| is the stream object.", 
+                "name": "callback"
+              }
+            ], 
+            "source_lines": [
+              191, 
+              203
+            ]
+          }, 
+          {
+            "desc": "Closes both the stream and its backing stream.  If the stream is already\nclosed, an exception is thrown.  For TextWriters, this first flushes the\nbacking stream's buffer.", 
+            "name": "close", 
+            "source_lines": [
+              244, 
+              248
+            ]
+          }
+        ], 
+        "module": "text-streams", 
+        "properties": [
+          {
+            "desc": "True iff the stream is closed.", 
+            "name": "closed", 
+            "source_lines": [
+              237, 
+              239
+            ]
+          }
+        ]
+      }, 
       "thumbnail": {
         "filename": "utils/thumbnail.js", 
         "functions": [
@@ -566,7 +1106,11 @@
             ], 
             "returns": {
               "type": "Element"
-            }
+            }, 
+            "source_lines": [
+              47, 
+              52
+            ]
           }, 
           {
             "desc": "Creates Base64 encoded data URI of the thumbnail for the passed window.", 
@@ -579,7 +1123,11 @@
             ], 
             "returns": {
               "type": "String"
-            }
+            }, 
+            "source_lines": [
+              70, 
+              74
+            ]
           }
         ], 
         "module": "thumbnail"
@@ -625,6 +1173,10 @@
                   "type": "string"
                 }
               ], 
+              "source_lines": [
+                137, 
+                148
+              ], 
               "throws": [
                 {
                   "desc": "If `source` is not a valid URI."
@@ -639,7 +1191,11 @@
                 "returns": {
                   "desc": "The URL as a string.", 
                   "type": "string"
-                }
+                }, 
+                "source_lines": [
+                  193, 
+                  197
+                ]
               }
             ], 
             "name": "URL", 
@@ -647,28 +1203,52 @@
               {
                 "desc": "The name of the protocol in the URL.", 
                 "name": "scheme", 
+                "source_lines": [
+                  168, 
+                  171
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The username:password part of the URL, `null` if not present.", 
                 "name": "userPass", 
+                "source_lines": [
+                  173, 
+                  176
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The host of the URL, `null` if not present.", 
                 "name": "host", 
+                "source_lines": [
+                  178, 
+                  181
+                ], 
                 "type": "string"
               }, 
               {
                 "desc": "The port number of the URL, `null` if none was specified.", 
                 "name": "port", 
+                "source_lines": [
+                  183, 
+                  186
+                ], 
                 "type": "integer"
               }, 
               {
                 "desc": "The path component of the URL.", 
                 "name": "path", 
+                "source_lines": [
+                  188, 
+                  191
+                ], 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              131, 
+              136
             ]
           }
         ], 
@@ -688,7 +1268,11 @@
             "returns": {
               "desc": "A guess at a well formed url.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              75, 
+              81
+            ]
           }, 
           {
             "desc": "build a URL from a filename.", 
@@ -703,7 +1287,11 @@
             "returns": {
               "desc": "A string representation of a URL.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              92, 
+              97
+            ]
           }, 
           {
             "desc": "build a filename from a url.", 
@@ -718,10 +1306,18 @@
             "returns": {
               "desc": "A string representation of a URL.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              105, 
+              110
+            ]
           }
         ], 
-        "module": "url"
+        "module": "url", 
+        "source_lines": [
+          37, 
+          42
+        ]
       }, 
       "window-utils": {
         "filename": "window-utils.js", 
@@ -731,7 +1327,11 @@
             "name": "windowIterator", 
             "returns": {
               "desc": "A generator that yields XUL windows exposing the\n        nsIDOMWindow interface."
-            }
+            }, 
+            "source_lines": [
+              47, 
+              52
+            ]
           }
         ], 
         "module": "window-utils"
@@ -741,13 +1341,12 @@
         "module": "xhr"
       }, 
       "xul-app": {
+        "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
         "filename": "xul-app.js", 
         "module": "xul-app", 
-        "properties": [
-          {
-            "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
-            "name": "versionInRange"
-          }
+        "source_lines": [
+          78, 
+          83
         ]
       }
     }, 
@@ -774,48 +1373,88 @@
           {
             "desc": "The currently active *profile*, which is a user specific directory where\nuser scoped application data may reside, such as preferences and history.", 
             "name": "profileDir", 
+            "source_lines": [
+              49, 
+              54
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The path where the *browser code* of the application resides on disk.\nFor an installed application this usually be nested inside of a system wide installation path.\nThis path should be expected to be read-only.", 
             "name": "browserCodeDir", 
+            "source_lines": [
+              57, 
+              62
+            ], 
             "type": "string"
           }, 
           {
             "desc": "On windows, the path to the start menu where shortcuts may be installed.\n`null` on other platforms.", 
             "name": "startMenuDir", 
+            "source_lines": [
+              65, 
+              70
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The path to the user's desktop.", 
             "name": "desktopDir", 
+            "source_lines": [
+              77, 
+              80
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The path to the currently logged in user's home directory.", 
             "name": "userHomeDir", 
+            "source_lines": [
+              83, 
+              86
+            ], 
             "type": "string"
           }, 
           {
             "desc": "In chromeless, *profiles* are specially named directories stored\nin a user scoped location.  Support for multiple profiles is built in at a very\nlow level, and the basic mechanism by which profiles are supported is a two\nlevel directory structure.  This property provides the path to the \"outer\" or\n\"root\" profile directory, under which different profiles reside.", 
             "name": "profileRootDir", 
+            "source_lines": [
+              89, 
+              96
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The path to the directory where web plugins will be loaded for this\napplication.", 
             "name": "pluginsDir", 
+            "source_lines": [
+              99, 
+              103
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The current working directory of the chromeless application process.", 
             "name": "curDir", 
+            "source_lines": [
+              106, 
+              109
+            ], 
             "type": "string"
           }, 
           {
             "desc": "The system's temporary directory.", 
             "name": "tmpDir", 
+            "source_lines": [
+              112, 
+              115
+            ], 
             "type": "string"
           }
+        ], 
+        "source_lines": [
+          38, 
+          42
         ]
       }, 
       "appinfo": {
@@ -826,12 +1465,20 @@
           {
             "desc": "(read-only) The contents of the `appinfo.json` file as a javascript object", 
             "name": "contents", 
+            "source_lines": [
+              193, 
+              199
+            ], 
             "throws": [
               {
                 "desc": "upon access if the appinfo.json file is malformed (this should happen\nat application startup, and never during runtime.  In application code this\nexception can be safely ignored)."
               }
             ]
           }
+        ], 
+        "source_lines": [
+          180, 
+          186
         ]
       }, 
       "canvas-proxy": {
@@ -839,8 +1486,17 @@
         "module": "canvas-proxy"
       }, 
       "child_process": {
-        "desc": "Stops the server from accepting new connections. This function is\nasynchronous, the server is finally closed when the server emits a\n'close' event.", 
         "filename": "child_process.js", 
+        "functions": [
+          {
+            "desc": "Stops the server from accepting new connections. This function is\nasynchronous, the server is finally closed when the server emits a\n'close' event.", 
+            "name": "destroy", 
+            "source_lines": [
+              108, 
+              112
+            ]
+          }
+        ], 
         "module": "child_process"
       }, 
       "chromeless-sandbox-window": {
@@ -897,10 +1553,18 @@
                 "name": "callback", 
                 "type": "function"
               }
+            ], 
+            "source_lines": [
+              55, 
+              66
             ]
           }
         ], 
-        "module": "dragdrop"
+        "module": "dragdrop", 
+        "source_lines": [
+          40, 
+          45
+        ]
       }, 
       "errors": {
         "filename": "errors.js", 
@@ -923,7 +1587,11 @@
             "returns": {
               "desc": "The favicon as a data URL.  If no such favicon is in the cache,\nnull is returned.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              63, 
+              70
+            ]
           }, 
           {
             "desc": "Get a default favicon image.", 
@@ -931,7 +1599,11 @@
             "returns": {
               "desc": "A data URL containing a default favicon image", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              82, 
+              86
+            ]
           }, 
           {
             "desc": "Fetch the favicon for a particular page.  This function will return\nthe favicon from the cache if available, but otherwise will issue a\nnetwork request to attempt to fetch a site's favicon.", 
@@ -947,10 +1619,73 @@
                 "name": "cb", 
                 "type": "function"
               }
+            ], 
+            "source_lines": [
+              95, 
+              106
             ]
           }
         ], 
-        "module": "favicon"
+        "module": "favicon", 
+        "source_lines": [
+          38, 
+          42
+        ]
+      }, 
+      "file-picker": {
+        "classes": [
+          {
+            "constructor": {
+              "params": [
+                {
+                  "desc": "The title of the dialog", 
+                  "name": "title", 
+                  "type": "string"
+                }
+              ], 
+              "source_lines": [
+                11, 
+                14
+              ]
+            }, 
+            "desc": "A class which allows you to open native \"file picker\" dialogs to allow\nthe user to select files or folders.", 
+            "functions": [
+              {
+                "desc": "Show the file picker dialog.", 
+                "name": "show", 
+                "params": [
+                  {
+                    "desc": "A callback that will be invoked once the user makes a selection.  Will\nbe passed `undefined` if nothing is selected", 
+                    "name": "callback", 
+                    "type": "function"
+                  }
+                ], 
+                "source_lines": [
+                  24, 
+                  29
+                ]
+              }
+            ], 
+            "name": "FilePicker", 
+            "properties": [
+              {
+                "desc": "The title of the dialog", 
+                "name": "title", 
+                "source_lines": [
+                  18, 
+                  21
+                ], 
+                "type": "property"
+              }
+            ], 
+            "source_lines": [
+              5, 
+              10
+            ]
+          }
+        ], 
+        "filename": "file-picker.js", 
+        "module": "file-picker"
       }, 
       "fs": {
         "desc": "The fs module provides means to interact with the file system for manipulating\nand querying files and directories.", 
@@ -970,6 +1705,10 @@
               "desc": "An array of file names.  Each is a basename, not a full path.", 
               "type": "array"
             }, 
+            "source_lines": [
+              77, 
+              85
+            ], 
             "throws": [
               {
                 "desc": "if the path points to something other than a readable directory."
@@ -990,6 +1729,10 @@
               "desc": "An array of file objects.", 
               "type": "array"
             }, 
+            "source_lines": [
+              101, 
+              109
+            ], 
             "throws": [
               {
                 "desc": "if the path points to something other than a readable directory."
@@ -1010,6 +1753,10 @@
                 "name": "to", 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              125, 
+              130
             ], 
             "throws": [
               {
@@ -1032,6 +1779,10 @@
                 "type": "string"
               }
             ], 
+            "source_lines": [
+              141, 
+              146
+            ], 
             "throws": [
               {
                 "desc": "if the operation cannot be completed."
@@ -1051,7 +1802,11 @@
             "returns": {
               "desc": "True if the file exists and false otherwise.", 
               "type": "boolean"
-            }
+            }, 
+            "source_lines": [
+              156, 
+              161
+            ]
           }, 
           {
             "desc": "Given a path returns metadata about the file or directory.  If the path is a symlink it\nwill be dereferenced and information about the underlying file will be returned", 
@@ -1067,6 +1822,10 @@
               "desc": "Returns an object with information about the file, including:\n\n + `type` - either 'file' or 'directory'\n + `numEntries` - (for directories), the number of files in the directory.\n + `size` - (for files), the size of the file in bytes.\n + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.", 
               "type": "object"
             }, 
+            "source_lines": [
+              166, 
+              180
+            ], 
             "throws": [
               {
                 "desc": "if file doesn't exist"
@@ -1082,6 +1841,10 @@
                 "name": "path", 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              204, 
+              208
             ]
           }, 
           {
@@ -1093,6 +1856,10 @@
                 "name": "path", 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              215, 
+              221
             ]
           }, 
           {
@@ -1104,10 +1871,18 @@
                 "name": "path", 
                 "type": "string"
               }
+            ], 
+            "source_lines": [
+              230, 
+              235
             ]
           }
         ], 
-        "module": "fs"
+        "module": "fs", 
+        "source_lines": [
+          36, 
+          40
+        ]
       }, 
       "fullscreen": {
         "desc": "Allows one to control fullscreen view for the main application window", 
@@ -1115,18 +1890,34 @@
         "functions": [
           {
             "desc": "Size the main application window to consume the full screen", 
-            "name": "enable"
+            "name": "enable", 
+            "source_lines": [
+              46, 
+              48
+            ]
           }, 
           {
             "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
-            "name": "disable"
+            "name": "disable", 
+            "source_lines": [
+              53, 
+              55
+            ]
           }, 
           {
             "desc": "Toggle fullscreen.", 
-            "name": "toggle"
+            "name": "toggle", 
+            "source_lines": [
+              60, 
+              62
+            ]
           }
         ], 
-        "module": "fullscreen"
+        "module": "fullscreen", 
+        "source_lines": [
+          40, 
+          43
+        ]
       }, 
       "hidden-frame-xulrunner": {
         "filename": "hidden-frame-xulrunner.js", 
@@ -1158,6 +1949,10 @@
               "desc": "Return the ID of the hotkey.", 
               "type": "string"
             }, 
+            "source_lines": [
+              134, 
+              165
+            ], 
             "throws": [
               {
                 "desc": "Textual exception that should be caught by the programmer.", 
@@ -1184,6 +1979,10 @@
             "returns": {
               "type": "void"
             }, 
+            "source_lines": [
+              192, 
+              200
+            ], 
             "throws": [
               {
                 "desc": "Textual exception that should be caught by the programmer.", 
@@ -1192,7 +1991,11 @@
             ]
           }
         ], 
-        "module": "hotkey"
+        "module": "hotkey", 
+        "source_lines": [
+          37, 
+          40
+        ]
       }, 
       "iframe-controls": {
         "desc": "Allows application code to control and inspect iframes", 
@@ -1207,6 +2010,10 @@
                 "name": "frame", 
                 "type": "IFrameNode"
               }
+            ], 
+            "source_lines": [
+              42, 
+              45
             ]
           }, 
           {
@@ -1222,7 +2029,11 @@
             "returns": {
               "desc": "The current title of the content in the iframe.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              51, 
+              55
+            ]
           }, 
           {
             "desc": "inject a function into a web content window", 
@@ -1243,15 +2054,27 @@
                 "name": "callback", 
                 "type": "function"
               }
+            ], 
+            "source_lines": [
+              60, 
+              67
             ]
           }
         ], 
-        "module": "iframe-controls"
+        "module": "iframe-controls", 
+        "source_lines": [
+          38, 
+          39
+        ]
       }, 
       "iframe-progress-hooks": {
         "desc": "An internal implementation detail.  nothing to see here.", 
         "filename": "iframe-progress-hooks.js", 
-        "module": "iframe-progress-hooks"
+        "module": "iframe-progress-hooks", 
+        "source_lines": [
+          38, 
+          39
+        ]
       }, 
       "menu": {
         "classes": [
@@ -1263,14 +2086,22 @@
                 "name": "draw", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  193, 
+                  199
+                ]
               }, 
               {
                 "desc": "Redraws a menu element to the canvas (a XUL document) if needed.\nUsually called called by a function that performs a mutation on a SubMenu\n(like `push()`, `shift()` or `splice()`).", 
                 "name": "redraw", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  237, 
+                  245
+                ]
               }, 
               {
                 "desc": "Register a globally accessible hotkey for this menu item that invokes \nthe 'onClick' handler if set when the key combination is pressed.", 
@@ -1280,6 +2111,10 @@
                 }, 
                 "see": [
                   "this.hotkey property"
+                ], 
+                "source_lines": [
+                  260, 
+                  267
                 ]
               }, 
               {
@@ -1287,10 +2122,18 @@
                 "name": "destroy", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  277, 
+                  284
+                ]
               }
             ], 
-            "name": "Menu"
+            "name": "Menu", 
+            "source_lines": [
+              88, 
+              120
+            ]
           }, 
           {
             "constructor": {
@@ -1308,7 +2151,11 @@
               ], 
               "returns": {
                 "type": "SubMenu"
-              }
+              }, 
+              "source_lines": [
+                333, 
+                339
+              ]
             }, 
             "desc": "Represents a collection of menu items and separators that\nshould be displayed. A SubMenu is defined with the 'children' property of a \nMenu object as an Array. Therefore, array-like functions may be used to alter\nthe contents of a SubMenu instance.\nThere is no maximum set to the amount or level of depth of submenus.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Separator()\n        ]\n    });\n    file.children.splice(0, 1);\n    file.children.splice(-1, 0, new menu.Menu({ label: \"About...\" }));", 
             "functions": [
@@ -1317,40 +2164,76 @@
                 "name": "draw", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  351, 
+                  357
+                ]
               }, 
               {
                 "desc": "Removes a submenu from the canvas (a XUL document), including its children\nand does basic garbage collection.", 
                 "name": "destroy", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  368, 
+                  374
+                ]
               }, 
               {
                 "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
-                "name": "push"
+                "name": "push", 
+                "source_lines": [
+                  389, 
+                  393
+                ]
               }, 
               {
-                "name": "reverse"
+                "name": "reverse", 
+                "source_lines": [
+                  407, 
+                  407
+                ]
               }, 
               {
-                "name": "shift"
+                "name": "shift", 
+                "source_lines": [
+                  408, 
+                  408
+                ]
               }, 
               {
-                "name": "sort"
+                "name": "sort", 
+                "source_lines": [
+                  409, 
+                  409
+                ]
               }, 
               {
-                "name": "splice"
+                "name": "splice", 
+                "source_lines": [
+                  410, 
+                  410
+                ]
               }, 
               {
-                "name": "unshift"
+                "name": "unshift", 
+                "source_lines": [
+                  411, 
+                  411
+                ]
               }, 
               {
                 "desc": "Convert this SubMenu instance to an Array-representation.", 
                 "name": "toArray", 
                 "returns": {
                   "type": "array"
-                }
+                }, 
+                "source_lines": [
+                  420, 
+                  425
+                ]
               }, 
               {
                 "desc": "(re-)Construct this SubMenu instance with Menu or Separator instances\nfrom array.", 
@@ -1364,16 +2247,28 @@
                 ], 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  433, 
+                  440
+                ]
               }, 
               {
                 "name": "setParent", 
                 "see": [
                   "#setParent()"
+                ], 
+                "source_lines": [
+                  456, 
+                  459
                 ]
               }
             ], 
-            "name": "SubMenu"
+            "name": "SubMenu", 
+            "source_lines": [
+              301, 
+              332
+            ]
           }, 
           {
             "constructor": {
@@ -1384,7 +2279,11 @@
               ], 
               "returns": {
                 "type": "Separator"
-              }
+              }, 
+              "source_lines": [
+                488, 
+                493
+              ]
             }, 
             "desc": "Represents any single menu item that should be displayed \nwith as separator (straight horizontal line).\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Separator(),\n            new menu.Separator(),\n            new menu.Menu({\n                label: \"More Separators!\",\n                children: [\n                    new menu.Separator(),\n                    new menu.Separator(),\n                ]\n            })\n        ]\n    });", 
             "functions": [
@@ -1393,23 +2292,39 @@
                 "name": "draw", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  502, 
+                  508
+                ]
               }, 
               {
                 "desc": "Removes a separator item from the canvas (a XUL document) and does basic \ngarbage collection.", 
                 "name": "destroy", 
                 "returns": {
                   "type": "void"
-                }
+                }, 
+                "source_lines": [
+                  518, 
+                  524
+                ]
               }, 
               {
                 "name": "setParent", 
                 "see": [
                   "#setParent()"
+                ], 
+                "source_lines": [
+                  533, 
+                  536
                 ]
               }
             ], 
-            "name": "Separator"
+            "name": "Separator", 
+            "source_lines": [
+              463, 
+              487
+            ]
           }
         ], 
         "filename": "ui/menu.js", 
@@ -1432,21 +2347,40 @@
             "returns": {
               "desc": "appropriate mime type for input", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              105, 
+              110
+            ]
           }
         ], 
         "module": "mime", 
         "properties": [
           {
             "desc": "The default mime type that will be used when we encounter an unknown extension\ntype.", 
-            "name": "defaultMime"
+            "name": "defaultMime", 
+            "source_lines": [
+              46, 
+              50
+            ]
           }
+        ], 
+        "source_lines": [
+          37, 
+          40
         ]
       }, 
       "path": {
-        "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
         "filename": "path.js", 
         "functions": [
+          {
+            "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
+            "name": "validPathPart", 
+            "source_lines": [
+              36, 
+              42
+            ]
+          }, 
           {
             "desc": "joins any number of path components with the platform appropriate\npath separator.", 
             "name": "join", 
@@ -1460,7 +2394,11 @@
             "returns": {
               "desc": "The joined path", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              54, 
+              59
+            ]
           }, 
           {
             "desc": "normalizes a path and splits it into an array of path components", 
@@ -1475,7 +2413,11 @@
             "returns": {
               "desc": "Path components.", 
               "type": "array"
-            }
+            }, 
+            "source_lines": [
+              66, 
+              70
+            ]
           }, 
           {
             "desc": "normalizes an array of path components, properly reducing entries such as\n'..' and blank paths.", 
@@ -1490,7 +2432,11 @@
             "returns": {
               "desc": "Normalized path components.", 
               "type": "array"
-            }
+            }, 
+            "source_lines": [
+              108, 
+              113
+            ]
           }, 
           {
             "desc": "normalizes a path.", 
@@ -1505,7 +2451,11 @@
             "returns": {
               "desc": "A normalized path.", 
               "type": "stribg"
-            }
+            }, 
+            "source_lines": [
+              172, 
+              176
+            ]
           }, 
           {
             "desc": "Given a path, extract the *directory name* component.  For instance,\n`dirname(\"/foo/bar/baz.txt\") --> \"/foo/bar\"`.\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
@@ -1520,7 +2470,11 @@
             "returns": {
               "desc": "The directory part of the path.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              181, 
+              189
+            ]
           }, 
           {
             "desc": "Given a path, extract the filename component.  For instance,\n`basename(\"/foo/bar/baz.txt\") --> \"baz.txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `basename(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
@@ -1540,7 +2494,11 @@
             "returns": {
               "desc": "The filename component of the path.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              205, 
+              217
+            ]
           }, 
           {
             "desc": "Return the extension of a path:\n`extname(\"/foo/bar/baz.txt\") --> \".txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `dirname(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
@@ -1555,7 +2513,11 @@
             "returns": {
               "desc": "The filename component of the path.", 
               "type": "string"
-            }
+            }, 
+            "source_lines": [
+              226, 
+              236
+            ]
           }
         ], 
         "module": "path"
