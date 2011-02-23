@@ -1,4 +1,4 @@
-## Embedding Web Content ##
+# Embedding Web Content
 
 A core feature of chromeless is that it allows application code which
 runs with escalated priviledges (like the ability to interact with the
@@ -14,11 +14,11 @@ together, here's a simple diagram:
 
 XXX
 
-### Tracking IFrame Load Events
+## Tracking IFrame Load Events
 
 XXX
 
-### Accessing IFrame Details
+## Accessing IFrame Details
 
 Typically, with normal web content, there are many restrictions on what a
 parent frame may see or manipulate within a child frame that's loaded from

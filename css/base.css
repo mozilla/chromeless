@@ -1,48 +1,33 @@
+/* simple css reset */
+* {
+    background: transparent;
+    border: 0;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    vertical-align: baseline;
+    font-weight: normal;
+}
+
 body {
-    font-family: Helvetica Neue, Arial, sans-serif;
-    font-size: 9pt;
-    background: white;
-    margin: 0;
-}
-
-a {
-    color: black;
-}
-
-a:hover {
-    background: yellow;
-}
-
-h1 {
-    margin: 0;
-    padding-bottom: 1em;
-}
-
-.docs ul {
-    padding-left: 2em;
-}
-
-#cannot-ping {
-    padding: 0.5em;
-    background: #aa0000;
-    color: white;
-    display: none;
-}
-
-#columns {
-    display: table;
-    height: 100%;
+    color: #444;
+    font-size: 13px;
+    line-height: 1.538em;
+    margin: 0 auto;
+    min-width: 780px;
+    position: relative;
+    font-family: "helvetica neue",arial,helvetica,sans-serif;
+    font-style: normal;
 }
 
 #left-column {
-    width: 25em;
-    background: #f0f0f0;
+    width: 20em;
     padding: 1em;
     display: table-cell;
 }
 
 #right-column {
-    width: 40em;
+    width: 45em;
     padding: 1em;
     display: table-cell;
 }
@@ -52,185 +37,107 @@ h1 {
     display: table-cell;
 }
 
+#columns {
+    display: table;
+    height: 100%;
+}
+
+h1,h2,h3 {
+    font-family: georgia,serif;
+}
+
 #footer {
     background: #555555;
     color: white;
     padding: 0.5em;
 }
 
-#footer .actions {
-    display: block;
-    float: right;
-}
-
-#view-source {
-    color: white;
-    text-decoration: none;
-}
-
-#view-source:hover {
-    color: black;
-}
-
-.meta-header {
+#footer .full-name {
     font-weight: bold;
 }
 
-#more-packages {
-    font-size: 8pt;
-    color: gray;
-    cursor: pointer;
-}
-  
-.package-entry {
-    color: gray;
-    padding-bottom: 1em;
+#footer .chromeless_version {
+    font-style: italic;
 }
 
-.package-entry .name {
-    font-weight: bold;
-    color: black;
+#footer a {
+    color: #fff;
 }
 
-.package-entry .description {
-}
-
-.package-entry .modules {
-    font-size: 8pt;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
-    padding-left: 2em;
-}
-
-.package-detail .modules {
-    padding-left: 0;
-}
-
-.package-entry .module,
-.package-detail .module {
-    display: inline;
-    margin-right: 1em;
-    white-space: nowrap;
-}
-
-.package-entry .module a:not(:hover) {
-    color: gray;
-}
-
-pre {
-    padding-left: 1em;
-}
-
-pre, code {
-    font-family: Monaco, Lucida Console, monospace;
-    font-size: 8pt;
-}
-
-code em, code strong {
-  font-size: 9pt;
+p, pre {
+    margin-bottom: 0.9em;
 }
 
 #templates {
     display: none;
 }
 
-#left-column a {
-    text-decoration: none;
+li {
+    margin-left: 2em;
 }
 
-#dev-guide-toc ol {
-    padding-left: 2em;
-}
-
-#dev-guide-toc #tutorials {
-    list-style: decimal;
-}
-
-#dev-guide-toc #appendices {
-    list-style: upper-alpha;
-}
-
-#dev-guide-toc .section {
+strong {
     font-weight: bold;
 }
 
-.aside {
-    color: gray;
-    border-left: gray 1px solid;
-    padding-left: 1em;
-    padding-right: 1em;
+pre, code, kbd, tt, samp, tt {
+    font-family: "andale mono",monospace;
+    font-size: .9em;
+}
+
+a {
+    color: #003595;
+    text-decoration: none;
+}
+
+a:hover, a:focus, a:active {
+  text-decoration: underline;
+}
+
+#sidenotes span {
+    color: #bbb;
+    border-left: 1px solid grey;
     position: absolute;
     display: block;
+    padding: 0 1em 0 1em;
+    margin: 0;
+    line-height: 1em;
 }
 
-#dev-guide-header {
-    /* TODO: This is a dumb place to put a margin-top. */
-    margin-top: 0.25em;
-}
-
-#dev-guide-header:hover #hide-dev-guide-toc {
-    visibility: visible;
-}
-
-#hide-dev-guide-toc {
-    font-size: 0.6em;
-    padding: 0.05em 0.4em;
-    visibility: hidden;
-}
-
-#hide-dev-guide-toc:hover {
-    -moz-border-radius: 2em;
-    background: #555;
-    color: #fff;
-    cursor: pointer;
-}
-
-table {
+.json-display > div.overlay {
+    position: fixed; 
+    position: absolute; 
     width: 100%;
-    border-collapse: collapse;
+    height: 100%;
+    background-color: #000;
+    top:0;
+    left:0;
+    opacity: .5;
+    z-order: 10;
 }
 
-table, td, tr {
-    border: 1px black solid;
+.json-display > div.display {
+    position: fixed; 
+    width: 60%;
+    height: 70%;
+    top: 11%;
+    left: 17%;
+    background-color: #fff;
+    padding: 1%;
+    z-order: 20;
+    border-radius: 2em;
+    -moz-border-radius: 2em;
+    -webkit-border-radius: 2em;
+    border: 1em solid #444;
 }
 
-td {
-    padding: 0.5em;
+.json-display > div.display > pre {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    line-height: 1.3em;
 }
 
-/* Rule to fix quirks-mode inheritance behavior */
-table, caption {
-  font-size: inherit;
-  font-weight: inherit;
-  font-style: inherit;
-  font-variant: inherit;
-}
-
-table.meta-table, .meta-table td, .meta-table tr {
-    vertical-align: top;
-    border: none;
-    padding: 0;
-    padding-top: 0.25em;
-    padding-bottom: 0.25em;
-    padding-right: 5em;
-}
-
-table.meta-table {
-    margin-top: 0.5em;
-    border-top: 1px dotted gray;
-    border-bottom: 1px dotted gray;
-}
-
-.package-detail .authors, .package-detail .dependencies,
-.package-detail .version, .package-detail .license {
-    font-family: Monaco, Lucida Console, monospace;
-    font-size: 8pt;
-    white-space: pre;
-}
-
-.technical-error {
-    font-family: Monaco, Lucida Console, monospace;
-    font-size: 8pt;
-    white-space: pre-wrap;
-    color: red;
+.json-display {
+    display: none;
 }

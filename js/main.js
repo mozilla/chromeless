@@ -11,10 +11,10 @@ function startApp(jQuery, window) {
   const DOCUMENT_TITLE_ROOT = "Chromeless Documentation";
 
   function sortedKeys(obj) {
-    var arr = [];
-    for (var e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
-    arr.sort();
-    return arr;
+      var arr = [];
+      for (var e in obj) if (obj.hasOwnProperty(e)) arr.push(e);
+      arr.sort();
+      return arr;
   }
 
   function checkHash() {
@@ -121,6 +121,10 @@ function startApp(jQuery, window) {
     $("#main-content").hide();
     $("#sidenotes").empty();
     $("#right-column").empty().append(query);
+    // prettyPrint code in queuedContent
+    queuedContent.find("pre > code").each(function() {
+        $(this).html(prettyPrintOne($(this).html()));
+    });
     onDone();
   }
 
@@ -163,9 +167,27 @@ function startApp(jQuery, window) {
     return nameToIx;
   }
 
+  function sortedNames(arr) {
+    var names = [];
+    for (var i = 0; i < arr.length; i++) {
+        names.push(arr[i].name);
+    }
+    names.sort();
+    return names;
+  }
+
+  function setupJSONView(domElem, obj) {
+      domElem.click(function() {
+          $(".json-display pre").html(prettyPrintOne(JSON.stringify(obj, null, 3)));
+          $(".json-display").show('fast');
+          console.log("showded");
+      });
+  }
+
   function populateFunctions(domElem, moduleName, functions) {
     var nameToIx = buildNameToIxMap(functions);
-    var sortedMethods = sortedKeys(nameToIx);
+    var sortedMethods = sortedNames(functions);
+
     for (var f in sortedMethods) {
       var name = sortedMethods[f];
       f = functions[nameToIx[name]];
@@ -173,6 +195,13 @@ function startApp(jQuery, window) {
       func.find(".varname").text(moduleName);
       func.find(".funcName").text(name);
       func.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
+      if (f.source_lines) {
+          func.find(".invocation").attr('startLine', f.source_lines[0])
+                                  .attr('endLine', f.source_lines[1]);
+      }
+
+      setupJSONView(func.find(".invocation > img:last-child"), f);
+
       if (!f.desc) {
         f.desc = "no documentation available for this function";
       }
@@ -231,7 +260,7 @@ function startApp(jQuery, window) {
 
   function populateProperties(domElem, moduleName, properties) {
     var nameToIx = buildNameToIxMap(properties);
-    var sortedProps = sortedKeys(nameToIx);
+    var sortedProps = sortedNames(properties);
 
     for (var p in sortedProps) {
       var name = sortedProps[p];
@@ -242,6 +271,13 @@ function startApp(jQuery, window) {
       prop.find(".varname").text(moduleName);
       prop.find(".propName").text(name);
       prop.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
+      if (p.source_lines) {
+          prop.find(".invocation").attr('startLine', p.source_lines[0])
+                                  .attr('endLine', p.source_lines[1]);
+      }
+
+      setupJSONView(prop.find(".invocation > img:last-child"), p);
+
       if (!p.desc) {
         p.desc = "no documentation available for this property";
       }
@@ -312,21 +348,33 @@ function startApp(jQuery, window) {
 
     if (module.functions) {
       var funcs = domElem.find(".functions");
-      $("<h2>Functions</h2>").appendTo(funcs);
+      $("<div class=\"heading\">Functions</div>").appendTo(funcs);
       populateFunctions(funcs, module.module, module.functions);
     }
 
     if (module.properties) {
       var props = domElem.find(".properties");
-      $("<h2>Properties</h2>").appendTo(props);
+      $("<div class=\"heading\">Properties</div>").appendTo(props);
       populateProperties(props, module.module, module.properties);
     }
 
     if (module.classes) {
       var classes = domElem.find(".classes");
-      $("<h2>Classes</h2>").appendTo(classes);
+      $("<div class=\"heading\">Classes</div>").appendTo(classes);
       populateClasses(classes, module.module, module.classes);
     }
+
+    // now add links for "go to code"
+    var fName = module.filename;
+    // the SHA1 tag should be encoded in the apidocs, otherwise we'll use
+    // "master"
+    var tag = apidocs.version ? apidocs.version : "master";
+    var ghURL = "https://github.com/mozilla/chromeless/blob/" + tag + "/packages/" + pkgName + "/lib/" + module.filename + "#L";
+
+    domElem.find(".invocation").each(function() {
+      var thisURL = ghURL + $(this).attr('startLine') + "-" + $(this).attr('endLine');
+      linkNode($(this).children(":nth-child(2)"), thisURL, "github_codeview");
+    });
   }
 
   function showModuleDetail(pkgName, moduleName, selectedFunction) {
@@ -437,31 +485,41 @@ function startApp(jQuery, window) {
         $('#dev-guide-toc').show('fast');
       }
     });
+
+    // populate version number
+    if (apidocs.version) {
+        var cv = $("#footer .chromeless_version");
+        cv.text(apidocs.version);
+        linkNode(cv,  "https://github.com/mozilla/chromeless/tree/" + apidocs.version);
+    }
   }
 
   function showGuideDetail(name) {
+      console.log("show guide detail: " + name);
     var entry = $("#templates .guide-section").clone();
     var url = "md/dev-guide/" + name + ".md";
 
     entry.find(".name").text($("#dev-guide-toc #" + name).text());
-    queueMainContent(entry, function () {
-      var options = {
+
+    var options = {
         url: url,
         dataType: "text",
         success: function(text) {
-          entry.find(".docs").html(markdownToHtml(text));
-          showMainContent(entry, url);
+            entry.find(".docs").html(markdownToHtml(text));
+            queueMainContent(entry, function () {
+                showMainContent(entry, url);
+            });
         },
         error: function(text) {
-          showMainContent(entry);
+            showMainContent(entry);
         }
-      };
-      jQuery.ajax(options);
-    });
+    };
+    jQuery.ajax(options);
   }
 
-  function linkNode(node, url) {
-    node.replaceWith($('<a target="_self"></a>')
+  function linkNode(node, url, tgt) {
+    tgt = tgt ? tgt : "_self" ;
+    node.replaceWith($('<a target="' + tgt + '"></a>')
                      .attr("href", url)
                      .append(node.clone()));
   }
@@ -474,8 +532,8 @@ function startApp(jQuery, window) {
           p = sortedPackageNames[p];
           var item = $("#templates .one-package").clone();
           item.find(".name a")
-            .text(apidocs[p].name)
-            .attr('href', "#package/" + apidocs[p].name);
+                .attr('href', "#package/" + apidocs[p].name)
+                .text(apidocs[p].name);
           item.find(".description").text(apidocs[p].desc);
           var count = listModules(apidocs[p], item);
           item.find(".number").text(count);
@@ -515,7 +573,7 @@ function startApp(jQuery, window) {
               // chomp off the first bit as it makes for an ugly url
               docId = docId.split(".").slice(1).join(".");
               url += docId;
-              linkNode($(this), url);
+              linkNode($(this).children("span:first-child"), url);
             });
 
             fullApi.append(entry);
@@ -530,7 +588,7 @@ function startApp(jQuery, window) {
           var nonAtoms = "#main-content .module-detail > .name," +
             "#main-content .module-detail > .example," +
             "#main-content .module-detail > .docs," +
-            "#main-content .module-detail h2," +
+            "#main-content .module-detail > div > .heading," +
             "#main-content .class-detail > .classname," +
             "#main-content .class-detail > .docs," +
             "#main-content .class-detail .littleheading";
@@ -637,6 +695,11 @@ function startApp(jQuery, window) {
 
   linkDeveloperGuide();
   linkAPIReference();
+
+  // setup json display hide on click
+  $(".json-display").click(function() {
+    $(this).hide();
+  });
 
   // pull in the json formated api doc database
   jQuery.ajax({url: "packages/apidocs.json",

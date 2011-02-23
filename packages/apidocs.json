@@ -41,7 +41,7 @@
                 ]
               }, 
               {
-                "desc": "Make a `GET` request.", 
+                "desc": "Make a `POST` request.", 
                 "name": "post", 
                 "returns": {
                   "type": "Request"
@@ -55,6 +55,7 @@
             "name": "Request", 
             "properties": [
               {
+                "desc": "URL to send request to", 
                 "name": "url", 
                 "source_lines": [
                   216, 
@@ -63,7 +64,7 @@
                 "type": "string"
               }, 
               {
-                "desc": "{string,object}", 
+                "desc": "{string,object} content to send with the request", 
                 "name": "content", 
                 "source_lines": [
                   217, 
@@ -71,6 +72,7 @@
                 ]
               }, 
               {
+                "desc": "Content-Type to send along with the request.", 
                 "name": "contentType", 
                 "source_lines": [
                   218, 
@@ -79,6 +81,7 @@
                 "type": "string"
               }, 
               {
+                "desc": "the `Response`, populated upon completion.", 
                 "name": "response", 
                 "source_lines": [
                   219, 
@@ -2574,5 +2577,6 @@
       }
     }, 
     "name": "test-harness"
-  }
+  }, 
+  "version": "e387b27"
 }

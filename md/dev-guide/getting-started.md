@@ -14,6 +14,7 @@ Verify that Python is in your path.
 * The [Chromeless] toolkit. 
 
   [Chromeless]: http://github.com/mozilla/chromeless
+  [Python]: http://python.org/
 
 ## Installation ##
 
@@ -34,7 +35,7 @@ So installation consists only of fetching the software.
 To ensure that chromeless is functional, simply run the default
 example:
 
-  $ &lt;path to chromeless&gt;/chromeless
+    $ <path to chromeless>/chromeless
 
 You should see a simple web browser pop up, if so, you're ready to 
 jump into the [tutorial](#guide/tutorial-first-app).

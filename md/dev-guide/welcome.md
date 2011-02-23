@@ -1,5 +1,5 @@
 
-# Welcome to the Chromeless Toolkit! #
+# Welcome to Chromeless! #
 
 Chromeless is designed to make it easy to build standalone desktop
 applications using only web technologies.  It has features that 

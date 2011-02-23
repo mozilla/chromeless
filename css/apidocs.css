@@ -3,21 +3,48 @@
     font-size: 2em;
 }
 
-.module-detail .package a {
-    color: gray;
+.module-detail a {
+    color: #444;
 }
 
-.module-detail .example {
+.module-detail .invocation img {
+    float: right;
+    opacity: .3;
+}
+
+.module-detail .invocation img:hover {
+    opacity: .7;
+    cursor: pointer;
+}
+
+.module-detail .invocation > a:hover {
+    text-decoration: none;
+    color: #000;
+}
+
+.module-detail .example pre {
     width: 100%;
-    background: #ccc;
     padding: .5em;
-    background-color: .2em;
     margin: 2em;
 }
 
+.module-detail .heading {
+    background-color: aliceBlue;
+    border-top: 2px solid #e0effd;
+    font-size: 1.5em;
+    color: #003595;
+    padding: .4em;
+    margin-top: 1em;
+    margin-bottom: .8em;
+}
+
 .one-property .invocation, .one-function .invocation {
-    font-family: Monaco, Lucida Console, monospace;
+    font-family: "andale mono",monospace;
     font-size: 1.1em;
+    border: 1px solid #558adb;
+    background-color: #E0EFFD;
+    margin-left: .1em;
+    padding: .4em;
 }
 
 .one-property .invocation .propName, .one-function .invocation .funcName {
@@ -26,7 +53,7 @@
 
 .one-property .description, .one-function .description, .one-function .parameters, .one-function .returnvalue {
     margin: 1em;
-    margin-left: 2em;
+    margin-left: 1em;
 }
 
 .one-function {
@@ -58,8 +85,23 @@
     width: 6em;
 }
 
-.one-function .littleheading, .class-detail .littleheading {
-    font-weight: bold;
+.littleheading {
+    color: #C63717;
+}
+
+.functions > .littleheading, .class-detail > .littleheading, .properties > .littleheading {
+    font-size: 1.2em;
+    margin-bottom: .3em;
+    margin-top: .8em;
+    line-height: 1em;
+}
+
+.constructor > div.littleheading {
+    color: #C63717;
+    font-size: 1.2em;
+    margin-bottom: .3em;
+    margin-top: .8em;
+    line-height: 1em;
 }
 
 .class-detail .littleheading {
@@ -70,9 +112,12 @@
     margin-left: 2em;
 }
 
-.class-detail .classname {
-    font-family: Monaco, Lucida Console, monospace;
-    font-size: 1.5em;
+.class-detail div.classname {
+    color: #C63717;
+    font-size: 1.4em;
+    margin-bottom: .3em;
+    margin-top: .8em;
+    line-height: 1em;
 }
 
 .full-api .filter_container {
@@ -95,12 +140,13 @@
     margin-top: .4em;
 }
 
-.full-api input {
+.filter_container input {
     border: 0;
     padding: .5em;
     border-radius: .3em;
     -moz-border-radius: .3em;
     -webkit-border-radius: .3em;
+    background-color: #fff;
 }
 
 .full-api .filter_container > * {
@@ -123,8 +169,8 @@
     margin-top: .65em;
     margin-left: .7em;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
 }
 
-.full-api a {
-    text-decoration: none;
-}
+
