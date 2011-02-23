@@ -1,4 +1,4 @@
-# Configuring App Parameters
+# Startup Parameters
 
 There are a number of parameters available that customize application
 behavior.  These include things like your app's icon and name.  These

@@ -6,6 +6,7 @@ import re
 from cuddlefish import packaging
 from cuddlefish import Bunch
 import simplejson as json
+import chromeless
 
 from docstract import DocStract
 
@@ -99,6 +100,11 @@ def generate_static_docs(env_root, output_dir):
                         pass
 
         os.chdir(oldPath)
+
+    # add version number if available
+    version = chromeless.version()
+    if not version == None:
+        apidocs["version"] = version
 
     apidocs_path = os.path.join(output_dir, "packages", 'apidocs.json')
     open(apidocs_path, 'w').write(json.dumps(apidocs, sort_keys=True, indent=2))

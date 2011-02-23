@@ -213,10 +213,10 @@ function Request(options) {
     request.send(mode == "POST" ? data : null);
   }
 
-  /** @property url {string} */
-  /** @property content {string,object} */
-  /** @property contentType {string} */
-  /** @property response {Response} */
+  /** @property url {string} URL to send request to */
+  /** @property content {string,object} content to send with the request*/
+  /** @property contentType {string} Content-Type to send along with the request. */
+  /** @property response {Response} the `Response`, populated upon completion. */
   // Map these setters/getters to the options
   ["url", "headers", "content", "contentType"].forEach(function (k) {
     _public.__defineGetter__(k, function () options[k]);
@@ -239,7 +239,7 @@ function Request(options) {
   };
 
   /** @function post
-   * Make a `GET` request.
+   * Make a `POST` request.
    * @returns {Request}
    */
   _public.post = function () {

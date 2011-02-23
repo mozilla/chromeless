@@ -52,6 +52,18 @@ h1,h2,h3 {
     padding: 0.5em;
 }
 
+#footer .full-name {
+    font-weight: bold;
+}
+
+#footer .chromeless_version {
+    font-style: italic;
+}
+
+#footer a {
+    color: #fff;
+}
+
 p, pre {
     margin-bottom: 0.9em;
 }
@@ -90,4 +102,42 @@ a:hover, a:focus, a:active {
     padding: 0 1em 0 1em;
     margin: 0;
     line-height: 1em;
+}
+
+.json-display > div.overlay {
+    position: fixed; 
+    position: absolute; 
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    top:0;
+    left:0;
+    opacity: .5;
+    z-order: 10;
+}
+
+.json-display > div.display {
+    position: fixed; 
+    width: 60%;
+    height: 70%;
+    top: 11%;
+    left: 17%;
+    background-color: #fff;
+    padding: 1%;
+    z-order: 20;
+    border-radius: 2em;
+    -moz-border-radius: 2em;
+    -webkit-border-radius: 2em;
+    border: 1em solid #444;
+}
+
+.json-display > div.display > pre {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    line-height: 1.3em;
+}
+
+.json-display {
+    display: none;
 }

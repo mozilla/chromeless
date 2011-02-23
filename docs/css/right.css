@@ -24,10 +24,10 @@
 }
 
 #right-column pre {
-    padding-left: .5em;
-    margin-left: .3em;
+    padding-left: .3em;
+    margin-left: 1.5em;
     border: 1px solid #ddd;
-    border-left: 1.8em solid #ddd;
+    border-left: .8em solid #ddd;
     line-height: 1.4em;
 }
 
