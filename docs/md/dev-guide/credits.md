@@ -19,3 +19,4 @@ directly helped build chromeless:
 * Lloyd Hilaiel
 * Marcio Galli
 * Mike de Boer
+* Panagiotis Astithas
