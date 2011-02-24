@@ -47,9 +47,13 @@
  *
  *     // Show the dialog and process the result!
  *     fp.show(function(x) {
- *         console.log("you picked " + x.length + " files");
- *         for (var i = 0; i < x.length; i++)
- *             console.log("  " + i + ": " + x[i]);
+ *         if (x === undefined) {
+ *             console.log("user selected nothing!  (canceled dialog)");
+ *         } else {
+ *             console.log("you picked " + x.length + " files");
+ *             for (var i = 0; i < x.length; i++)
+ *                 console.log("  " + i + ": " + x[i]);
+ *         }
  *     });
  */
 
