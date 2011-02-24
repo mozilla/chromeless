@@ -1652,8 +1652,8 @@
                 }
               ], 
               "source_lines": [
-                66, 
-                71
+                70, 
+                75
               ], 
               "throws": [
                 {
@@ -1674,8 +1674,8 @@
                   }
                 ], 
                 "source_lines": [
-                  114, 
-                  119
+                  118, 
+                  123
                 ]
               }
             ], 
@@ -1685,8 +1685,8 @@
                 "desc": "The title of the dialog", 
                 "name": "title", 
                 "source_lines": [
-                  75, 
-                  78
+                  79, 
+                  82
                 ], 
                 "type": "string"
               }, 
@@ -1694,8 +1694,8 @@
                 "desc": "The mode of the dialog.  Possible values include:\n\n + `open` to allow for the selection of a single file\n + `save` to show a dialog designed to select a save location for a file\n + `folder` to allow for the selection of a folder/directory\n + `multiple` to allow the user to select multiple files", 
                 "name": "mode", 
                 "source_lines": [
-                  81, 
-                  91
+                  85, 
+                  95
                 ], 
                 "throws": [
                   {
@@ -1706,17 +1706,17 @@
               }
             ], 
             "source_lines": [
-              60, 
-              65
+              64, 
+              69
             ]
           }
         ], 
-        "desc": "A module that allows you to render various dialogs to allow the user to select\nfile(s) or directories.\n\n**Example Usage:**\n\n    // Allocate a file picker\n    const filePicker = require('file-picker');\n    var fp = filePicker.FilePicker();\n\n    // Set the dialog title and selection mode\n    fp.title = \"Hi!  Pick some files!\"\n    fp.mode = \"multiple\";\n\n    // Show the dialog and process the result!\n    fp.show(function(x) {\n        console.log(\"you picked \" + x.length + \" files\");\n        for (var i = 0; i < x.length; i++)\n            console.log(\"  \" + i + \": \" + x[i]);\n    });", 
+        "desc": "A module that allows you to render various dialogs to allow the user to select\nfile(s) or directories.\n\n**Example Usage:**\n\n    // Allocate a file picker\n    const filePicker = require('file-picker');\n    var fp = filePicker.FilePicker();\n\n    // Set the dialog title and selection mode\n    fp.title = \"Hi!  Pick some files!\"\n    fp.mode = \"multiple\";\n\n    // Show the dialog and process the result!\n    fp.show(function(x) {\n        if (x === undefined) {\n            console.log(\"user selected nothing!  (canceled dialog)\");\n        } else {\n            console.log(\"you picked \" + x.length + \" files\");\n            for (var i = 0; i < x.length; i++)\n                console.log(\"  \" + i + \": \" + x[i]);\n        }\n    });", 
         "filename": "file-picker.js", 
         "module": "file-picker", 
         "source_lines": [
           34, 
-          55
+          59
         ]
       }, 
       "fs": {
@@ -2607,5 +2607,5 @@
     }, 
     "name": "test-harness"
   }, 
-  "version": "fb8477c"
+  "version": "aac91b0"
 }
