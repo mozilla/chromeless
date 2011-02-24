@@ -1642,13 +1642,23 @@
               "params": [
                 {
                   "desc": "The title of the dialog", 
-                  "name": "title", 
+                  "name": "[title]", 
+                  "type": "string"
+                }, 
+                {
+                  "desc": "The mode of the dialog", 
+                  "name": "[mode]", 
                   "type": "string"
                 }
               ], 
               "source_lines": [
-                11, 
-                14
+                66, 
+                71
+              ], 
+              "throws": [
+                {
+                  "desc": "if invalid mode is set"
+                }
               ]
             }, 
             "desc": "A class which allows you to open native \"file picker\" dialogs to allow\nthe user to select files or folders.", 
@@ -1664,8 +1674,8 @@
                   }
                 ], 
                 "source_lines": [
-                  24, 
-                  29
+                  114, 
+                  119
                 ]
               }
             ], 
@@ -1675,20 +1685,39 @@
                 "desc": "The title of the dialog", 
                 "name": "title", 
                 "source_lines": [
-                  18, 
-                  21
+                  75, 
+                  78
                 ], 
-                "type": "property"
+                "type": "string"
+              }, 
+              {
+                "desc": "The mode of the dialog.  Possible values include:\n\n + `open` to allow for the selection of a single file\n + `save` to show a dialog designed to select a save location for a file\n + `folder` to allow for the selection of a folder/directory\n + `multiple` to allow the user to select multiple files", 
+                "name": "mode", 
+                "source_lines": [
+                  81, 
+                  91
+                ], 
+                "throws": [
+                  {
+                    "desc": "if invalid mode is set"
+                  }
+                ], 
+                "type": "string"
               }
             ], 
             "source_lines": [
-              5, 
-              10
+              60, 
+              65
             ]
           }
         ], 
+        "desc": "A module that allows you to render various dialogs to allow the user to select\nfile(s) or directories.\n\n**Example Usage:**\n\n    // Allocate a file picker\n    const filePicker = require('file-picker');\n    var fp = filePicker.FilePicker();\n\n    // Set the dialog title and selection mode\n    fp.title = \"Hi!  Pick some files!\"\n    fp.mode = \"multiple\";\n\n    // Show the dialog and process the result!\n    fp.show(function(x) {\n        console.log(\"you picked \" + x.length + \" files\");\n        for (var i = 0; i < x.length; i++)\n            console.log(\"  \" + i + \": \" + x[i]);\n    });", 
         "filename": "file-picker.js", 
-        "module": "file-picker"
+        "module": "file-picker", 
+        "source_lines": [
+          34, 
+          55
+        ]
       }, 
       "fs": {
         "desc": "The fs module provides means to interact with the file system for manipulating\nand querying files and directories.", 
@@ -2578,5 +2607,5 @@
     }, 
     "name": "test-harness"
   }, 
-  "version": "6128678"
+  "version": "fb8477c"
 }
