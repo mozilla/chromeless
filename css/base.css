@@ -81,7 +81,7 @@ strong {
 }
 
 pre, code, kbd, tt, samp, tt {
-    font-family: "andale mono",monospace;
+    font-family: terminus,"andale mono",monospace;
     font-size: .9em;
 }
 
@@ -122,13 +122,13 @@ a:hover, a:focus, a:active {
     height: 70%;
     top: 11%;
     left: 17%;
-    background-color: #fff;
+    background-color: #444;
     padding: 1%;
     z-order: 20;
     border-radius: 2em;
     -moz-border-radius: 2em;
     -webkit-border-radius: 2em;
-    border: 1em solid #444;
+    border: 1em solid #555;
 }
 
 .json-display > div.display > pre {
@@ -136,6 +136,7 @@ a:hover, a:focus, a:active {
     height: 100%;
     overflow: auto;
     line-height: 1.3em;
+    background-color: #444;
 }
 
 .json-display {
