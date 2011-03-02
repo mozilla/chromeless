@@ -181,14 +181,8 @@ class Appifier(object):
         if browser_code_main:
             browser_code_path = os.path.join(browser_code_path, browser_code_main)
 
-        #static_opts = json.loads(harness_options['staticArgs'])
         static_opts = harness_options['staticArgs']
-
-
         static_opts["browser"] = browser_code_path
-        #harness_options['staticArgs'] = json.dumps(static_opts)
-        print "333" + static_opts["browser"]
-        #harness_options['staticArgs'] = static_opts)
         
         # and write harness options
         if verbose:
