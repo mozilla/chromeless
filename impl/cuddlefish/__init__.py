@@ -503,6 +503,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "xpi":
         use_main = True
+    if command == "appify": 
+        use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
             target_cfg['tests'] = []
