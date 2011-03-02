@@ -52,6 +52,9 @@ var print;
 // The directories to look for tests in.
 var dirs;
 
+// The arguments to be passed to the test app for Chromless to launch browser
+var staticArgs;
+
 // How many more times to run all tests.
 var iterationsLeft;
 
@@ -281,7 +284,7 @@ function nextIteration(tests) {
     iterationsLeft--;
   }
   if (iterationsLeft)
-    sandbox.require("unit-test").findAndRunTests({dirs: dirs,
+    sandbox.require("unit-test").findAndRunTests({staticArgs: staticArgs, dirs: dirs,
                                                   filter: filter,
                                                   onDone: nextIteration});
   else
@@ -357,9 +360,9 @@ var runTests = exports.runTests = function runTests(options) {
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
 
+    dump("./package/test-harness/lib/harness.js: runtime elected dirs are:" + dirs);
 
-    
-    dump("11111111111111");
+    staticArgs = options.staticArgs; 
 
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);

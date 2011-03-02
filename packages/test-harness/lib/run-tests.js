@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  *   Atul Varma <atul@mozilla.com>
+ *   Marcio Galli <mgalli@mgalli.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,7 +38,7 @@
 var obsvc = require("observer-service");
 var {Cc,Ci} = require("chrome");
 
-function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, print) {
+function runTests(staticArgs, iterations, filter, profileMemory, verbose, rootPaths, quit, print) {
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
@@ -60,7 +61,8 @@ function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, p
     }
   };
 
-  harness.runTests({iterations: iterations,
+  harness.runTests({staticArgs: staticArgs,
+                    iterations: iterations,
                     filter: filter,
                     profileMemory: profileMemory,
                     verbose: verbose,
@@ -100,7 +102,11 @@ exports.main = function main(options, callbacks) {
   function doRunTests() {
     if (!testsStarted) {
       testsStarted = true;
-      runTests(options.iterations, options.filter,
+
+    var rootPath    = options.staticArgs.appBasePath; 
+    console.log("run-tests.js: adding staticArgs " + options.staticArgs.browser + " -- " + rootPath);
+
+      runTests(options.staticArgs, options.iterations, options.filter,
                options.profileMemory, options.verbose,
                options.rootPaths, callbacks.quit,
                callbacks.print);

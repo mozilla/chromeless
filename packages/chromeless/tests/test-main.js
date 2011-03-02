@@ -17,7 +17,10 @@ exports.testID = function(test) {
 
 exports.testBrowser = function (test) { 
 
-   var options = { "staticArgs": {quitWhenDone: true, "browser":"./examples/dragdrop/index.html", "appBasePath":"/Users/marciogalli/Desktop/chromeless/mozilla/repository/v2/Mar01-test-branch/chromeless" } }; 
+//   var options = { "staticArgs": {quitWhenDone: true, "browser":"./examples/dragdrop/index.html", "appBasePath":"/Users/marciogalli/Desktop/chromeless/mozilla/repository/v2/Mar01-test-branch/chromeless" } }; 
+ console.log("Checking test.options: " + JSON.stringify(test.staticArgs)); 
+
+ var options = { staticArgs: test.staticArgs } 
 
  var callbacks = { quit: function() {
     test.pass();
@@ -26,6 +29,7 @@ exports.testBrowser = function (test) {
 
   test.waitUntilDone();
   m.main( options, callbacks);
+
   console.log("Checking against App = appWindow._browser:" + m.getAppWindow());
   timer.setTimeout( function () { 
   	var mainAppTitle = m.getAppWindow()._browser.contentDocument.title;
