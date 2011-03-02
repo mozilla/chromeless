@@ -469,12 +469,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         time.sleep(cuddlefish.server.IDLE_WEBPAGE_TIMEOUT * 2)
         return
     elif command == "sdocs":
-        import cuddlefish.server
-
-        # TODO: Allow user to change this filename via cmd line.
-        filename = 'addon-sdk-docs.tgz'
-        cuddlefish.server.generate_static_docs(env_root, filename)
-        print "Wrote %s." % filename
+        import docgen
+        import chromeless
+        dirname = os.path.join(chromeless.Dirs().build_dir, "docs")
+        docgen.generate_static_docs(env_root, dirname)
+        print "Created docs in %s." % dirname
         return
 
     target_cfg_json = None
