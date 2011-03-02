@@ -646,8 +646,18 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     retval = 0
 
-    #marcio
     a = appifier.Appifier()
+
+    if command == 'package':
+       browser_code_path = json.loads(options.static_args)["browser"]
+       a.output_xul_app(browser_code=browser_code_path,
+                        harness_options=harness_options,
+                        dev_mode=False)
+    elif command == 'appify':
+        browser_code_path = json.loads(options.static_args)["browser"]
+        a.output_application(browser_code=browser_code_path,
+                             harness_options=harness_options,
+                             dev_mode=False)
 
     if options.templatedir:
         app_extension_dir = os.path.abspath(options.templatedir)
@@ -680,12 +690,13 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             # temporary file to enable console output
             [fd, tmppath] = tempfile.mkstemp()
             os.close(fd)
-            print "mmm ppppppppppppppppp" + tmppath;
-            print "mmm Ppppppppppppppppp" + browser_code_path
-            print "logging to '%s'" % tmppath
+
+            print "__init__: tmppath" + tmppath;
+            print "__init__: browser code path: " + browser_code_path
+            print "And logging to '%s'" % tmppath
+
             harness_options['logFile'] = tmppath
 
-            #print "222111 " + json.dumps(harness_options); 
             standalone_app_dir = a.output_application(browser_code=browser_code_path, harness_options=harness_options, dev_mode=True)
             print "opening '%s'" % standalone_app_dir
 
