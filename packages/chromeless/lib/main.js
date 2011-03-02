@@ -47,6 +47,19 @@ const appinfo = require('appinfo');
 
 var appWindow = null; 
 
+exports.getAppWindow = function () {
+        return appWindow;
+}
+
+
+function testFunction(html) {
+  return html.replace("World", "Hello");
+}
+
+exports.testFunction = testFunction;
+
+
+
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
@@ -106,8 +119,8 @@ function requireForBrowser(moduleName) {
 
 exports.main = function main(options) {
     // access appinfo.json contents for startup parameters
-    const ai = appinfo.contents;
-    console.log("appinfo.json contents: ", ai);
+    //const ai = appinfo.contents;
+    //console.log("appinfo.json contents: ", ai);
 
     var call = options.staticArgs;
 
@@ -150,8 +163,10 @@ exports.main = function main(options) {
         url: startPage,
         width: 800,
         height: 600,
-        resizable: ai.resizable ? true : false,
-        menubar: ai.menubar ? true : false,
+        resizable: true ,
+        menubar: false,
+        //resizable: ai.resizable ? true : false,
+        //menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {

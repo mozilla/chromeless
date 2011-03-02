@@ -55,9 +55,6 @@ def vk_to_jid(vk):
     jid = "jid0-" + s
     return jid
 
-def jid_to_programid(jid):
-    return jid + "@jetpack"
-
 def create_key(keydir, name):
     # return jid
     from ecdsa import SigningKey, NIST256p
@@ -66,7 +63,7 @@ def create_key(keydir, name):
     vk = sk.get_verifying_key()
     vk_text = "public-jid0-%s" % my_b32encode(vk.to_string())
     jid = vk_to_jid(vk)
-    program_id = jid_to_programid(jid)
+    program_id = jid + "@jetpack"
     # save privkey to ~/.jetpack-keys/$jid
     f = open(os.path.join(keydir, jid), "w")
     f.write("private-key: %s\n" % sk_text)
@@ -77,14 +74,19 @@ def create_key(keydir, name):
     f.close()
     return jid
 
-def programid_to_jid(programid):
-    assert programid.endswith("@jetpack")
-    jid = programid[:-len("@jetpack")]
-    return jid
-
 def check_for_privkey(keydir, jid, stderr):
+    # the "anonymous ID" case
     if jid.startswith("anonid0-"):
         return None
+
+    # the "old-style ID" case
+    # FIXME: once it is possible for addons to change from old-style IDs
+    # to new, cryptographic IDs on AMO and in Firefox, warn users that
+    # continuing to use old-style IDs is less secure, and provide them with
+    # instructions for changing to new IDs.
+    if not jid.startswith("jid0-"):
+        return None
+
     keypath = os.path.join(keydir, jid)
     if not os.path.isfile(keypath):
         msg = """\

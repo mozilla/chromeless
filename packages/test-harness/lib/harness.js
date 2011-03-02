@@ -356,6 +356,11 @@ var runTests = exports.runTests = function runTests(options) {
 
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
+
+
+    
+    dump("11111111111111");
+
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
     var globals = {packaging: packaging};
