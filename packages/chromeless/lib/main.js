@@ -47,10 +47,14 @@ const appinfo = require('appinfo');
 
 var appWindow = null; 
 
+// These functions are used from the test application. 
 exports.getAppWindow = function () {
         return appWindow;
 }
 
+exports.getAppBrowser = function () {
+        return appWindow._browser;
+} 
 
 function testFunction(html) {
   return html.replace("World", "Hello");
