@@ -676,9 +676,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command == 'run': 
 
         browser_code_path = options.static_args["browser"]
-#        browser_code_path = json.loads(options.static_args)["browser"]
-
-	print "mmm 22222" + browser_code_path
 
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
@@ -715,8 +712,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                 os.remove(tmppath)
 
     else:
-        print "222222222222211111111111111111111" 
-
         if options.use_server:
             from cuddlefish.server import run_app
         else:
@@ -728,8 +723,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         if options.addons is not None:
             options.addons = options.addons.split(",")
-
-        print "111111111111111111111111111111111 runin tests" 
 
         try:
             retval = run_app(harness_root_dir=app_extension_dir,
