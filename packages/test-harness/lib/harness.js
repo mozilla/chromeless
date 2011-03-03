@@ -36,7 +36,6 @@
 
 var {Cc,Ci} = require("chrome");
 
-var path = require("path");
 var cService = Cc['@mozilla.org/consoleservice;1'].getService()
                .QueryInterface(Ci.nsIConsoleService);
 
@@ -53,9 +52,6 @@ var print;
 // The directories to look for tests in.
 var dirs;
 
-// The arguments to be passed to the test app for Chromless to launch browser
-var staticArgs;
-
 // How many more times to run all tests.
 var iterationsLeft;
 
@@ -64,9 +60,6 @@ var filter;
 
 // Whether to report memory profiling information.
 var profileMemory;
-
-// Information on memory profiler binary component (optional).
-var profiler;
 
 // Combined information from all test runs.
 var results = {
@@ -160,24 +153,6 @@ function dictDiff(last, curr) {
 function reportMemoryUsage() {
   memory.gc();
   sandbox.memory.gc();
-
-  if (profiler) {
-    var namedObjects = {};
-    for (url in sandbox.sandboxes)
-      namedObjects[url] = sandbox.sandboxes[url].globalScope;
-
-    var parentSandbox = require("parent-loader");
-    for (url in parentSandbox.sandboxes)
-      namedObjects["(harness) " + url] = parentSandbox.sandboxes[url].globalScope;
-
-    var result = profiler.binary.profileMemory(profiler.script,
-                                               profiler.scriptUrl,
-                                               1,
-                                               namedObjects);
-    result = JSON.parse(result);
-    if (result.success)
-      analyzeRawProfilingData(result.data);
-  }
 
   var mgr = Cc["@mozilla.org/memory-reporter-manager;1"]
             .getService(Ci.nsIMemoryReporterManager);
@@ -285,15 +260,21 @@ function nextIteration(tests) {
     iterationsLeft--;
   }
   if (iterationsLeft)
-    sandbox.require("unit-test").findAndRunTests({staticArgs: staticArgs, dirs: dirs,
-                                                  filter: filter,
-                                                  onDone: nextIteration});
+    sandbox.require("unit-test").findAndRunTests({
+      testOutOfProcess: packaging.enableE10s,
+      testInProcess: true,
+      fs: sandbox.fs,
+      dirs: dirs,
+      filter: filter,
+      onDone: nextIteration
+    });
   else
     require("timer").setTimeout(cleanup, 0);
 }
 
 var POINTLESS_ERRORS = [
-  "Invalid chrome URI:"
+  "Invalid chrome URI:",
+  "OpenGL LayerManager Initialized Succesfully."
 ];
 
 var consoleListener = {
@@ -345,34 +326,20 @@ var runTests = exports.runTests = function runTests(options) {
     var ptc = require("plain-text-console");
     var url = require("url");
 
-    if (options.profileMemory) {
-      try {
-        var nsjetpack = require("nsjetpack");
-        profiler = {
-          binary: nsjetpack.get(),
-          scriptUrl: packaging.getURLForData("profiler.js")
-        };
-
-        profiler.scriptPath = url.toFilename(profiler.scriptUrl);
-        profiler.script = require("file").read(profiler.scriptPath);
-      } catch (e) {}
-    }
-
-    staticArgs = options.staticArgs; 
-
-    dump("rootPaths are = " + options.rootPaths) 
-
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
-
-    var proposedPath = path.join(staticArgs.appBasePath, "..", path.dirname(staticArgs.browser), "tests");
-    dirs.push(proposedPath);
-    dump("222 ./package/test-harness/lib/harness.js: runtime elected dirs are:" + dirs);
-
-
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
     var globals = {packaging: packaging};
+
+    var xulApp = require("xul-app");
+    var xulRuntime = Cc["@mozilla.org/xre/app-info;1"]
+                     .getService(Ci.nsIXULRuntime);
+
+    print("Running tests on " + xulApp.name + " " + xulApp.version +
+          "/Gecko " + xulApp.platformVersion + " (" + 
+          xulApp.ID + ") under " +
+          xulRuntime.OS + "/" + xulRuntime.XPCOMABI + ".\n");
 
     sandbox = new cuddlefish.Loader({console: console,
                                      globals: globals,

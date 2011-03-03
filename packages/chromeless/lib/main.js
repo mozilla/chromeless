@@ -130,7 +130,7 @@ exports.main = function main(options) {
     // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
     var file        = path.basename(call.browser);
 
-    var rootPath    = path.join(call.appBasePath, "..", path.dirname(call.browser));
+    var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
     var startPage   = "resource://app/" + file;
 
     ios         = Cc["@mozilla.org/network/io-service;1"]

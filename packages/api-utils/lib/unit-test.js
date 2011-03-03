@@ -48,7 +48,6 @@ exports.findAndRunTests = function findAndRunTests(options) {
   finder.findTests(
     function (tests) {
       runner.startMany({tests: tests,
-    staticArgs: options.staticArgs, 
                         onDone: options.onDone});
     });
 };
@@ -246,7 +245,7 @@ TestRunner.prototype = {
     function runNextTest(self) {
       var test = options.tests.shift();
       if (test)
-        self.start({staticArgs: options.staticArgs, test: test, onDone: runNextTest});
+        self.start({test: test, onDone: runNextTest});
       else
         options.onDone(self);
     }
@@ -255,7 +254,6 @@ TestRunner.prototype = {
 
   start: function start(options) {
     this.test = options.test;
-    this.staticArgs = options.staticArgs;
     this.test.passed = 0;
     this.test.failed = 0;
     this.test.errors = {};
