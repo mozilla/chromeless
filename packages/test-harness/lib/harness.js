@@ -36,6 +36,7 @@
 
 var {Cc,Ci} = require("chrome");
 
+var path = require("path");
 var cService = Cc['@mozilla.org/consoleservice;1'].getService()
                .QueryInterface(Ci.nsIConsoleService);
 
@@ -357,12 +358,17 @@ var runTests = exports.runTests = function runTests(options) {
       } catch (e) {}
     }
 
+    staticArgs = options.staticArgs; 
+
+    dump("rootPaths are = " + options.rootPaths) 
+
     dirs = [url.toFilename(path)
             for each (path in options.rootPaths)];
 
-    dump("./package/test-harness/lib/harness.js: runtime elected dirs are:" + dirs);
+    var proposedPath = path.join(staticArgs.appBasePath, "..", path.dirname(staticArgs.browser), "tests");
+    dirs.push(proposedPath);
+    dump("222 ./package/test-harness/lib/harness.js: runtime elected dirs are:" + dirs);
 
-    staticArgs = options.staticArgs; 
 
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
