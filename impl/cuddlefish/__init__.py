@@ -297,7 +297,7 @@ def test_cfx(env_root, verbose):
     return retval
 
 def test_all_examples(env_root, defaults):
-    examples_dir = os.path.join(env_root, "examples")
+    examples_dir = os.path.join(env_root, "tests")
     examples = [dirname for dirname in os.listdir(examples_dir)
                 if os.path.isdir(os.path.join(examples_dir, dirname))]
     examples.sort()
@@ -305,9 +305,10 @@ def test_all_examples(env_root, defaults):
     for dirname in examples:
         print "Testing %s..." % dirname
         try:
+                           #os.path.join(examples_dir, dirname)],
             run(arguments=["test",
                            "--pkgdir",
-                           os.path.join(examples_dir, dirname)],
+                           "packages/chromeless"],
                 defaults=defaults,
                 env_root=env_root)
         except SystemExit, e:
