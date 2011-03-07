@@ -123,8 +123,8 @@ exports.main = function main(options) {
     protocol.setHost("main", startPage , "system");
     var startPage = "chromeless://main/" + call.browser;
 
-
 /*
+
     // convert browser url into a resource:// url
     // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
     var file        = path.basename(call.browser);
