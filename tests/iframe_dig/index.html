@@ -1,0 +1,21 @@
+<html>
+  <body onload="start()">
+    I'm a parent, will set something in child inner frame body ( hi ) 
+   <iframe id="contentFrame" src="inner-page.html" width="400" height="100" border="2" > 
+   </iframe>
+  </body >
+  <script type="text/javascript">
+     
+    function start() { 
+
+    document.getElementsByTagName('iframe')[0].addEventListener("ChromelessLoadStop", function (e) { 
+		console.log(333);
+		console.log(document.getElementById("contentFrame").contentDocument.body);
+		document.getElementById("contentFrame").contentDocument.body.innerHTML="hi";
+    }, false);
+ 
+    } 
+
+
+  </script>
+</html>
