@@ -113,17 +113,18 @@ exports.main = function main(options) {
 
     const contentWindow = require("chromeless-sandbox-window");
 
-
     var file        = path.basename(call.browser);
-    var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
+    var systemMode  = ai.enableSystemPrivileges ? true : false; 
 
-    var startPage = require('url').fromFilename(call.appBasePath);
+    if(systemMode) { 
 
-    var protocol = require("custom-protocol").register("chromeless");
-    protocol.setHost("main", startPage , "system");
-    var startPage = "chromeless://main/" + call.browser;
+        var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
+        var startPage = require('url').fromFilename(call.appBasePath);
+        var protocol = require("custom-protocol").register("chromeless");
+        protocol.setHost("main", startPage , "system");
+        var startPage = "chromeless://main/" + call.browser;
 
-/*
+    } else { 
 
     // convert browser url into a resource:// url
     // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
@@ -150,7 +151,8 @@ exports.main = function main(options) {
              .getService(Ci.nsIChromeRegistry);
     cr.checkForNewChrome();
 
-*/
+    } 
+
 
     console.log("Loading browser using: " + startPage);
 

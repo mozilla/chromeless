@@ -122,6 +122,10 @@ function validate(manf) {
       required: true,
       check: nonEmptyStringCheck
     },
+    enableSystemPrivileges: {
+      required: false,
+      check: booleanCheck
+    },
     version: {
       required: true,
       check: function(x) {
