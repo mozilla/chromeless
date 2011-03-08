@@ -1,8 +1,6 @@
-//var options = { "staticArgs": {quitWhenDone: true, "browser":"./tests/require_hidden-iframe/index.html", "appBasePath":"/Users/marciogalli/Desktop/chromeless/mozilla/repository/v2/Mar01-test-branch/chromeless" } };
 
 const m = require("main");
 const timer = require("timer");
-const self = require("self");
 
 exports.testBrowser = function (test) {
 
