@@ -305,12 +305,37 @@ def test_all_examples(env_root, defaults):
     for dirname in examples:
         print "Testing %s..." % dirname
         try:
-                           #os.path.join(examples_dir, dirname)],
-            run(arguments=["test",
-                           "--pkgdir",
-                           "packages/chromeless"],
-                defaults=defaults,
-                env_root=env_root)
+            import shutil 
+            from string import Template
+
+            test_script_for_app = os.path.join(examples_dir, dirname, "test-app.js")
+
+            if os.path.exists(test_script_for_app): 
+               print "tests.js exists in " + test_script_for_app
+               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
+               print "Will copy test-app.js to " + output_test
+               #shutil.copy(test_script_for_app, output_test);
+               #print "66666" + json.dumps(defaults["static_args"]["browser"]) 
+ 
+               defaultBrowser = os.path.join(".", "tests" , dirname, "index.html")
+               with open(test_script_for_app, 'r') as f:
+                  test_content = f.read()
+                  prefix_contents = 'var options = { "staticArgs": {quitWhenDone: true, "browser": "'+defaultBrowser+'" , "appBasePath": "'+env_root+'" } };' + "\n"
+
+                  with open(output_test, 'w') as ff:
+                     ff.write(prefix_contents)
+                     ff.write(test_content)
+
+               run(arguments=["test",
+                              "--pkgdir",
+                              "packages/chromeless"],
+                   defaults=defaults,
+                   env_root=env_root)
+            else: 
+               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
+               if os.path.exists(output_test): 
+                  os.remove(output_test)
+            
         except SystemExit, e:
             fail = (e.code != 0) or fail
 

@@ -48,9 +48,14 @@ const appinfo = require('appinfo');
 var appWindow = null; 
 
 // These functions are used from the test application. 
+/*
 exports.getAppWindow = function () {
         return appWindow;
 }
+*/
+exports.__defineGetter__('getAppWindow', function () { 
+     return appWindow; 
+} );
 
 exports.getAppBrowser = function () {
         return appWindow._browser;
@@ -182,6 +187,8 @@ exports.main = function main(options) {
             exit: function() {
                 console.log("window.exit() called...");
                 appWindow.close();
+                appWindow = null; // this is for tests framework to test the window 
+                // exists or not 
             }
         }
     });

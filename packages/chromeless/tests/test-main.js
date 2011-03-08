@@ -4,6 +4,7 @@ const m = require("main");
 const timer = require("timer");
 const self = require("self");
 
+/*
 exports.testBrowser = function (test) { 
 
  var callbacks = { quit: function() {
@@ -24,3 +25,4 @@ exports.testBrowser = function (test) {
 
 } 
 
+*/
