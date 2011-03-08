@@ -313,9 +313,7 @@ def test_all_examples(env_root, defaults):
             if os.path.exists(test_script_for_app): 
                print "tests.js exists in " + test_script_for_app
                output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
-               print "Will copy test-app.js to " + output_test
-               #shutil.copy(test_script_for_app, output_test);
-               #print "66666" + json.dumps(defaults["static_args"]["browser"]) 
+               print "Will create test file in " + output_test
  
                defaultBrowser = os.path.join(".", "tests" , dirname, "index.html")
                with open(test_script_for_app, 'r') as f:
