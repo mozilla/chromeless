@@ -65,6 +65,17 @@ function MozFile(path) {
   return file;
 }
 
+function ensureReadable(file) {
+  if (!file.isReadable())
+    throw new Error("path is not readable: " + file.path);
+}
+
+function ensureDir(file) {
+  ensureExists(file);
+  if (!file.isDirectory())
+    throw new Error("path is not a directory: " + file.path);
+}
+
 function ensureExists(file) {
   if (!file.exists()) {
     throw xpcom.friendlyError(Cr.NS_ERROR_FILE_NOT_FOUND, {
@@ -179,6 +190,25 @@ exports.open = function open(filename, mode) {
   return /b/.test(mode) ?
          new byteStreams.ByteReader(stream) :
          new textStreams.TextReader(stream);
+};
+
+/**
+ * Returns a list of file names for a given directory path. 
+ * @param path The path of a directory which you want a list of file names.  
+ */
+exports.list = function list(path) {
+  var file = MozFile(path);
+  ensureDir(file);
+  ensureReadable(file);
+
+  var entries = file.directoryEntries;
+  var entryNames = [];
+  while(entries.hasMoreElements()) {
+    var entry = entries.getNext();
+    entry.QueryInterface(Ci.nsIFile);
+    entryNames.push(entry.leafName);
+  }
+  return entryNames;
 };
 
 /**

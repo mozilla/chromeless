@@ -62,6 +62,9 @@ if len(sys.argv) > 1:
     elif sys.argv[1] == "docs":
         executionMode = "sdocs" 
         print "Generating documentation"
+    elif sys.argv[1] == "tests":
+        executionMode = "testex" 
+        print "Running Chromeless tests"
     else:
         browserToLaunch = findBrowserHTML(sys.argv[1])
 
@@ -91,5 +94,5 @@ cuddlefish.run([
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
         "--static-args", json.dumps({"browser": browserToLaunch}),
-        "-p", "packages/chromeless"
+        "--pkgdir", "packages/chromeless"
         ])

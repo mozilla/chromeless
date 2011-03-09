@@ -1,12 +1,21 @@
 
-import os, sys, re
+import os, sys, re, hashlib
+from cuddlefish.bunch import Bunch
 
 COMMENT_PREFIXES = ["//", "/*", "*", "\'", "\""]
 
 REQUIRE_RE = r"(?<![\'\"])require\s*\(\s*[\'\"]([^\'\"]+?)[\'\"]\s*\)"
 
+# detect the define idiom of the form:
+#   define("module name", ["dep1", "dep2", "dep3"], function() {})
+# by capturing the contents of the list in a group.
+DEF_RE = re.compile(r"(require|define)\s*\(\s*([\'\"][^\'\"]+[\'\"]\s*,)?\s*\[([^\]]+)\]")
+
+# Out of the async dependencies, do not allow quotes in them.
+DEF_RE_ALLOWED = re.compile(r"^[\'\"][^\'\"]+[\'\"]$")
+
 def scan_requirements_with_grep(fn, lines):
-    requires = set()
+    requires = Bunch()
     for line in lines:
         for clause in line.split(";"):
             clause = clause.strip()
@@ -19,7 +28,22 @@ def scan_requirements_with_grep(fn, lines):
             mo = re.search(REQUIRE_RE, clause)
             if mo:
                 modname = mo.group(1)
-                requires.add(mo.group(1))
+                requires[modname] = Bunch()
+
+    # define() can happen across multiple lines, so join everyone up.
+    wholeshebang = "\n".join(lines)
+    for match in DEF_RE.finditer(wholeshebang):
+        # this should net us a list of string literals separated by commas
+        for strbit in match.group(3).split(","):
+            strbit = strbit.strip()
+            # There could be a trailing comma netting us just whitespace, so
+            # filter that out. Make sure that only string values with
+            # quotes around them are allowed, and no quotes are inside
+            # the quoted value.
+            if strbit and DEF_RE_ALLOWED.match(strbit):
+                modname = strbit[1:-1]
+                requires[modname] = Bunch()
+
     return requires
 
 MUST_ASK_FOR_CHROME =  """\
@@ -94,30 +118,138 @@ def scan_module(fn, lines, stderr=sys.stderr):
     # barfs on /\s+/ in context-menu.js
     #requires = scan_requirements_with_jsscan(fn)
     requires = scan_requirements_with_grep(fn, lines)
-    requires.discard("chrome")
+    requires.pop("chrome", None)
     chrome, problems = scan_chrome(fn, lines, stderr)
-    return sorted(requires), chrome, problems
+    return requires, chrome, problems
 
-def scan_package(pkg_name, dirname, stderr=sys.stderr):
-    manifest = []
+def scan_package(prefix, resource_url, pkg_name, section, dirname,
+                 stderr=sys.stderr):
+    manifest = {}
     has_problems = False
     for dirpath, dirnames, filenames in os.walk(dirname):
         for fn in [fn for fn in filenames if fn.endswith(".js")]:
-            if fn.startswith("."):
-                continue
             modname = os.path.splitext(fn)[0]
             # turn "packages/api-utils/lib/content/foo" into "content/foo"
             reldir = dirpath[len(dirname)+1:]
             if reldir:
                 modname = "/".join(reldir.split(os.sep) + [modname])
             absfn = os.path.join(dirpath, fn)
+            hashhex = hashlib.sha256(open(absfn,"rb").read()).hexdigest()
             lines = open(absfn).readlines()
             requires, chrome, problems = scan_module(absfn, lines, stderr)
-            manifest.append( (pkg_name, modname, requires, chrome) )
+            url = "%s%s.js" % (resource_url, modname)
+            info = { "packageName": pkg_name,
+                     "sectionName": section,
+                     "name": modname,
+                     "hash": hashhex,
+                     "requires": requires,
+                     "chrome": chrome,
+                     "e10s-adapter": None,
+                     "zipname": "resources/%s%s-%s/%s.js" % (prefix, pkg_name,
+                                                             section, modname),
+                     }
+            manifest[url] = Bunch(**info)
             if problems:
                 has_problems = True
-
     return manifest, has_problems
+
+def update_manifest_with_fileinfo(deps, loader, manifest):
+    packages = deps[:]
+    if loader not in packages:
+        packages.append(loader)
+
+    # "m" helps us find where each modname will be found. The runtime code
+    # will walk harness_options.rootPaths, which includes the lib/ directory
+    # of all included packages, and the tests/ directory of the top-level
+    # package. The manifest we're handed will have data for all these
+    # directories. Some modules (those with "absolute" paths) will search the
+    # whole rootPaths list, while others (with "relative" paths) will only
+    # look in the package they're being imported from. We just record the
+    # first section that the module appears in, and the resource: URL of the
+    # module there.
+    m = {}
+    for url, i in manifest.items():
+        idx = (i.packageName,i.name)
+        if idx not in m:
+            m[idx] = url
+    for url, i in manifest.items():
+        looking_for = i.name + '-e10s-adapter'
+        for source in packages:
+            if (source,looking_for) in m:
+                # got it
+                i['e10s-adapter'] = m[ (source,looking_for) ]
+                break
+
+        for reqname in i.requires:
+            # now where will this requirement come from? This code tries to
+            # duplicate the behavior of the LocalFileSystem.resolveModule
+            # method in packages/api-utils/lib/securable-module.js . Our
+            # goal is to find a specific .js file, at link time, and record
+            # as much information as we can about it in the manifest. Some of
+            # this information is destined for the runtime, which will
+            # complain if it appears to be loading a module that differs from
+            # the one the linker found. The rest of the information is
+            # intended for external code-review tools, so the humans reading
+            # through the code can confidently exclude common modules that
+            # were reviewed earlier.
+
+            reqname_bits = reqname.split("/")
+
+            if reqname_bits[0] in (".", ".."):
+                # for relative paths like these, we only look in the single
+                # package that did the require()
+                search_all = False
+                # and start from the module doing the require()
+                target = i.name.split("/")[:-1]
+                while reqname_bits:
+                    first = reqname_bits.pop(0)
+                    if first == ".":
+                        continue
+                    elif first == "..":
+                        try:
+                            target.pop()
+                        except IndexError:
+                            raise
+                    else:
+                        target.append(first)
+                looking_for = "/".join(target)
+            else:
+                # for absolute paths, we search all packages, always in the
+                # same order (i.e. the package that did the require() does
+                # not get special treatment)
+                search_all = True
+                looking_for = reqname
+
+            found_url = None
+            if search_all:
+                for source in packages:
+                    if (source,looking_for) in m:
+                        # got it
+                        found_url = m[ (source,looking_for) ]
+                        break
+            else:
+                # only look in the package doing the importing
+                if (i.packageName,looking_for) in m:
+                    # yup
+                    found_url = m[ (i.packageName,looking_for) ]
+
+            if found_url:
+                # now store the zipfile name (actually the URL)
+                #print >>sys.stderr, "FOUND:", pkgname, modname, reqname, looking_for, url
+                i.requires[reqname]["url"] = found_url
+            elif i.chrome:
+                # we can't find the module they're loading, but they've asked
+                # for chrome, so the runtime isn't going to complain. So
+                # let's not complain either.
+                #print >>sys.stderr, "NOT FOUND (but chrome)", pkgname, modname, reqname, looking_for
+                pass
+
+            elif i.sectionName == "tests":
+                # don't complain when tests import imaginary things
+                pass
+            else:
+                print >>sys.stderr, "NOT FOUND", i.packageName, i.sectionName, i.name, reqname, looking_for, packages
+    # the manifest is modified in-place
 
 if __name__ == '__main__':
     for fn in sys.argv[1:]:

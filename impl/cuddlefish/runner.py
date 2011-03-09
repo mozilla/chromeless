@@ -7,30 +7,9 @@ import shutil
 
 import simplejson as json
 import mozrunner
+from cuddlefish.prefs import DEFAULT_COMMON_PREFS
 from cuddlefish.prefs import DEFAULT_FIREFOX_PREFS
 from cuddlefish.prefs import DEFAULT_THUNDERBIRD_PREFS
-
-def install_xpts(harness_root_dir, xpts):
-    """
-    Temporarily 'installs' all given XPCOM typelib files into the
-    harness components directory.
-
-    This is needed because there doesn't seem to be any way to
-    install typelibs during the runtime of a XULRunner app.
-    """
-
-    my_components_dir = os.path.join(harness_root_dir, 'components')
-    installed_xpts = []
-    for abspath in xpts:
-        target = os.path.join(my_components_dir,
-                              os.path.basename(abspath))
-        shutil.copyfile(abspath, target)
-        installed_xpts.append(target)
-
-    @atexit.register
-    def cleanup_installed_xpts():
-        for path in installed_xpts:
-            os.remove(path)
 
 def follow_file(filename):
     """
@@ -72,7 +51,6 @@ def follow_file(filename):
 
 class FennecProfile(mozrunner.Profile):
     preferences = {}
-
     names = ['fennec']
 
 class FennecRunner(mozrunner.Runner):
@@ -100,9 +78,7 @@ class FennecRunner(mozrunner.Runner):
         return self.__real_binary
 
 class XulrunnerAppProfile(mozrunner.Profile):
-    preferences = {'browser.dom.window.dump.enabled': True,
-                   'javascript.options.strict': True}
-
+    preferences = {}
     names = []
 
 class XulrunnerAppRunner(mozrunner.Runner):
@@ -121,10 +97,7 @@ class XulrunnerAppRunner(mozrunner.Runner):
 
     # This is a default, and will be overridden in the instance if
     # Firefox is used in XULRunner mode.
-  
-    # We need to have 'firefox' in the name list, because sometimes 
-    # we launch xulrunner app from firefox app, -app mode
-    names = ['xulrunner','firefox']
+    names = ['xulrunner']
 
     # Default location of XULRunner on OS X.
     __DARWIN_PATH = "/Library/Frameworks/XUL.framework/xulrunner-bin"
@@ -212,7 +185,7 @@ class XulrunnerAppRunner(mozrunner.Runner):
                 self.names = runner.names
         return self.__real_binary
 
-def run_app(harness_root_dir, harness_options, xpts,
+def run_app(harness_root_dir, harness_options,
             app_type, binary=None, profiledir=None, verbose=False,
             timeout=None, logfile=None, addons=None):
     if binary:
@@ -224,7 +197,7 @@ def run_app(harness_root_dir, harness_options, xpts,
         addons = list(addons)
 
     cmdargs = []
-    preferences = {}
+    preferences = dict(DEFAULT_COMMON_PREFS)
 
     if app_type == "xulrunner":
         profile_class = XulrunnerAppProfile
@@ -234,11 +207,11 @@ def run_app(harness_root_dir, harness_options, xpts,
         addons.append(harness_root_dir)
         if app_type == "firefox":
             profile_class = mozrunner.FirefoxProfile
-            preferences = DEFAULT_FIREFOX_PREFS
+            preferences.update(DEFAULT_FIREFOX_PREFS)
             runner_class = mozrunner.FirefoxRunner
         elif app_type == "thunderbird":
             profile_class = mozrunner.ThunderbirdProfile
-            preferences = DEFAULT_THUNDERBIRD_PREFS
+            preferences.update(DEFAULT_THUNDERBIRD_PREFS)
             runner_class = mozrunner.ThunderbirdRunner
         elif app_type == "fennec":
             profile_class = FennecProfile
@@ -271,8 +244,6 @@ def run_app(harness_root_dir, harness_options, xpts,
         logfile = os.path.abspath(os.path.expanduser(logfile))
         maybe_remove_logfile()
         harness_options['logFile'] = logfile
-
-    install_xpts(harness_root_dir, xpts)
 
     env = {}
     env.update(os.environ)

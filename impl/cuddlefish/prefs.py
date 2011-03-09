@@ -1,3 +1,12 @@
+DEFAULT_COMMON_PREFS = {
+    # allow debug output via dump to be printed to the system console
+    # (setting it here just in case, even though PlainTextConsole also
+    # sets this preference)
+    'browser.dom.window.dump.enabled': True,
+    # warn about possibly incorrect code
+    'javascript.options.strict': True
+}
+
 # When launching a temporary new Firefox profile, use these preferences.
 DEFAULT_FIREFOX_PREFS = {
     'extensions.checkCompatibility.4.0b': False,
@@ -10,8 +19,6 @@ DEFAULT_FIREFOX_PREFS = {
 # Note that these were taken from:
 # http://mxr.mozilla.org/comm-central/source/mail/test/mozmill/runtest.py
 DEFAULT_THUNDERBIRD_PREFS = {
-    # say yes to debug output via dump
-    'browser.dom.window.dump.enabled': True,
     # say no to slow script warnings
     'dom.max_chrome_script_run_time': 200,
     'dom.max_script_run_time': 0,
