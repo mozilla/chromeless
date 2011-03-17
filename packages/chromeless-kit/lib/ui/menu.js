@@ -199,10 +199,10 @@ var Menu = function(struct) {
     */
     this.hide = function () { 
         let menuBar = this.parent;
-        /*
+        // We also need this to remove the nodes in Mac OS X 
         while (menuBar.firstChild)
            menuBar.removeChild(menuBar.firstChild);
-        */
+        // This is specifically to Windows/Linux 
         menuBar.setAttribute("collapsed","true");  
     } 
 
