@@ -139,16 +139,12 @@ var xhtmlNs = "http://www.w3.org/1999/xhtml";
 
 const ai = appinfo.contents;
 
-var menubar = "";
+var menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 0;">' +
+             '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
+             '</menubar>' +
+             '</toolbox>';
 
-if(ai.menubar) { 
-   menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 0;">' +
-                '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
-                '</menubar>' +
-                '</toolbox>';
-} else { 
-   menubar = ""
-}  
+if (!ai.menubar) menubar = ""; 
 
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
