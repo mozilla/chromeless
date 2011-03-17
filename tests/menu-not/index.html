@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <title>menu specifier</title>
+  </head>
+  <body>
+   Testing no menu
+... 
+  </body>
+  <script type="text/javascript">
+
+// an example of setting the main menu
+const ui = require("ui"),
+      menu = require("ui/menu");
+
+// a generic handler
+function loggit(x) {
+  console.log("thanks for clicking");
+}
+
+var file = new menu.Menu({
+    parent: ui.getMenu(),
+    label: "File",
+    children: [
+        new menu.Menu({
+            label: "New Window",
+            hotkey: "accel-n",
+            type: "radio",
+            checked: true,
+            onClick: function(e) {
+                alert("yay!");
+            }
+        }),
+        new menu.Menu({
+            label: "New Tab",
+            children: [
+                new menu.Menu({ label: "In the current window",
+                                onClick: loggit}),
+                new menu.Menu({ label: "In a new window", onClick: loggit})
+            ]
+        })
+    ]
+});
+
+
+  </script>
+</html>
