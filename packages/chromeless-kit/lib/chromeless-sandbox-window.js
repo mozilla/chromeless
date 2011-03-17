@@ -144,7 +144,7 @@ var menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 
              '</menubar>' +
              '</toolbox>';
 
-if (!ai.menubar) menubar = ""; 
+if (typeof(ai.menubar) != "undefined") menubar = ""; 
 
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
