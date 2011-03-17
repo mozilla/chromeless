@@ -191,6 +191,19 @@ var Menu = function(struct) {
     }
 
     /**
+    * @function hide 
+    * Remove all nodes. This is the approach that is required to get 
+    * rid of the menu nodes. 
+    * 
+    * @type {void}
+    */
+    this.hide = function () { 
+        let menuBar = this.parent;
+        while (menuBar.firstChild)
+           menuBar.removeChild(menuBar.firstChild);
+    } 
+
+    /**
      * @function draw
      * Draw a menu element to the canvas (a XUL document)
      * Usually this function is invoked by setParent()
