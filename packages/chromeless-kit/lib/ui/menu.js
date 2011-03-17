@@ -199,8 +199,11 @@ var Menu = function(struct) {
     */
     this.hide = function () { 
         let menuBar = this.parent;
+        /*
         while (menuBar.firstChild)
            menuBar.removeChild(menuBar.firstChild);
+        */
+        menuBar.setAttribute("collapsed","true");  
     } 
 
     /**
