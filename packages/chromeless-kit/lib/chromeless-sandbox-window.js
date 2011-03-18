@@ -139,12 +139,15 @@ var xhtmlNs = "http://www.w3.org/1999/xhtml";
 
 const ai = appinfo.contents;
 
-var menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 0;">' +
-             '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
-             '</menubar>' +
-             '</toolbox>';
 
-if (typeof(ai.menubar) != "undefined") menubar = ""; 
+var menubar = ''; 
+
+if (typeof(ai.menubar) == "undefined" || ai.menubar == true ) { 
+   menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 0;">' +
+                '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
+                '</menubar>' +
+                '</toolbox>';
+} 
 
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
