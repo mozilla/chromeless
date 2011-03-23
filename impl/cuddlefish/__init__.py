@@ -700,6 +700,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
         browser_code_path = options.static_args["browser"]
 
+        print "aaaa" + browser_code_path
+
         if options.profiledir:
             options.profiledir = os.path.expanduser(options.profiledir)
             options.profiledir = os.path.abspath(options.profiledir)
@@ -734,21 +736,27 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                 tailProcess.terminate()
                 os.remove(tmppath)
 
-    else:
-        if options.use_server:
-            from cuddlefish.server import run_app
         else:
-            from cuddlefish.runner import run_app
 
-        if options.profiledir:
-            options.profiledir = os.path.expanduser(options.profiledir)
-            options.profiledir = os.path.abspath(options.profiledir)
+            xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
+                                           harness_options=harness_options,
+                                           dev_mode=True)
 
-        if options.addons is not None:
-            options.addons = options.addons.split(",")
+            if options.use_server:
+                from cuddlefish.server import run_app
+            else:
+                from cuddlefish.runner import run_app
 
-        try:
-            retval = run_app(harness_root_dir=app_extension_dir,
+            if options.profiledir:
+                options.profiledir = os.path.expanduser(options.profiledir)
+                options.profiledir = os.path.abspath(options.profiledir)
+
+            if options.addons is not None:
+                options.addons = options.addons.split(",")
+
+            try:
+                #retval = run_app(harness_root_dir=app_extension_dir,
+                retval = run_app(harness_root_dir=xul_app_dir,
                              harness_options=harness_options,
                              app_type=options.app,
                              binary=options.binary,
@@ -757,11 +765,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              timeout=timeout,
                              logfile=options.logfile,
                              addons=options.addons)
-        except Exception, e:
-            if str(e).startswith(MOZRUNNER_BIN_NOT_FOUND):
-                print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
-                retval = -1
-            else:
-                raise
+            except Exception, e:
+                if str(e).startswith(MOZRUNNER_BIN_NOT_FOUND):
+                    print >>sys.stderr, MOZRUNNER_BIN_NOT_FOUND_HELP.strip()
+                    retval = -1
+                else:
+                    raise
 
-    sys.exit(retval)
+        sys.exit(retval)
