@@ -21,17 +21,13 @@ I can't find the application binary in any of its default locations
 on your system. Please specify one using the -b/--binary option.
 """
 
-UPDATE_RDF_FILENAME = "%s.update.rdf"
-XPI_FILENAME = "%s.xpi"
-
 usage = """
 %prog [options] command [command-specific options]
 
 Supported Commands:
-  init       - create a sample addon in an empty directory
   test       - run tests
   run        - run program
-  xpi        - generate an xpi
+  package    - generate a stanalone xulrunner app directory
 
 Internal Commands:
   sdocs      - export static documentation
@@ -53,16 +49,6 @@ global_options = [
 
 parser_groups = (
     ("Supported Command-Specific Options", [
-        (("", "--update-url",), dict(dest="update_url",
-                                     help="update URL in install.rdf",
-                                     metavar=None,
-                                     default=None,
-                                     cmds=['xpi'])),
-        (("", "--update-link",), dict(dest="update_link",
-                                      help="generate update.rdf",
-                                      metavar=None,
-                                      default=None,
-                                      cmds=['xpi'])),
         (("-p", "--profiledir",), dict(dest="profiledir",
                                        help=("profile directory to pass to "
                                              "app"),
@@ -106,20 +92,15 @@ parser_groups = (
                                        help="use named config from local.json",
                                        metavar=None,
                                        default="default",
-                                       cmds=['test', 'run', 'xpi', 'testex',
+                                       cmds=['test', 'run', 'testex',
                                              'testpkgs', 'testall'])),
-        (("", "--templatedir",), dict(dest="templatedir",
-                                      help="XULRunner app/ext. template",
-                                      metavar=None,
-                                      default=None,
-                                      cmds=['run', 'xpi'])),
         (("", "--extra-packages",), dict(dest="extra_packages",
                                          help=("extra packages to include, "
                                                "comma-separated. Default is "
                                                "'addon-kit'."),
                                          metavar=None,
                                          default="addon-kit",
-                                         cmds=['run', 'xpi', 'test', 'testex',
+                                         cmds=['run', 'test', 'testex',
                                                'testpkgs', 'testall',
                                                'testcfx'])),
         (("", "--pkgdir",), dict(dest="pkgdir",
@@ -128,13 +109,13 @@ parser_groups = (
                                        "current directory"),
                                  metavar=None,
                                  default=None,
-                                 cmds=['run', 'xpi', 'test'])),
+                                 cmds=['run', 'test'])),
         (("", "--static-args",), dict(dest="static_args",
                                       help="extra harness options as JSON",
                                       type="json",
                                       metavar=None,
                                       default="{}",
-                                      cmds=['run', 'xpi'])),
+                                      cmds=['run'])),
         ]
      ),
 
@@ -159,7 +140,7 @@ parser_groups = (
                                        " default is ~/.jetpack/keys"),
                                  metavar=None,
                                  default=os.path.expanduser("~/.jetpack/keys"),
-                                 cmds=['test', 'run', 'xpi', 'testex',
+                                 cmds=['test', 'run', 'testex',
                                        'testpkgs', 'testall'])),
         (("", "--e10s",), dict(dest="enable_e10s",
                                help="enable out-of-process Jetpacks",
@@ -425,9 +406,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     command = args[0]
 
-    if command == "init":
-        initializer(env_root, args)
-        return
     if command == "testpkgs":
         test_all_packages(env_root, defaults=options.__dict__)
         return
@@ -473,17 +451,13 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     timeout = None
     inherited_options = ['verbose', 'enable_e10s']
 
-    if command == "xpi":
-        use_main = True
-    if command == "appify": 
+    if command in ("run", "package", "appify"):
         use_main = True
     elif command == "test":
         if 'tests' not in target_cfg:
             target_cfg['tests'] = []
         timeout = TEST_RUN_TIMEOUT
         inherited_options.extend(['iterations', 'filter', 'profileMemory'])
-    elif command == "run":
-        use_main = True
     else:
         print >>sys.stderr, "Unknown command: %s" % command
         print >>sys.stderr, "Try using '--help' for assistance."
@@ -515,7 +489,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     # TODO: Consider keeping a cache of dynamic UUIDs, based
     # on absolute filesystem pathname, in the root directory
     # or something.
-    if command in ('xpi', 'run', 'appify'):
+    if command in ('package', 'run', 'appify'):
         from cuddlefish.preflight import preflight_config
         if target_cfg_json:
             config_was_ok, modified = preflight_config(
