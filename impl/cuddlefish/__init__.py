@@ -625,20 +625,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              harness_options=harness_options,
                              dev_mode=False)
 
-    if options.templatedir:
-        app_extension_dir = os.path.abspath(options.templatedir)
-    else:
-        mydir = os.path.dirname(os.path.abspath(__file__))
-        if sys.platform == "darwin":
-            # If we're on OS X, at least point into the XULRunner
-            # app dir so we run as a proper app if using XULRunner.
-            app_extension_dir = os.path.join(mydir, "Test App.app",
-                                             "Contents", "Resources")
-        else:
-            app_extension_dir = os.path.join(mydir, "app-extension")
-
     if command == 'run': 
-
         browser_code_path = options.static_args["browser"]
 
         if options.profiledir:
@@ -688,7 +675,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                 options.addons = options.addons.split(",")
 
             try:
-                #retval = run_app(harness_root_dir=app_extension_dir,
                 retval = run_app(harness_root_dir=xul_app_dir,
                              harness_options=harness_options,
                              app_type=options.app,
