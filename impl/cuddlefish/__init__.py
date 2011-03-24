@@ -28,14 +28,10 @@ usage = """
 %prog [options] command [command-specific options]
 
 Supported Commands:
-  docs       - view web-based documentation
   init       - create a sample addon in an empty directory
   test       - run tests
   run        - run program
   xpi        - generate an xpi
-
-Experimental Commands:
-  develop    - run development server
 
 Internal Commands:
   sdocs      - export static documentation
@@ -139,16 +135,6 @@ parser_groups = (
                                       metavar=None,
                                       default="{}",
                                       cmds=['run', 'xpi'])),
-        ]
-     ),
-
-    ("Experimental Command-Specific Options", [
-        (("", "--use-server",), dict(dest="use_server",
-                                     help="use development server",
-                                     action="store_true",
-                                     default=False,
-                                     cmds=['run', 'test', 'testex', 'testpkgs',
-                                           'testall'])),
         ]
      ),
 
@@ -353,27 +339,6 @@ def test_all_packages(env_root, defaults):
         pkg_cfg=pkg_cfg,
         defaults=defaults)
 
-def run_development_mode(env_root, defaults):
-    pkgdir = os.path.join(env_root, 'packages', 'development-mode')
-    app = defaults['app']
-
-    from cuddlefish import server
-    port = server.DEV_SERVER_PORT
-    httpd = server.make_httpd(env_root, port=port)
-    thread = server.threading.Thread(target=httpd.serve_forever)
-    thread.setDaemon(True)
-    thread.start()
-
-    print "I am starting an instance of %s in development mode." % app
-    print "From a separate shell, you can now run cfx commands with"
-    print "'--use-server' as an option to send the cfx command to this"
-    print "instance. All logging messages will appear below."
-
-    os.environ['JETPACK_DEV_SERVER_PORT'] = str(port)
-    options = {}
-    options.update(defaults)
-    run(["run", "--pkgdir", pkgdir],
-        defaults=options, env_root=env_root)
 
 def get_config_args(name, env_root):
     local_json = os.path.join(env_root, "local.json")
@@ -462,9 +427,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "init":
         initializer(env_root, args)
-        return
-    if command == "develop":
-        run_development_mode(env_root, defaults=options.__dict__)
         return
     if command == "testpkgs":
         test_all_packages(env_root, defaults=options.__dict__)
@@ -596,13 +558,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         assert not jid.endswith("@jetpack")
         unique_prefix = '%s-' % jid # used for resource: URLs
     else:
-        # The Jetpack ID is not required for cfx test, in which case we have to
-        # make one up based on the GUID.
-        if options.use_server:
-            # The harness' contractID (hence also the jid and the harness_guid)
-            # need to be static in the "development mode", so that bootstrap.js
-            # can unload the previous version of the package being developed.
-            harness_guid = '2974c5b5-b671-46f8-a4bb-63c6eca6261b'
         unique_prefix = '%s-' % target
         jid = harness_guid
 
@@ -737,10 +692,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
                                            harness_options=harness_options,
                                            dev_mode=True)
-            if options.use_server:
-                from cuddlefish.server import run_app
-            else:
-                from cuddlefish.runner import run_app
+            from cuddlefish.runner import run_app
 
             if options.profiledir:
                 options.profiledir = os.path.expanduser(options.profiledir)
