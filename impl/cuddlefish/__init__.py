@@ -440,20 +440,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     elif command == "testcfx":
         test_cfx(env_root, options.verbose)
         return
-    elif command == "docs":
-        import subprocess
-        import time
-        import cuddlefish.server
-
-        print "One moment."
-        popen = subprocess.Popen([sys.executable,
-                                  cuddlefish.server.__file__,
-                                  'daemonic'])
-        # TODO: See if there's actually a way to block on
-        # a particular event occurring, rather than this
-        # relatively arbitrary/generous amount.
-        time.sleep(cuddlefish.server.IDLE_WEBPAGE_TIMEOUT * 2)
-        return
     elif command == "sdocs":
         import docgen
         import chromeless
