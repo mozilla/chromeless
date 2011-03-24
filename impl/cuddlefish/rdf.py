@@ -127,7 +127,7 @@ def gen_manifest(template_root_dir, target_cfg, bundle_id,
     if update_url:
         manifest.set("em:updateURL", update_url)
     else:
-	manifest.remove("em:updateURL")
+        manifest.remove("em:updateURL")
 
     if target_cfg.get("homepage"):
         manifest.set("em:homepageURL", target_cfg.get("homepage"))

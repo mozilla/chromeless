@@ -47,6 +47,28 @@ const appinfo = require('appinfo');
 
 var appWindow = null; 
 
+// These functions are used from the test application. 
+/*
+exports.getAppWindow = function () {
+        return appWindow;
+}
+*/
+exports.__defineGetter__('getAppWindow', function () { 
+     return appWindow; 
+} );
+
+exports.getAppBrowser = function () {
+        return appWindow._browser;
+} 
+
+function testFunction(html) {
+  return html.replace("World", "Hello");
+}
+
+exports.testFunction = testFunction;
+
+
+
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
@@ -106,8 +128,8 @@ function requireForBrowser(moduleName) {
 
 exports.main = function main(options) {
     // access appinfo.json contents for startup parameters
-    const ai = appinfo.contents;
-    console.log("appinfo.json contents: ", ai);
+    //const ai = appinfo.contents;
+    //console.log("appinfo.json contents: ", ai);
 
     var call = options.staticArgs;
 
@@ -116,6 +138,7 @@ exports.main = function main(options) {
     // convert browser url into a resource:// url
     // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
     var file        = path.basename(call.browser);
+
     var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
     var startPage   = "resource://app/" + file;
 
@@ -150,8 +173,10 @@ exports.main = function main(options) {
         url: startPage,
         width: 800,
         height: 600,
-        resizable: ai.resizable ? true : false,
-        menubar: ai.menubar ? true : false,
+        resizable: true ,
+        menubar: false,
+        //resizable: ai.resizable ? true : false,
+        //menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {
@@ -162,6 +187,8 @@ exports.main = function main(options) {
             exit: function() {
                 console.log("window.exit() called...");
                 appWindow.close();
+                appWindow = null; // this is for tests framework to test the window 
+                // exists or not 
             }
         }
     });

@@ -76,6 +76,9 @@ const obSvc = Cc["@mozilla.org/observer-service;1"]
 const ioSvc = Cc["@mozilla.org/network/io-service;1"]
               .getService(Ci.nsIIOService);
 
+// XXX: we only care about running under xulrunner, we needen't
+// embed guids for various apps, we needen't have conditional code for
+// them either.
 const FIREFOX_ID = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
 const THUNDERBIRD_ID = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
 const FENNEC_ID = "{a23983c0-fd0e-11dc-95ff-0800200c9a66}";
@@ -192,25 +195,9 @@ function buildHarnessService(rootFileSpec, dump, logError,
   // modules loaded within our loader.
 
   function Packaging() {
-    // TODO: This "restructuring" of options.manifest isn't ideal; we
-    // options.manifest should be structured like this already from
-    // the cfx side.
-    var packages = {};
 
-    options.manifest.forEach(
-      function(entry) {
-        var packageName = entry[0];
-        var moduleName = entry[1];
-        var info = {
-          dependencies: entry[2],
-          needsChrome: entry[3]
-        };
-        if (!(packageName in packages))
-          packages[packageName] = {};
-        packages[packageName][moduleName] = info;
-      });
+    this.__packages = options.manifest;
 
-    this.__packages = packages;
   }
 
   Packaging.prototype = {
@@ -239,6 +226,21 @@ function buildHarnessService(rootFileSpec, dump, logError,
     bundleID: options.bundleID,
 
     getModuleInfo: function getModuleInfo(path) {
+   var i = this.__packages[path];
+      var info = { dependencies: i.requires,
+                   needsChrome: i.chrome,
+                   'e10s-adapter': i['e10s-adapter'],
+                   name: i.name,
+                   packageName: i.packageName,
+                   hash: i.hash
+                   };
+      if (info.packageName in options.packageData)
+        info.packageData = options.packageData[info.packageName];
+      
+      return info;
+
+/*
+
       var uri = ioSvc.newURI(path, null, null);
       var info = {
         // TODO: It's weird that we're duplicating logic here with
@@ -254,6 +256,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
         info.needsChrome = manifest.needsChrome;
       }
       return info;
+*/
     },
 
     // TODO: This has been superseded by require('self').getURL() and
@@ -284,7 +287,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
   HarnessService.prototype = {
     get classDescription() {
       // This needs to be unique, lest we regress bug 554489.
-      return "Harness Service for " + options.bootstrap.contractID;
+      return "Harness_Service_for_" + options.bootstrap.contractID;
     },
 
     get contractID() { return options.bootstrap.contractID; },
@@ -355,8 +358,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
 
       obSvc.removeObserver(this, "quit-application-granted");
 
-      lifeCycleObserver192.unload();
-
       // Notify the program of unload.
       if (program) {
         if (typeof(program.onUnload) === "function") {
@@ -399,16 +400,15 @@ function buildHarnessService(rootFileSpec, dump, logError,
             obSvc.addObserver(this, "final-ui-startup", true);
             break;
           }
-          lifeCycleObserver192.init(options.bundleID, logError);
           break;
         case "final-ui-startup": // XULRunner
         case "sessionstore-windows-restored": // Firefox
         case "xul-window-visible": // Thunderbird, Fennec
           obSvc.removeObserver(this, topic);
-          this.load(lifeCycleObserver192.loadReason || "startup");
+          this.load("startup");
           break;
         case "quit-application-granted":
-          this.unload(lifeCycleObserver192.unloadReason || "shutdown");
+          this.unload("shutdown");
           quit("OK");
           break;
         }
@@ -457,8 +457,6 @@ function buildDevQuit(options, dump) {
   }
 
   return function onQuit(result) {
-    dump(result + "\n");
-
     function writeResult() {
       if (!fileWritten)
         try {
@@ -542,8 +540,12 @@ function getDefaults(rootFileSpec) {
     }
 
     options = JSON.parse(jsonData);
-    if ("staticArgs" in options)
-      options.staticArgs = JSON.parse(options.staticArgs);
+  
+    if ("staticArgs" in options) {
+        dirbase = rootFileSpec.clone();
+        options.staticArgs.appBasePath=dirbase.path;
+    }
+
   } catch (e) {
     defaultLogError(e);
     throw e;
@@ -589,100 +591,18 @@ function getDefaults(rootFileSpec) {
           logError: logError};
 }
 
-// Everything below is only used on Gecko 1.9.2 or below.
-
-function NSGetModule(compMgr, fileSpec) {
-  var rootFileSpec = fileSpec.parent.parent;
+// This is used by XULRunner when running Gecko 2.0 or above.
+function NSGetFactory(classID) {
+  var defaultsDir = Cc["@mozilla.org/file/directory_service;1"]
+                    .getService(Ci.nsIProperties)
+                    .get("DefRt", Ci.nsIFile);
+  var rootFileSpec = defaultsDir.parent;
   var defaults = getDefaults(rootFileSpec);
+
   var HarnessService = buildHarnessService(rootFileSpec,
                                            defaults.dump,
                                            defaults.logError,
                                            defaults.onQuit,
                                            defaults.options);
-  return XPCOMUtils.generateModule([HarnessService]);
+  return HarnessService.prototype._xpcom_factory;
 }
-
-// Program life-cycle events originate in bootstrap.js on 1.9.3.  But 1.9.2
-// doesn't use bootstrap.js, so we need to do a little extra work there to
-// determine the reasons for app startup and shutdown.  That's what this
-// singleton is for.  On 1.9.3 all methods are no-ops.
-var lifeCycleObserver192 = {
-  get loadReason() {
-    if (this._inited) {
-      // If you change these names, change them in bootstrap.js too.
-      if (this._addonIsNew)
-        return "install";
-      return "startup";
-    }
-    return undefined;
-  },
-
-  get unloadReason() {
-    if (this._inited) {
-      // If you change these names, change them in bootstrap.js too.
-      switch (this._emState) {
-      case "item-uninstalled":
-        return "uninstall";
-      case "item-disabled":
-        return "disable";
-      }
-      return "shutdown";
-    }
-    return undefined;
-  },
-
-  // This must be called first to initialize the singleton.  It must be called
-  // before profile-after-change.
-  init: function lifeCycleObserver192_init(bundleID, logError) {
-    // This component is present in 1.9.2 but not 1.9.3.
-    if ("@mozilla.org/extensions/manager;1" in Cc && !this._inited) {
-      // Need an event that's sent before the HarnessService is loaded but after
-      // the preferences service is available.  profile-after-change works.
-      obSvc.addObserver(this, "profile-after-change", true);
-      obSvc.addObserver(this, "em-action-requested", true);
-      this._bundleID = bundleID;
-      this._logError = logError;
-      this._inited = true;
-    }
-  },
-
-  unload: function lifeCycleObserver192_unload() {
-    if (this._inited && !this._unloaded) {
-      obSvc.removeObserver(this, "em-action-requested");
-      delete this._logError;
-      this._unloaded = true;
-    }
-  },
-
-  observe: function lifeCycleObserver192_observe(subj, topic, data) {
-    try {
-      if (topic === "profile-after-change") {
-        obSvc.removeObserver(this, topic);
-        try {
-          // This throws if the pref doesn't exist, which is the case when no
-          // new add-ons were installed.
-          var addonIdStr = Cc["@mozilla.org/preferences-service;1"].
-                           getService(Ci.nsIPrefBranch).
-                           getCharPref("extensions.newAddons");
-        }
-        catch (err) {}
-        if (addonIdStr) {
-          var addonIds = addonIdStr.split(",");
-          this._addonIsNew = addonIds.indexOf(this._bundleID) >= 0;
-        }
-      }
-      else if (topic === "em-action-requested") {
-        if (subj instanceof Ci.nsIUpdateItem && subj.id === this._bundleID)
-          this._emState = data;
-      }
-    }
-    catch (err) {
-      this._logError(err);
-    }
-  },
-
-  QueryInterface: XPCOMUtils.generateQI([
-    Ci.nsIObserver,
-    Ci.nsISupportsWeakReference,
-  ])
-};

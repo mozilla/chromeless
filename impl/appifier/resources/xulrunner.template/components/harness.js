@@ -195,25 +195,9 @@ function buildHarnessService(rootFileSpec, dump, logError,
   // modules loaded within our loader.
 
   function Packaging() {
-    // TODO: This "restructuring" of options.manifest isn't ideal; we
-    // options.manifest should be structured like this already from
-    // the cfx side.
-    var packages = {};
 
-    options.manifest.forEach(
-      function(entry) {
-        var packageName = entry[0];
-        var moduleName = entry[1];
-        var info = {
-          dependencies: entry[2],
-          needsChrome: entry[3]
-        };
-        if (!(packageName in packages))
-          packages[packageName] = {};
-        packages[packageName][moduleName] = info;
-      });
+    this.__packages = options.manifest;
 
-    this.__packages = packages;
   }
 
   Packaging.prototype = {
@@ -242,6 +226,21 @@ function buildHarnessService(rootFileSpec, dump, logError,
     bundleID: options.bundleID,
 
     getModuleInfo: function getModuleInfo(path) {
+   var i = this.__packages[path];
+      var info = { dependencies: i.requires,
+                   needsChrome: i.chrome,
+                   'e10s-adapter': i['e10s-adapter'],
+                   name: i.name,
+                   packageName: i.packageName,
+                   hash: i.hash
+                   };
+      if (info.packageName in options.packageData)
+        info.packageData = options.packageData[info.packageName];
+      
+      return info;
+
+/*
+
       var uri = ioSvc.newURI(path, null, null);
       var info = {
         // TODO: It's weird that we're duplicating logic here with
@@ -257,6 +256,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
         info.needsChrome = manifest.needsChrome;
       }
       return info;
+*/
     },
 
     // TODO: This has been superseded by require('self').getURL() and
@@ -540,12 +540,12 @@ function getDefaults(rootFileSpec) {
     }
 
     options = JSON.parse(jsonData);
-    if ("staticArgs" in options) { 
-        options.staticArgs = JSON.parse(options.staticArgs);
+  
+    if ("staticArgs" in options) {
         dirbase = rootFileSpec.clone();
         options.staticArgs.appBasePath=dirbase.path;
-        options.staticArgs.browser = options.staticArgs.browser;
-    } 
+    }
+
   } catch (e) {
     defaultLogError(e);
     throw e;
