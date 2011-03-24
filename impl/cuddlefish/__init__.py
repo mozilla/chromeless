@@ -674,12 +674,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     a = appifier.Appifier()
 
     if command == 'package':
-       browser_code_path = json.loads(options.static_args)["browser"]
+       browser_code_path = options.static_args["browser"]
        a.output_xul_app(browser_code=browser_code_path,
                         harness_options=harness_options,
                         dev_mode=False)
     elif command == 'appify':
-        browser_code_path = json.loads(options.static_args)["browser"]
+        browser_code_path = options.static_args["browser"]
         a.output_application(browser_code=browser_code_path,
                              harness_options=harness_options,
                              dev_mode=False)
