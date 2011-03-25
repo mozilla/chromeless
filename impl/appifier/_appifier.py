@@ -74,13 +74,15 @@ class Appifier(object):
             app_info = chromeless.AppInfo(dir=browser_code_dir)
             output_dir = os.path.join(self.dirs.build_dir, app_info.name) + ".xul"
             if os.path.exists(output_dir):
-                print "Removing old xul app"
+                if verbose:
+                    print "Removing old xul app"
                 shutil.rmtree(output_dir)
 
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
-        print "Building xulrunner app in >%s< ..." % output_dir 
+        if verbose:
+            print "Building xulrunner app in >%s< ..." % output_dir 
 
         # extract information about the application from appinfo.json
         app_info = chromeless.AppInfo(dir=browser_code_dir)
@@ -183,16 +185,16 @@ class Appifier(object):
 
         static_opts = harness_options['staticArgs']
         static_opts["browser"] = browser_code_path
-        
+
         # and write harness options
         if verbose:
             print "  ... writing harness options"
 
         with open(os.path.join(output_dir, "harness-options.json"), 'w') as f:
             f.write(json.dumps(harness_options, indent=4))
-        
+
         # XXX: support for extra packages located outside of the packages/ directory!
 
-
-        print "xul app generated in %s" % relpath(output_dir, self.dirs.cuddlefish_root) 
+        if verbose:
+            print "xul app generated in %s" % relpath(output_dir, self.dirs.cuddlefish_root) 
         return output_dir
