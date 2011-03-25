@@ -358,35 +358,6 @@ def killProcessByName(name):
             break
 
 
-def initializer(env_root, args, out=sys.stdout, err=sys.stderr):
-    from templates import MAIN_JS, PACKAGE_JSON, README_DOC, MAIN_JS_DOC, TEST_MAIN_JS
-    path = os.getcwd()
-    addon = os.path.basename(path)
-    # if more than one argument
-    if len(args) > 1:
-        print >>err, 'Too many arguments.'
-        return 1
-    # if current dir isn't empty
-    if len(os.listdir(path)) > 0:
-        print >>err, 'This command must be run in an empty directory.'
-        return 1
-    for d in ['lib','data','tests','docs']:
-        os.mkdir(os.path.join(path,d))
-        print >>out, '*', d, 'directory created'
-    open('README.md','w').write(README_DOC % {'name':addon})
-    print >>out, '* README.md written'
-    open('package.json','w').write(PACKAGE_JSON % {'name':addon})
-    print >>out, '* package.json written'
-    open(os.path.join(path,'tests','test-main.js'),'w').write(TEST_MAIN_JS)
-    print >>out, '* tests/test-main.js written'
-    open(os.path.join(path,'lib','main.js'),'w').write(MAIN_JS)
-    print >>out, '* lib/main.js written'
-    open(os.path.join(path,'docs','main.md'),'w').write(MAIN_JS_DOC)
-    print >>out, '* docs/main.md written'
-    print >>out, '\nYour sample add-on is now ready.'
-    print >>out, 'Do "cfx test" to test it and "cfx run" to try it.  Have fun!'
-    return 0
-
 def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         defaults=None, env_root=os.environ.get('CUDDLEFISH_ROOT')):
     parser_kwargs = dict(arguments=arguments,
@@ -398,7 +369,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     (options, args) = parse_args(**parser_kwargs)
 
     config_args = get_config_args(options.config, env_root);
-    
+
     # reparse configs with arguments from local.json
     if config_args:
         parser_kwargs['arguments'] += config_args
@@ -621,7 +592,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
             harness_options['logFile'] = tmppath
 
-            standalone_app_dir = a.output_application(browser_code=browser_code_path, harness_options=harness_options, dev_mode=True)
+            standalone_app_dir = a.output_application(browser_code=browser_code_path, harness_options=harness_options, dev_mode=True, verbose=False)
             print "opening '%s'" % standalone_app_dir
 
             tailProcess = None
@@ -638,7 +609,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         else:
             xul_app_dir = a.output_xul_app(browser_code=browser_code_path,
                                            harness_options=harness_options,
-                                           dev_mode=True)
+                                           dev_mode=True, verbose=False)
             from cuddlefish.runner import run_app
 
             try:
