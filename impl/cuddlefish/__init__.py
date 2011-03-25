@@ -599,7 +599,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              harness_options=harness_options,
                              dev_mode=False)
 
-    if command == 'run': 
+    else: 
         browser_code_path = options.static_args["browser"]
 
         if options.profiledir:
@@ -640,13 +640,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                                            harness_options=harness_options,
                                            dev_mode=True)
             from cuddlefish.runner import run_app
-
-            if options.profiledir:
-                options.profiledir = os.path.expanduser(options.profiledir)
-                options.profiledir = os.path.abspath(options.profiledir)
-
-            if options.addons is not None:
-                options.addons = options.addons.split(",")
 
             try:
                 retval = run_app(harness_root_dir=xul_app_dir,
