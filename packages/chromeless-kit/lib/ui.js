@@ -57,7 +57,6 @@ exports.getMainWindow = function getMainWindow() {
 /**
  * Return a list of currently open windows.
  */
-exports.getWindows     = 
 exports.getOpenWindows = function getOpenWindows() {
     return windows.browserWindows;
 };
