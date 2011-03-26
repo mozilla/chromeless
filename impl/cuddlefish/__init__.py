@@ -276,6 +276,7 @@ def test_all_examples(env_root, defaults):
             from string import Template
 
             test_script_for_app = os.path.join(examples_dir, dirname, "test-app.js")
+            browserToLaunch = os.path.join(examples_dir, dirname, "index.html")
 
             if os.path.exists(test_script_for_app): 
                print "tests.js exists in " + test_script_for_app
@@ -293,7 +294,8 @@ def test_all_examples(env_root, defaults):
 
                run(arguments=["test",
                               "--pkgdir",
-                              "packages/chromeless"],
+                              "packages/chromeless",
+                              "--static-args", json.dumps({"browser": browserToLaunch})],
                    defaults=defaults,
                    env_root=env_root)
             else: 

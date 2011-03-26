@@ -285,9 +285,12 @@ var consoleListener = {
     var message = object.QueryInterface(Ci.nsIConsoleMessage).message;
     var pointless = [err for each (err in POINTLESS_ERRORS)
                          if (message.indexOf(err) == 0)];
+/*
     if (pointless.length == 0 && message)
       print("console: " + message + "\n");
+*/
   }
+
 };
 
 function TestRunnerConsole(base, options) {
