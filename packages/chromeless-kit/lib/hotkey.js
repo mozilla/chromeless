@@ -161,7 +161,7 @@ function getBinding(hotkey, command) {
  *                                  to execute when the hotkey is executed.
  * @param {string} [id] Optional. Unique identifier for this hotkey, which will 
  *                      auto-generated if not provided.
- * @type  {string} Return the ID of the hotkey.
+ * @returns  {string} Return the ID of the hotkey.
  */
 exports.register = function(hotkey, command, id) {
     let {key, modifiers} = parseHotkey(hotkey);
