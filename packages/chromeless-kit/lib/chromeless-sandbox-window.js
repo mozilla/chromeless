@@ -63,7 +63,7 @@ observers.add("content-document-global-created", function(subject, url) {
       // this is a frame nested underneath the top level frame
       subject.window.wrappedJSObject.top = subject.window.parent.top;
     }
-  }
+  } 
 });
 
 
@@ -145,7 +145,7 @@ var blankXul = ('<?xml version="1.0"?>' +
                 '</window>');
 
 
-function Window(options) {
+function Window(options, testCallbacks) {
   memory.track(this);
 
   function trueIsYes(x) { return x ? "yes" : "no"; }
@@ -171,6 +171,7 @@ function Window(options) {
   this._window = window;
   this._browser = null;
   this._injector = null;
+  this._testCallbacks = testCallbacks;
   this.options = options;
 
   window.addEventListener("close", this, false);
@@ -215,6 +216,13 @@ Window.prototype = {
 
         this._browser = browser;
         browser.loadURI(this.options.url);
+        if(this._testCallbacks != undefined && this._testCallbacks.onload != undefined) {
+           var refthis = this; 
+           browser.addEventListener("DOMContentLoaded", function () { 
+             refthis._testCallbacks.onload();
+           }, false); 
+        } 
+
       }
       return false;
     };

@@ -126,7 +126,7 @@ function requireForBrowser(moduleName) {
     }
 }
 
-exports.main = function main(options) {
+exports.main = function main(options, testCallbacks) {
     // access appinfo.json contents for startup parameters
     //const ai = appinfo.contents;
     //console.log("appinfo.json contents: ", ai);
@@ -191,7 +191,7 @@ exports.main = function main(options) {
                 // exists or not 
             }
         }
-    });
+    }, testCallbacks);
 };
 
 exports.onUnload = function (reason) {
