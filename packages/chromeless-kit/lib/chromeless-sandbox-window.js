@@ -3,6 +3,7 @@ let {Cc, Ci} = require("chrome");
 var gWindows = [];
 
 const xpcom = require("xpcom");
+const appinfo = require("appinfo");
 
 const ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
     .getService(Ci.nsIWindowWatcher);
@@ -133,17 +134,20 @@ Injector.prototype = {
 
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 var xhtmlNs = "http://www.w3.org/1999/xhtml";
+const ai = appinfo.contents;
 
+var menubar = '';
+if (typeof(ai.menubar) == "undefined" || ai.menubar == true ) {
+   menubar ='<toolbox id="theTopToolbox" style="padding: 0; border: 0; margin: 0;">' +
+            '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
+            '</menubar>' +
+            '</toolbox>';
+}
 var blankXul = ('<?xml version="1.0"?>' +
                 '<?xml-stylesheet ' +
                 ' type="text/css"?> ' +
-                '<window style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' +
-                '<toolbox style="padding: 0; border: 0; margin: 0;">' +
-                '<menubar id="theMenuBar" style="padding: 0; border: 0; margin: 0;">' +
-                '</menubar>' +
-                '</toolbox>' +
+                '<window style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' + menubar +
                 '</window>');
-
 
 function Window(options, testCallbacks) {
   memory.track(this);
