@@ -41,26 +41,24 @@
  * Allows one to control fullscreen view for the main application window
  */
 
-var mainWin = require("window-utils");
-
 /**
  * Size the main application window to consume the full screen
  */
-exports.enable = function() {
-   mainWin.activeWindow.fullScreen=true;
+exports.enable = function(window) {
+   window.fullScreen=true;
 };
 
 /**
  * Disable fullscreen mode (noop if it wasn't enabled)
  */
-exports.disable = function() {
-   mainWin.activeWindow.fullScreen=false;
+exports.disable = function(window) {
+   window.fullScreen=false;
 };
 
 /**
  * Toggle fullscreen.
  */
-exports.toggle = function() {
-   mainWin.activeWindow.fullScreen=!mainWin.activeWindow.fullScreen;
+exports.toggle = function(window) {
+   window.fullScreen=!window.fullScreen;
 };
 
