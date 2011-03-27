@@ -132,35 +132,45 @@ exports.main = function main(options, testCallbacks) {
     //console.log("appinfo.json contents: ", ai);
 
     var call = options.staticArgs;
-
     const contentWindow = require("chromeless-sandbox-window");
 
-    // convert browser url into a resource:// url
-    // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
-    var file        = path.basename(call.browser);
+    var file = path.basename(call.browser);
 
-    var rootPath    = path.join(call.appBasePath, path.dirname(call.browser));
-    var startPage   = "resource://app/" + file;
+    var systemMode = appinfo.contents.enableSystemPrivileges ? true : false;
 
-    ios         = Cc["@mozilla.org/network/io-service;1"]
-                      .getService(Ci.nsIIOService),
-    resProtocol = ios.getProtocolHandler("resource")
-                      .QueryInterface(Ci.nsIResProtocolHandler),
-
-    environment = Cc["@mozilla.org/process/environment;1"]
-                      .getService(Ci.nsIEnvironment),
-    resRoot     = Cc["@mozilla.org/file/local;1"]
-                      .createInstance(Ci.nsILocalFile),
-
-    resRoot.initWithPath(rootPath);
-
-    resProtocol.setSubstitution("app", ios.newFileURI(resRoot));
-
-    // register chrome://* URIs
-    let cr = Cc["@mozilla.org/chrome/chrome-registry;1"]
-             .getService(Ci.nsIChromeRegistry);
-    cr.checkForNewChrome();
-
+    if(systemMode) {
+        var rootPath = path.join(call.appBasePath, path.dirname(call.browser));
+        var startPage = require('url').fromFilename(call.appBasePath);
+        var protocol = require("custom-protocol").register("chromeless");
+        protocol.setHost("main", startPage , "system");
+        var startPage = "chromeless://main/" + call.browser;
+    } else {
+       // convert browser url into a resource:// url
+       // i.e. 'browser_code/index.html' is mapped to 'resource://app/index.html'
+       var file = path.basename(call.browser);
+       var rootPath = path.join(call.appBasePath, path.dirname(call.browser));
+       var startPage = "resource://app/" + file;
+   
+       ios = Cc["@mozilla.org/network/io-service;1"]
+                         .getService(Ci.nsIIOService),
+       resProtocol = ios.getProtocolHandler("resource")
+                         .QueryInterface(Ci.nsIResProtocolHandler),
+   
+       environment = Cc["@mozilla.org/process/environment;1"]
+                         .getService(Ci.nsIEnvironment),
+       resRoot = Cc["@mozilla.org/file/local;1"]
+                         .createInstance(Ci.nsILocalFile),
+   
+       resRoot.initWithPath(rootPath);
+   
+       resProtocol.setSubstitution("app", ios.newFileURI(resRoot));
+   
+       // register chrome://* URIs
+       let cr = Cc["@mozilla.org/chrome/chrome-registry;1"]
+                .getService(Ci.nsIChromeRegistry);
+       cr.checkForNewChrome();
+    } 
+    
     console.log("Loading browser using: " + startPage);
 
     // enable debugging by default
