@@ -4,11 +4,11 @@
   </head>
   <body>
     I'm a parent, will set something in child inner frame body ( hi ) 
-   <iframe id="contentFrame" src="http://www.google.com" width="400" height="100" border="2" ></iframe>
+   <iframe id="inner" src="http://www.google.com" width="400" height="100" border="2" ></iframe>
   </body >
   <script type="text/javascript">
-        $('#contentFrame')[0].addEventListener("ChromelessLoadStop", function (e) { 
-              $('#contentFrame').contents().find('body').html("hello!");
+        $('#inner')[0].addEventListener("ChromelessLoadStop", function (e) { 
+              $('#inner').contents().find('body').html("hello");
 	}, false);
   </script>
 </html>
