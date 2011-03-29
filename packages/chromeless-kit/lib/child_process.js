@@ -38,12 +38,19 @@ const {Cc, Ci}       = require("chrome"),
       {Stream}       = require("net"),
       {EventEmitter} = require("events"),
       processes      = {};
-      
+
 let GUID = 0;
 
-exports.spawn = function(command, args, options) {
+/**
+ * spawn a child process.
+ * @param command The command to execute
+ * @param args Arguments to said command
+ * @returns A ChildProcess
+ */
+exports.spawn = function(command, args) {
     var child = ChildProcess();
-    return child.run(command, args, options);
+    child.run(command, args, options);
+    return child;
 }
 
 function inspect(o) {
@@ -67,6 +74,7 @@ function ChildProcess() {
     }
 }
 
+/** @class ChildProcess */
 ChildProcess.prototype = {
     __proto__: EventEmitter.prototype,
     constructor: ChildProcess,
@@ -74,12 +82,17 @@ ChildProcess.prototype = {
     stdin: null,
     stdout: null,
     stderr: null,
-    
-    run: function(command, args, options) {
+
+    /**
+     * Asynchronously run a child process
+     * @param command The command to execute
+     * @param args Arguments to said command
+     */
+    run: function(command, args) {
         this.stdin  = Stream();
         this.stdout = Stream();
         this.stderr = Stream();
-        
+
         // create an nsILocalFile for the executable
         var file = Cc["@mozilla.org/file/local;1"]
                    .createInstance(Ci.nsILocalFile);
@@ -106,9 +119,7 @@ ChildProcess.prototype = {
     },
     
     /**
-     * Stops the server from accepting new connections. This function is
-     * asynchronous, the server is finally closed when the server emits a
-     * 'close' event.
+     * Kill the child process and clean up resources.
      */
     destroy: function() {
         if (this._process) {
@@ -124,6 +135,7 @@ ChildProcess.prototype = {
 }
 
 exports.ChildProcess = ChildProcess;
+/** @endclass */
 
 require("unload").when(function unload() {
     for each(let process in processes) process.destroy()
