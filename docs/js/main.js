@@ -303,10 +303,11 @@ function startApp(jQuery, window) {
         t.find(".docs").remove();
       }
 
-      if (c.constructor) {
+      // XXX: support multiple constructors
+      if (c.constructors && c.constructors.length) {
         // we'll treat constructors like a normal functions, but use the classname
         // as the function name
-        var classCopy = $.extend(true, {}, c.constructor);
+        var classCopy = $.extend(true, {}, c.constructors[0]);
         classCopy.name = c.name;
         populateFunctions(t.find(".constructor"), moduleName, [ classCopy ]);
       } else {
