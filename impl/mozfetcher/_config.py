@@ -1,10 +1,10 @@
 software = {
     "Linux_64bit": {
-       "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.linux-x86_64.tar.bz2",
-       "md5": "1c735b4e478f83b674a8cde834011e29",
+       "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-x86_64.tar.bz2",
+       "md5": "cb0dc6ff5304b325098fc8910057884f",
        "bin": {
            "path": "xulrunner/xulrunner",
-           "sig": "daf246fc716772e9031938ee50d610cf"
+           "sig": "d103f16afe6a6125bb28987a9e391fee"
        }
     },
     # for both 32 and 64 bit darwin we'll use 32 bit binaries
@@ -30,8 +30,8 @@ software = {
         "bin": {
             "path": "xulrunner/xulrunner",
             "sig": "daf246fc716772e9031938ee50d610cf"
-            }
-        },
+        }
+    }
 }
 
 def getConfig(platform):
