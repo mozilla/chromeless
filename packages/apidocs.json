@@ -18,14 +18,66 @@
                 "desc": "This constructor creates a request object that can be used to make network\nrequests. The constructor takes a single parameter `options` which is used to\nset several properties on the resulting `Request`.", 
                 "params": [
                   {
-                    "desc": "Contains the following properties:\n\n**url** (*string*)\n\nThis is the url to which the request will be made.\n\n**[onComplete]** (*function*)\n\nThis function will be called when the request has received a response (or in\nterms of XHR, when `readyState == 4`). The function is passed a `Response`\nobject.\n\n**[headers]** (*object*)\n\nAn unordered collection of name/value pairs representing headers to send\nwith the request.\n\n**[content]** (*string*,*object*)\n\nThe content to send to the server. If `content` is a string, it\nshould be URL-encoded (use `encodeURIComponent`). If `content` is\nan object, it should be a collection of name/value pairs. Nested\nobjects & arrays should encode safely.\n\nFor `GET` requests, the query string (`content`) will be appended\nto the URL. For `POST` requests, the query string will be sent as\nthe body of the request.\n\n**[contentType]** (*string*)\n\nThe type of content to send to the server. This explicitly sets the\n`Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
                     "name": "options", 
-                    "type": "object"
+                    "type": {
+                      "name": "object", 
+                      "properties": [
+                        {
+                          "desc": "The url to which the request will be made.", 
+                          "name": "url", 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string"
+                        }, 
+                        {
+                          "desc": "  This function will be called when the request has received a response (or in\n  terms of XHR, when `readyState == 4`). The function is passed a `Response`\n  object.", 
+                          "name": "onComplete", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "function"
+                        }, 
+                        {
+                          "desc": "  An unordered collection of name/value pairs representing headers to send\n  with the request.", 
+                          "name": "headers", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "object"
+                        }, 
+                        {
+                          "desc": "  The content to send to the server. If `content` is a string, it\n  should be URL-encoded (use `encodeURIComponent`). If `content` is\n  an object, it should be a collection of name/value pairs. Nested\n  objects & arrays should encode safely.\n\n  For `GET` requests, the query string (`content`) will be appended\n  to the URL. For `POST` requests, the query string will be sent as\n  the body of the request.", 
+                          "name": "content", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string,object"
+                        }, 
+                        {
+                          "desc": "  The type of content to send to the server. This explicitly sets the\n  `Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
+                          "name": "contentType", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string"
+                        }
+                      ]
+                    }
                   }
                 ], 
                 "source_lines": [
                   122, 
-                  161
+                  154
                 ]
               }
             ], 
@@ -38,8 +90,8 @@
                   "type": "Request"
                 }, 
                 "source_lines": [
-                  232, 
-                  235
+                  225, 
+                  228
                 ]
               }, 
               {
@@ -49,8 +101,8 @@
                   "type": "Request"
                 }, 
                 "source_lines": [
-                  241, 
-                  244
+                  234, 
+                  237
                 ]
               }
             ], 
@@ -60,8 +112,8 @@
                 "desc": "URL to send request to", 
                 "name": "url", 
                 "source_lines": [
-                  216, 
-                  216
+                  209, 
+                  209
                 ], 
                 "type": "string"
               }, 
@@ -69,8 +121,8 @@
                 "desc": "content to send with the request", 
                 "name": "content", 
                 "source_lines": [
-                  217, 
-                  217
+                  210, 
+                  210
                 ], 
                 "type": "string,object"
               }, 
@@ -78,8 +130,8 @@
                 "desc": "Content-Type to send along with the request.", 
                 "name": "contentType", 
                 "source_lines": [
-                  218, 
-                  218
+                  211, 
+                  211
                 ], 
                 "type": "string"
               }, 
@@ -87,8 +139,8 @@
                 "desc": "the `Response`, populated upon completion.", 
                 "name": "response", 
                 "source_lines": [
-                  219, 
-                  219
+                  212, 
+                  212
                 ], 
                 "type": "Response"
               }

@@ -38,6 +38,10 @@
     margin-bottom: .8em;
 }
 
+.invocation .params > span > span.type, .invocation span > span.type {
+   margin-right: .65em;
+}
+
 .one-property .invocation, .one-function .invocation {
     font-family: "andale mono",monospace;
     font-size: 1.1em;
@@ -62,7 +66,6 @@
 
 .one-function .type, .one-property .type {
     color: gray;
-    margin-right: .65em;
 }
 
 .one-function .paramdoc {
@@ -83,6 +86,24 @@
     font-size: 1.1em;
     font-style: italic;
     width: 6em;
+}
+
+.one-param > .desc {
+  padding-left: 1em;
+  margin-top: .5em;
+  margin-bottom: .5em;
+}
+
+.paramdoc > .one-param > .desc {
+  border-left: 1px solid #ccc;
+}
+
+.one-param > .summary * {
+ font-weight: bold;
+}
+
+.one-param > .summary  {
+ font-weight: bold;
 }
 
 .littleheading {
