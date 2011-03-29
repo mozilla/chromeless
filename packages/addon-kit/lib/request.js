@@ -124,40 +124,33 @@ const REUSE_ERROR = "This request object has been used already. You must " +
  * This constructor creates a request object that can be used to make network
  * requests. The constructor takes a single parameter `options` which is used to
  * set several properties on the resulting `Request`.
- * @param options {object}
+ * @param options {object
  *
- * Contains the following properties:
+ *   @prop url {string} The url to which the request will be made.
  *
- * **url** (*string*)
+ *   @prop [onComplete] {function}
+ *   This function will be called when the request has received a response (or in
+ *   terms of XHR, when `readyState == 4`). The function is passed a `Response`
+ *   object.
  *
- * This is the url to which the request will be made.
- * 
- * **[onComplete]** (*function*)
+ *   @prop [headers] {object}
+ *   An unordered collection of name/value pairs representing headers to send
+ *   with the request.
  *
- * This function will be called when the request has received a response (or in
- * terms of XHR, when `readyState == 4`). The function is passed a `Response`
- * object.
- * 
- * **[headers]** (*object*)
+ *   @prop [content] {string,object}
+ *   The content to send to the server. If `content` is a string, it
+ *   should be URL-encoded (use `encodeURIComponent`). If `content` is
+ *   an object, it should be a collection of name/value pairs. Nested
+ *   objects & arrays should encode safely.
  *
- * An unordered collection of name/value pairs representing headers to send
- * with the request.
- * 
- * **[content]** (*string*,*object*)
+ *   For `GET` requests, the query string (`content`) will be appended
+ *   to the URL. For `POST` requests, the query string will be sent as
+ *   the body of the request.
  *
- * The content to send to the server. If `content` is a string, it
- * should be URL-encoded (use `encodeURIComponent`). If `content` is
- * an object, it should be a collection of name/value pairs. Nested
- * objects & arrays should encode safely.
- * 
- * For `GET` requests, the query string (`content`) will be appended
- * to the URL. For `POST` requests, the query string will be sent as
- * the body of the request.
- * 
- * **[contentType]** (*string*)
- *
- * The type of content to send to the server. This explicitly sets the
- * `Content-Type` header. The default value is `application/x-www-form-urlencoded`.
+ *   @prop [contentType] {string}
+ *   The type of content to send to the server. This explicitly sets the
+ *   `Content-Type` header. The default value is `application/x-www-form-urlencoded`.
+ * }
  */
 function Request(options) {
   const self = EventEmitter(),
