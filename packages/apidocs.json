@@ -13,20 +13,22 @@
       "request": {
         "classes": [
           {
-            "constructor": {
-              "desc": "This constructor creates a request object that can be used to make network\nrequests. The constructor takes a single parameter `options` which is used to\nset several properties on the resulting `Request`.", 
-              "params": [
-                {
-                  "desc": "Contains the following properties:\n\n**url** (*string*)\n\nThis is the url to which the request will be made.\n\n**[onComplete]** (*function*)\n\nThis function will be called when the request has received a response (or in\nterms of XHR, when `readyState == 4`). The function is passed a `Response`\nobject.\n\n**[headers]** (*object*)\n\nAn unordered collection of name/value pairs representing headers to send\nwith the request.\n\n**[content]** (*string*,*object*)\n\nThe content to send to the server. If `content` is a string, it\nshould be URL-encoded (use `encodeURIComponent`). If `content` is\nan object, it should be a collection of name/value pairs. Nested\nobjects & arrays should encode safely.\n\nFor `GET` requests, the query string (`content`) will be appended\nto the URL. For `POST` requests, the query string will be sent as\nthe body of the request.\n\n**[contentType]** (*string*)\n\nThe type of content to send to the server. This explicitly sets the\n`Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
-                  "name": "options", 
-                  "type": "object"
-                }
-              ], 
-              "source_lines": [
-                122, 
-                161
-              ]
-            }, 
+            "constructors": [
+              {
+                "desc": "This constructor creates a request object that can be used to make network\nrequests. The constructor takes a single parameter `options` which is used to\nset several properties on the resulting `Request`.", 
+                "params": [
+                  {
+                    "desc": "Contains the following properties:\n\n**url** (*string*)\n\nThis is the url to which the request will be made.\n\n**[onComplete]** (*function*)\n\nThis function will be called when the request has received a response (or in\nterms of XHR, when `readyState == 4`). The function is passed a `Response`\nobject.\n\n**[headers]** (*object*)\n\nAn unordered collection of name/value pairs representing headers to send\nwith the request.\n\n**[content]** (*string*,*object*)\n\nThe content to send to the server. If `content` is a string, it\nshould be URL-encoded (use `encodeURIComponent`). If `content` is\nan object, it should be a collection of name/value pairs. Nested\nobjects & arrays should encode safely.\n\nFor `GET` requests, the query string (`content`) will be appended\nto the URL. For `POST` requests, the query string will be sent as\nthe body of the request.\n\n**[contentType]** (*string*)\n\nThe type of content to send to the server. This explicitly sets the\n`Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
+                    "name": "options", 
+                    "type": "object"
+                  }
+                ], 
+                "source_lines": [
+                  122, 
+                  161
+                ]
+              }
+            ], 
             "desc": "The `Request` object is used to make `GET` or `POST` network requests. It is\nconstructed with a URL to which the request is sent. Optionally the user may\nspecify a collection of headers and content to send alongside the request and\na callback which will be executed once the request completes.\n\nOnce a `Request` object has been created a `GET` request can be executed by\ncalling its `get()` method, or a `POST` request by calling its `post()` method.\n\nWhen the server completes the request, the `Request` object emits a \"complete\"\nevent.  Registered event listeners are passed a `Response` object.\n\nEach `Request` object is designed to be used once. Once `GET` or `POST` are\ncalled, attempting to call either will throw an error.\n\nSince the request is not being made by any particular website, requests made\nhere are not subject to the same-domain restriction that requests made in web\npages are subject to.\n\nWith the exception of `response`, all of a `Request` object's properties\ncorrespond with the options in the constructor. Each can be set by simply\nperforming an assignment. However, keep in mind that the same validation rules\nthat apply to `options` in the constructor will apply during assignment. Thus,\neach can throw if given an invalid value.\n\nThe example below shows how to use Request to get the most recent public tweet.\n\n    var Request = require('request').Request;\n    var latestTweetRequest = Request({\n      url: \"http://api.twitter.com/1/statuses/public_timeline.json\",\n      onComplete: function (response) {\n        var tweet = response.json[0];\n        console.log(\"User: \" + tweet.user.screen_name);\n        console.log(\"Tweet: \" + tweet.text);\n      }\n    });\n\n    // Be a good consumer and check for rate limiting before doing more.\n    Request({\n      url: \"http://api.twitter.com/1/account/rate_limit_status.json\",\n      onComplete: function (response) {\n        if (response.json.remaining_hits) {\n          latestTweetRequest.get();\n        } else {\n          console.log(\"You have been rate limited!\");\n        }\n      }\n    }).get();", 
             "functions": [
               {
@@ -64,12 +66,13 @@
                 "type": "string"
               }, 
               {
-                "desc": "{string,object} content to send with the request", 
+                "desc": "content to send with the request", 
                 "name": "content", 
                 "source_lines": [
                   217, 
                   217
-                ]
+                ], 
+                "type": "string,object"
               }, 
               {
                 "desc": "Content-Type to send along with the request.", 
@@ -93,61 +96,6 @@
             "source_lines": [
               71, 
               121
-            ]
-          }, 
-          {
-            "desc": "The Response object contains the response to a network request issued using a\n`Request` object. It is returned by the `get()` or `post()` method of a\n`Request` object.\n\nAll members of a `Response` object are read-only.", 
-            "name": "Response", 
-            "properties": [
-              {
-                "desc": "The content of the response as plain text.", 
-                "name": "text", 
-                "source_lines": [
-                  336, 
-                  339
-                ], 
-                "type": "string"
-              }, 
-              {
-                "desc": "The HTTP response status code (e.g. *200*).", 
-                "name": "status", 
-                "source_lines": [
-                  345, 
-                  348
-                ], 
-                "type": "string"
-              }, 
-              {
-                "desc": "The HTTP response status line (e.g. *OK*).", 
-                "name": "statusText", 
-                "source_lines": [
-                  350, 
-                  353
-                ], 
-                "type": "string"
-              }, 
-              {
-                "desc": "The content of the response as a JavaScript object. The value will be `null`\nif the document cannot be processed by `JSON.parse`.", 
-                "name": "json", 
-                "source_lines": [
-                  356, 
-                  360
-                ], 
-                "type": "object"
-              }, 
-              {
-                "desc": "The HTTP response headers represented as key/value pairs.", 
-                "name": "headers", 
-                "source_lines": [
-                  371, 
-                  374
-                ], 
-                "type": "object"
-              }
-            ], 
-            "source_lines": [
-              326, 
-              333
             ]
           }
         ], 
@@ -278,20 +226,22 @@
       "byte-streams": {
         "classes": [
           {
-            "constructor": {
-              "desc": "Creates a binary input stream that reads bytes from a backing stream.", 
-              "params": [
-                {
-                  "desc": "The backing stream, an [`nsIInputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIInputStream.idl).", 
-                  "name": "inputStream", 
-                  "type": "stream"
-                }
-              ], 
-              "source_lines": [
-                67, 
-                72
-              ]
-            }, 
+            "constructors": [
+              {
+                "desc": "Creates a binary input stream that reads bytes from a backing stream.", 
+                "params": [
+                  {
+                    "desc": "The backing stream, an [`nsIInputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIInputStream.idl).", 
+                    "name": "inputStream", 
+                    "type": "stream"
+                  }
+                ], 
+                "source_lines": [
+                  67, 
+                  72
+                ]
+              }
+            ], 
             "functions": [
               {
                 "desc": "Closes both the stream and its backing stream.", 
@@ -312,7 +262,8 @@
                 "params": [
                   {
                     "desc": "The number of bytes to read.  If not given, the remainder of the entire stream\nis read.", 
-                    "name": "[numBytes]", 
+                    "name": "numBytes", 
+                    "optional": true, 
                     "type": "number"
                   }
                 ], 
@@ -349,20 +300,22 @@
             ]
           }, 
           {
-            "constructor": {
-              "desc": "Creates a binary output stream that writes bytes to a backing stream.", 
-              "params": [
-                {
-                  "desc": "The backing stream, an [nsIOutputStream](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).", 
-                  "name": "outputStream", 
-                  "type": "stream"
-                }
-              ], 
-              "source_lines": [
-                133, 
-                138
-              ]
-            }, 
+            "constructors": [
+              {
+                "desc": "Creates a binary output stream that writes bytes to a backing stream.", 
+                "params": [
+                  {
+                    "desc": "The backing stream, an [nsIOutputStream](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).", 
+                    "name": "outputStream", 
+                    "type": "stream"
+                  }
+                ], 
+                "source_lines": [
+                  133, 
+                  138
+                ]
+              }
+            ], 
             "functions": [
               {
                 "desc": "Closes both the stream and its backing stream.", 
@@ -601,23 +554,25 @@
       "file": {
         "classes": [
           {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "The path from which to construct a File object.", 
-                  "name": "path", 
-                  "type": "string"
-                }
-              ], 
-              "returns": {
-                "desc": "an object representation of a file", 
-                "type": "File"
-              }, 
-              "source_lines": [
-                260, 
-                263
-              ]
-            }, 
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The path from which to construct a File object.", 
+                    "name": "path", 
+                    "type": "string"
+                  }
+                ], 
+                "returns": {
+                  "desc": "an object representation of a file", 
+                  "type": "File"
+                }, 
+                "source_lines": [
+                  290, 
+                  293
+                ]
+              }
+            ], 
             "desc": "A file abstraction that allows direct access to meta-data\nabout a file.", 
             "functions": [
               {
@@ -628,8 +583,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  225, 
-                  228
+                  255, 
+                  258
                 ]
               }, 
               {
@@ -639,8 +594,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  230, 
-                  231
+                  260, 
+                  261
                 ]
               }, 
               {
@@ -650,8 +605,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  233, 
-                  234
+                  263, 
+                  264
                 ]
               }, 
               {
@@ -661,8 +616,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  236, 
-                  237
+                  266, 
+                  267
                 ]
               }, 
               {
@@ -672,8 +627,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  239, 
-                  240
+                  269, 
+                  270
                 ]
               }, 
               {
@@ -683,8 +638,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  242, 
-                  243
+                  272, 
+                  273
                 ]
               }, 
               {
@@ -694,8 +649,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  245, 
-                  246
+                  275, 
+                  276
                 ]
               }, 
               {
@@ -705,8 +660,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  248, 
-                  249
+                  278, 
+                  279
                 ]
               }, 
               {
@@ -716,8 +671,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  251, 
-                  252
+                  281, 
+                  282
                 ]
               }, 
               {
@@ -727,8 +682,8 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  255, 
-                  256
+                  285, 
+                  286
                 ]
               }
             ], 
@@ -738,40 +693,40 @@
                 "desc": "The file's permissions (follows symlinks)", 
                 "name": "permissions", 
                 "source_lines": [
-                  198, 
-                  198
+                  228, 
+                  228
                 ]
               }, 
               {
                 "desc": "The file's permissions (does not follow symlinks)", 
                 "name": "permissionsOfLink", 
                 "source_lines": [
-                  200, 
-                  200
+                  230, 
+                  230
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (follows symlinks)", 
                 "name": "lastModifiedTime", 
                 "source_lines": [
-                  202, 
-                  202
+                  232, 
+                  232
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (does not follow symlinks)", 
                 "name": "lastModifiedTimeOfLink", 
                 "source_lines": [
-                  204, 
-                  204
+                  234, 
+                  234
                 ]
               }, 
               {
                 "desc": "Size of file in bytes (follows symlinks)", 
                 "name": "fileSize", 
                 "source_lines": [
-                  207, 
-                  207
+                  237, 
+                  237
                 ], 
                 "type": "integer"
               }, 
@@ -779,8 +734,8 @@
                 "desc": "Size of file in bytes (does not follow symlinks)", 
                 "name": "fileSizeOfLink", 
                 "source_lines": [
-                  209, 
-                  209
+                  239, 
+                  239
                 ], 
                 "type": "integer"
               }, 
@@ -788,8 +743,8 @@
                 "desc": "The absolute path to the file", 
                 "name": "path", 
                 "source_lines": [
-                  212, 
-                  212
+                  242, 
+                  242
                 ], 
                 "type": "string"
               }, 
@@ -797,15 +752,15 @@
                 "desc": "The absolute path to the parent of the file", 
                 "name": "parent", 
                 "source_lines": [
-                  215, 
-                  215
+                  245, 
+                  245
                 ], 
                 "type": "string"
               }
             ], 
             "source_lines": [
-              184, 
-              188
+              214, 
+              218
             ]
           }
         ], 
@@ -827,8 +782,8 @@
               "type": "string"
             }, 
             "source_lines": [
-              82, 
-              89
+              93, 
+              100
             ]
           }, 
           {
@@ -845,8 +800,8 @@
               }
             ], 
             "source_lines": [
-              103, 
-              109
+              114, 
+              120
             ], 
             "throws": [
               {
@@ -865,7 +820,8 @@
               }, 
               {
                 "desc": "An optional string, each character of which describes a characteristic of the\nreturned stream.  If the string contains `\"r\"`, the file is opened in\nread-only mode.  `\"w\"` opens the file in write-only mode.  `\"b\"` opens the\nfile in binary mode.  If `\"b\"` is not present, the file is opened in text\nmode, and its contents are assumed to be UTF-8.  If *`mode`* is not given,\n`\"r\"` is assumed, and the file is opened in read-only text mode.", 
-                "name": "[mode]", 
+                "name": "mode", 
+                "optional": true, 
                 "type": "string"
               }
             ], 
@@ -874,8 +830,22 @@
               "type": "stream"
             }, 
             "source_lines": [
-              122, 
-              142
+              133, 
+              153
+            ]
+          }, 
+          {
+            "desc": "Returns a list of file names for a given directory path.", 
+            "name": "list", 
+            "params": [
+              {
+                "desc": "The path of a directory which you want a list of file names.", 
+                "name": "path"
+              }
+            ], 
+            "source_lines": [
+              195, 
+              198
             ]
           }
         ], 
@@ -968,25 +938,98 @@
         "filename": "self-e10s-adapter.js", 
         "module": "self-e10s-adapter"
       }, 
+      "symbiont": {
+        "desc": "This trait is layered on top of `Worker` and in contrast to symbiont\nWorker constructor requires `content` option that represents content\nthat will be loaded in the provided frame, if frame is not provided\nWorker will create hidden one.", 
+        "filename": "content/symbiont.js", 
+        "functions": [
+          {
+            "desc": "The constructor requires all the options that are required by\n`require('content').Worker` with the difference that the `frame` option\nis optional. If `frame` is not provided, `contentURL` is expected.", 
+            "name": "constructor", 
+            "params": [
+              {
+                "name": "options", 
+                "type": "Object"
+              }, 
+              {
+                "desc": "URL of a content to load into `this._frame` and create worker for.", 
+                "name": "options.contentURL", 
+                "type": "String"
+              }, 
+              {
+                "desc": "iframe element that is used to load `options.contentURL` into.\n   if frame is not provided hidden iframe will be created.", 
+                "name": "options.frame", 
+                "optional": true, 
+                "type": "Element"
+              }
+            ], 
+            "source_lines": [
+              64, 
+              74
+            ]
+          }, 
+          {
+            "desc": "Listener to the `'frameReady\"` event (emitted when `iframe` is ready).\nRemoves listener, sets right permissions to the frame and loads content.", 
+            "name": "_initFrame", 
+            "source_lines": [
+              124, 
+              127
+            ]
+          }, 
+          {
+            "desc": "Creates port when the DOM is ready. Called if the value of\n`contentScriptWhen` is \"ready\".", 
+            "name": "_onReady", 
+            "source_lines": [
+              142, 
+              145
+            ]
+          }, 
+          {
+            "desc": "Creates port when the global object is created. Called if the value of\n`contentScriptWhen` is \"start\".", 
+            "name": "_onStart", 
+            "source_lines": [
+              154, 
+              157
+            ]
+          }
+        ], 
+        "module": "symbiont", 
+        "properties": [
+          {
+            "desc": "XUL iframe or browser elements with attribute `type` being `content`.\nUsed to create `ContentSymbiont` from.", 
+            "name": "_frame", 
+            "source_lines": [
+              118, 
+              122
+            ], 
+            "type": "nsIFrame|nsIBrowser"
+          }
+        ], 
+        "source_lines": [
+          55, 
+          60
+        ]
+      }, 
       "text-streams": {
         "classes": [
           {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
-                  "name": "inputStream"
-                }, 
-                {
-                  "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
-                  "name": "charset"
-                }
-              ], 
-              "source_lines": [
-                59, 
-                69
-              ]
-            }, 
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
+                    "name": "inputStream"
+                  }, 
+                  {
+                    "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
+                    "name": "charset"
+                  }
+                ], 
+                "source_lines": [
+                  59, 
+                  69
+                ]
+              }
+            ], 
             "desc": "An input stream that reads text from a backing stream using a given text\nencoding.", 
             "functions": [
               {
@@ -1162,30 +1205,33 @@
       "url": {
         "classes": [
           {
-            "constructor": {
-              "desc": "The URL constructor creates an object that represents a URL,  verifying that\nthe provided string is a valid URL in the process.", 
-              "params": [
-                {
-                  "desc": "A string to be converted into a URL.", 
-                  "name": "url", 
-                  "type": "string"
-                }, 
-                {
-                  "desc": "An optional base url which will be used to resolve the\n`url` argument if it is a relative url.", 
-                  "name": "[base]", 
-                  "type": "string"
-                }
-              ], 
-              "source_lines": [
-                137, 
-                148
-              ], 
-              "throws": [
-                {
-                  "desc": "If `source` is not a valid URI."
-                }
-              ]
-            }, 
+            "constructors": [
+              {
+                "desc": "The URL constructor creates an object that represents a URL,  verifying that\nthe provided string is a valid URL in the process.", 
+                "params": [
+                  {
+                    "desc": "A string to be converted into a URL.", 
+                    "name": "url", 
+                    "type": "string"
+                  }, 
+                  {
+                    "desc": "An optional base url which will be used to resolve the\n`url` argument if it is a relative url.", 
+                    "name": "base", 
+                    "optional": true, 
+                    "type": "string"
+                  }
+                ], 
+                "source_lines": [
+                  137, 
+                  148
+                ], 
+                "throws": [
+                  {
+                    "desc": "If `source` is not a valid URI."
+                  }
+                ]
+              }
+            ], 
             "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
             "functions": [
               {
@@ -1469,8 +1515,8 @@
             "desc": "(read-only) The contents of the `appinfo.json` file as a javascript object", 
             "name": "contents", 
             "source_lines": [
-              193, 
-              199
+              197, 
+              203
             ], 
             "throws": [
               {
@@ -1480,8 +1526,8 @@
           }
         ], 
         "source_lines": [
-          180, 
-          186
+          184, 
+          190
         ]
       }, 
       "canvas-proxy": {
@@ -1489,14 +1535,64 @@
         "module": "canvas-proxy"
       }, 
       "child_process": {
+        "classes": [
+          {
+            "functions": [
+              {
+                "desc": "Asynchronously run a child process", 
+                "name": "run", 
+                "params": [
+                  {
+                    "desc": "The command to execute", 
+                    "name": "command"
+                  }, 
+                  {
+                    "desc": "Arguments to said command", 
+                    "name": "args"
+                  }
+                ], 
+                "source_lines": [
+                  86, 
+                  90
+                ]
+              }, 
+              {
+                "desc": "Kill the child process and clean up resources.", 
+                "name": "destroy", 
+                "source_lines": [
+                  121, 
+                  123
+                ]
+              }
+            ], 
+            "name": "ChildProcess", 
+            "source_lines": [
+              77, 
+              77
+            ]
+          }
+        ], 
         "filename": "child_process.js", 
         "functions": [
           {
-            "desc": "Stops the server from accepting new connections. This function is\nasynchronous, the server is finally closed when the server emits a\n'close' event.", 
-            "name": "destroy", 
+            "desc": "spawn a child process.", 
+            "name": "spawn", 
+            "params": [
+              {
+                "desc": "The command to execute", 
+                "name": "command"
+              }, 
+              {
+                "desc": "Arguments to said command", 
+                "name": "args"
+              }
+            ], 
+            "returns": {
+              "desc": "A ChildProcess"
+            }, 
             "source_lines": [
-              108, 
-              112
+              44, 
+              49
             ]
           }
         ], 
@@ -1638,29 +1734,33 @@
       "file-picker": {
         "classes": [
           {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "The title of the dialog", 
-                  "name": "[title]", 
-                  "type": "string"
-                }, 
-                {
-                  "desc": "The mode of the dialog", 
-                  "name": "[mode]", 
-                  "type": "string"
-                }
-              ], 
-              "source_lines": [
-                70, 
-                75
-              ], 
-              "throws": [
-                {
-                  "desc": "if invalid mode is set"
-                }
-              ]
-            }, 
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The title of the dialog", 
+                    "name": "title", 
+                    "optional": true, 
+                    "type": "string"
+                  }, 
+                  {
+                    "desc": "The mode of the dialog", 
+                    "name": "mode", 
+                    "optional": true, 
+                    "type": "string"
+                  }
+                ], 
+                "source_lines": [
+                  70, 
+                  75
+                ], 
+                "throws": [
+                  {
+                    "desc": "if invalid mode is set"
+                  }
+                ]
+              }
+            ], 
             "desc": "A class which allows you to open native \"file picker\" dialogs to allow\nthe user to select files or folders.", 
             "functions": [
               {
@@ -1924,24 +2024,24 @@
             "desc": "Size the main application window to consume the full screen", 
             "name": "enable", 
             "source_lines": [
-              46, 
-              48
+              44, 
+              46
             ]
           }, 
           {
             "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
             "name": "disable", 
             "source_lines": [
-              53, 
-              55
+              51, 
+              53
             ]
           }, 
           {
             "desc": "Toggle fullscreen.", 
             "name": "toggle", 
             "source_lines": [
-              60, 
-              62
+              58, 
+              60
             ]
           }
         ], 
@@ -1969,11 +2069,14 @@
                 "type": "string"
               }, 
               {
-                "desc": "{string/function} command Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed."
+                "desc": "Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed.", 
+                "name": "command", 
+                "type": "string/function"
               }, 
               {
                 "desc": "Optional. Unique identifier for this hotkey, which will \n                     auto-generated if not provided.", 
-                "name": "[id]", 
+                "name": "id", 
+                "optional": true, 
                 "type": "string"
               }
             ], 
@@ -2001,10 +2104,12 @@
                 "type": "string"
               }, 
               {
-                "desc": "{string/function} command"
+                "name": "command", 
+                "type": "string/function"
               }, 
               {
-                "name": "[id]", 
+                "name": "id", 
+                "optional": true, 
                 "type": "string"
               }
             ], 
@@ -2109,256 +2214,6 @@
         ]
       }, 
       "menu": {
-        "classes": [
-          {
-            "desc": "Represents any single menu item that should be displayed \nwith at least a label.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Menu({\n                label: \"New Tab\",\n                children: [\n                    new menu.Menu({ label: \"In the current window\" }),\n                    new menu.Menu({ label: \"In a new window\" }),\n                ]\n            })\n        ]\n    });", 
-            "functions": [
-              {
-                "desc": "Draw a menu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
-                "name": "draw", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  193, 
-                  199
-                ]
-              }, 
-              {
-                "desc": "Redraws a menu element to the canvas (a XUL document) if needed.\nUsually called called by a function that performs a mutation on a SubMenu\n(like `push()`, `shift()` or `splice()`).", 
-                "name": "redraw", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  237, 
-                  245
-                ]
-              }, 
-              {
-                "desc": "Register a globally accessible hotkey for this menu item that invokes \nthe 'onClick' handler if set when the key combination is pressed.", 
-                "name": "setHotKey", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "see": [
-                  "this.hotkey property"
-                ], 
-                "source_lines": [
-                  260, 
-                  267
-                ]
-              }, 
-              {
-                "desc": "Removes a menu item from the canvas (a XUL document) and does basic \ngarbage collection.", 
-                "name": "destroy", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  277, 
-                  284
-                ]
-              }
-            ], 
-            "name": "Menu", 
-            "source_lines": [
-              88, 
-              120
-            ]
-          }, 
-          {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "a set of options/ properties that will be set on the \n                       menu item. Keys are case-insensitive.", 
-                  "name": "nodes", 
-                  "type": "Array"
-                }, 
-                {
-                  "desc": "parent Menu instance that will show the SubMenu when hovered", 
-                  "name": "parent", 
-                  "type": "Menu"
-                }
-              ], 
-              "returns": {
-                "type": "SubMenu"
-              }, 
-              "source_lines": [
-                333, 
-                339
-              ]
-            }, 
-            "desc": "Represents a collection of menu items and separators that\nshould be displayed. A SubMenu is defined with the 'children' property of a \nMenu object as an Array. Therefore, array-like functions may be used to alter\nthe contents of a SubMenu instance.\nThere is no maximum set to the amount or level of depth of submenus.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Separator()\n        ]\n    });\n    file.children.splice(0, 1);\n    file.children.splice(-1, 0, new menu.Menu({ label: \"About...\" }));", 
-            "functions": [
-              {
-                "desc": "Draw a submenu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
-                "name": "draw", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  351, 
-                  357
-                ]
-              }, 
-              {
-                "desc": "Removes a submenu from the canvas (a XUL document), including its children\nand does basic garbage collection.", 
-                "name": "destroy", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  368, 
-                  374
-                ]
-              }, 
-              {
-                "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
-                "name": "push", 
-                "source_lines": [
-                  389, 
-                  393
-                ]
-              }, 
-              {
-                "name": "reverse", 
-                "source_lines": [
-                  407, 
-                  407
-                ]
-              }, 
-              {
-                "name": "shift", 
-                "source_lines": [
-                  408, 
-                  408
-                ]
-              }, 
-              {
-                "name": "sort", 
-                "source_lines": [
-                  409, 
-                  409
-                ]
-              }, 
-              {
-                "name": "splice", 
-                "source_lines": [
-                  410, 
-                  410
-                ]
-              }, 
-              {
-                "name": "unshift", 
-                "source_lines": [
-                  411, 
-                  411
-                ]
-              }, 
-              {
-                "desc": "Convert this SubMenu instance to an Array-representation.", 
-                "name": "toArray", 
-                "returns": {
-                  "type": "array"
-                }, 
-                "source_lines": [
-                  420, 
-                  425
-                ]
-              }, 
-              {
-                "desc": "(re-)Construct this SubMenu instance with Menu or Separator instances\nfrom array.", 
-                "name": "fromArray", 
-                "params": [
-                  {
-                    "desc": "an array of Menu or Separator instances.", 
-                    "name": "arr", 
-                    "type": "array"
-                  }
-                ], 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  433, 
-                  440
-                ]
-              }, 
-              {
-                "name": "setParent", 
-                "see": [
-                  "#setParent()"
-                ], 
-                "source_lines": [
-                  456, 
-                  459
-                ]
-              }
-            ], 
-            "name": "SubMenu", 
-            "source_lines": [
-              301, 
-              332
-            ]
-          }, 
-          {
-            "constructor": {
-              "params": [
-                {
-                  "desc": "{Menu/SubMenu} parent parent Menu or SubMenu instance that will contain \n                             the separator"
-                }
-              ], 
-              "returns": {
-                "type": "Separator"
-              }, 
-              "source_lines": [
-                488, 
-                493
-              ]
-            }, 
-            "desc": "Represents any single menu item that should be displayed \nwith as separator (straight horizontal line).\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Separator(),\n            new menu.Separator(),\n            new menu.Menu({\n                label: \"More Separators!\",\n                children: [\n                    new menu.Separator(),\n                    new menu.Separator(),\n                ]\n            })\n        ]\n    });", 
-            "functions": [
-              {
-                "desc": "Draw a separator element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
-                "name": "draw", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  502, 
-                  508
-                ]
-              }, 
-              {
-                "desc": "Removes a separator item from the canvas (a XUL document) and does basic \ngarbage collection.", 
-                "name": "destroy", 
-                "returns": {
-                  "type": "void"
-                }, 
-                "source_lines": [
-                  518, 
-                  524
-                ]
-              }, 
-              {
-                "name": "setParent", 
-                "see": [
-                  "#setParent()"
-                ], 
-                "source_lines": [
-                  533, 
-                  536
-                ]
-              }
-            ], 
-            "name": "Separator", 
-            "source_lines": [
-              463, 
-              487
-            ]
-          }
-        ], 
         "filename": "ui/menu.js", 
         "module": "menu"
       }, 
@@ -2519,7 +2374,8 @@
               }, 
               {
                 "desc": "An extension string, if present and matches the\n                 path, will be removed from the resulting filename.", 
-                "name": "[ext]", 
+                "name": "ext", 
+                "optional": true, 
                 "type": "string"
               }
             ], 
@@ -2565,6 +2421,180 @@
       "simple-feature": {
         "filename": "simple-feature.js", 
         "module": "simple-feature"
+      }, 
+      "ui": {
+        "filename": "ui.js", 
+        "functions": [
+          {
+            "desc": "Return the current window. This function does not exist outside of the context of a window.", 
+            "name": "getCurrentWindow", 
+            "source_lines": [
+              43, 
+              45
+            ]
+          }, 
+          {
+            "desc": "Return the application's main window", 
+            "name": "getMainWindow", 
+            "source_lines": [
+              50, 
+              52
+            ]
+          }, 
+          {
+            "desc": "Return a list of currently open windows.", 
+            "name": "getOpenWindows", 
+            "source_lines": [
+              57, 
+              59
+            ]
+          }, 
+          {
+            "desc": "Return the user's idle time (for the desktop, not just the application)", 
+            "name": "getIdleTime", 
+            "source_lines": [
+              64, 
+              66
+            ]
+          }, 
+          {
+            "desc": "Return the application's main MenuItem or null if none is set.", 
+            "name": "getMenu", 
+            "source_lines": [
+              71, 
+              73
+            ]
+          }, 
+          {
+            "desc": "Set a menu for the application", 
+            "name": "setMenu", 
+            "source_lines": [
+              80, 
+              82
+            ]
+          }, 
+          {
+            "desc": "Return this application's context menu or null if none is set.", 
+            "name": "getContextMenu", 
+            "source_lines": [
+              87, 
+              89
+            ]
+          }, 
+          {
+            "desc": "Set the application's context menu", 
+            "name": "setContextMenu", 
+            "source_lines": [
+              94, 
+              96
+            ]
+          }, 
+          {
+            "desc": "Create a new menu", 
+            "name": "createMenu", 
+            "source_lines": [
+              101, 
+              103
+            ]
+          }, 
+          {
+            "desc": "Create a new menu item.", 
+            "name": "createMenuItem", 
+            "source_lines": [
+              108, 
+              110
+            ]
+          }, 
+          {
+            "desc": "Create a new separator menu item.", 
+            "name": "createSeperatorMenuItem", 
+            "source_lines": [
+              115, 
+              117
+            ]
+          }, 
+          {
+            "desc": "Create a new CheckMenuItem object.", 
+            "name": "createCheckMenuItem", 
+            "source_lines": [
+              122, 
+              124
+            ]
+          }, 
+          {
+            "desc": "Set the application icon's badge text.", 
+            "name": "setBadge", 
+            "source_lines": [
+              129, 
+              131
+            ]
+          }, 
+          {
+            "desc": "Set the application icon's badge image.", 
+            "name": "setBadgeImage", 
+            "source_lines": [
+              136, 
+              138
+            ]
+          }, 
+          {
+            "desc": "Set the dock icon", 
+            "name": "setDockIcon", 
+            "source_lines": [
+              143, 
+              145
+            ]
+          }, 
+          {
+            "desc": "Set the dock menu", 
+            "name": "setDockMenu", 
+            "source_lines": [
+              150, 
+              152
+            ]
+          }, 
+          {
+            "desc": "Set the application's icon", 
+            "name": "setIcon", 
+            "source_lines": [
+              159, 
+              161
+            ]
+          }, 
+          {
+            "desc": "Create and add a tray icon", 
+            "name": "addTray", 
+            "source_lines": [
+              171, 
+              173
+            ]
+          }, 
+          {
+            "desc": "Empty the tray of all this application's tray items", 
+            "name": "clearTray", 
+            "source_lines": [
+              188, 
+              190
+            ]
+          }, 
+          {
+            "desc": "create a UI dialog", 
+            "name": "showDialog", 
+            "source_lines": [
+              195, 
+              197
+            ]
+          }, 
+          {
+            "desc": "Get notification box (\"yellow bar\").\nCourtesy of bug 533649.", 
+            "name": "getNotificationBox", 
+            "source_lines": [
+              202, 
+              205
+            ]
+          }
+        ], 
+        "module": "ui"
       }
     }, 
     "name": "chromeless-kit"
@@ -2607,5 +2637,5 @@
     }, 
     "name": "test-harness"
   }, 
-  "version": "aac91b0"
+  "version": "bcaead6"
 }
