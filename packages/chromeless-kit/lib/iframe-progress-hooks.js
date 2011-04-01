@@ -41,7 +41,7 @@ observers = require("observer-service");
 
 const {Cc, Ci, Cr} = require("chrome");
 
-exports.hookProgress = function(frame, parentDoc) {
+exports.hookProgress = function(window, frame, parentDoc) {
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
   var frameShell = frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                      .getInterface(Ci.nsIWebNavigation)
@@ -49,7 +49,7 @@ exports.hookProgress = function(frame, parentDoc) {
   // chrome://global/content/bindings/browser.xml#browser
   var webProgress = frameShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebProgress);
   var aBrowserStatusHandler = new nsBrowserStatusHandler();
-  aBrowserStatusHandler.init(frame, parentDoc);
+  aBrowserStatusHandler.init(window, frame, parentDoc);
   var filter = Cc["@mozilla.org/appshell/component/browser-status-filter;1"]
           .createInstance(Ci.nsIWebProgress);
 
@@ -80,6 +80,7 @@ nsBrowserStatusHandler.prototype =
   iframeElement: null, 
   parentDocument: null, 
   lastKnownTitle: null,
+  window: null, 
 
   QueryInterface : function(aIID)
   {
@@ -93,12 +94,13 @@ nsBrowserStatusHandler.prototype =
     throw Cr.NS_NOINTERFACE;
   },
 
-  init : function(tagElementReference, parentDocument)
+  init : function(window, tagElementReference, parentDocument)
   {
     /* we know our window here, and we want to be able to inform 
        the updates to the actual tagElementReference, to the iframe 
        HTML element, so the HTML developer's browser can know things
        such as progress updates and so on */
+    this.window = window;
     this.iframeElement = tagElementReference;
     this.parentDocument = parentDocument;
   },
@@ -127,7 +129,7 @@ nsBrowserStatusHandler.prototype =
     var percentage = parseInt((aCurTotalProgress/aMaxTotalProgress)*parseInt(100));
     var evt = this.parentDocument.createEvent("HTMLEvents"); 
     evt.initEvent("ChromelessLoadProgress", true, false);
-    evt.wrappedJSObject.percentage = percentage;
+    evt.percentage = percentage;
     this.iframeElement.dispatchEvent(evt);
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
@@ -143,7 +145,7 @@ nsBrowserStatusHandler.prototype =
   {
     var evt = this.parentDocument.createEvent("HTMLEvents"); 
     evt.initEvent("ChromelessStatusChanged", true, false);
-    evt.wrappedJSObject.message = aMessage;
+    evt.message = aMessage;
     this.iframeElement.dispatchEvent(evt);
   },
   onSecurityChange : function(aWebProgress, aRequest, aState)
@@ -156,7 +158,7 @@ nsBrowserStatusHandler.prototype =
       [Ci.nsIWebProgressListener.STATE_IS_BROKEN, "broken"],
       [Ci.nsIWebProgressListener.STATE_IS_SECURE, "secure"]
     ].forEach(function(x) {
-        if (aState & x[0]) evt.wrappedJSObject.state = x[1];
+        if (aState & x[0]) evt.state = x[1];
     });
 
     [
@@ -164,7 +166,7 @@ nsBrowserStatusHandler.prototype =
       [Ci.nsIWebProgressListener.STATE_SECURE_MED, "med"],
       [Ci.nsIWebProgressListener.STATE_SECURE_LOW, "low"]
     ].forEach(function(x) {
-        if (aState & x[0]) evt.wrappedJSObject.strength = x[1];
+        if (aState & x[0]) evt.strength = x[1];
     });
     this.iframeElement.dispatchEvent(evt);
   },
@@ -174,7 +176,7 @@ nsBrowserStatusHandler.prototype =
     var evt = this.parentDocument.createEvent("HTMLEvents"); 
     evt.initEvent("ChromelessLoadStart", true, false);
     // The event's data includes the location that is about to be loaded.
-    evt.wrappedJSObject.url = aRequest.name;
+    evt.url = aRequest.name;
     this.iframeElement.dispatchEvent(evt);
   },
   endDocumentLoad : function(aRequest, aStatus)
@@ -190,8 +192,11 @@ nsBrowserStatusHandler.prototype =
       this.lastKnownTitle = title;
       var evt = this.parentDocument.createEvent("HTMLEvents"); 
       evt.initEvent("ChromelessTitleChanged", true, false);
-      evt.wrappedJSObject.title = title;
-      this.iframeElement.dispatchEvent(evt);
+      dump("evt.title: " + evt.title + "\n");
+      evt.title = title;
+      dump("evt.title: " + evt.title + "\n");
+      console.log(evt);
+      this.iframeElement.wrappedJSObject.dispatchEvent(evt);
     }
   },
   setJSStatus : function(status)

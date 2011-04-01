@@ -1,4 +1,4 @@
-let {Cc, Ci} = require("chrome");
+const {Cc, Ci, Cu} = require("chrome");
 
 var gWindows = [];
 
@@ -13,12 +13,13 @@ const iframeProgressHooks = require('iframe-progress-hooks');
 
 function isTopLevelWindow(w) {
   for (var i = 0; i < gWindows.length; i++) {
-    if (gWindows[i]._browser.contentWindow == w) return true;
+    if (gWindows[i]._browser && gWindows[i]._browser.contentWindow == w) return true;
   }
   return false;
 }
 
 observers.add("content-document-global-created", function(subject, url) {
+
   if (subject.window.top != subject.window.self) {
     if (isTopLevelWindow(subject.window.parent))
     {
@@ -46,9 +47,10 @@ observers.add("content-document-global-created", function(subject, url) {
           // of whether the iframe has been hooked, we'll hang state
           // off the iframe[i] dom node.  this state *should not* be
           // visibile to app code, because it's not on wrappedJSObject
-          if (iframes[i].__chromelessEventsHooked === undefined) {
+          if (iframes[i].__chromelessEventsHooked === undefined)
+          {
             iframes[i].__chromelessEventsHooked = true;
-            iframeProgressHooks.hookProgress(iframes[i], bcWin.document);
+            iframeProgressHooks.hookProgress(bcWin, iframes[i], bcWin.document);
           }
           break;
         }
@@ -64,73 +66,39 @@ observers.add("content-document-global-created", function(subject, url) {
       // this is a frame nested underneath the top level frame
       subject.window.wrappedJSObject.top = subject.window.parent.top;
     }
-  } 
-});
-
-
-// injector is a little tool to catch the browser code after it is initialized
-// but before any javscript runs so we can inject top level functions
-function Injector(browser, onStartLoad) {
-  browser.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-  this._browser = browser;
-  this._onStartLoad = onStartLoad;
-}
-
-Injector.prototype = {
-  QueryInterface : xpcom.utils.generateQI([Ci.nsIWebProgressListener,
-                                           Ci.nsISupportsWeakReference]),
-
-  // Taken from Firebug's content/firebug/tabWatcher.js.
-  _safeGetName: function(request) {
-    try {
-      return request.name;
-    } catch (exc) {
-      return null;
-    }
-  },
-
-  remove: function() {
-    this._browser.removeProgressListener(this);
-  },
-
-  // Much of this is taken from Firebug's content/firebug/tabWatcher.js,
-  // specifically the FrameProgressListener object.
-  onStateChange : function (aWebProgress, aRequest,
-                            aStateFlags, aStatus) {
-    if (aStateFlags & Ci.nsIWebProgressListener.STATE_IS_REQUEST) {
-      // We need to get the hook in as soon as the new DOMWindow is
-      // created, but before it starts executing any scripts in the
-      // page. After lengthy analysis, it seems that the start of
-      // these "dummy" requests is the only state that works.
-
-      // TODO: Firebug's code mentions that XHTML doesn't dispatch
-      // any of these dummy requests, so we should probably use the
-      // Firebug's XHTML workaround here.
-      var safeName = this._safeGetName(aRequest);
-      var window = aWebProgress.DOMWindow;
-      if (window && window.wrappedJSObject &&
-          (safeName == "about:layout-dummy-request" ||
-           safeName == "about:document-onload-blocker")) {
-
-        // TODO: Firebug's code mentions that about:blank causes strange
-        // behavior here; I don't think it should apply to our use case,
-        // though.
-
-        try {
-          this._onStartLoad.call(undefined, window);
-        } catch (e) {
-          console.exception(e);
-        }
+  } else if (isTopLevelWindow(subject.window)) {
+      // this is application code!  let's handle injection at this point.
+      let i;
+      for (i = 0; i < gWindows.length; i++) {
+          if (gWindows[i]._browser && gWindows[i]._browser.contentWindow == subject.window) break;
       }
-    }
-  },
+      if (i < gWindows.length) {
+          let wo = gWindows[i];
+          if (wo.options.injectProps) {
+              let sandbox = new Cu.Sandbox(
+                  Cc["@mozilla.org/systemprincipal;1"].
+                      createInstance(Ci.nsIPrincipal)
+              );
 
-  // Stubs for the nsIWebProgressListener interfaces which we don't use.
-  onProgressChange : function() { },
-  onLocationChange : function() { },
-  onStatusChange : function() { },
-  onSecurityChange : function() { }
-};
+              sandbox.window = subject.wrappedJSObject;
+
+              for (var k in wo.options.injectProps) {
+                  // functions are easy to inject
+                  if (typeof(wo.options.injectProps[k]) === 'function') {
+                      sandbox.importFunction(wo.options.injectProps[k], k);
+                  }
+                  // objects are easy too, just different
+                  else {
+                      sandbox[k] = wo.options.injectProps[k];
+                  }
+
+
+                  Cu.evalInSandbox("window."+k+" = "+k+";", sandbox);
+              }
+          }
+      }
+  }
+});
 
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 var xhtmlNs = "http://www.w3.org/1999/xhtml";
@@ -174,7 +142,6 @@ function Window(options, testCallbacks) {
   this._id = gWindows.push(this) - 1;
   this._window = window;
   this._browser = null;
-  this._injector = null;
   this._testCallbacks = testCallbacks;
   this.options = options;
 
@@ -204,20 +171,6 @@ Window.prototype = {
         browser.setAttribute("border", "10px solid green");
         event.target.documentElement.appendChild(browser);
 
-        if (this.options.injectProps) {
-          var injectProps = this.options.injectProps;
-          var winClass = this;
-          this._injector = new Injector(browser, function(w) {
-            for (name in injectProps) {
-              console.log("injecting object into window: " + name);
-              w.wrappedJSObject[name] = injectProps[name];
-            }
-            // unregister now!
-            winClass._injector.remove();
-            winClass._injector = null;
-          });
-        }
-
         this._browser = browser;
         browser.loadURI(this.options.url);
         if(this._testCallbacks != undefined && this._testCallbacks.onload != undefined) {
@@ -226,7 +179,6 @@ Window.prototype = {
              refthis._testCallbacks.onload();
            }, false); 
         } 
-
       }
       return false;
     };
