@@ -211,6 +211,34 @@ exports.list = function list(path) {
   return entryNames;
 };
 
+exports.remove = function remove(path) {
+  var file = MozFile(path);
+  ensureFile(file);
+  file.remove(false);
+};
+
+exports.mkpath = function mkpath(path) {
+  var file = MozFile(path);
+  if (!file.exists())
+    file.create(Ci.nsIFile.DIRECTORY_TYPE, 0755); // u+rwx go+rx
+  else if (!file.isDirectory())
+    throw new Error("The path already exists and is not a directory: " + path);
+};
+
+exports.rmdir = function rmdir(path) {
+  var file = MozFile(path);
+  ensureDir(file);
+  try {
+    file.remove(false);
+  }
+  catch (err) {
+    // Bug 566950 explains why we're not catching a specific exception here.
+    throw new Error("The directory is not empty: " + path);
+  }
+};
+
+
+
 /**
  * @class File
  * A file abstraction that allows direct access to meta-data
