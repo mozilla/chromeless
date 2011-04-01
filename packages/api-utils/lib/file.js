@@ -211,12 +211,21 @@ exports.list = function list(path) {
   return entryNames;
 };
 
+
+/**
+ * If a file exists, then it removes it.
+ * @param path The path for a given file you want to be removed.  
+ */
 exports.remove = function remove(path) {
   var file = MozFile(path);
   ensureFile(file);
   file.remove(false);
 };
 
+/**
+ * Creates a directory. 
+ * @param path for the new directory you want to have created. 
+ */
 exports.mkpath = function mkpath(path) {
   var file = MozFile(path);
   if (!file.exists())
@@ -224,6 +233,11 @@ exports.mkpath = function mkpath(path) {
   else if (!file.isDirectory())
     throw new Error("The path already exists and is not a directory: " + path);
 };
+
+/**
+ * Removes a directory. 
+ * @param path for a directory you want to have removed. 
+ */
 
 exports.rmdir = function rmdir(path) {
   var file = MozFile(path);
