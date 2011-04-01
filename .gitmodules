@@ -1,0 +1,6 @@
+[submodule "gallery/focusTimer"]
+	path = gallery/focusTimer
+	url = git://github.com/dmose/focusTimer.git
+[submodule "gallery/ereader-transcoder"]
+	path = gallery/ereader-transcoder
+	url = git://github.com/taboca/Ereader-Transcoder-Browser.git
