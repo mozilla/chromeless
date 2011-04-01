@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body >
+    <textarea id="file"> 
+    </textarea>
+    <button id="save" onclick="save()">save</button>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    var userProfilePath = require('app-paths').profileDir; 
+    var file = require("file");
+    function save() { 
+	file.write(require("path").join(userProfilePath,"output.txt"), document.getElementById("save").value);
+    } 
+  </script>
+</html>
+
