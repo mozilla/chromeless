@@ -9,11 +9,11 @@ software = {
     },
     # for both 32 and 64 bit darwin we'll use 32 bit binaries
     ( "Darwin_64bit", "Darwin_32bit" ): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/09/2010-09-26-03-mozilla-central/xulrunner-2.0b7pre.en-US.mac-i386.sdk.tar.bz2",
-        "md5": "133c4263a070d0d4ea26ca1f346b8e4a",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/sdk/xulrunner-2.0.en-US.mac-i386.sdk.tar.bz2",
+        "md5": "cf56e216a05feed16cb290110fd89802",
         "bin": {
             "path": "xulrunner-sdk/bin/xulrunner-bin",
-            "sig": "be5a6300da9e5cfc7973255e68f940af"
+            "sig": "ec043427ca789950bf388db3cf88c7cf"
         }
     },
     ( "Windows_32bit", "Windows_64bit" ): {
