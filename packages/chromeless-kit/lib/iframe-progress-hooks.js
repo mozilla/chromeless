@@ -39,7 +39,7 @@
 
 observers = require("observer-service");
 
-const {Cc, Ci, Cr} = require("chrome");
+const {Cc, Ci, Cr, Cu} = require("chrome");
 
 exports.hookProgress = function(window, frame, parentDoc) {
   // http://forums.mozillazine.org/viewtopic.php?f=19&t=1084155 
@@ -126,10 +126,8 @@ nsBrowserStatusHandler.prototype =
     this.checkTitle();
     this.currentTotalProgress = aCurTotalProgress;
     this.maxTotalProgress     = aMaxTotalProgress;
-    var percentage = parseInt((aCurTotalProgress/aMaxTotalProgress)*parseInt(100));
-    var evt = this.parentDocument.createEvent("HTMLEvents"); 
-    evt.initEvent("ChromelessLoadProgress", true, false);
-    evt.percentage = percentage;
+    var evt = this.parentDocument.createEvent("ProgressEvent"); 
+    evt.initProgressEvent("ChromelessLoadProgress", true, false, false, aCurTotalProgress, aMaxTotalProgress, 0, 0);
     this.iframeElement.dispatchEvent(evt);
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
