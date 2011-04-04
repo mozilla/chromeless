@@ -4,3 +4,6 @@
 [submodule "gallery/ereader-transcoder"]
 	path = gallery/ereader-transcoder
 	url = git://github.com/taboca/Ereader-Transcoder-Browser.git
+[submodule "gallery/simple-text-editor"]
+	path = gallery/simple-text-editor
+	url = git://github.com/taboca/Chromeless-Standalone-Text-Editor-with-Ace.git
