@@ -7,3 +7,6 @@
 [submodule "gallery/simple-text-editor"]
 	path = gallery/simple-text-editor
 	url = git://github.com/taboca/Chromeless-Standalone-Text-Editor-with-Ace.git
+[submodule "gallery/webian"]
+	path = gallery/webian
+	url = git://github.com/webianproject/shell.git
