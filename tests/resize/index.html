@@ -3,24 +3,22 @@
    <title>WebbyFox</title>
    <script type="text/javascript" charset="utf-8">
     function test() { 
-       var console = require("plain-text-console");
-       dump =  new console.PlainTextConsole();
-       dump.log('I am just resizing myself');
-       animate();  
-    } 
-  
+       console.log('I am just resizing myself');
+       animate();
+    }
+
     cc=0;
-    function animate() {  
- 
+    function animate() {
+
        cc+=.1;
-       var i = Math.sin(cc); 
-     
+       var i = Math.sin(cc);
+
        window.innerHeight=300+parseInt(i*200);
        window.innerWidth=300+parseInt(i*200);
        setTimeout("animate()",100);
- 
-    } 
-    
+
+    }
+
    </script>
   </head>
 
