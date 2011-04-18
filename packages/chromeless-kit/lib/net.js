@@ -1,5 +1,5 @@
 const { Cc, Ci, components: { Constructor: CC } } = require("chrome")
-  ,   { EventEmitter } = require('./events')
+  ,   { EventEmitter } = require('pure_js_events')
   ,   { ByteReader, ByteWriter } = require('byte-streams')
   ,   { TextReader, TextWriter } = require('text-streams')
 

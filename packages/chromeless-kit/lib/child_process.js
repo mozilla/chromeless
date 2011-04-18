@@ -36,7 +36,7 @@
 
 const {Cc, Ci}       = require("chrome"),
       {Stream}       = require("net"),
-      {EventEmitter} = require("events"),
+      {EventEmitter} = require("'pure_js_events"),
       processes      = {};
 
 let GUID = 0;
