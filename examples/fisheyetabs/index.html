@@ -20,19 +20,20 @@ body {
 }
 
 #topCanvasMask { 
-     background-image: -moz-linear-gradient(-90deg, rgba(255,255,255,0) , #fff);
      height:62px;
      width:100%;
 } 
 
 #browserHeader {
+  -moz-box-shadow: 0 0 10px white, 0 0 20px white; 
+  -moz-border-radius:25px;
+  background-color:white;
   width: 80%;
   height:40px;
   margin:1em;
   margin-top:0;
   padding-top:10px;
   text-align: center;
-  background-color:white;
 }
 
 #browserHeader form { 
@@ -326,7 +327,7 @@ $(document).ready(function() {
         return false; 
     });
     $("#browserHeader #buttonFull").click(function(e) {
-        fullscreen.toggle();
+        fullscreen.toggle(window);
         return false; 
     });
 });
