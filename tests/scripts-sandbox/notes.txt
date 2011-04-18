@@ -1,2 +1,0 @@
-Scripts case. In this example, we are executing JS in sandbox using 
-the securable-module module available from Jetpack. 
