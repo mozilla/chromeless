@@ -42,8 +42,8 @@
 
 "use strict";
 
-const xhr = require('xhr'); 
-const url = require('url'); 
+const xhr = require('xhr');
+const url = require('url');
 const timer = require('timer');
 
 const { Cc, Ci, Cu } = require("chrome");
@@ -62,7 +62,7 @@ let   DEF_FAVICON = null;
 
 /**
  * Given the URI of a page, query the local cache for a
- * favicon.  
+ * favicon.
  * @param {string} uri The URI of the page for which a favicon is desired.
  * @returns {string}
  * The favicon as a data URL.  If no such favicon is in the cache,
@@ -129,38 +129,11 @@ exports.fetch = function(uri, cb) {
     }
     var faviconURI = NetUtil.newURI(faviconURL);
 
-    try {
-      var req = new xhr.XMLHttpRequest();
-      req.open("GET", faviconURL, false);
-      req.overrideMimeType('text/plain; charset=x-user-defined');
-      req.onreadystatechange = function(aEvt) {
-        if (req.readyState == 4) {
-          if (req.status == 200) {
-            var buffer = new Int8Array(req.mozResponseArrayBuffer);
-
-            var ff = [];
-
-            for (var z = 0; z < buffer.byteLength; z++) {
-              ff[z] = buffer[z];
-            }
-            // expiration???
-            var d = ((new Date()).getTime() + (24 * 60 * 60 * 1000)) * 1000;
-            FaviconService.setFaviconData(faviconURI, ff,
-                                          ff.length,
-                                          req.getResponseHeader('Content-Type'), d);
-            FaviconService.setFaviconUrlForPage(pageURI, faviconURI);
-
-            returnIcon();
-          } else {
-            console.log("XHR failed to '" + faviconURL + "' (" + req.status + ") ");
-            returnIcon();
-          }
-        }
-      }
-      req.send();
-    } catch(e) {
-      // ignore.
-    }
+    FaviconService.setAndLoadFaviconForPage(
+      pageURI, faviconURI, false,
+      function(aURI, aDataLen, aData, aMimeType) {
+        returnIcon();
+      });
   }
 };
 
