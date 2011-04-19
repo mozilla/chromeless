@@ -8,11 +8,17 @@
     <button id="save" onclick="save()">save</button>
   </body>
   <script type="text/javascript" charset="utf-8">
-    var userProfilePath = require('app-paths').profileDir; 
-    var file = require("file");
-    function save() { 
-	file.write(require("path").join(userProfilePath,"output.txt"), document.getElementById("save").value);
-    } 
+    const fs = require('fs'),
+        file = require('file'),
+        path = require('path'),
+    appPaths = require('app-paths');
+
+    var filePath = path.join(appPaths.profileDir,"output.txt");
+    function save() {
+      if (fs.exists(filePath)) fs.remove(filePath);
+	  file.write(filePath, document.getElementById("file").value);
+      console.log("wrote to: " + filePath);
+    }
   </script>
 </html>
 
