@@ -1,60 +1,14 @@
 <html>
   <head>
-    <title>WebbyFox</title>
-
+    <title>Monitoring load progress of web content</title>
   </head>
-  <body onload="start()" >
+  <body onload="start()">
    <p>
      This is an initial example, an experimentation to track 
      loading progress of an iframe. 
    </p>
    <iframe id="myWebContent">
    </iframe>
-   <script type="text/javascript">
-
-function start() {
-  var i = document.getElementById("myWebContent");
-  i.style.width="100%";
-  i.style.height="500px";
-
-  /* We track progress! */
-
-  i.addEventListener("ChromelessLoadStart", function (e) {
-    console.log("ChromelessLoadStart", e.url);
-    return;
-  }, false);
-
-  i.addEventListener("ChromelessDOMSetup", function (e) {
-    console.log("ChromelessDOMSetup");
-  },false);
-
-  i.addEventListener("ChromelessTitleChanged",function (e) {
-    document.getElementById("title").innerHTML= e.title;
-  },false);
-
-  i.addEventListener("ChromelessLoadProgress", function (e) {
-    console.log("ChromelessLoadProgress: ",  e.percentage);
-    document.getElementById("progress").innerHTML=e.percentage;
-  } ,false);
-
-  i.addEventListener("ChromelessSecurityChange",function (e) {
-    console.log("ChromelessSecurityChange", e.state, e.strength);
-    document.getElementById("security").innerHTML=e.strength + "/" + e.state;
-  },false);
-
-  i.addEventListener("ChromelessLoadStop", function (e) {
-    document.getElementById("progress").innerHTML="100";
-  },false);
-
-  i.addEventListener("ChromelessStatusChanged", function (e) {
-    document.getElementById("status").innerHTML= e.message;
-  }, false);
-
-
-  i.src="http://github.com/mozilla/chromeless";
-}
-
-   </script>
    <div style="border:10px solid blue;padding:1em;">
     <b>Loading a web page:</b> <span id="progress"></span>% <b>Security:</b> <span id="security">insecure</span>
     <b>Title:</b> <span id="title">...</span>
@@ -64,4 +18,46 @@ function start() {
    </div>
 
   </body>
+<script type="text/javascript">
+function start() {
+  var pm = require('web-content').ProgressMonitor();
+
+  var i = document.getElementById("myWebContent");
+  i.style.width="100%";
+  i.style.height="500px";
+
+  pm.attach(i);
+
+  pm.on("load-start", function (url) {
+    console.log("loading begins: ", url);
+  });
+
+  pm.on("dom-setup", function (e) {
+    console.log("dom is setup!");
+  });
+
+  pm.on("title-change",function (title) {
+    document.getElementById("title").innerHTML = title;
+  });
+
+  pm.on("progress", function (percent) {
+    document.getElementById("progress").innerHTML=percent;
+  });
+
+  pm.on("security-change",function (detail) {
+    console.log("ChromelessSecurityChange", detail.state, detail.strength);
+    document.getElementById("security").innerHTML=detail.strength + "/" + detail.state;
+  });
+
+  pm.on("load-stop", function (e) {
+    console.log("load complete");
+  });
+
+  pm.on("status-changed", function (message) {
+    document.getElementById("status").innerHTML= message;
+  });
+
+  i.src="http://github.com/mozilla/chromeless";
+}
+</script>
 </html>
