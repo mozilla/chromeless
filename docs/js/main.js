@@ -312,6 +312,36 @@ function startApp(jQuery, window) {
         }
     }
 
+    function populateEvents(domElem, moduleName, events) {
+        var nameToIx = buildNameToIxMap(events);
+        var sortedEvents = sortedNames(events);
+
+        for (var e in sortedEvents) {
+            var name = sortedEvents[e];
+            e = events[nameToIx[name]];
+            var ev = $("#templates .one-event").clone();
+            if (e.payload.type) ev.find(".payload > .type").text(e.payload.type);
+            else ev.find(".payload > .type").remove();
+            if (e.payload.desc) ev.find(".payload > .desc").text(e.payload.desc);
+            else ev.find(".payload > .desc").remove();
+            ev.find(".varname").text(moduleName);
+            ev.find(".eventName").text(name);
+            ev.find(".invocation").attr('id', (moduleName + "." + name).split(".").slice(1).join("."));
+            if (e.source_lines) {
+                ev.find(".invocation").attr('startLine', e.source_lines[0])
+                    .attr('endLine', e.source_lines[1]);
+            }
+
+            setupJSONView(ev.find(".invocation > img:last-child"), e);
+
+            if (!e.desc) {
+                e.desc = "no documentation available for this event";
+            }
+            ev.find(".description").html(converter.makeHtml(e.desc));
+            ev.appendTo(domElem);
+        }
+    }
+
     function populateClasses(domElem, moduleName, classes) {
         var nameToIx = buildNameToIxMap(classes);
         var sortedClasses = sortedKeys(nameToIx);
@@ -350,6 +380,12 @@ function startApp(jQuery, window) {
                 populateFunctions(t.find(".functions"), moduleName + "." + c.name, c.functions);
             } else {
                 t.find(".functions").remove();
+            }
+
+            if (c.events) {
+                populateEvents(t.find(".events"), moduleName + "." + c.name, c.events);
+            } else {
+                t.find(".events").remove();
             }
 
             // XXX: for when we/if implement nested class support
