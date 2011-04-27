@@ -143,6 +143,12 @@ nsBrowserStatusHandler.prototype =
     this.checkTitle();
     let curProgress = 100.0 * (aCurTotalProgress / aMaxTotalProgress);
     if (curProgress > this.lastProgressSent) {
+      /**
+       * @event progress
+       * Allows the listener to understand approximately how much of the
+       * page has loaded.
+       * @payload {number} The percentage (0..100) of page load that is complete
+       */
       this.eventEmitter._emit("progress", curProgress);
       this.lastProgressSent = curProgress;
     }
