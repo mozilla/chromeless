@@ -38,6 +38,20 @@
 const {Cc, Ci, Cr, Cu} = require("chrome");
 const events = require("events").EventEmitterTrait;
 
+/**
+ * @class ProgressMonitor
+ * An object that allows you to attach to iframes containing web content
+ * to subscribe to events which provide information about the progress
+ * of loading web resources.
+ *
+ * Example Usage:
+ * 
+ *     var pm = require('web-content').ProgressMonitor();
+ *     pm.attach(document.getElementById("someIFrame");
+ *     pm.on('title-change', function(title) {
+ *       console.log("Title of loaded content changed: " + title);
+ *     };
+ */
 exports.ProgressMonitor = function() {
   var eventEmitter = events.create();
   var domElem = undefined;
@@ -197,3 +211,4 @@ nsBrowserStatusHandler.prototype =
   {
   }
 }
+/** @endclass */
