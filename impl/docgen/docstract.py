@@ -86,7 +86,8 @@ class DocStract():
             '@class':       ClassBlockHandler("@class"),
             '@endclass':    EndClassBlockHandler("@endclass"),
             '@typedef':     TypedefBlockHandler("@typedef"),
-            '@endtypedef':  EndTypedefBlockHandler("@endtypedef")
+            '@endtypedef':  EndTypedefBlockHandler("@endtypedef"),
+            '@event':       EventBlockHandler('@event')
             }
 
         # tag aliases, direct equivalences.  Note, RHS is normal form.
@@ -112,12 +113,13 @@ class DocStract():
         # lookup table of tag handlers, lil' object that can parse and inject
         # for different tags.
         self.tags = {
-            '@param':  ParamTagHandler('@param'),
-            '@desc':   DescTagHandler('@desc'),
-            '@return': ReturnTagHandler('@return'),
-            '@see':    SeeTagHandler('@see'),
-            '@throws': ThrowsTagHandler('@throws'),
-            '@type':   TypeTagHandler('@type'),
+            '@param':   ParamTagHandler('@param'),
+            '@desc':    DescTagHandler('@desc'),
+            '@return':  ReturnTagHandler('@return'),
+            '@see':     SeeTagHandler('@see'),
+            '@throws':  ThrowsTagHandler('@throws'),
+            '@type':    TypeTagHandler('@type'),
+            '@payload': PayloadTagHandler('@type')
             }
 
         # these are a list of functions that examine extraction state and try to guess
@@ -612,6 +614,13 @@ class ThrowsTagHandler(ReturnTagHandler):
             current['throws'] = [ ]
         current['throws'].append(obj)
 
+class PayloadTagHandler(ReturnTagHandler):
+    mayRecur = False
+    def attach(self, obj, current, blockType):
+        if 'payload' in current:
+            raise RuntimeError("an event can't have multiple payloads");
+        current['payload'] = obj
+
 
 # a block handler is slightly different than a tag
 # handler.  Each document block is of a certain type,
@@ -701,6 +710,31 @@ class FunctionBlockHandler(ModuleBlockHandler):
                 raise RuntimeError("function '%s' redefined" % doc["name"])
 
         parent["functions"].append(doc)
+
+class EventBlockHandler(ModuleBlockHandler):
+    allowedTags = [ '@see', '@desc', '@payload' ]
+    allowedContexts = [ 'global', 'class' ]
+
+    def attach(self, obj, current, blockType):
+        if "name" in obj:
+            current['name'] = obj["name"]
+        if "desc" in obj:
+            if "desc" in current:
+                obj['desc'] = current['desc'] + "\n\n" + obj['desc']
+            current['desc'] = obj['desc']
+
+    def merge(self, doc, parent, guessedName, context):
+        if "name" not in doc:
+            doc['name'] = guessedName
+        if doc['name'] == None:
+            raise RuntimeError("can't determine event name")
+        if not "events" in parent:
+            parent["events"] = []
+        for e in parent["events"]:
+            if doc["name"] == e['name']:
+                raise RuntimeError("'%s' event redefined" % doc["name"])
+
+        parent["events"].append(doc)
 
 class ConstructorBlockHandler(BlockHandler):
     allowedTags = [ '@see', '@param', '@throws', '@desc', '@return', '@type' ]
