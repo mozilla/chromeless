@@ -647,7 +647,7 @@ class ModuleBlockHandler(BlockHandler):
     allowedTags = [ '@desc', '@see' ]
     allowedContexts = [ 'global' ]
     takesArg = True
-    _pat = re.compile('^(\w+)$|^(?:([\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
+    _pat = re.compile('^([\-\w]+)$|^(?:([\-\w.\[\]]+)\s*\n)?\s*(.*)$', re.S);
     def parse(self, args):
         if len(args) != 1:
             raise RuntimeError("You may not pass args (like, {string}) to %s" % 

@@ -158,6 +158,11 @@ nsBrowserStatusHandler.prototype =
   },
   onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
   {
+    /**
+     * @event status-changed
+     * Provides human readable textual strings which contain load status
+     * @payload {string} A description of status of the page load.
+     */
     this.eventEmitter._emit("status-changed", aMessage);
   },
   onSecurityChange : function(aWebProgress, aRequest, aState)
@@ -179,11 +184,29 @@ nsBrowserStatusHandler.prototype =
     ].forEach(function(x) {
         if (aState & x[0]) detail.strength = x[1];
     });
+    /**
+     * @event security-change
+     * An event raised during load which emits a JavaScript object
+     * containing the "security state" of the page: `.state` is one of
+     * *`insecure`*, *`broken`*, or *`secure`* (get [more
+     * info](https://developer.mozilla.org/en/nsIWebProgressListener#State_Security_Flags)
+     * on states), while `.strength` is *`.low`*, *`.medium`*, or
+     * *`high`* ( [read
+     * more](https://developer.mozilla.org/en/nsIWebProgressListener#Security_Strength_Flags)
+     * about *strengths*).
+     * @payload {object}
+     */
     this.eventEmitter._emit("security-change", detail);
   },
   startDocumentLoad : function(aRequest)
   {
     this.checkTitle();
+    /**
+     * @event load-start
+     * Dispatched when navigation starts.  This event is delivered before any
+     * network interaction takes place.
+     * @payload {string} The url of web content to be loaded.
+     */
     this.eventEmitter._emit("load-start", aRequest.name);
     this.eventEmitter._emit("progress", 0.0);
     this.lastProgressSent = 0;
@@ -193,14 +216,26 @@ nsBrowserStatusHandler.prototype =
     this.checkTitle();
     if (this.lastProgressSent != 100) {
       this.lastProgressSent = 100;
+      // documented above
       this.eventEmitter._emit("progress", 100.0);
     }
+    /**
+     * @event load-stop
+     * An event raised upon completion of a top level document
+     * load.  Fired after all resources have been loaded, or if the load has been
+     * programmatically stopped.
+     */
     this.eventEmitter._emit("load-stop");
   },
   checkTitle: function() {
     let title = this.iframeElem.contentDocument.title;
     if (typeof title === 'string' && title !== this.lastKnownTitle) {
       this.lastKnownTitle = title;
+      /**
+       * @event title-changed
+       * Dispatched when the title of web content changes during load.
+       * @payload {string} The new title of the web content.
+       */
       this.eventEmitter._emit("title-change", title);
     }
   },

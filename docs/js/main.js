@@ -320,9 +320,9 @@ function startApp(jQuery, window) {
             var name = sortedEvents[e];
             e = events[nameToIx[name]];
             var ev = $("#templates .one-event").clone();
-            if (e.payload.type) ev.find(".payload > .type").text(e.payload.type);
+            if (e.payload && e.payload.type) ev.find(".payload > .type").text(e.payload.type);
             else ev.find(".payload > .type").remove();
-            if (e.payload.desc) ev.find(".payload > .desc").text(e.payload.desc);
+            if (e.payload && e.payload.desc) ev.find(".payload > .desc").text(e.payload.desc);
             else ev.find(".payload > .desc").remove();
             ev.find(".varname").text(moduleName);
             ev.find(".eventName").text(name);
