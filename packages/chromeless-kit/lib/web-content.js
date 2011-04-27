@@ -44,7 +44,9 @@ exports.ProgressMonitor = function() {
   var aBrowserStatusHandler = undefined;
 
   return {
-    on: function() { eventEmitter.on.apply(eventEmitter, arguments); },
+    on: function() { return eventEmitter.on.apply(eventEmitter, arguments); },
+    once: function() { return eventEmitter.once.apply(eventEmitter, arguments); },
+    removeListener: function() { return eventEmitter.removeListener.apply(eventEmitter, arguments); },
     attach: function(de) {
       this.detach();
 
