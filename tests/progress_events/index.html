@@ -33,8 +33,8 @@ function start() {
   },false);
 
   i.addEventListener("ChromelessLoadProgress", function (e) {
-    console.log("ChromelessLoadProgress: ",  e.percentage);
-    document.getElementById("progress").innerHTML=e.percentage;
+    console.log("ChromelessLoadProgress: ",  e.target.getAttribute("percentage"));
+    document.getElementById("progress").innerHTML=e.target.getAttribute("percentage");
   } ,false);
 
   i.addEventListener("ChromelessSecurityChange",function (e) {

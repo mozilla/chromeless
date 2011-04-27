@@ -126,9 +126,11 @@ nsBrowserStatusHandler.prototype =
     this.checkTitle();
     this.currentTotalProgress = aCurTotalProgress;
     this.maxTotalProgress     = aMaxTotalProgress;
-    var evt = this.parentDocument.createEvent("ProgressEvent"); 
-    evt.initProgressEvent("ChromelessLoadProgress", true, false, false, aCurTotalProgress, aMaxTotalProgress, 0, 0);
+    var evt = this.parentDocument.createEvent("Event"); 
+    evt.initEvent("ChromelessLoadProgress", true, false);
+    this.iframeElement.setAttribute("percentage", ""+aCurTotalProgress/aMaxTotalProgress);
     this.iframeElement.dispatchEvent(evt);
+    // https://developer.mozilla.org/en/Code_snippets/Interaction_between_privileged_and_non-privileged_pages#Sending_data_from_chrome_to_unprivileged_document
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
   {
