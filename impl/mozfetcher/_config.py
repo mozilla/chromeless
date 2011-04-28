@@ -17,11 +17,11 @@ software = {
         }
     },
     ( "Windows_32bit", "Windows_64bit" ): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.win32.zip",
-        "md5": "318653c4952f0e6f0e58db0c548730f6",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.win32.zip",
+        "md5": "38e5c5ad08927278ed6c333aef836882",
         "bin": {
             "path": "xulrunner/xulrunner.exe",
-            "sig": "d0bba60461148617cc73cdf86e438198"
+            "sig": "0910106650f397e67aa52f4c4d924f8e"
         }
     },
     "Linux_32bit": {
