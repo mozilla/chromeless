@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>Monitoring load progress of web content</title>
+  </head>
+  <body onload="loadContent()">
+   <p>
+     This is an example of accessing cookies that are set.
+   </p>
+   <iframe id="myWebContent" style="width: 96%; margin: 1%; border: 4px solid red; height: 200px;">
+   </iframe>
+   Cookies before:
+   <pre id="before" style="border:5px solid blue; padding:1em; overflow: auto;">
+   </pre>
+   Cookies after:
+   <pre id="after" style="border:5px solid blue; padding:1em; overflow: auto;">
+   </pre>
+  </body>
+<script type="text/javascript">
+const cookie = require('cookie'),
+      ProgressMonitor = require('web-content').ProgressMonitor;
+
+var pm = ProgressMonitor();
+pm.attach(document.getElementById("myWebContent"));
+
+function showCookies(divID) {
+  var i = document.getElementById(divID);
+  var cooks = cookie.getAllCookies();
+  var cookText = "Gots " + cooks.length + " cookies:\n";
+  cooks.forEach(function(c) {
+    cookText += "host: " + c.host + " | name: " + c.name + " | expires: " + c.expires + " | value: "
+               + c.value + "\n";  
+  });
+  i.textContent = cookText;
+}
+
+pm.on("load-start", function() {
+  showCookies("before");
+});
+
+pm.on("load-stop", function() {
+  showCookies("after");
+});
+
+function loadContent() {
+  var i = document.getElementById("myWebContent");
+  i.src="http://github.com/mozilla/chromeless";
+}
+</script>
+</html>
