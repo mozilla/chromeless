@@ -49,18 +49,12 @@ observers.add("content-document-global-created", function(subject, url) {
         }
         
         
-                
+        // Make target == _top links go to the top frame
+        
         subject.document.addEventListener('DOMContentLoaded', function topAs(evt) {
-          /*require('page/a_callbacks').top(subject.document, function(e) {
-            subject.window.location = e.originalTarget.href;
-          });*/
-          console.log(subject.document);
-          // Make target == _top links go to the top frame
           var as = subject.document.querySelectorAll("a[target=\"_top\"]");
-          console.log('_top <a>s: ', as);
           for(var i = 0; i < as.length; i++) {
             as[i].addEventListener('click', function(e) {
-              console.log('href: ', e.originalTarget.href);
               subject.window.top.location = e.originalTarget.href;
               e.preventDefault();
               return false;
