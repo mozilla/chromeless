@@ -55,9 +55,8 @@ observers.add("content-document-global-created", function(subject, url) {
           var as = subject.document.querySelectorAll("a[target=\"_top\"]");
           for(var i = 0; i < as.length; i++) {
             as[i].addEventListener('click', function(e) {
-              subject.window.top.location = e.originalTarget.href;
               e.preventDefault();
-              return false;
+              subject.window.top.location = e.originalTarget.href;
             }, false);
           }
 
