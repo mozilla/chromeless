@@ -28,7 +28,6 @@
     Load Status: <span id="status">...</span>
    </div>
    <div class="panel">
-    dom-setup event: <span id="dom-setup"></span>
     Page load started:<span id="load-start"></span>
     Page load stopped:<span id="load-stop"></span>
    </div>
@@ -53,11 +52,6 @@ function start() {
     document.getElementById("load-start").innerHTML = "ok";    
   });
 
-  pm.on("dom-setup", function (e) {
-    console.log("dom is setup!");
-    document.getElementById("dom-setup").innerHTML = "ok";    
-  });
-
   pm.on("title-change",function (title) {
     document.getElementById("title").innerHTML = title;
   });
@@ -80,7 +74,7 @@ function start() {
     document.getElementById("status").innerHTML= message;
   });
 
-  i.src="https://github.com/mozilla/chromeless";
+  i.src="https://www.google.com";
 }
 </script>
 </html>
