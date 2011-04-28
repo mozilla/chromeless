@@ -661,8 +661,8 @@
                   "type": "File"
                 }, 
                 "source_lines": [
-                  332, 
-                  335
+                  272, 
+                  275
                 ]
               }
             ], 
@@ -676,8 +676,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  297, 
-                  300
+                  237, 
+                  240
                 ]
               }, 
               {
@@ -687,8 +687,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  302, 
-                  303
+                  242, 
+                  243
                 ]
               }, 
               {
@@ -698,8 +698,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  305, 
-                  306
+                  245, 
+                  246
                 ]
               }, 
               {
@@ -709,8 +709,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  308, 
-                  309
+                  248, 
+                  249
                 ]
               }, 
               {
@@ -720,8 +720,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  311, 
-                  312
+                  251, 
+                  252
                 ]
               }, 
               {
@@ -731,8 +731,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  314, 
-                  315
+                  254, 
+                  255
                 ]
               }, 
               {
@@ -742,8 +742,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  317, 
-                  318
+                  257, 
+                  258
                 ]
               }, 
               {
@@ -753,8 +753,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  320, 
-                  321
+                  260, 
+                  261
                 ]
               }, 
               {
@@ -764,8 +764,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  323, 
-                  324
+                  263, 
+                  264
                 ]
               }, 
               {
@@ -775,8 +775,8 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  327, 
-                  328
+                  267, 
+                  268
                 ]
               }
             ], 
@@ -786,40 +786,40 @@
                 "desc": "The file's permissions (follows symlinks)", 
                 "name": "permissions", 
                 "source_lines": [
-                  270, 
-                  270
+                  210, 
+                  210
                 ]
               }, 
               {
                 "desc": "The file's permissions (does not follow symlinks)", 
                 "name": "permissionsOfLink", 
                 "source_lines": [
-                  272, 
-                  272
+                  212, 
+                  212
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (follows symlinks)", 
                 "name": "lastModifiedTime", 
                 "source_lines": [
-                  274, 
-                  274
+                  214, 
+                  214
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (does not follow symlinks)", 
                 "name": "lastModifiedTimeOfLink", 
                 "source_lines": [
-                  276, 
-                  276
+                  216, 
+                  216
                 ]
               }, 
               {
                 "desc": "Size of file in bytes (follows symlinks)", 
                 "name": "fileSize", 
                 "source_lines": [
-                  279, 
-                  279
+                  219, 
+                  219
                 ], 
                 "type": "integer"
               }, 
@@ -827,8 +827,8 @@
                 "desc": "Size of file in bytes (does not follow symlinks)", 
                 "name": "fileSizeOfLink", 
                 "source_lines": [
-                  281, 
-                  281
+                  221, 
+                  221
                 ], 
                 "type": "integer"
               }, 
@@ -836,8 +836,8 @@
                 "desc": "The absolute path to the file", 
                 "name": "path", 
                 "source_lines": [
-                  284, 
-                  284
+                  224, 
+                  224
                 ], 
                 "type": "string"
               }, 
@@ -845,15 +845,15 @@
                 "desc": "The absolute path to the parent of the file", 
                 "name": "parent", 
                 "source_lines": [
-                  287, 
-                  287
+                  227, 
+                  227
                 ], 
                 "type": "string"
               }
             ], 
             "source_lines": [
-              256, 
-              260
+              196, 
+              200
             ]
           }
         ], 
@@ -925,62 +925,6 @@
             "source_lines": [
               133, 
               153
-            ]
-          }, 
-          {
-            "desc": "Returns a list of file names for a given directory path.", 
-            "name": "list", 
-            "params": [
-              {
-                "desc": "The path of a directory which you want a list of file names.", 
-                "name": "path"
-              }
-            ], 
-            "source_lines": [
-              195, 
-              198
-            ]
-          }, 
-          {
-            "desc": "If a file exists, then it removes it.", 
-            "name": "remove", 
-            "params": [
-              {
-                "desc": "The path for a given file you want to be removed.", 
-                "name": "path"
-              }
-            ], 
-            "source_lines": [
-              215, 
-              218
-            ]
-          }, 
-          {
-            "desc": "Creates a directory.", 
-            "name": "mkpath", 
-            "params": [
-              {
-                "desc": "for the new directory you want to have created.", 
-                "name": "path"
-              }
-            ], 
-            "source_lines": [
-              225, 
-              228
-            ]
-          }, 
-          {
-            "desc": "Removes a directory.", 
-            "name": "rmdir", 
-            "params": [
-              {
-                "desc": "for a directory you want to have removed.", 
-                "name": "path"
-              }
-            ], 
-            "source_lines": [
-              237, 
-              241
             ]
           }
         ], 
@@ -2322,78 +2266,264 @@
           40
         ]
       }, 
-      "iframe-controls": {
-        "desc": "Allows application code to control and inspect iframes", 
-        "filename": "iframe-controls.js", 
-        "functions": [
+      "menu": {
+        "classes": [
           {
-            "desc": "stop the loading of content within an iframe", 
-            "name": "stopload", 
-            "params": [
+            "desc": "Represents any single menu item that should be displayed\nwith at least a label.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"menu\");\n\n    var file = menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            menu.Menu({\n                label: \"New Tab\",\n                children: [\n                    menu.Menu({ label: \"In the current window\" }),\n                    menu.Menu({ label: \"In a new window\" }),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
               {
-                "desc": "An iframe dom node.", 
-                "name": "frame", 
-                "type": "IFrameNode"
+                "desc": "Draw a menu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  185, 
+                  191
+                ]
+              }, 
+              {
+                "desc": "Redraws a menu element to the canvas (a XUL document) if needed.\nUsually called called by a function that performs a mutation on a SubMenu\n(like `push()`, `shift()` or `splice()`).", 
+                "name": "redraw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  229, 
+                  237
+                ]
+              }, 
+              {
+                "desc": "Register a globally accessible hotkey for this menu item that invokes \nthe 'onClick' handler if set when the key combination is pressed.", 
+                "name": "setHotKey", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "see": [
+                  "this.hotkey property"
+                ], 
+                "source_lines": [
+                  252, 
+                  259
+                ]
+              }, 
+              {
+                "desc": "Removes a menu item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  269, 
+                  276
+                ]
               }
             ], 
+            "name": "Menu", 
             "source_lines": [
-              42, 
-              45
+              80, 
+              112
             ]
           }, 
           {
-            "desc": "Access the title of an iframe.", 
-            "name": "title", 
-            "params": [
+            "constructors": [
               {
-                "desc": "An iframe dom node.", 
-                "name": "frame", 
-                "type": "IFrameNode"
+                "params": [
+                  {
+                    "desc": "a set of options/ properties that will be set on the \n                       menu item. Keys are case-insensitive.", 
+                    "name": "nodes", 
+                    "type": "Array"
+                  }, 
+                  {
+                    "desc": "parent Menu instance that will show the SubMenu when hovered", 
+                    "name": "parent", 
+                    "type": "Menu"
+                  }
+                ], 
+                "returns": {
+                  "type": "SubMenu"
+                }, 
+                "source_lines": [
+                  326, 
+                  332
+                ]
               }
             ], 
-            "returns": {
-              "desc": "The current title of the content in the iframe.", 
-              "type": "string"
-            }, 
+            "desc": "Represents a collection of menu items and separators that\nshould be displayed. A SubMenu is defined with the 'children' property of a \nMenu object as an Array. Therefore, array-like functions may be used to alter\nthe contents of a SubMenu instance.\nThere is no maximum set to the amount or level of depth of submenus.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Separator()\n        ]\n    });\n    file.children.splice(0, 1);\n    file.children.splice(-1, 0, new menu.Menu({ label: \"About...\" }));", 
+            "functions": [
+              {
+                "desc": "Draw a submenu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  344, 
+                  350
+                ]
+              }, 
+              {
+                "desc": "Removes a submenu from the canvas (a XUL document), including its children\nand does basic garbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  361, 
+                  367
+                ]
+              }, 
+              {
+                "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
+                "name": "push", 
+                "source_lines": [
+                  382, 
+                  386
+                ]
+              }, 
+              {
+                "name": "reverse", 
+                "source_lines": [
+                  400, 
+                  400
+                ]
+              }, 
+              {
+                "name": "shift", 
+                "source_lines": [
+                  401, 
+                  401
+                ]
+              }, 
+              {
+                "name": "sort", 
+                "source_lines": [
+                  402, 
+                  402
+                ]
+              }, 
+              {
+                "name": "splice", 
+                "source_lines": [
+                  403, 
+                  403
+                ]
+              }, 
+              {
+                "name": "unshift", 
+                "source_lines": [
+                  404, 
+                  404
+                ]
+              }, 
+              {
+                "desc": "Convert this SubMenu instance to an Array-representation.", 
+                "name": "toArray", 
+                "returns": {
+                  "type": "array"
+                }, 
+                "source_lines": [
+                  413, 
+                  418
+                ]
+              }, 
+              {
+                "desc": "(re-)Construct this SubMenu instance with Menu or Separator instances\nfrom array.", 
+                "name": "fromArray", 
+                "params": [
+                  {
+                    "desc": "an array of Menu or Separator instances.", 
+                    "name": "arr", 
+                    "type": "array"
+                  }
+                ], 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  426, 
+                  433
+                ]
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ], 
+                "source_lines": [
+                  449, 
+                  452
+                ]
+              }
+            ], 
+            "name": "SubMenu", 
             "source_lines": [
-              51, 
-              55
+              294, 
+              325
             ]
           }, 
           {
-            "desc": "inject a function into a web content window", 
-            "name": "inject", 
-            "params": [
+            "constructors": [
               {
-                "desc": "An iframe dom node.", 
-                "name": "frame", 
-                "type": "IFrameNode"
-              }, 
-              {
-                "desc": "the property of `window.` to which this function shall be\nattached.", 
-                "name": "attachPoint", 
-                "type": "string"
-              }, 
-              {
-                "desc": "The function that will be invoked when content in the\niframe invokes this function.", 
-                "name": "callback", 
-                "type": "function"
+                "params": [
+                  {
+                    "desc": "parent Menu or SubMenu instance that will contain \n                             the separator", 
+                    "name": "parent", 
+                    "type": "Menu/SubMenu"
+                  }
+                ], 
+                "returns": {
+                  "type": "Separator"
+                }, 
+                "source_lines": [
+                  482, 
+                  487
+                ]
               }
             ], 
+            "desc": "Represents any single menu item that should be displayed \nwith as separator (straight horizontal line).\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Separator(),\n            new menu.Separator(),\n            new menu.Menu({\n                label: \"More Separators!\",\n                children: [\n                    new menu.Separator(),\n                    new menu.Separator(),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
+              {
+                "desc": "Draw a separator element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  496, 
+                  502
+                ]
+              }, 
+              {
+                "desc": "Removes a separator item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  512, 
+                  518
+                ]
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ], 
+                "source_lines": [
+                  527, 
+                  530
+                ]
+              }
+            ], 
+            "name": "Separator", 
             "source_lines": [
-              60, 
-              67
+              457, 
+              481
             ]
           }
         ], 
-        "module": "iframe-controls", 
-        "source_lines": [
-          38, 
-          39
-        ]
-      }, 
-      "menu": {
-        "filename": "ui/menu.js", 
+        "filename": "menu.js", 
         "module": "menu"
       }, 
       "mime": {
@@ -2856,6 +2986,67 @@
           }
         ], 
         "filename": "web-content.js", 
+        "functions": [
+          {
+            "desc": "stop the loading of content within an iframe", 
+            "name": "stopload", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ], 
+            "source_lines": [
+              257, 
+              260
+            ]
+          }, 
+          {
+            "desc": "Access the title of an iframe.", 
+            "name": "title", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ], 
+            "returns": {
+              "desc": "The current title of the content in the iframe.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              266, 
+              270
+            ]
+          }, 
+          {
+            "desc": "inject a function into a web content window", 
+            "name": "inject", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }, 
+              {
+                "desc": "the property of `window.` to which this function shall be\nattached.", 
+                "name": "attachPoint", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The function that will be invoked when content in the\niframe invokes this function.", 
+                "name": "callback", 
+                "type": "function"
+              }
+            ], 
+            "source_lines": [
+              275, 
+              282
+            ]
+          }
+        ], 
         "module": "web-content"
       }
     }, 
@@ -2898,5 +3089,6 @@
       }
     }, 
     "name": "test-harness"
-  }
+  }, 
+  "version": "1835261"
 }
