@@ -1,24 +1,44 @@
 <html>
   <head>
     <title>Monitoring load progress of web content</title>
+    <style>
+       .panel { 
+          border:10px solid blue;padding:1em;
+       } 
+       #myWebContent { 
+          height:300px ! important;
+ 
+       } 
+    </style>
   </head>
+
   <body onload="start()">
    <p>
      This is an initial example, an experimentation to track 
      loading progress of an iframe. 
+    
    </p>
    <iframe id="myWebContent">
    </iframe>
-   <div style="border:10px solid blue;padding:1em;">
-    <b>Loading a web page:</b> <span id="progress"></span>% <b>Security:</b> <span id="security">insecure</span>
+   <div class="panel">
+    <b>Loading a web page:</b> <span id="progress">...</span>% <b>Security:</b> <span id="security">...</span>
     <b>Title:</b> <span id="title">...</span>
    </div>
-   <div style="border:10px solid blue;padding:1em;">
-    Load Status: <span id="status"></span>
+   <div class="panel">
+    Load Status: <span id="status">...</span>
+   </div>
+   <div class="panel">
+    dom-setup event: <span id="dom-setup"></span>
+    Page load started:<span id="load-start"></span>
+    Page load stopped:<span id="load-stop"></span>
    </div>
 
   </body>
+
 <script type="text/javascript">
+
+// Notice:  load-start is earlier than domsetup, but not too early to inject. 
+
 function start() {
   var pm = require('web-content').ProgressMonitor();
 
@@ -30,10 +50,12 @@ function start() {
 
   pm.on("load-start", function (url) {
     console.log("loading begins: ", url);
+    document.getElementById("load-start").innerHTML = "ok";    
   });
 
   pm.on("dom-setup", function (e) {
     console.log("dom is setup!");
+    document.getElementById("dom-setup").innerHTML = "ok";    
   });
 
   pm.on("title-change",function (title) {
@@ -51,13 +73,14 @@ function start() {
 
   pm.on("load-stop", function (e) {
     console.log("load complete");
+    document.getElementById("load-stop").innerHTML = "ok";    
   });
 
   pm.on("status-changed", function (message) {
     document.getElementById("status").innerHTML= message;
   });
 
-  i.src="http://github.com/mozilla/chromeless";
+  i.src="https://github.com/mozilla/chromeless";
 }
 </script>
 </html>
