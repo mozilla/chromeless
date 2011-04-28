@@ -8,6 +8,7 @@ exports.testBrowser = function (test) {
        timer.setTimeout(function () { 
          test.assert( mainBrowser.contentDocument.getElementById("dom-setup").innerHTML == "ok" );
          test.assert( mainBrowser.contentDocument.getElementById("load-start").innerHTML == "ok" );
+         test.assert( mainBrowser.contentDocument.getElementById("load-stop").innerHTML == "ok" );
          test.assert( mainBrowser.contentDocument.getElementById("progress").innerHTML != "..." );
          test.assert( mainBrowser.contentDocument.getElementById("security").innerHTML != "..." );
          test.assert( mainBrowser.contentDocument.getElementById("title").innerHTML != "..." );
