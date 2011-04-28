@@ -40,14 +40,6 @@ const {Cc, Ci, Cr} = require("chrome"),
       ui      = require("ui"),
       _slice  = Array.prototype.slice;
 
-/*
- * Mixes all enumerable members of [mixin] into [obj]
- * 
- * @param {Object} obj
- * @param {Object} mixin
- * @type  {void}
- * @private
- */
 function mixin(obj, mixin) {
     for (let key in mixin)
         obj[key.toLowerCase()] = mixin[key];
@@ -87,19 +79,19 @@ function setParent(parent) {
 
 /**
  * @class Menu
- * Represents any single menu item that should be displayed 
+ * Represents any single menu item that should be displayed
  * with at least a label.
  *
  * Example:
  *
  *     var ui   = require("ui"),
- *         menu = require("ui/menu");
- * 
- *     var file = new menu.Menu({
+ *         menu = require("menu");
+ *
+ *     var file = menu.Menu({
  *         parent: ui.getMenu(),
  *         label: "File",
  *         children: [
- *             new menu.Menu({
+ *             menu.Menu({
  *                 label: "New Window",
  *                 hotkey: "accel-n",
  *                 type: "radio",
@@ -108,11 +100,11 @@ function setParent(parent) {
  *                     alert("yay!");
  *                 }
  *             }),
- *             new menu.Menu({
+ *             menu.Menu({
  *                 label: "New Tab",
  *                 children: [
- *                     new menu.Menu({ label: "In the current window" }),
- *                     new menu.Menu({ label: "In a new window" }),
+ *                     menu.Menu({ label: "In the current window" }),
+ *                     menu.Menu({ label: "In a new window" }),
  *                 ]
  *             })
  *         ]
@@ -297,6 +289,7 @@ var Menu = function(struct) {
      */
     this.setParent = setParent;
 }).call(Menu.prototype);
+/** @endclass */
 
 /**
  * @class SubMenu
@@ -459,6 +452,7 @@ var SubMenu = function(nodes, parent) {
      */
     this.setParent = setParent;
 }).call(SubMenu.prototype);
+/** @endclass */
 
 /**
  * @class Separator
@@ -536,6 +530,7 @@ var Separator = function(parent) {
      */
     this.setParent = setParent;
 }).call(Separator.prototype);
+/** @endclass */
 
 exports.Menu = utils.publicConstructor(Menu);
 exports.Separator = utils.publicConstructor(Separator);
