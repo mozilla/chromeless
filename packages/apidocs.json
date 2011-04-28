@@ -527,6 +527,47 @@
         "filename": "content.js", 
         "module": "content"
       }, 
+      "cortex": {
+        "filename": "cortex.js", 
+        "functions": [
+          {
+            "desc": "Given an `object` containing a property with the given `name`, create\na property descriptor that can be used to define alias/proxy properties\non other objects.  A change in the value of an alias will propagate\nto the aliased property and vice versa.", 
+            "name": "createAliasProperty", 
+            "source_lines": [
+              52, 
+              57
+            ]
+          }, 
+          {
+            "desc": "Function takes any `object` and returns a proxy for its own public\nproperties. By default properties are considered to be public if they don't\nstart with `\"_\"`, but default behavior can be overridden if needed, by\npassing array of public property `names` as a second argument. By default\nreturned object will be direct decedent of the given `object`'s prototype,\nbut this can be overridden by passing third optional argument, that will be\nused as `prototype` instead.", 
+            "name": "Cortex", 
+            "params": [
+              {
+                "desc": "Object to create cortex for.", 
+                "name": "object", 
+                "type": "Object"
+              }, 
+              {
+                "desc": "Optional array of public property names.", 
+                "name": "names", 
+                "optional": true, 
+                "type": "String[]"
+              }, 
+              {
+                "desc": "Optional argument that will be used as `prototype` of the returned object,\n   if not provided `Object.getPrototypeOf(object)` is used instead.", 
+                "name": "prototype", 
+                "optional": true, 
+                "type": "Object"
+              }
+            ], 
+            "source_lines": [
+              107, 
+              122
+            ]
+          }
+        ], 
+        "module": "cortex"
+      }, 
       "cuddlefish": {
         "filename": "cuddlefish.js", 
         "module": "cuddlefish"
@@ -620,8 +661,8 @@
                   "type": "File"
                 }, 
                 "source_lines": [
-                  290, 
-                  293
+                  332, 
+                  335
                 ]
               }
             ], 
@@ -635,8 +676,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  255, 
-                  258
+                  297, 
+                  300
                 ]
               }, 
               {
@@ -646,8 +687,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  260, 
-                  261
+                  302, 
+                  303
                 ]
               }, 
               {
@@ -657,8 +698,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  263, 
-                  264
+                  305, 
+                  306
                 ]
               }, 
               {
@@ -668,8 +709,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  266, 
-                  267
+                  308, 
+                  309
                 ]
               }, 
               {
@@ -679,8 +720,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  269, 
-                  270
+                  311, 
+                  312
                 ]
               }, 
               {
@@ -690,8 +731,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  272, 
-                  273
+                  314, 
+                  315
                 ]
               }, 
               {
@@ -701,8 +742,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  275, 
-                  276
+                  317, 
+                  318
                 ]
               }, 
               {
@@ -712,8 +753,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  278, 
-                  279
+                  320, 
+                  321
                 ]
               }, 
               {
@@ -723,8 +764,8 @@
                   "type": "boolean"
                 }, 
                 "source_lines": [
-                  281, 
-                  282
+                  323, 
+                  324
                 ]
               }, 
               {
@@ -734,8 +775,8 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  285, 
-                  286
+                  327, 
+                  328
                 ]
               }
             ], 
@@ -745,40 +786,40 @@
                 "desc": "The file's permissions (follows symlinks)", 
                 "name": "permissions", 
                 "source_lines": [
-                  228, 
-                  228
+                  270, 
+                  270
                 ]
               }, 
               {
                 "desc": "The file's permissions (does not follow symlinks)", 
                 "name": "permissionsOfLink", 
                 "source_lines": [
-                  230, 
-                  230
+                  272, 
+                  272
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (follows symlinks)", 
                 "name": "lastModifiedTime", 
                 "source_lines": [
-                  232, 
-                  232
+                  274, 
+                  274
                 ]
               }, 
               {
                 "desc": "The last time this file was modified (does not follow symlinks)", 
                 "name": "lastModifiedTimeOfLink", 
                 "source_lines": [
-                  234, 
-                  234
+                  276, 
+                  276
                 ]
               }, 
               {
                 "desc": "Size of file in bytes (follows symlinks)", 
                 "name": "fileSize", 
                 "source_lines": [
-                  237, 
-                  237
+                  279, 
+                  279
                 ], 
                 "type": "integer"
               }, 
@@ -786,8 +827,8 @@
                 "desc": "Size of file in bytes (does not follow symlinks)", 
                 "name": "fileSizeOfLink", 
                 "source_lines": [
-                  239, 
-                  239
+                  281, 
+                  281
                 ], 
                 "type": "integer"
               }, 
@@ -795,8 +836,8 @@
                 "desc": "The absolute path to the file", 
                 "name": "path", 
                 "source_lines": [
-                  242, 
-                  242
+                  284, 
+                  284
                 ], 
                 "type": "string"
               }, 
@@ -804,15 +845,15 @@
                 "desc": "The absolute path to the parent of the file", 
                 "name": "parent", 
                 "source_lines": [
-                  245, 
-                  245
+                  287, 
+                  287
                 ], 
                 "type": "string"
               }
             ], 
             "source_lines": [
-              214, 
-              218
+              256, 
+              260
             ]
           }
         ], 
@@ -898,6 +939,48 @@
             "source_lines": [
               195, 
               198
+            ]
+          }, 
+          {
+            "desc": "If a file exists, then it removes it.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "The path for a given file you want to be removed.", 
+                "name": "path"
+              }
+            ], 
+            "source_lines": [
+              215, 
+              218
+            ]
+          }, 
+          {
+            "desc": "Creates a directory.", 
+            "name": "mkpath", 
+            "params": [
+              {
+                "desc": "for the new directory you want to have created.", 
+                "name": "path"
+              }
+            ], 
+            "source_lines": [
+              225, 
+              228
+            ]
+          }, 
+          {
+            "desc": "Removes a directory.", 
+            "name": "rmdir", 
+            "params": [
+              {
+                "desc": "for a directory you want to have removed.", 
+                "name": "path"
+              }
+            ], 
+            "source_lines": [
+              237, 
+              241
             ]
           }
         ], 
@@ -1717,10 +1800,6 @@
           45
         ]
       }, 
-      "errors": {
-        "filename": "errors.js", 
-        "module": "errors"
-      }, 
       "favicon": {
         "desc": "Tools for accessing favicons, which use a local cache to minimize\nnetwork requests", 
         "filename": "favicon.js", 
@@ -2069,38 +2148,38 @@
         ]
       }, 
       "fullscreen": {
-        "desc": "Allows one to control fullscreen view for the main application window", 
+        "desc": "Allows one to control fullscreen view for the main application window\n\nNOTE: Due to a bug in Gecko, enabling fullscreen mode inside the\nload handler for application code will not properly hide the taskbar.\nA workaround is to delay fullscreen mode toggling for some small number\nof milliseconds after page load (i.e. with `setTimeout()`)", 
         "filename": "fullscreen.js", 
         "functions": [
           {
-            "desc": "Size the main application window to consume the full screen", 
+            "desc": "Size the main application window to consume the full screen.", 
             "name": "enable", 
             "source_lines": [
-              44, 
-              46
+              49, 
+              51
             ]
           }, 
           {
             "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
             "name": "disable", 
             "source_lines": [
-              51, 
-              53
+              56, 
+              58
             ]
           }, 
           {
             "desc": "Toggle fullscreen.", 
             "name": "toggle", 
             "source_lines": [
-              58, 
-              60
+              63, 
+              65
             ]
           }
         ], 
         "module": "fullscreen", 
         "source_lines": [
           40, 
-          43
+          48
         ]
       }, 
       "hidden-frame-xulrunner": {
@@ -2251,15 +2330,6 @@
           }
         ], 
         "module": "iframe-controls", 
-        "source_lines": [
-          38, 
-          39
-        ]
-      }, 
-      "iframe-progress-hooks": {
-        "desc": "An internal implementation detail.  nothing to see here.", 
-        "filename": "iframe-progress-hooks.js", 
-        "module": "iframe-progress-hooks", 
         "source_lines": [
           38, 
           39
@@ -2647,6 +2717,89 @@
           }
         ], 
         "module": "ui"
+      }, 
+      "web-content": {
+        "classes": [
+          {
+            "desc": "An object that allows you to attach to iframes containing web content\nto subscribe to events which provide information about the progress\nof loading web resources.\n\nExample Usage:\n\n    var pm = require('web-content').ProgressMonitor();\n    pm.attach(document.getElementById(\"someIFrame\");\n    pm.on('title-change', function(title) {\n      console.log(\"Title of loaded content changed: \" + title);\n    };", 
+            "events": [
+              {
+                "desc": "Allows the listener to understand approximately how much of the\npage has loaded.", 
+                "name": "progress", 
+                "payload": {
+                  "desc": "The percentage (0..100) of page load that is complete", 
+                  "type": "number"
+                }, 
+                "source_lines": [
+                  146, 
+                  151
+                ]
+              }, 
+              {
+                "desc": "Provides human readable textual strings which contain load status", 
+                "name": "status-changed", 
+                "payload": {
+                  "desc": "A description of status of the page load.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  161, 
+                  165
+                ]
+              }, 
+              {
+                "desc": "An event raised during load which emits a JavaScript object\ncontaining the \"security state\" of the page: `.state` is one of\n*`insecure`*, *`broken`*, or *`secure`* (get [more\ninfo](https://developer.mozilla.org/en/nsIWebProgressListener#State_Security_Flags)\non states), while `.strength` is *`.low`*, *`.medium`*, or\n*`high`* ( [read\nmore](https://developer.mozilla.org/en/nsIWebProgressListener#Security_Strength_Flags)\nabout *strengths*).", 
+                "name": "security-change", 
+                "payload": {
+                  "type": "object"
+                }, 
+                "source_lines": [
+                  187, 
+                  198
+                ]
+              }, 
+              {
+                "desc": "Dispatched when navigation starts.  This event is delivered before any\nnetwork interaction takes place.", 
+                "name": "load-start", 
+                "payload": {
+                  "desc": "The url of web content to be loaded.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  204, 
+                  209
+                ]
+              }, 
+              {
+                "desc": "An event raised upon completion of a top level document\nload.  Fired after all resources have been loaded, or if the load has been\nprogrammatically stopped.", 
+                "name": "load-stop", 
+                "source_lines": [
+                  222, 
+                  227
+                ]
+              }, 
+              {
+                "desc": "Dispatched when the title of web content changes during load.", 
+                "name": "title-changed", 
+                "payload": {
+                  "desc": "The new title of the web content.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  234, 
+                  238
+                ]
+              }
+            ], 
+            "name": "ProgressMonitor", 
+            "source_lines": [
+              41, 
+              54
+            ]
+          }
+        ], 
+        "filename": "web-content.js", 
+        "module": "web-content"
       }
     }, 
     "name": "chromeless-kit"
@@ -2688,6 +2841,5 @@
       }
     }, 
     "name": "test-harness"
-  }, 
-  "version": "763f9d9"
+  }
 }

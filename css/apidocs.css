@@ -42,7 +42,7 @@
    margin-right: .65em;
 }
 
-.one-property .invocation, .one-function .invocation {
+.one-property .invocation, .one-function .invocation, .one-event .invocation {
     font-family: "andale mono",monospace;
     font-size: 1.1em;
     border: 1px solid #558adb;
@@ -51,11 +51,11 @@
     padding: .4em;
 }
 
-.one-property .invocation .propName, .one-function .invocation .funcName {
+.one-property .invocation .propName, .one-function .invocation .funcName, .one-event .invocation .eventName, .one-event .payload .hdr {
     font-weight: bold;
 }
 
-.one-property .description, .one-function .description, .one-function .parameters, .one-function .returnvalue {
+.one-property .description, .one-function .description, .one-function .parameters, .one-function .returnvalue, .one-event > * {
     margin: 1em;
     margin-left: 1em;
 }
@@ -64,7 +64,7 @@
     margin-bottom: 1em;
 }
 
-.one-function .type, .one-property .type {
+.one-function .type, .one-property .type, .one-event .payload .type {
     color: gray;
 }
 
