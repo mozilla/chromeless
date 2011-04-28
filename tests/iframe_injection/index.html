@@ -1,13 +1,20 @@
 <html>
   <body>
     I'm a parent, I inject.
-   <iframe src="inner-page.html" width="400" height="100" border="2" > 
+   <iframe width="400" height="100" border="2" > 
    </iframe>
   </body>
   <script type="text/javascript">
     // let's give our child page a `window.log` function
-    document.getElementsByTagName('iframe')[0].addEventListener('ChromelessDOMSetup', function(e) {
-      require('iframe-controls').inject(e.target, 'log', function(x) { console.log(x); });
+    const webContent = require("web-content");
+    var pm =  webContent.ProgressMonitor();
+    var iframe = document.getElementsByTagName('iframe')[0];
+    pm.attach(iframe);
+    console.log("attached");
+    pm.on("load-start", function() {
+      console.log("injecting");
+      webContent.inject(iframe, 'log', function(x) { console.log(x); });
     }, false);
-  </script>
+    iframe.src = "inner-page.html"; 
+</script>
 </html>
