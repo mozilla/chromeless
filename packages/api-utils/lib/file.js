@@ -192,66 +192,6 @@ exports.open = function open(filename, mode) {
          new textStreams.TextReader(stream);
 };
 
-/**
- * Returns a list of file names for a given directory path. 
- * @param path The path of a directory which you want a list of file names.  
- */
-exports.list = function list(path) {
-  var file = MozFile(path);
-  ensureDir(file);
-  ensureReadable(file);
-
-  var entries = file.directoryEntries;
-  var entryNames = [];
-  while(entries.hasMoreElements()) {
-    var entry = entries.getNext();
-    entry.QueryInterface(Ci.nsIFile);
-    entryNames.push(entry.leafName);
-  }
-  return entryNames;
-};
-
-
-/**
- * If a file exists, then it removes it.
- * @param path The path for a given file you want to be removed.  
- */
-exports.remove = function remove(path) {
-  var file = MozFile(path);
-  ensureFile(file);
-  file.remove(false);
-};
-
-/**
- * Creates a directory. 
- * @param path for the new directory you want to have created. 
- */
-exports.mkpath = function mkpath(path) {
-  var file = MozFile(path);
-  if (!file.exists())
-    file.create(Ci.nsIFile.DIRECTORY_TYPE, 0755); // u+rwx go+rx
-  else if (!file.isDirectory())
-    throw new Error("The path already exists and is not a directory: " + path);
-};
-
-/**
- * Removes a directory. 
- * @param path for a directory you want to have removed. 
- */
-
-exports.rmdir = function rmdir(path) {
-  var file = MozFile(path);
-  ensureDir(file);
-  try {
-    file.remove(false);
-  }
-  catch (err) {
-    // Bug 566950 explains why we're not catching a specific exception here.
-    throw new Error("The directory is not empty: " + path);
-  }
-};
-
-
 
 /**
  * @class File
