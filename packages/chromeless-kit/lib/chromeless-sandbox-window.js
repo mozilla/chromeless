@@ -18,19 +18,13 @@ function isTopLevelWindow(w) {
 }
 
 observers.add("content-document-global-created", function(subject, url) {
-
   if (subject.window.top != subject.window.self) {
     if (isTopLevelWindow(subject.window.parent))
     {
-      // browser code window
-      var bcWin = subject.window.parent;
       // top level iframe window
       var ifWin = subject.window.self;
-
-      // Top level iframes are used to hold web content.  We'll hide from
-      // the content of an iframe the fact that it has a parent.
-      ifWin.wrappedJSObject.top = ifWin;
-      ifWin.wrappedJSObject.parent = ifWin;
+      ifWin.wrappedJSObject.eval("window.top = window.self");
+      ifWin.wrappedJSObject.eval("window.parent = window.self");
     }
     else
     {
@@ -144,11 +138,11 @@ Window.prototype = {
         this._browser = browser;
         browser.loadURI(this.options.url);
         if(this._testCallbacks != undefined && this._testCallbacks.onload != undefined) {
-           var refthis = this; 
+           var refthis = this;
            browser.addEventListener("DOMContentLoaded", function () { 
              refthis._testCallbacks.onload();
-           }, false); 
-        } 
+           }, false);
+        }
       }
       return false;
     };
