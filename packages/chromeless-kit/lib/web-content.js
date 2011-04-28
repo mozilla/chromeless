@@ -88,6 +88,17 @@ exports.ProgressMonitor = function() {
       // (lth) reference the filter from the dom element that uses it.  This ensures there's a
       // proper reference count on the progress listeners
       domElem.progressListenerFilter = filter;
+
+      /* We need to hook up a service to bind security awareness here, 
+       * I am not totally sure about this, but searching in browser
+       * implementation was able to find some security UI doc 
+       * http://mxr.mozilla.org/mozilla-central/source/toolkit/content/widgets/browser.xml#544
+       */
+      if(!frameShell.securityUI) { 
+        var securityUI = Cc["@mozilla.org/secure_browser_ui;1"]
+          .createInstance(Ci.nsISecureBrowserUI);
+        securityUI.init(domElem.contentWindow);
+      };
     },
     detach: function() {
       if (domElem && domElem.progressListenerFilter) {
