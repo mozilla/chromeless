@@ -1741,6 +1741,63 @@
         "filename": "console-service.js", 
         "module": "console-service"
       }, 
+      "cookie": {
+        "desc": "Allow access and manipulation of the chromeless platforms cookie store.", 
+        "filename": "cookie.js", 
+        "functions": [
+          {
+            "desc": "Remove a specific cookie.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "the host that the cookie is associated with", 
+                "name": "host"
+              }, 
+              {
+                "desc": "the name of the cookie", 
+                "name": "name"
+              }, 
+              {
+                "desc": "the path of the cookie", 
+                "name": "path"
+              }, 
+              {
+                "desc": "the blocked status of the cookie", 
+                "name": "blocked"
+              }
+            ], 
+            "source_lines": [
+              49, 
+              56
+            ]
+          }, 
+          {
+            "desc": "Remove all cookies.", 
+            "name": "removeAll", 
+            "source_lines": [
+              62, 
+              64
+            ]
+          }, 
+          {
+            "desc": "Get all cookies", 
+            "name": "getAllCookies", 
+            "returns": {
+              "desc": "An array of objects representing cookies.  Each object has `.host`,\n`.name`, `.expires`, `.value`, `.path`, and `.blocked` attributes.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              70, 
+              74
+            ]
+          }
+        ], 
+        "module": "cookie", 
+        "source_lines": [
+          39, 
+          42
+        ]
+      }, 
       "custom-protocol": {
         "filename": "custom-protocol.js", 
         "module": "custom-protocol"
