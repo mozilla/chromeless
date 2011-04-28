@@ -129,11 +129,17 @@ function requireForBrowser(moduleName) {
 
 exports.main = function main(options, testCallbacks) {
     // access appinfo.json contents for startup parameters
-    //const ai = appinfo.contents;
+    const ai = appinfo.contents;
     //console.log("appinfo.json contents: ", ai);
+    
+    /*if(options.appinfo) {
+      console.log("appinfo: ", options.appinfo);
+    }*/
 
     var call = options.staticArgs;
-    const contentWindow = require("chromeless-sandbox-window");
+    const contentWindow = /*require("chromeless-sandbox-window1")*/require('windows');
+    
+    //console.log("options: ", options, "testCallbacks: ", testCallbacks);
 
     var file = path.basename(call.browser);
 
@@ -176,6 +182,8 @@ exports.main = function main(options, testCallbacks) {
 
     // enable debugging by default
     enableDebuggingOutputToConsole();
+    
+    console.log("appinfo: ", ai);
 
     /* Page window height and width is fixed, it won't be and it also
        should be smart, so HTML browser developer can change it when
@@ -184,17 +192,17 @@ exports.main = function main(options, testCallbacks) {
         url: startPage,
         width: 800,
         height: 600,
-        resizable: true ,
-        menubar: false,
-        //resizable: ai.resizable ? true : false,
-        //menubar: ai.menubar ? true : false,
+        resizable: (ai.resizable ? true : false),
+        menubar: (ai.menubar ? ai.menubar : false),
+        resizable: ai.resizable ? true : false,
+        menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
-            console: {
+            console: /*{
                 log: function() {
                     console.log.apply(console, Array.prototype.slice.call(arguments));
                 }
-            },
+            }*/console,
             exit: function() {
                 console.log("window.exit() called...");
                 appWindow.close();
@@ -203,6 +211,7 @@ exports.main = function main(options, testCallbacks) {
             }
         }
     }, testCallbacks);
+    //console.log("appWindow: ", appWindow);
 };
 
 exports.onUnload = function (reason) {
