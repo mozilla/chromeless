@@ -83,10 +83,24 @@ To generate a local API documentation, use:
     (win32) C:\xxx\chromeless> chromeless docs
     (osx)   $ ./chromeless docs
 
-You may also check the [online pages](http://mozilla.github.com/chromeless), plus 
+You may also check the [Chromeless documentation online](http://mozilla.github.com/chromeless), plus 
 inline examples can also be helpful. You can always find us on irc in `#labs` 
 at `irc.mozilla.org`, or get help or discuss this project on our mailing
  list: `mozilla-labs@googlegroups.com`
+
+## Sub-projects for Tests 
+
+A Tests application is provided along wth Chromeless and can execute tests for all the 
+apps under tests/ directory that have the test-app.js file in it: 
+
+    (win32) C:\xxx\chromeless> chromeless tests
+    (osx)   $ ./chromeless tests
+
+## Gallery 
+
+An early version of a developer's gallery is now part of this git repository using 
+git sub-modules. You may use Chromeless to launch or package these examples that 
+provided in the gallery/ directory.
 
 ## Notes and Known Issues
 
