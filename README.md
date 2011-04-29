@@ -76,8 +76,7 @@ Again, the output will be placed in the build/ directory:
 
 ## More Information
 
-Further documentation can be found inline in examples at the moment. In the near future there
-will be a tutorial and API documentation.
+The API documentation can be generated using Chromeless and also [found online](http://mozilla.github.com/chromeless), plus inline examples can also be helpful. 
 
 You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
 this project on our mailing list: `mozilla-labs@googlegroups.com`
