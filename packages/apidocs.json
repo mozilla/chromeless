@@ -3089,5 +3089,6 @@
       }
     }, 
     "name": "test-harness"
-  }
+  }, 
+  "version": "74167c0"
 }
