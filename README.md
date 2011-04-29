@@ -74,12 +74,17 @@ Again, the output will be placed in the build/ directory:
     (win32) C:\xxx\chromeless> chromeless  package examples\webgl
     (osx)   $ ./chromeless package examples/webgl 
 
-## More Information
+## Documentation and Additional Information
 
-The API documentation can be generated using Chromeless and also [found online](http://mozilla.github.com/chromeless), plus inline examples can also be helpful. 
+To generate a local API documentation, use: 
 
-You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
-this project on our mailing list: `mozilla-labs@googlegroups.com`
+    (win32) C:\xxx\chromeless> chromeless docs
+    (osx)   $ ./chromeless docs
+
+You may also check the [online pages](http://mozilla.github.com/chromeless), plus 
+inline examples can also be helpful. You can always find us on irc in `#labs` 
+at `irc.mozilla.org`, or get help or discuss this project on our mailing
+ list: `mozilla-labs@googlegroups.com`
 
 ## Notes and Known Issues
 
