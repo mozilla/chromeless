@@ -2918,8 +2918,8 @@
                   "type": "number"
                 }, 
                 "source_lines": [
-                  146, 
-                  151
+                  157, 
+                  162
                 ]
               }, 
               {
@@ -2930,8 +2930,8 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  161, 
-                  165
+                  172, 
+                  176
                 ]
               }, 
               {
@@ -2941,8 +2941,8 @@
                   "type": "object"
                 }, 
                 "source_lines": [
-                  187, 
-                  198
+                  198, 
+                  209
                 ]
               }, 
               {
@@ -2953,16 +2953,16 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  204, 
-                  209
+                  215, 
+                  220
                 ]
               }, 
               {
                 "desc": "An event raised upon completion of a top level document\nload.  Fired after all resources have been loaded, or if the load has been\nprogrammatically stopped.", 
                 "name": "load-stop", 
                 "source_lines": [
-                  222, 
-                  227
+                  233, 
+                  238
                 ]
               }, 
               {
@@ -2973,8 +2973,8 @@
                   "type": "string"
                 }, 
                 "source_lines": [
-                  234, 
-                  238
+                  245, 
+                  249
                 ]
               }
             ], 
@@ -2998,8 +2998,8 @@
               }
             ], 
             "source_lines": [
-              257, 
-              260
+              268, 
+              271
             ]
           }, 
           {
@@ -3017,8 +3017,8 @@
               "type": "string"
             }, 
             "source_lines": [
-              266, 
-              270
+              277, 
+              281
             ]
           }, 
           {
@@ -3042,8 +3042,8 @@
               }
             ], 
             "source_lines": [
-              275, 
-              282
+              286, 
+              293
             ]
           }
         ], 
@@ -3089,6 +3089,5 @@
       }
     }, 
     "name": "test-harness"
-  }, 
-  "version": "1835261"
+  }
 }
