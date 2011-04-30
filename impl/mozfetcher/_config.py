@@ -25,7 +25,7 @@ software = {
         }
     },
     "Linux_32bit": {
-        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-i686.tar.bz2"
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-i686.tar.bz2",
         "md5": "5acef7cc816691f5c8726731ee0d8bdf",
         "bin": {
             "path": "xulrunner/xulrunner",
