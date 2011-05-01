@@ -36,7 +36,7 @@
 
 const {Cc, Ci}       = require("chrome"),
       {Stream}       = require("net"),
-      {EventEmitter} = require("'pure_js_events"),
+      {EventEmitter} = require("pure_js_events"),
       processes      = {};
 
 let GUID = 0;
@@ -49,7 +49,7 @@ let GUID = 0;
  */
 exports.spawn = function(command, args) {
     var child = ChildProcess();
-    child.run(command, args, options);
+    child.run(command, args);
     return child;
 }
 
