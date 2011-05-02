@@ -17,7 +17,8 @@ function isTopLevelWindow(w) {
   return false;
 }
 
-observers.add("content-document-global-created", function(subject, url) {
+var checkWindows = function(subject, url) {
+
   if (subject.window.top != subject.window.self) {
     if (isTopLevelWindow(subject.window.parent))
     {
@@ -62,7 +63,10 @@ observers.add("content-document-global-created", function(subject, url) {
           }
       }
   }
-});
+};
+
+observers.add("content-document-global-created", checkWindows); 
+observers.add("chrome-document-global-created", checkWindows);
 
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 var xhtmlNs = "http://www.w3.org/1999/xhtml";
