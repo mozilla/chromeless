@@ -134,6 +134,10 @@ function validate(manf) {
     }
   };
 
+  var manfAliases = {
+    menubars: "menubar"
+  }
+
   // a function to extract nested values given an object and array of property names
   function extractValue(obj, props) {
     return ((props.length === 0) ? obj : extractValue(obj[props[0]], props.slice(1)));
@@ -145,6 +149,7 @@ function validate(manf) {
   // detection of invalid properties
   function validateAppinfoProperties(manf) {
     var normalizedManf = {};
+
     for (var prop in manf) {
       if (!manf.hasOwnProperty(prop)) continue;
       if (!(prop in manfProps)) errorThrow('unsupported property', prop);
@@ -168,6 +173,14 @@ function validate(manf) {
       }
     }
     return normalizedManf;
+  }
+
+  // handle aliases
+  for (var alias in manfAliases) {
+    if (manf[alias] !== undefined) {
+      manf[manfAliases[alias]] = manf[alias];
+      delete manf[alias];
+    }
   }
 
   // iterate through required properties, and verify they're present
