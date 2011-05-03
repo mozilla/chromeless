@@ -30,7 +30,8 @@ var checkWindows = function(subject, url) {
     else
     {
       // this is a frame nested underneath the top level frame
-      subject.window.wrappedJSObject.top = subject.window.parent.top;
+      var ifWin = subject.window.self;
+      ifWin.wrappedJSObject.eval("window.top = window.parent.top");
     }
   } else if (isTopLevelWindow(subject.window)) {
       // this is application code!  let's handle injection at this point.
@@ -100,9 +101,9 @@ function Window(options, testCallbacks) {
   features.push("resizable=" + trueIsYes(options.resizable));
   features.push("menubar=" + trueIsYes(options.menubar));
 
-  /* We now pass the options.url, which is the user app directly 
-  inserting it in the window, instead using the xul browser element 
-  that was here. This helped to make the session history work. 
+  /* We now pass the options.url, which is the user app directly
+  inserting it in the window, instead using the xul browser element
+  that was here. This helped to make the session history work.
   */
   var url = "data:application/vnd.mozilla.xul+xml," + escape(blankXul);
   var window = ww.openWindow(null, url, null, features.join(","), null);
