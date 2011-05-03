@@ -153,6 +153,38 @@ body {
   <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
+/* This is a compatibility solution so the sample code remains as it was. It uses the 
+   new require('web-content') and kicks local events based on the response from the 
+   ProgressMonitor objects associated with each iframe */ 
+
+function fixUpIframe(iframeElement) { 
+      var pm = require('web-content').ProgressMonitor();
+      pm.attach(iframeElement);
+      pm.on('title-change', function(title) {
+         var evt = document.createEvent("HTMLEvents");
+         evt.initEvent("ChromelessDOMTitleChange", true, false);
+         evt.title = title;
+         iframeElement.dispatchEvent(evt);
+      });
+      pm.on('load-start', function() {
+         var evt = document.createEvent("HTMLEvents");
+         evt.initEvent("ChromelessDOMLoadStart", true, false);
+         iframeElement.dispatchEvent(evt);
+      });
+      pm.on('load-stop', function() {
+         var evt = document.createEvent("HTMLEvents");
+         evt.initEvent("ChromelessDOMLoadStop", true, false);
+         iframeElement.dispatchEvent(evt);
+      });
+      pm.on('security-change', function(e) {
+         var evt = document.createEvent("HTMLEvents");
+         evt.initEvent("ChromelessDOMSecurityChange", true, false);
+         evt.state = e.state; 
+         evt.strength = e.state; 
+         iframeElement.dispatchEvent(evt);
+      });
+} 
+
 const fullscreen  = require("fullscreen");
 const url         = require("url");
 
@@ -201,16 +233,16 @@ function newTab() {
 
   // Update thumbnails of the iframe when DOM is setup, and
   // again when the page is fully loaded.
-  newBrowser.addEventListener("ChromelessDOMSetup",function (e) { 
+  newBrowser.addEventListener("ChromelessDOMLoadStart",function (e) { 
     syncTabs(browserUnique);
   },false);
 
   // sync again after load is compelete
-  newBrowser.addEventListener("ChromelessLoadStop",function (e) { 
+  newBrowser.addEventListener("ChromelessDOMLoadStop",function (e) { 
     syncTabs(browserUnique);
   },false);
 
-  newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
+  newBrowser.addEventListener("ChromelessDOMSecurityChange", function (e) {
       $("#awesomeBox").attr("class","security_"+e.state);
   },false);
 
@@ -227,6 +259,7 @@ function newTab() {
   thumb.appendChild(img);
   document.getElementById("thumbsNavigator").appendChild(thumb);
   document.getElementById("browserContentArea").appendChild(newBrowser);
+  fixUpIframe(newBrowser); 
   selectBrowser(newBrowser);
   currentBrowser = newBrowser;
 } 
