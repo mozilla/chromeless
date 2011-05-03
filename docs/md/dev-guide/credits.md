@@ -24,3 +24,4 @@ directly helped build chromeless:
 * Marcio Galli
 * Mike de Boer
 * Panagiotis Astithas
+* Ron Evans

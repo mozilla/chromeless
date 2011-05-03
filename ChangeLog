@@ -1,0 +1,6 @@
+Changes in 0.3
+	* (@taboca) test/demo cleanup
+	* (@lloyd) nested iframes in web content no longer have a window.top that points into application code
+	* (@deadprogrammer) fixes to child_process library
+	* (@lloyd) correct xulrunner download url and checksums for 32bit linux
+        * (@lloyd) allow either 'menubars' or 'menubar' in appinfo.json to achieve code and documentation harmony.
