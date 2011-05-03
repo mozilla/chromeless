@@ -2,13 +2,20 @@
   <head>
   <script type="text/javascript" src="jquery-min.js"></script>
   </head>
-  <body>
+  <body >
     I'm a parent, will set something in child inner frame body ( hi ) 
-   <iframe id="inner" src="http://www.google.com" width="400" height="100" border="2" ></iframe>
+   <iframe src="http://www.google.com" id="inner" width="400" height="100" border="2" ></iframe>
   </body >
   <script type="text/javascript">
-        $('#inner')[0].addEventListener("ChromelessLoadStop", function (e) { 
+
+  var pm = require('web-content').ProgressMonitor();
+  var i = document.getElementById("inner");
+  pm.attach(i);
+
+  pm.on("load-stop", function (e) {
               $('#inner').contents().find('body').html("hello");
-	}, false);
+  });
+
+
   </script>
 </html>

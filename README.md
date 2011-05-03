@@ -14,19 +14,21 @@ insecure.  As the project matures, this notice will change.
 
 ## Design Overview
 
-The main goal of chromeless is to explore authoring a browser interface
-in HTML.  The chromeless "platform" provides tools to run a browser that looks
-like a native application, but where all of the look and feel, and many of the
+Chromeless can be used to created desktop applications using HTML, 
+and related web technologies. In version 0.1, the original goal was a focus 
+towards authoring a browser-like applications in HTML. That is still valid, however, 
+now you can also use Chromeless to create all sorts of apps that can be executed like 
+ a native application, but where all of the look and feel, and many of the
 behaviors are defined by HTML, CSS, and javascript provided by the developer.
 
-This "browser HTML" is basically a normal webpage, but with several important differences:
+This "main app HTML" is basically a normal webpage, but with several important differences:
 
   * The HTML file has access to a 'window.require()' function that it can use to
     access new APIs that give it increased priviledges.
 
   * (untrusted) Web content can be rendered inside iframes which are children of the
-    top level "browser HTML".  This content cannot tell its rendered inside an iframe,
-    and has no special access.
+    top level "main app HTML".  This content cannot tell its rendered inside an iframe,
+    and has no special access to the main app context.
 
   * Several new events and conventions are introduced.  For instance, the title of the
     top level browser HTML is the name of the running process (not yet implemented),
@@ -74,13 +76,31 @@ Again, the output will be placed in the build/ directory:
     (win32) C:\xxx\chromeless> chromeless  package examples\webgl
     (osx)   $ ./chromeless package examples/webgl 
 
-## More Information
+## Documentation and Additional Information
 
-Further documentation can be found inline in examples at the moment. In the near future there
-will be a tutorial and API documentation.
+To generate a local API documentation, use: 
 
-You can always find us on irc in `#labs` at `irc.mozilla.org`, or get help or discuss
-this project on our mailing list: `mozilla-labs@googlegroups.com`
+    (win32) C:\xxx\chromeless> chromeless docs
+    (osx)   $ ./chromeless docs
+
+You may also check the [Chromeless documentation online](http://mozilla.github.com/chromeless), plus 
+inline examples can also be helpful. You can always find us on irc in `#labs` 
+at `irc.mozilla.org`, or get help or discuss this project on our mailing
+ list: `mozilla-labs@googlegroups.com`
+
+## Sub-projects for Tests 
+
+A Tests application is provided along wth Chromeless and can execute tests for all the 
+apps under tests/ directory that have the test-app.js file in it: 
+
+    (win32) C:\xxx\chromeless> chromeless tests
+    (osx)   $ ./chromeless tests
+
+## Gallery 
+
+An early version of a developer's gallery is now part of this git repository using 
+git sub-modules. You may use Chromeless to launch or package these examples that 
+provided in the gallery/ directory.
 
 ## Notes and Known Issues
 

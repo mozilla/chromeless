@@ -61,7 +61,7 @@ var Tray = function() {
     this.getIcon = function getIcon() {
         return this._icon;
     };
-    
+
     /**
      * Sets a TrayItem's icon
      */
@@ -73,18 +73,18 @@ var Tray = function() {
             appIcon = paths.browserCodeDir.replace(/[\/]+$/, "") + "/browser_code/" 
                 + appIcon.replace(/^[\/]+/, "");
         }
-        
+
         var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
         file.initWithPath(appIcon);
-        
+
         var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
         var iconUri = ioService.newFileURI(file);
-        
+
         this._icon = ui.setIcon();
         this._icon.title = this._hint;
         this._icon.imageSpec = iconUri.spec;
         this._icon.show();
-        
+
         return this;
     };
 
@@ -94,7 +94,7 @@ var Tray = function() {
     this.getHint = function getHint() {
         // @todo
     };
-    
+
     /**
      * Sets a TrayItem's tooltip
      */

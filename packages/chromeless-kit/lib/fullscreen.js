@@ -39,10 +39,15 @@
 
 /**
  * Allows one to control fullscreen view for the main application window
+ *
+ * NOTE: Due to a bug in Gecko, enabling fullscreen mode inside the
+ * load handler for application code will not properly hide the taskbar.
+ * A workaround is to delay fullscreen mode toggling for some small number
+ * of milliseconds after page load (i.e. with `setTimeout()`)
  */
 
 /**
- * Size the main application window to consume the full screen
+ * Size the main application window to consume the full screen.
  */
 exports.enable = function(window) {
    window.fullScreen=true;

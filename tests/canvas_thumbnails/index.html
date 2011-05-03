@@ -116,7 +116,7 @@ body {
   <!-- Could the browser itself leverage a framework like YUI or jquery?
        This shouldn't be that much different than slamming YUI into node.js
        or jquery into jetpacks? -->
-  <script type="text/javascript" src="resource://jid0-ve0baysox4snijgmmjrgl4kfm2w-chromeless-data/thumbnails/jquery-min.js"></script>
+  <script type="text/javascript" src="jquery-min.js"></script>
   <script type="text/javascript">
 
 var currentBrowser = null; 
@@ -151,7 +151,7 @@ function canvasShot(browserRef, thumbImageRef) {
   var shot = camera.snapshot(browserRef);
   thumbImageRef.width="100";
   thumbImageRef.height="60";
-  thumbImageRef.src=shot.toDataURL("image/png");
+  thumbImageRef.src=shot;
 
   } catch (i) { 
     alert(i); 

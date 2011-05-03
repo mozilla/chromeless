@@ -36,7 +36,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </pre>
 
-## [showdown.js](http://attacklab.net/)
+## [showdown.js](https://github.com/coreyti/showdown)
 
 showdown is used to parse markdown from javascript in documentation generation.  It's provided
 by John Fraser under a BSD license:

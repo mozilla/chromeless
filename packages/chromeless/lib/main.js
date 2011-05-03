@@ -68,7 +68,6 @@ function testFunction(html) {
 exports.testFunction = testFunction;
 
 
-
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
@@ -110,7 +109,9 @@ function enableDebuggingOutputToConsole() {
         }
     };
 
-    jsd.on();
+    jsd.asyncOn(function() {
+        console.log("debugger enabled");
+    });
 }
 
 

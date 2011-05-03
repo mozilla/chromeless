@@ -9,18 +9,18 @@
 
 // an example of setting the main menu
 const ui = require("ui"),
-      menu = require("ui/menu");
+      menu = require("menu");
 
 // a generic handler
 function loggit(x) {
   console.log("thanks for clicking");
 }
 
-var file = new menu.Menu({
+var file = menu.Menu({
     parent: ui.getMenu(),
     label: "File",
     children: [
-        new menu.Menu({
+        menu.Menu({
             label: "New Window",
             hotkey: "accel-n",
             type: "radio",
@@ -29,31 +29,31 @@ var file = new menu.Menu({
                 alert("yay!");
             }
         }),
-        new menu.Menu({
+        menu.Menu({
             label: "New Tab",
             children: [
-                new menu.Menu({ label: "In the current window",
-                                onClick: loggit}),
-                new menu.Menu({ label: "In a new window", onClick: loggit})
+                menu.Menu({ label: "In the current window",
+                            onClick: loggit}),
+                menu.Menu({ label: "In a new window", onClick: loggit})
             ]
         })
     ]
 });
 
-var view = new menu.Menu({
+var view = menu.Menu({
     parent: ui.getMenu(),
     label: "View",
     children: [
-        new menu.Menu({ label: "Navigation Toolbar" }),
-        new menu.Menu({ label: "Bookmarks Toolbar", hotkey: "accel-d", image: "resource://app/icons/favorite.png" }),
-        new menu.Menu({ label: "Add-on Bar", disabled: true }),
-        new menu.Separator(),
-        new menu.Menu({ label: "Tabs On Top" })
+        menu.Menu({ label: "Navigation Toolbar" }),
+        menu.Menu({ label: "Bookmarks Toolbar", hotkey: "accel-d", image: "resource://app/icons/favorite.png" }),
+        menu.Menu({ label: "Add-on Bar", disabled: true }),
+        menu.Separator(),
+        menu.Menu({ label: "Tabs On Top" })
     ]
 });
 
 view.children.splice(0, 1);
-view.children.splice(-1, 0, new menu.Menu({ label: "About..." }));
+view.children.splice(-1, 0, menu.Menu({ label: "About..." }));
 view.children.sort(function(a, b) {
     a = a.label;
     b = b.label;

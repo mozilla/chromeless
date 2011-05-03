@@ -11,15 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is Jetpack.
+ * The Original Code is Chromeless.
  *
  * The Initial Developer of the Original Code is
  * the Mozilla Foundation.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Marcio Galli <mgalli@mgalli.com>
+ *    David Murdoch
+ *    Lloyd Hilaiel <lloyd@hilaiel.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,36 +36,57 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-/** Allows application code to control and inspect iframes */
+/**
+ * Allow access and manipulation of the chromeless platforms cookie store.
+ */
 
-const {Cc, Ci, Cr} = require("chrome");
+const {Cc, Ci} = require("chrome");
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
+let cookieManager = Cc["@mozilla.org/cookiemanager;1"].
+                        getService(Ci.nsICookieManager);
 
 /**
- * stop the loading of content within an iframe 
- * @params {IFrameNode} frame An iframe dom node.
+ * Remove a specific cookie.
+ * @param host the host that the cookie is associated with
+ * @param name the name of the cookie
+ * @param path the path of the cookie
+ * @param blocked the blocked status of the cookie
+ *
  */
-exports.stopload = function(frame) { 
-  var webNav= frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
-  webNav.stop(webNav.STOP_ALL);
+exports.remove = function(host, name, path, blocked)
+{
+    cookieManager.remove(host, name, path, blocked);
 };
 
 /**
- * Access the title of an iframe.  
- * @params {IFrameNode} frame An iframe dom node.
- * @returns {string} The current title of the content in the iframe.
+ * Remove all cookies.
  */
-exports.title = function(frame) {
-  return frame.contentDocument.title;
+exports.removeAll = function()
+{
+    cookieManager.removeAll();
 };
 
 /**
- * inject a function into a web content window
- * @params {IFrameNode} frame An iframe dom node.
- * @params {string} attachPoint the property of `window.` to which this function shall be
- * attached.
- * @params {function} callback The function that will be invoked when content in the
- * iframe invokes this function.
+ * Get all cookies
+ * @returns {array} An array of objects representing cookies.  Each object has `.host`,
+ * `.name`, `.expires`, `.value`, `.path`, and `.blocked` attributes.
  */
-exports.inject = function(frame, attach, func) {
-  frame.contentWindow.wrappedJSObject[attach] = func;
+exports.getAllCookies = function() {
+    var cookies = [],
+        enumerator = cookieManager.enumerator;
+    while(enumerator.hasMoreElements()) {
+      var cookie = enumerator.getNext().QueryInterface(Ci.nsICookie);
+      // use COWs to expose some properties of the underlying object.
+      cookie = {
+        host: cookie.host,
+        name: cookie.name,
+        expires: cookie.expires,
+        value: cookie.value,
+        path: cookie.path,
+        blocked: cookie.blocked
+      };
+      cookies.push(cookie);
+    }
+    return cookies;
 };

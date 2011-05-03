@@ -1,37 +1,37 @@
 software = {
     "Linux_64bit": {
-       "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.linux-x86_64.tar.bz2",
-       "md5": "1c735b4e478f83b674a8cde834011e29",
+       "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-x86_64.tar.bz2",
+       "md5": "cb0dc6ff5304b325098fc8910057884f",
        "bin": {
            "path": "xulrunner/xulrunner",
-           "sig": "daf246fc716772e9031938ee50d610cf"
+           "sig": "d103f16afe6a6125bb28987a9e391fee"
        }
     },
     # for both 32 and 64 bit darwin we'll use 32 bit binaries
     ( "Darwin_64bit", "Darwin_32bit" ): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/09/2010-09-26-03-mozilla-central/xulrunner-2.0b7pre.en-US.mac-i386.sdk.tar.bz2",
-        "md5": "133c4263a070d0d4ea26ca1f346b8e4a",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/sdk/xulrunner-2.0.en-US.mac-i386.sdk.tar.bz2",
+        "md5": "cf56e216a05feed16cb290110fd89802",
         "bin": {
             "path": "xulrunner-sdk/bin/xulrunner-bin",
-            "sig": "be5a6300da9e5cfc7973255e68f940af"
+            "sig": "ec043427ca789950bf388db3cf88c7cf"
         }
     },
     ( "Windows_32bit", "Windows_64bit" ): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.win32.zip",
-        "md5": "318653c4952f0e6f0e58db0c548730f6",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.win32.zip",
+        "md5": "38e5c5ad08927278ed6c333aef836882",
         "bin": {
             "path": "xulrunner/xulrunner.exe",
-            "sig": "d0bba60461148617cc73cdf86e438198"
+            "sig": "0910106650f397e67aa52f4c4d924f8e"
         }
     },
     "Linux_32bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/nightly/2010/10/2010-10-06-03-mozilla-central/xulrunner-2.0b7pre.en-US.linux-i686.tar.bz2",
-        "md5": "64e11cb6c02d9a1d2932e3fb47080e1d",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-i686.tar.bz2",
+        "md5": "5acef7cc816691f5c8726731ee0d8bdf",
         "bin": {
             "path": "xulrunner/xulrunner",
-            "sig": "daf246fc716772e9031938ee50d610cf"
-            }
-        },
+            "sig": "d103f16afe6a6125bb28987a9e391fee"
+        }
+    }
 }
 
 def getConfig(platform):

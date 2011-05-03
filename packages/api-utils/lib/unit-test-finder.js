@@ -40,7 +40,7 @@
 // permission to require() whatever we want.
 require("chrome");
 
-var file = require("file");
+var file = require("fs");
 
 var TestFinder = exports.TestFinder = function TestFinder(options) {
   memory.track(this);
