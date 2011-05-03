@@ -135,7 +135,7 @@ body {
         <form>
 	<input id="awesomeBox"  type="text" value="http://www.google.com" />
 	<input type="submit" id="buttonGo"  value="go"></input>
-	<button id="buttonNew" >New</button>
+	<button id="buttonClose" >Close</button>
 	<button id="buttonPersist" >All</button>
 	<button id="buttonFull" >Full</button>
 	</form>
@@ -183,14 +183,20 @@ function fixUpIframe(iframeElement) {
          evt.strength = e.state; 
          iframeElement.dispatchEvent(evt);
       });
+      var currentIframeElementId = iframeElement.getAttribute("id");
+      document.getElementById("browserContentArea").addEventListener("DOMNodeRemoved", function(e){ 
+         if(e.target.getAttribute("id") == currentIframeElementId) { 
+             console.log("It's me!, detaching "); 
+             pm.detach();
+         } 
+      }, false);
 } 
 
 const fullscreen  = require("fullscreen");
 const url         = require("url");
 
-var currentBrowser = null; 
+//var currentBrowser = null; 
 var currSelected   = null; 
-var browserTabs    = new Array();
 
 function makeBrowser() { 
   var browser = document.createElement("iframe");
@@ -203,13 +209,6 @@ function selectBrowser(browserRef) {
   $(".browser").addClass("browser_hidden");
   $(browserRef).removeClass("browser_hidden");
   $(browserRef).addClass("browser_selected");
-  var refBrowserId = $(browserRef).attr("id");
-  var uniqueId = refBrowserId.split("browser_unique_")[1];
-  if(currSelected) { 
-    document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
-  } 
-  document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
-  currSelected = uniqueId; 
 } 
 
 function canvasShot(browserRef, thumbImageRef) { 
@@ -228,7 +227,6 @@ function newTab() {
   var uniqueId   = Math.random();
   var browserUnique = "browser_unique_"+uniqueId;
 
-  browserTabs.push(newBrowser);
   newBrowser.setAttribute("id",browserUnique);
 
   // Update thumbnails of the iframe when DOM is setup, and
@@ -261,7 +259,6 @@ function newTab() {
   document.getElementById("browserContentArea").appendChild(newBrowser);
   fixUpIframe(newBrowser); 
   selectBrowser(newBrowser);
-  currentBrowser = newBrowser;
 } 
 
 function syncTabs(refBrowserId) { 
@@ -272,17 +269,28 @@ function syncTabs(refBrowserId) {
 
 $(document).ready(function() {
     $("#browserHeader form").submit(function(e) {
-       if(browserTabs.length<1) newTab();  
+       newTab();  
        browserUniqueId = $(".browser_selected").attr("id");
        var fragment = $.trim($("#awesomeBox").val());
        $(".browser_selected").attr("src", url.guess(fragment));
-
         return false; 
     });
     $("#browserHeader #buttonNew").click(function(e) {
         newTab();
         $("#awesomeBox").val("");
         $("#awesomeBox").focus();
+        return false; 
+    });
+    $("#browserHeader #buttonClose").click(function(e) {
+       var strId = $(".browser_selected").attr("id");  
+       var uniqueId = strId.split("browser_unique_")[1];
+       var thumbId = "thumb_unique_"+uniqueId;
+
+       document.getElementById(thumbId).parentNode.removeChild(document.getElementById(thumbId));
+       //$(thumbId).remove(); // Somehow this failed.
+
+       
+       $(".browser_selected").remove();
         return false; 
     });
     $("#browserHeader #buttonPersist").click(function(e) {
