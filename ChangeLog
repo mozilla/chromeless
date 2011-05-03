@@ -1,6 +1,7 @@
 Changes in 0.3
 	* (@taboca) test/demo cleanup
-	* (@lloyd) nested iframes in web content no longer have a window.top that points into application code
-	* (@deadprogrammer) fixes to child_process library
-	* (@lloyd) correct xulrunner download url and checksums for 32bit linux
+	* (@lloyd) nested iframes in web content no longer have a window.top that points into application code (issue #84)
+	* (@deadprogrammer) fixes to child_process library (issue #95)
+	* (@lloyd) correct xulrunner download url and checksums for 32bit linux (issue #92)
         * (@lloyd) allow either 'menubars' or 'menubar' in appinfo.json to achieve code and documentation harmony.
+	* (@lloyd) 'simple-storage' and 'session-storage' removed.  just use window.localStorage and/or IndexedDB (issue #79)
