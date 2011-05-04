@@ -100,7 +100,17 @@ apps under tests/ directory that have the test-app.js file in it:
 
 An early version of a developer's gallery is now part of this git repository using 
 git sub-modules. You may use Chromeless to launch or package these examples that 
-provided in the gallery/ directory.
+provided in the gallery/ directory. In order to pull the projects from the gallery/ 
+, you will need to initialize and update using git submodule. Example: 
+
+    (linux) git submodule init ./gallery/simple-text-editor
+    (win32) git submodule init .\gallery\simple-text-editor
+
+    (linux) git submodule update ./gallery/simple-text-editor
+    (win32) git submodule update .\gallery\simple-text-editor
+
+    (win32) C:\xxx\chromeless> chromeless .\gallery\simple-text-editor
+    (osx)   $ ./chromeless ./gallery/simple-text-editor
 
 ## Notes and Known Issues
 
