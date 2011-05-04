@@ -6,7 +6,11 @@
 </body>
 <script>
 // if you alert right at page load time, it breaks the world, badly
-// alert("this alert will cause an error, sadly");
+try {
+  alert("this alert will cause an error, sadly");
+} catch(e) {
+  console.log("alert raised an exception: " + e);
+}
 setTimeout(function() {alert("this is the alert we were talking about")}, 1);
 </script>
 </html>
