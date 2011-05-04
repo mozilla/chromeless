@@ -1,0 +1,12 @@
+<html>
+<head><title>A very *alert* app</title></head>
+<body>
+  All this app does is throw an alert at load time to test that
+  window.alert() works as you would expect.
+</body>
+<script>
+// if you alert right at page load time, it breaks the world, badly
+// alert("this alert will cause an error, sadly");
+setTimeout(function() {alert("this is the alert we were talking about")}, 1);
+</script>
+</html>
