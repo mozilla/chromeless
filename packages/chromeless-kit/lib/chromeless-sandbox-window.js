@@ -81,9 +81,8 @@ if (typeof(ai.menubar) == "undefined" || ai.menubar == true ) {
             '</toolbox>';
 }
 var blankXul = ('<?xml version="1.0"?>' +
-                '<?xml-stylesheet ' +
-                ' type="text/css"?> ' +
-                '<window style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' + menubar +
+                '<?xml-stylesheet ' + ' type="text/css"?> ' +
+                '<window windowtype="navigator:browser" style="padding: 0; border: 0; margin: 0; background-color: white;" xmlns:html="'+ xhtmlNs+'" xmlns="' + xulNs + '">' + menubar +
                 '</window>');
 
 function Window(options, testCallbacks) {
@@ -169,3 +168,4 @@ require("unload").when(
 // an internal export.  what's the proper way to prevent browsercode from
 // getting at this?
 exports.AllWindows = gWindows;
+

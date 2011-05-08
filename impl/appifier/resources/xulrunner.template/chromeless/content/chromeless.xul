@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window id="main-window-other" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        windowtype="navigator:browser"  >
+  <script type="application/x-javascript" src="chrome://chromeless/content/chromeless.js"/>
+  <browser flex="1" id="someotherbrowser" src="" type="content-primary"/>
+</window>
