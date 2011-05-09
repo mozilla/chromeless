@@ -152,6 +152,7 @@ class Appifier(object):
             if dev_mode and platform.system() != 'Windows':
                 for f in os.listdir(abs_dirname):
                     os.symlink(os.path.join(abs_dirname, f), os.path.join(res_tgt_dir, f))
+                    print("copying to: %s" % os.path.join(res_tgt_dir, f))
             else:
                 for dirpath, dirnames, filenames in os.walk(abs_dirname):
                     goodfiles = list(filter_filenames(filenames))

@@ -437,28 +437,22 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         sys.exit(1)
 
     if use_main and 'main' not in target_cfg:
-        # If the user supplies a template dir, then the main
-        # program may be contained in the template.
-        if not options.templatedir:
-            print >>sys.stderr, "package.json does not have a 'main' entry."
-            sys.exit(1)
+        print >>sys.stderr, "package.json does not have a 'main' entry."
+        sys.exit(1)
+            
+    print "MAIN: " + target_cfg['main']
 
     if not pkg_cfg:
         pkg_cfg = packaging.build_config(env_root, target_cfg)
 
     target = target_cfg.name
 
-    # the harness_guid is used for an XPCOM class ID. We use the
-    # JetpackID for the add-on ID and the XPCOM contract ID.
-    if "harnessClassID" in target_cfg:
-        # For the sake of non-bootstrapped extensions, we allow to specify the
-        # classID of harness' XPCOM component in package.json. This makes it
-        # possible to register the component using a static chrome.manifest file
-        harness_guid = target_cfg["harnessClassID"]
-    else:
-        import uuid
-        harness_guid = str(uuid.uuid4())
+    # the harness_guid is used for an XPCOM class ID.
+    import uuid
+    harness_guid = str(uuid.uuid4())
 
+    print("harness_guid: %s" % harness_guid);
+ 
     # TODO: Consider keeping a cache of dynamic UUIDs, based
     # on absolute filesystem pathname, in the root directory
     # or something.
@@ -486,23 +480,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     else:
         assert command == "test"
 
-    if "id" in target_cfg:
-        jid = target_cfg["id"]
-        assert not jid.endswith("@jetpack")
-        unique_prefix = '%s-' % jid # used for resource: URLs
-    else:
-        unique_prefix = '%s-' % target
-        jid = harness_guid
-
-    assert not jid.endswith("@jetpack")
-    if (jid.startswith("jid0-") or jid.startswith("anonid0-")):
-        bundle_id = jid + "@jetpack"
-    # Don't append "@jetpack" to old-style IDs, as they should be exactly
-    # as specified by the addon author so AMO and Firefox continue to treat
-    # their addon bundles as representing the same addon (and also because
-    # they may already have an @ sign in them, and there can be only one).
-    else:
-        bundle_id = jid
+    unique_prefix = '%s-' % target
 
     # the resource: URL's prefix is treated too much like a DNS hostname
     unique_prefix = unique_prefix.lower()
@@ -528,14 +506,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         for name in resources:
             resources[name] = os.path.abspath(resources[name])
 
-    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % jid)
+    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % harness_guid)
     harness_options = {
         'bootstrap': {
             'contractID': harness_contract_id,
             'classID': '{%s}' % harness_guid
             },
-        'jetpackID': jid,
-        'bundleID': bundle_id,
+        'jetpackID': harness_guid,
+        'bundleID': harness_guid,
         'staticArgs': options.static_args,
         }
 
@@ -545,17 +523,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         # This should be contained in the test runner package.
         harness_options['main'] = 'run-tests'
     else:
-        harness_options['main'] = target_cfg.get('main')
+        harness_options['main'] = 'main'
 
     for option in inherited_options:
         harness_options[option] = getattr(options, option)
 
     harness_options['metadata'] = packaging.get_metadata(pkg_cfg, deps)
-
-    #sdk_version = get_version(env_root)
-    #harness_options['sdkVersion'] = sdk_version
-
-    packaging.call_plugins(pkg_cfg, deps)
 
     retval = 0
 
@@ -583,7 +556,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             options.addons = options.addons.split(",")
 
         if (platform.system() == 'Darwin'):
-            # because of the manner in which we run the application, we mus t use a
+            # because of the manner in which we run the application, we must use a
             # temporary file to enable console output
             [fd, tmppath] = tempfile.mkstemp()
             os.close(fd)
