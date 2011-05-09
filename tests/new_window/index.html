@@ -6,15 +6,17 @@
   </head>
   <body>
     <div id="browserHeader">
-      <button onclick="launchWindow()" >Click me to open a new window</button>
+      <button onclick="launchGoogle()" >Click me to open  google in a new window</button>
+      <button onclick="launchWindow()" >Click me to open app code in a new window</button>
     </div>
-  
+  </body>  
 <script>
-
-  function launchWindow() { 
-   a = window.open('http://www.google.com');
+  function launchGoogle() { 
+    a = window.open('http://www.google.com');
   } 
 
-  </script>
+  function launchWindow() { 
+    a = window.open('new_window.html');
+  } 
+</script>
 </html>
-

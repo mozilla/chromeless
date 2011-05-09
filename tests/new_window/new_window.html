@@ -1,0 +1,18 @@
+<!-- Simple page which uses require Notice the require as injected by the Jetpack Application ( Chromeless ) that exists before this "browser" page exists --> 
+
+<html>
+  <head>
+    <title>WebbyFox</title>
+  </head>
+  <body>
+    <pre id="output">
+    </pre>
+  </body>
+<script>
+  function output(msg) {
+    document.getElementById('output').textContent += msg;
+  }
+  output("window.require is: " + window.require);
+</script>
+</html>
+
