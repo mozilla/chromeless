@@ -272,17 +272,17 @@ def test_all_examples(env_root, defaults):
     for dirname in examples:
         print "Testing %s..." % dirname
         try:
-            import shutil 
+            import shutil
             from string import Template
 
             test_script_for_app = os.path.join(examples_dir, dirname, "test-app.js")
             browserToLaunch = os.path.join(examples_dir, dirname, "index.html")
 
-            if os.path.exists(test_script_for_app): 
-               print "tests.js exists in " + test_script_for_app
+            if os.path.exists(test_script_for_app):
+               print "Found test file for %s: %s" % (dirname, test_script_for_app)
                output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
                print "Will create test file in " + output_test
- 
+
                defaultBrowser = os.path.join(".", "tests" , dirname, "index.html")
                with open(test_script_for_app, 'r') as f:
                   test_content = f.read()
@@ -406,8 +406,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command in ("run", "package", "appify"):
         use_main = True
     elif command == "test":
-        if 'tests' not in target_cfg:
-            target_cfg['tests'] = []
         timeout = TEST_RUN_TIMEOUT
         inherited_options.extend(['iterations', 'filter', 'profileMemory'])
     else:
@@ -462,7 +460,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
 
     if command == "test":
         # This should be contained in the test runner package.
-        harness_options['main'] = 'run-tests'
+        harness_options['main'] = 'test_harness/run-tests'
     else:
         harness_options['main'] = 'main'
 
@@ -491,13 +489,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if options.addons is not None:
             options.addons = options.addons.split(",")
 
+        print "app code path: " + browser_code_path
+
         if (platform.system() == 'Darwin'):
             # because of the manner in which we run the application, we must use a
             # temporary file to enable console output
             [fd, tmppath] = tempfile.mkstemp()
             os.close(fd)
 
-            print "app code path: " + browser_code_path
             print "And logging to '%s'" % tmppath
 
             harness_options['logFile'] = tmppath
