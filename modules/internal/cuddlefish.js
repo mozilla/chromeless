@@ -85,28 +85,6 @@
      this.require("unload").send(reason);
    }
 
-   function maybeLoadMainInJetpackProcess(delegate, packaging) {
-     return function getModuleExports(basePath, module) {     
-       if (module == packaging.options.main) {
-         var mainURL = this.fs.resolveModule(basePath, module);
-         var mainInfo = packaging.getModuleInfo(mainURL);
-         if (!mainInfo.needsChrome) {
-           var loader = this;
-           return {
-             main: function main(options, callbacks) {
-               var e10s = loader.require("e10s");
-               var process = e10s.AddonProcess();
-               loader.console.log("starting main in remote process.");
-               process.send("startMain", options.main);
-             }
-           };
-         } else
-           return null;
-       }
-       return (delegate ? delegate.call(this, basePath, module) : null);
-     };
-   }
-
    function makeGetModuleExports(delegate) {
      return function getModuleExports(basePath, module) {
        switch (module) {
@@ -135,7 +113,7 @@
    function makeManifestChecker(packaging) {
      var mc = {
        _allow: function _allow(loader, basePath, module, module_info) {
-         return true;
+           return true;
        },
        allowEval: function allowEval(loader, basePath, module, module_info) {
          return this._allow(loader, basePath, module, module_info);
@@ -169,9 +147,6 @@
      var manifestChecker = undefined;
      if (options.packaging) {
        manifestChecker = makeManifestChecker(options.packaging);
-       if (options.packaging.enableE10s)
-         getModuleExports = maybeLoadMainInJetpackProcess(getModuleExports,
-                                                          options.packaging);
      }
 
      var loaderOptions = {rootPath: options.rootPath,
