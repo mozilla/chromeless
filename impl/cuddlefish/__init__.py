@@ -466,9 +466,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     else:
         harness_options['main'] = 'main'
 
-#    for option in inherited_options:
-#        harness_options[option] = getattr(options, option)
-
     retval = 0
 
     a = appifier.Appifier()
@@ -500,8 +497,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
             [fd, tmppath] = tempfile.mkstemp()
             os.close(fd)
 
-            print "__init__: tmppath" + tmppath;
-            print "__init__: browser code path: " + browser_code_path
+            print "app code path: " + browser_code_path
             print "And logging to '%s'" % tmppath
 
             harness_options['logFile'] = tmppath

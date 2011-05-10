@@ -3,7 +3,6 @@ import copy
 import shutil
 import re
 
-from cuddlefish import packaging
 from cuddlefish import Bunch
 import simplejson as json
 import chromeless
@@ -30,22 +29,6 @@ class DocGen(object):
                     pass
         return data
 
-    def build_pkg_index(self, pkg_cfg):
-        pkg_cfg = copy.deepcopy(pkg_cfg)
-        for pkg in pkg_cfg.packages:
-            root_dir = pkg_cfg.packages[pkg].root_dir
-            files = self._get_files_in_dir(root_dir)
-            pkg_cfg.packages[pkg].files = files
-            del pkg_cfg.packages[pkg].root_dir
-        return pkg_cfg.packages
-
-    def build_pkg_cfg(self):
-        pkg_cfg = packaging.build_config(self.env_root,
-                                         Bunch(name='dummy'))
-        del pkg_cfg.packages['dummy']
-        return pkg_cfg
-
-
 def generate_static_docs(env_root, output_dir):
     docgen = DocGen(env_root=env_root)
 
@@ -61,24 +44,24 @@ def generate_static_docs(env_root, output_dir):
             if n.endswith("~"):
                 os.unlink(os.path.join(dirpath, n))
 
-    # Now let's generate documentation
-    os.mkdir(os.path.join(output_dir, "packages"))
-    pkg_cfg = docgen.build_pkg_cfg()
-
     # iterate through each package and generate docs for it
     extractor = DocStract()
 
     apidocs = {}
-    for pkg_name, pkg in pkg_cfg['packages'].items():
-        path = os.path.join(pkg.root_dir, "lib")
+
+    path_to_modules = os.path.join(chromeless.Dirs().cuddlefish_root, "modules")
+    for pkg_name in os.listdir(path_to_modules):
+        path = os.path.join(path_to_modules, pkg_name)
         oldPath = os.getcwd()
         os.chdir(path)
+
+        isInternal = False
+        if (pkg_name == "internal"):
+            isInternal = True
 
         apidocs[pkg_name] = {
             "name": pkg_name
             }
-        if 'description' in pkg:
-            apidocs[pkg_name]['desc'] = pkg.description 
 
         # now we'll walk the lib dir and generate documenation for each module
         for root, dirs, files in os.walk(path):
@@ -93,6 +76,7 @@ def generate_static_docs(env_root, output_dir):
                             apidocs[pkg_name]['modules'] = { }
 
                         apidocs[pkg_name]['modules'][moduleDocs['module']] = moduleDocs
+                        apidocs[pkg_name]['modules'][moduleDocs['module']]["internal"] = isInternal
 
                     except Exception as e:
                         print "WARNING, skipping module due to malformed docs (%s/lib/%s):" % (pkg_name, relpath)
@@ -106,5 +90,5 @@ def generate_static_docs(env_root, output_dir):
     if not version == None:
         apidocs["version"] = version
 
-    apidocs_path = os.path.join(output_dir, "packages", 'apidocs.json')
+    apidocs_path = os.path.join(output_dir, 'apidocs.json')
     open(apidocs_path, 'w').write(json.dumps(apidocs, sort_keys=True, indent=2))
