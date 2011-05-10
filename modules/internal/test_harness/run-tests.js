@@ -37,14 +37,15 @@
 var obsvc = require("observer-service");
 var {Cc,Ci} = require("chrome");
 
-function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, print) {
+function runTests(dirs, iterations, filter, profileMemory, verbose, rootPaths, quit, print)
+{
   var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"]
            .getService(Ci.nsIWindowWatcher);
 
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
                              "harness", "centerscreen", null);
 
-  var harness = require("./harness");
+  var harness = require("test_harness/harness");
 
   function onDone(tests) {
     window.close();
@@ -60,14 +61,14 @@ function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, p
     }
   };
 
-  console.log("calling runtests");
   harness.runTests({iterations: iterations,
                     filter: filter,
                     profileMemory: profileMemory,
                     verbose: verbose,
                     rootPaths: rootPaths,
                     print: print,
-                    onDone: onDone});
+                    onDone: onDone,
+                    testDirs: dirs});
 }
 
 function printFailedTests(tests, verbose, print) {
@@ -96,13 +97,12 @@ function printFailedTests(tests, verbose, print) {
 }
 
 exports.main = function main(options, callbacks) {
-  console.log("INSIDE MAIN");
   var testsStarted = false;
 
   function doRunTests() {
     if (!testsStarted) {
       testsStarted = true;
-      runTests(options.iterations, options.filter,
+      runTests([ options.testDir ], options.iterations, options.filter,
                options.profileMemory, options.verbose,
                options.rootPaths, callbacks.quit,
                callbacks.print);
@@ -113,10 +113,5 @@ exports.main = function main(options, callbacks) {
   // something running this code to force it to just
   // run tests immediately, rather than wait. We need
   // to actually standardize on this, though.
-  if (options.runImmediately) {
-    doRunTests();
-  }
-  else {
-    obsvc.add(obsvc.topics.APPLICATION_READY, doRunTests);
-  }
+  doRunTests();
 };

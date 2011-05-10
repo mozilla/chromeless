@@ -259,7 +259,7 @@ function nextIteration(tests) {
     results.testRuns.push(testRun);
     iterationsLeft--;
   }
-  if (iterationsLeft)
+  if (iterationsLeft) {
     sandbox.require("unit-test").findAndRunTests({
       testOutOfProcess: packaging.enableE10s,
       testInProcess: true,
@@ -268,8 +268,9 @@ function nextIteration(tests) {
       filter: filter,
       onDone: nextIteration
     });
-  else
+  } else {
     require("timer").setTimeout(cleanup, 0);
+  }
 }
 
 var POINTLESS_ERRORS = [
@@ -316,9 +317,8 @@ function TestRunnerConsole(base, options) {
 }
 
 var runTests = exports.runTests = function runTests(options) {
-    dump(JSON.stringify(options, undefined, "  "));
-
   iterationsLeft = options.iterations;
+  if (iterationsLeft == undefined) iterationsLeft = 1;
   filter = options.filter;
   profileMemory = options.profileMemory;
   onDone = options.onDone;
@@ -331,10 +331,16 @@ var runTests = exports.runTests = function runTests(options) {
     var ptc = require("plain-text-console");
     var url = require("url");
 
-    dirs = [url.toFilename(path)
-            for each (path in options.rootPaths)];
+    if (options.testDirs) {
+        dirs = options.testDirs;
+    } else {
+        dirs = [url.toFilename(path)
+                for each (path in options.rootPaths)];
+    }
+
     var console = new TestRunnerConsole(new ptc.PlainTextConsole(print),
                                         options);
+
     var globals = {packaging: packaging};
 
     var xulApp = require("xul-app");
@@ -346,7 +352,6 @@ var runTests = exports.runTests = function runTests(options) {
           xulApp.ID + ") under " +
           xulRuntime.OS + "/" + xulRuntime.XPCOMABI + ".\n");
 
-    console.log("loading test");
     sandbox = new cuddlefish.Loader({console: console,
                                      globals: globals,
                                      packaging: packaging,

@@ -43,70 +43,54 @@ require("chrome");
 var file = require("fs");
 
 var TestFinder = exports.TestFinder = function TestFinder(options) {
-  memory.track(this);
-  this.dirs = options.dirs || [];
-  this.filter = options.filter || function() { return true; };
-  this.testInProcess = options.testInProcess === false ? false : true;
-  this.testOutOfProcess = options.testOutOfProcess === true ? true : false;
+    memory.track(this);
+    this.dirs = options.dirs || [];
+    this.filter = options.filter || function() { return true; };
+    this.testInProcess = options.testInProcess === false ? false : true;
+    this.testOutOfProcess = options.testOutOfProcess === true ? true : false;
 };
 
 TestFinder.prototype = {
-  _makeTest: function _makeTest(suite, name, test) {
-    function runTest(runner) {
-      console.info("executing '" + suite + "." + name + "'");
-      test(runner);
+    _makeTest: function _makeTest(suite, name, test) {
+        function runTest(runner) {
+            console.info("executing '" + suite + "." + name + "'");
+            test(runner);
+        }
+        return runTest;
+    },
+
+    findTests: function findTests(cb) {
+        var self = this;
+        var tests = [];
+        var remoteSuites = [];
+        var filter;
+
+        if (typeof(this.filter) == "string") {
+            var filterRegex = new RegExp(self.filter);
+            filter = function(name) {
+                return filterRegex.test(name);
+            };
+        } else if (typeof(this.filter) == "function")
+            filter = this.filter;
+
+        this.dirs.forEach(
+            function(dir) {
+                var suites = [name.slice(0, -3)
+                              for each (name in file.list(dir))
+                                  if (/^test-.*\.js$/.test(name) && filter(name))];
+                suites.forEach(
+                    function(suite) {
+                        var loader = require("parent-loader");
+                        var url = loader.fs.resolveModule(null, suite);
+                        var module = require(suite);
+                        for (name in module)
+                            tests.push({
+                                testFunction: self._makeTest(suite, name, module[name]),
+                                name: suite + "." + name
+                            });
+                    });
+            });
+
+        cb(tests);
     }
-    return runTest;
-  },
-
-  findTests: function findTests(cb) {
-    var self = this;
-    var tests = [];
-    var remoteSuites = [];
-    var filter;
-
-    if (typeof(this.filter) == "string") {
-      var filterRegex = new RegExp(self.filter);
-      filter = function(name) {
-        return filterRegex.test(name);
-      };
-    } else if (typeof(this.filter) == "function")
-      filter = this.filter;
-
-    this.dirs.forEach(
-      function(dir) {
-        var suites = [name.slice(0, -3)
-                      for each (name in file.list(dir))
-                      if (/^test-.*\.js$/.test(name) && filter(name))];
-
-        suites.forEach(
-          function(suite) {
-            var loader = require("parent-loader");
-            var url = loader.fs.resolveModule(null, suite);
-            var moduleInfo = packaging.getModuleInfo(url);
-            var module = require(suite);
-            if (self.testInProcess)
-              for (name in module)
-                  tests.push({
-                    testFunction: self._makeTest(suite, name, module[name]),
-                    name: suite + "." + name
-                  });
-            if (!moduleInfo.needsChrome)
-              remoteSuites.push(suite);
-          });
-      });
-
-    if (this.testOutOfProcess && remoteSuites.length > 0) {
-      var process = require("e10s").AddonProcess();
-      var finderHandle = process.createHandle();
-      finderHandle.onTestsFound = function(testsFound) {
-        cb(tests.concat(testsFound));
-      };
-      process.send("startMain", "find-tests", {
-        suites: remoteSuites,
-        finderHandle: finderHandle
-      });
-    } else
-      cb(tests);
-  }
 };

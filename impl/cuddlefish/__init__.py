@@ -271,6 +271,7 @@ def test_all_examples(env_root, defaults):
     fail = False
     for dirname in examples:
         print "Testing %s..." % dirname
+        output_test = os.path.join(env_root, "modules", "internal","test_harness","test-app.js")
         try:
             import shutil
             from string import Template
@@ -280,7 +281,7 @@ def test_all_examples(env_root, defaults):
 
             if os.path.exists(test_script_for_app):
                print "Found test file for %s: %s" % (dirname, test_script_for_app)
-               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
+
                print "Will create test file in " + output_test
 
                defaultBrowser = os.path.join(".", "tests" , dirname, "index.html")
@@ -298,11 +299,6 @@ def test_all_examples(env_root, defaults):
                               "--static-args", json.dumps({"browser": browserToLaunch})],
                    defaults=defaults,
                    env_root=env_root)
-            else: 
-               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
-               if os.path.exists(output_test): 
-                  os.remove(output_test)
-            
         except SystemExit, e:
             fail = (e.code != 0) or fail
 
@@ -419,15 +415,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     import uuid
     harness_guid = str(uuid.uuid4())
 
-    print("harness_guid: %s" % harness_guid);
-
-    unique_prefix = '%s-' % target
-
-    # the resource: URL's prefix is treated too much like a DNS hostname
-    unique_prefix = unique_prefix.lower()
-    unique_prefix = unique_prefix.replace("@", "-at-")
-    unique_prefix = unique_prefix.replace(".", "-dot-")
-
     targets = [target]
     if command == "test":
         targets.append(options.test_runner_pkg)
@@ -459,8 +446,12 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         }
 
     if command == "test":
-        # This should be contained in the test runner package.
         harness_options['main'] = 'test_harness/run-tests'
+        # XXX: we should write 'test-app' into a tempdir...
+        harness_options['testDir'] = os.path.join(chromeless.Dirs().cuddlefish_root, "modules", "internal", "test_harness")
+        resourceName = harness_guid + "-app-tests"
+        resources[resourceName] = os.path.join(harness_options['testDir'])
+        rootPaths.append("resource://" + resourceName + "/");
     else:
         harness_options['main'] = 'main'
 
