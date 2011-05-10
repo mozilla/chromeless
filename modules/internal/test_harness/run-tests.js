@@ -44,7 +44,7 @@ function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, p
   var window = ww.openWindow(null, "data:text/plain,Running tests...",
                              "harness", "centerscreen", null);
 
-  var harness = require("harness");
+  var harness = require("./harness");
 
   function onDone(tests) {
     window.close();
@@ -60,6 +60,7 @@ function runTests(iterations, filter, profileMemory, verbose, rootPaths, quit, p
     }
   };
 
+  console.log("calling runtests");
   harness.runTests({iterations: iterations,
                     filter: filter,
                     profileMemory: profileMemory,
@@ -83,7 +84,7 @@ function printFailedTests(tests, verbose, print) {
     iterationNumber++;
 
     if (!singleIteration)
-      print("  Iteration " + iterationNumber + ":\n"); 
+      print("  Iteration " + iterationNumber + ":\n");
 
     for each (let test in testRun) {
       if (test.failed > 0) {
@@ -95,6 +96,7 @@ function printFailedTests(tests, verbose, print) {
 }
 
 exports.main = function main(options, callbacks) {
+  console.log("INSIDE MAIN");
   var testsStarted = false;
 
   function doRunTests() {

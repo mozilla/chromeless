@@ -316,6 +316,8 @@ function TestRunnerConsole(base, options) {
 }
 
 var runTests = exports.runTests = function runTests(options) {
+    dump(JSON.stringify(options, undefined, "  "));
+
   iterationsLeft = options.iterations;
   filter = options.filter;
   profileMemory = options.profileMemory;
@@ -344,6 +346,7 @@ var runTests = exports.runTests = function runTests(options) {
           xulApp.ID + ") under " +
           xulRuntime.OS + "/" + xulRuntime.XPCOMABI + ".\n");
 
+    console.log("loading test");
     sandbox = new cuddlefish.Loader({console: console,
                                      globals: globals,
                                      packaging: packaging,
