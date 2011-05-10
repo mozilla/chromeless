@@ -46,24 +46,39 @@
  * of milliseconds after page load (i.e. with `setTimeout()`)
  */
 
+const windowUtils = require('window-utils');
+
+function supplyDefault(window) {
+  return (window === undefined) ? windowUtils.activeWindow : window;
+}
+
+
 /**
  * Size the main application window to consume the full screen.
+ * @param [window] {WindowObject} the window to modify, default is
+ * current active window.
  */
 exports.enable = function(window) {
-   window.fullScreen=true;
+    window = supplyDefault(window);
+    window.fullScreen=true;
 };
 
 /**
  * Disable fullscreen mode (noop if it wasn't enabled)
+ * @param [window] {WindowObject} the window to modify, default is
+ * current active window.
  */
 exports.disable = function(window) {
-   window.fullScreen=false;
+    window = supplyDefault(window);
+    window.fullScreen=false;
 };
 
 /**
  * Toggle fullscreen.
+ * @param [window] {WindowObject} the window to modify, default is
+ * current active window.
  */
 exports.toggle = function(window) {
-   window.fullScreen=!window.fullScreen;
+    window = supplyDefault(window);
+    window.fullScreen=!window.fullScreen;
 };
-
