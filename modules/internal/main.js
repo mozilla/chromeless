@@ -45,21 +45,21 @@ const {Ci, Cc, Cr, Cu} = require("chrome");
 const path = require('path');
 const appinfo = require('appinfo');
 
-var appWindow = null; 
+var appWindow = null;
 
-// These functions are used from the test application. 
+// These functions are used from the test application.
 /*
 exports.getAppWindow = function () {
         return appWindow;
 }
 */
-exports.__defineGetter__('getAppWindow', function () { 
-     return appWindow; 
+exports.__defineGetter__('getAppWindow', function () {
+     return appWindow;
 } );
 
 exports.getAppBrowser = function () {
         return appWindow._browser;
-} 
+}
 
 function testFunction(html) {
   return html.replace("World", "Hello");

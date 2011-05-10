@@ -8,6 +8,7 @@ import appifier
 import subprocess
 import signal
 import tempfile
+import chromeless
 
 from copy import copy
 import simplejson as json
@@ -399,27 +400,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         print "Created docs in %s." % dirname
         return
 
-    target_cfg_json = None
-    if not target_cfg:
-        if not options.pkgdir:
-            options.pkgdir = find_parent_package(os.getcwd())
-            if not options.pkgdir:
-                print >>sys.stderr, ("cannot find 'package.json' in the"
-                                     " current directory or any parent.")
-                sys.exit(1)
-        else:
-            options.pkgdir = os.path.abspath(options.pkgdir)
-        if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
-            print >>sys.stderr, ("cannot find 'package.json' in"
-                                 " %s." % options.pkgdir)
-            sys.exit(1)
-
-        target_cfg_json = os.path.join(options.pkgdir, 'package.json')
-        target_cfg = packaging.get_config_in_dir(options.pkgdir)
-
-    # At this point, we're either building an XPI or running Jetpack code in
-    # a Mozilla application (which includes running tests).
-
     use_main = False
     timeout = None
     inherited_options = ['verbose', 'enable_e10s']
@@ -436,49 +416,13 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         print >>sys.stderr, "Try using '--help' for assistance."
         sys.exit(1)
 
-    if use_main and 'main' not in target_cfg:
-        print >>sys.stderr, "package.json does not have a 'main' entry."
-        sys.exit(1)
-            
-    print "MAIN: " + target_cfg['main']
-
-    if not pkg_cfg:
-        pkg_cfg = packaging.build_config(env_root, target_cfg)
-
-    target = target_cfg.name
+    target = "main"
 
     # the harness_guid is used for an XPCOM class ID.
     import uuid
     harness_guid = str(uuid.uuid4())
 
     print("harness_guid: %s" % harness_guid);
- 
-    # TODO: Consider keeping a cache of dynamic UUIDs, based
-    # on absolute filesystem pathname, in the root directory
-    # or something.
-    if command in ('package', 'run', 'appify'):
-        from cuddlefish.preflight import preflight_config
-        if target_cfg_json:
-            config_was_ok, modified = preflight_config(
-                target_cfg,
-                target_cfg_json,
-                keydir=options.keydir,
-                err_if_privkey_not_found=False
-                )
-            if not config_was_ok:
-                if modified:
-                    # we need to re-read package.json . The safest approach
-                    # is to re-run the "cfx xpi"/"cfx run" command.
-                    print >>sys.stderr, ("package.json modified: please re-run"
-                                         " 'cfx %s'" % command)
-                else:
-                    print >>sys.stderr, ("package.json needs modification:"
-                                         " please update it and then re-run"
-                                         " 'cfx %s'" % command)
-                sys.exit(1)
-        # if we make it this far, we have a JID
-    else:
-        assert command == "test"
 
     unique_prefix = '%s-' % target
 
@@ -494,17 +438,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if options.extra_packages:
         targets.extend(options.extra_packages.split(","))
 
-    deps = packaging.get_deps_for_targets(pkg_cfg, targets)
-    build = packaging.generate_build_for_target(
-        pkg_cfg, target, deps,
-        prefix=unique_prefix,  # used to create resource: URLs
-        include_dep_tests=options.dep_tests
-        )
-
-    if 'resources' in build:
-        resources = build.resources
-        for name in resources:
-            resources[name] = os.path.abspath(resources[name])
+    resources = { }
+    rootPaths = [ ]
+    import chromeless
+    path_to_modules = os.path.join(chromeless.Dirs().cuddlefish_root, "modules")
+    for f in os.listdir(path_to_modules):
+        resourceName = harness_guid + "-" + f
+        resources[harness_guid + "-" + f] = os.path.join(path_to_modules, f)
+        rootPaths.append("resource://" + resourceName + "/");
 
     harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % harness_guid)
     harness_options = {
@@ -515,9 +456,10 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         'jetpackID': harness_guid,
         'bundleID': harness_guid,
         'staticArgs': options.static_args,
+        'resources': resources,
+        'loader': "resource://%s-%s/%s" % (harness_guid, "internal", "cuddlefish.js"),
+        'rootPaths': rootPaths
         }
-
-    harness_options.update(build)
 
     if command == "test":
         # This should be contained in the test runner package.
@@ -525,10 +467,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     else:
         harness_options['main'] = 'main'
 
-    for option in inherited_options:
-        harness_options[option] = getattr(options, option)
-
-    harness_options['metadata'] = packaging.get_metadata(pkg_cfg, deps)
+#    for option in inherited_options:
+#        harness_options[option] = getattr(options, option)
 
     retval = 0
 
@@ -545,7 +485,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              harness_options=harness_options,
                              dev_mode=False)
 
-    else: 
+    else:
         browser_code_path = options.static_args["browser"]
 
         if options.profiledir:
