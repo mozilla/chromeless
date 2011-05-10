@@ -93,6 +93,5 @@ cuddlefish.run([
         executionMode,
         "-a", "xulrunner",
         "-b", f.xulrunner_path(),
-        "--static-args", json.dumps({"browser": browserToLaunch}),
-        "--pkgdir", "packages/chromeless"
+        "--static-args", json.dumps({"browser": browserToLaunch})
         ])
