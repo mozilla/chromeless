@@ -12,7 +12,6 @@ import chromeless
 
 from copy import copy
 import simplejson as json
-from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 #from cuddlefish.version import get_version
 
