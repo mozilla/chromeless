@@ -160,11 +160,6 @@ function buildHarnessService(rootFileSpec, dump, logError,
   }
 
   function buildLoader() {
-    // TODO: This variable doesn't seem to be used, we should
-    // be able to remove it.
-    var compMgr = Components.manager;
-    compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-
     for (name in options.resources) {
       var path = options.resources[name];
       var dir;
@@ -236,7 +231,7 @@ function buildHarnessService(rootFileSpec, dump, logError,
                    };
       if (info.packageName in options.packageData)
         info.packageData = options.packageData[info.packageName];
-      
+
       return info;
 
 /*
@@ -540,7 +535,7 @@ function getDefaults(rootFileSpec) {
     }
 
     options = JSON.parse(jsonData);
-  
+
     if ("staticArgs" in options) {
         dirbase = rootFileSpec.clone();
         options.staticArgs.appBasePath=dirbase.path;
