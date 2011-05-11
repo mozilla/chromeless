@@ -11,3 +11,5 @@ Changes in 0.3
         * (@taboca) window.open() fixed (issue #43)
         * (@lloyd) moved all javascript modules under modules/ with a simplified hierarchy. (partial - issue #82)
         * (@lloyd) the window parameter to fullscreen functions is now optional, default is current active application window.
+        * (@lloyd) the `module_dirs` property in `appinfo.json` lets you specify custom modules to bundle with an app
+        * (@lloyd) the `jsctypes` example demonstrates how you can include native code with apps
