@@ -129,15 +129,21 @@ Window.prototype = {
       break;
     case "DOMContentLoaded":
       if (event.target == this._window.document) {
+
+        var browserContainer = this._window.document.createElement("stack");
+        browserContainer.setAttribute("id", "browser-container");
         var browser = this._window.document.createElement("browser");
         browser.setAttribute("id", "main-window");
         browser.setAttribute("disablehistory", "indeed");
         browser.setAttribute("type", "content-primary");
         browser.setAttribute("style", "background:none;background-color:transparent ! important");
+        browserContainer.setAttribute("flex", "1");
+        browserContainer.setAttribute("height", "100%");
         browser.setAttribute("flex", "1");
         browser.setAttribute("height", "100%");
         browser.setAttribute("border", "10px solid green");
-        event.target.documentElement.appendChild(browser);
+        event.target.documentElement.appendChild(browserContainer);
+        browserContainer.appendChild(browser);
 
         this._browser = browser;
         browser.loadURI(this.options.url);
