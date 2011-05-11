@@ -1,0 +1,3039 @@
+{
+  "internal": {
+    "modules": {
+      "api-utils": {
+        "filename": "api-utils.js", 
+        "functions": [
+          {
+            "desc": "Returns a function C that creates instances of privateCtor.  C may be called\nwith or without the new keyword.  The prototype of each instance returned\nfrom C is C.prototype, and C.prototype is an object whose prototype is\nprivateCtor.prototype.  Instances returned from C will therefore be instances\nof both C and privateCtor.  Additionally, the constructor of each instance\nreturned from C is C.", 
+            "name": "publicConstructor", 
+            "params": [
+              {
+                "desc": "A constructor.", 
+                "name": "privateCtor"
+              }
+            ], 
+            "returns": {
+              "desc": "A function that makes new instances of privateCtor."
+            }, 
+            "source_lines": [
+              53, 
+              64
+            ]
+          }, 
+          {
+            "desc": "Returns a validated options dictionary given some requirements.  If any of\nthe requirements are not met, an exception is thrown.", 
+            "name": "validateOptions", 
+            "params": [
+              {
+                "desc": "An object, the options dictionary to validate.  It's not modified.\n        If it's null or otherwise falsey, an empty object is assumed.", 
+                "name": "options"
+              }, 
+              {
+                "desc": "An object whose keys are the expected keys in options.  Any key in\n        options that is not present in requirements is ignored.  Each value\n        in requirements is itself an object describing the requirements of\n        its key.  There are four optional keys in this object:\n          map: A function that's passed the value of the key in options.\n               map's return value is taken as the key's value in the final\n               validated options, is, and ok.  If map throws an exception\n               it's caught and discarded, and the key's value is its value in\n               options.\n          is:  An array containing any number of the typeof type names.  If\n               the key's value is none of these types, it fails validation.\n               Arrays and null are identified by the special type names\n               \"array\" and \"null\"; \"object\" will not match either.  No type\n               coercion is done.\n          ok:  A function that's passed the key's value.  If it returns\n               false, the value fails validation.\n          msg: If the key's value fails validation, an exception is thrown.\n               This string will be used as its message.  If undefined, a\n               generic message is used, unless is is defined, in which case\n               the message will state that the value needs to be one of the\n               given types.", 
+                "name": "requirements"
+              }
+            ], 
+            "returns": {
+              "desc": "An object whose keys are those keys in requirements that are also in\n        options and whose values are the corresponding return values of map\n        or the corresponding values in options.  Note that any keys not\n        shared by both requirements and options are not in the returned\n        object."
+            }, 
+            "source_lines": [
+              76, 
+              110
+            ]
+          }
+        ], 
+        "internal": true, 
+        "module": "api-utils"
+      }, 
+      "chromeless-sandbox-window": {
+        "filename": "chromeless-sandbox-window.js", 
+        "internal": true, 
+        "module": "chromeless-sandbox-window"
+      }, 
+      "cortex": {
+        "filename": "cortex.js", 
+        "functions": [
+          {
+            "desc": "Given an `object` containing a property with the given `name`, create\na property descriptor that can be used to define alias/proxy properties\non other objects.  A change in the value of an alias will propagate\nto the aliased property and vice versa.", 
+            "name": "createAliasProperty", 
+            "source_lines": [
+              52, 
+              57
+            ]
+          }, 
+          {
+            "desc": "Function takes any `object` and returns a proxy for its own public\nproperties. By default properties are considered to be public if they don't\nstart with `\"_\"`, but default behavior can be overridden if needed, by\npassing array of public property `names` as a second argument. By default\nreturned object will be direct decedent of the given `object`'s prototype,\nbut this can be overridden by passing third optional argument, that will be\nused as `prototype` instead.", 
+            "name": "Cortex", 
+            "params": [
+              {
+                "desc": "Object to create cortex for.", 
+                "name": "object", 
+                "type": "Object"
+              }, 
+              {
+                "desc": "Optional array of public property names.", 
+                "name": "names", 
+                "optional": true, 
+                "type": "String[]"
+              }, 
+              {
+                "desc": "Optional argument that will be used as `prototype` of the returned object,\n   if not provided `Object.getPrototypeOf(object)` is used instead.", 
+                "name": "prototype", 
+                "optional": true, 
+                "type": "Object"
+              }
+            ], 
+            "source_lines": [
+              107, 
+              122
+            ]
+          }
+        ], 
+        "internal": true, 
+        "module": "cortex"
+      }, 
+      "cuddlefish": {
+        "filename": "cuddlefish.js", 
+        "internal": true, 
+        "module": "cuddlefish"
+      }, 
+      "errors": {
+        "filename": "errors.js", 
+        "internal": true, 
+        "module": "errors"
+      }, 
+      "find-tests": {
+        "filename": "test_harness/find-tests.js", 
+        "internal": true, 
+        "module": "find-tests"
+      }, 
+      "harness": {
+        "filename": "test_harness/harness.js", 
+        "internal": true, 
+        "module": "harness"
+      }, 
+      "main": {
+        "filename": "main.js", 
+        "internal": true, 
+        "module": "main"
+      }, 
+      "memory": {
+        "filename": "memory.js", 
+        "internal": true, 
+        "module": "memory"
+      }, 
+      "plain-text-console": {
+        "filename": "plain-text-console.js", 
+        "internal": true, 
+        "module": "plain-text-console"
+      }, 
+      "run-tests": {
+        "filename": "test_harness/run-tests.js", 
+        "internal": true, 
+        "module": "run-tests"
+      }, 
+      "securable-module": {
+        "filename": "securable-module.js", 
+        "internal": true, 
+        "module": "securable-module"
+      }, 
+      "simple-feature": {
+        "filename": "simple-feature.js", 
+        "internal": true, 
+        "module": "simple-feature"
+      }, 
+      "unit-test": {
+        "filename": "test_harness/unit-test.js", 
+        "internal": true, 
+        "module": "unit-test"
+      }, 
+      "unit-test-finder": {
+        "filename": "test_harness/unit-test-finder.js", 
+        "internal": true, 
+        "module": "unit-test-finder"
+      }
+    }, 
+    "name": "internal"
+  }, 
+  "lib": {
+    "modules": {
+      "app-paths": {
+        "desc": "Returns various paths that are pertinent to the currently running\napplication and logged in user.", 
+        "filename": "app-paths.js", 
+        "internal": false, 
+        "module": "app-paths", 
+        "properties": [
+          {
+            "desc": "The currently active *profile*, which is a user specific directory where\nuser scoped application data may reside, such as preferences and history.", 
+            "name": "profileDir", 
+            "source_lines": [
+              49, 
+              54
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path where the *browser code* of the application resides on disk.\nFor an installed application this usually be nested inside of a system wide installation path.\nThis path should be expected to be read-only.", 
+            "name": "browserCodeDir", 
+            "source_lines": [
+              57, 
+              62
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "On windows, the path to the start menu where shortcuts may be installed.\n`null` on other platforms.", 
+            "name": "startMenuDir", 
+            "source_lines": [
+              65, 
+              70
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the user's desktop.", 
+            "name": "desktopDir", 
+            "source_lines": [
+              77, 
+              80
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the currently logged in user's home directory.", 
+            "name": "userHomeDir", 
+            "source_lines": [
+              83, 
+              86
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "In chromeless, *profiles* are specially named directories stored\nin a user scoped location.  Support for multiple profiles is built in at a very\nlow level, and the basic mechanism by which profiles are supported is a two\nlevel directory structure.  This property provides the path to the \"outer\" or\n\"root\" profile directory, under which different profiles reside.", 
+            "name": "profileRootDir", 
+            "source_lines": [
+              89, 
+              96
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The path to the directory where web plugins will be loaded for this\napplication.", 
+            "name": "pluginsDir", 
+            "source_lines": [
+              99, 
+              103
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The current working directory of the chromeless application process.", 
+            "name": "curDir", 
+            "source_lines": [
+              106, 
+              109
+            ], 
+            "type": "string"
+          }, 
+          {
+            "desc": "The system's temporary directory.", 
+            "name": "tmpDir", 
+            "source_lines": [
+              112, 
+              115
+            ], 
+            "type": "string"
+          }
+        ], 
+        "source_lines": [
+          38, 
+          42
+        ]
+      }, 
+      "appinfo": {
+        "desc": "[`appinfo.json`](#guide/startup-parameters) is a small file that contains\nvarious application parameters used in startup and packaging.\n\nThis module give you conveinent read access to this file", 
+        "filename": "appinfo.js", 
+        "internal": false, 
+        "module": "appinfo", 
+        "properties": [
+          {
+            "desc": "(read-only) The contents of the `appinfo.json` file as a javascript object", 
+            "name": "contents", 
+            "source_lines": [
+              210, 
+              216
+            ], 
+            "throws": [
+              {
+                "desc": "upon access if the appinfo.json file is malformed (this should happen\nat application startup, and never during runtime.  In application code this\nexception can be safely ignored)."
+              }
+            ]
+          }
+        ], 
+        "source_lines": [
+          197, 
+          203
+        ]
+      }, 
+      "byte-streams": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "desc": "Creates a binary input stream that reads bytes from a backing stream.", 
+                "params": [
+                  {
+                    "desc": "The backing stream, an [`nsIInputStream`](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIInputStream.idl).", 
+                    "name": "inputStream", 
+                    "type": "stream"
+                  }
+                ], 
+                "source_lines": [
+                  67, 
+                  72
+                ]
+              }
+            ], 
+            "functions": [
+              {
+                "desc": "Closes both the stream and its backing stream.", 
+                "name": "close", 
+                "source_lines": [
+                  56, 
+                  61
+                ], 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }, 
+              {
+                "desc": "Reads bytes from the stream.", 
+                "name": "read", 
+                "params": [
+                  {
+                    "desc": "The number of bytes to read.  If not given, the remainder of the entire stream\nis read.", 
+                    "name": "numBytes", 
+                    "optional": true, 
+                    "type": "number"
+                  }
+                ], 
+                "returns": {
+                  "desc": "A string containing the bytes read.  If the stream is at the end, returns the\nempty string.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  82, 
+                  92
+                ], 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }
+            ], 
+            "name": "ByteReader", 
+            "properties": [
+              {
+                "desc": "True if the stream is closed.", 
+                "name": "closed", 
+                "source_lines": [
+                  62, 
+                  66
+                ], 
+                "type": "boolean"
+              }
+            ], 
+            "source_lines": [
+              52, 
+              55
+            ]
+          }, 
+          {
+            "constructors": [
+              {
+                "desc": "Creates a binary output stream that writes bytes to a backing stream.", 
+                "params": [
+                  {
+                    "desc": "The backing stream, an [nsIOutputStream](http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsIOutputStream.idl).", 
+                    "name": "outputStream", 
+                    "type": "stream"
+                  }
+                ], 
+                "source_lines": [
+                  133, 
+                  138
+                ]
+              }
+            ], 
+            "functions": [
+              {
+                "desc": "Closes both the stream and its backing stream.", 
+                "name": "close", 
+                "source_lines": [
+                  122, 
+                  127
+                ], 
+                "throws": [
+                  {
+                    "desc": "If the stream is already closed."
+                  }
+                ]
+              }, 
+              {
+                "desc": "Writes a string to the stream.", 
+                "name": "write", 
+                "params": [
+                  {
+                    "desc": "The string to write.", 
+                    "name": "str", 
+                    "type": "string"
+                  }
+                ], 
+                "source_lines": [
+                  148, 
+                  154
+                ], 
+                "throws": [
+                  {
+                    "desc": "if the stream is closed"
+                  }
+                ]
+              }
+            ], 
+            "name": "ByteWriter", 
+            "properties": [
+              {
+                "desc": "True if the stream is closed.", 
+                "name": "closed", 
+                "source_lines": [
+                  128, 
+                  132
+                ], 
+                "type": "boolean"
+              }
+            ], 
+            "source_lines": [
+              120, 
+              121
+            ]
+          }
+        ], 
+        "desc": "The `byte-streams` module provides streams for reading and writing bytes.", 
+        "filename": "byte-streams.js", 
+        "internal": false, 
+        "module": "byte-streams", 
+        "source_lines": [
+          43, 
+          46
+        ]
+      }, 
+      "canvas-proxy": {
+        "filename": "canvas-proxy.js", 
+        "internal": false, 
+        "module": "canvas-proxy"
+      }, 
+      "child_process": {
+        "classes": [
+          {
+            "functions": [
+              {
+                "desc": "Asynchronously run a child process", 
+                "name": "run", 
+                "params": [
+                  {
+                    "desc": "The command to execute", 
+                    "name": "command"
+                  }, 
+                  {
+                    "desc": "Arguments to said command", 
+                    "name": "args"
+                  }
+                ], 
+                "source_lines": [
+                  86, 
+                  90
+                ]
+              }, 
+              {
+                "desc": "Kill the child process and clean up resources.", 
+                "name": "destroy", 
+                "source_lines": [
+                  121, 
+                  123
+                ]
+              }
+            ], 
+            "name": "ChildProcess", 
+            "source_lines": [
+              77, 
+              77
+            ]
+          }
+        ], 
+        "filename": "child_process.js", 
+        "functions": [
+          {
+            "desc": "spawn a child process.", 
+            "name": "spawn", 
+            "params": [
+              {
+                "desc": "The command to execute", 
+                "name": "command"
+              }, 
+              {
+                "desc": "Arguments to said command", 
+                "name": "args"
+              }
+            ], 
+            "returns": {
+              "desc": "A ChildProcess"
+            }, 
+            "source_lines": [
+              44, 
+              49
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "child_process"
+      }, 
+      "clipboard": {
+        "filename": "clipboard.js", 
+        "internal": false, 
+        "module": "clipboard"
+      }, 
+      "collection": {
+        "filename": "collection.js", 
+        "functions": [
+          {
+            "desc": "Adds a collection property to the given object.  Setting the property to a\nscalar value empties the collection and adds the value.  Setting it to an\narray empties the collection and adds all the items in the array.", 
+            "name": "addCollectionProperty", 
+            "params": [
+              {
+                "desc": "The property will be defined on this object.", 
+                "name": "obj"
+              }, 
+              {
+                "desc": "The name of the property.", 
+                "name": "propName"
+              }, 
+              {
+                "desc": "If given, this will be used as the collection's backing array.", 
+                "name": "array"
+              }
+            ], 
+            "source_lines": [
+              42, 
+              53
+            ]
+          }, 
+          {
+            "desc": "A collection is ordered, like an array, but its items are unique, like a set.", 
+            "name": "Collection", 
+            "params": [
+              {
+                "desc": "The collection is backed by an array.  If this is given, it will be\n       used as the backing array.  This way the caller can fully control the\n       collection.  Otherwise a new empty array will be used, and no one but\n       the collection will have access to it.", 
+                "name": "array"
+              }
+            ], 
+            "source_lines": [
+              68, 
+              76
+            ]
+          }, 
+          {
+            "desc": "Provides iteration over the collection.  Items are yielded in the order\nthey were added.", 
+            "name": "__iterator__", 
+            "source_lines": [
+              80, 
+              83
+            ]
+          }, 
+          {
+            "desc": "Adds a single item or an array of items to the collection.  Any items\nalready contained in the collection are ignored.", 
+            "name": "add", 
+            "params": [
+              {
+                "desc": "An item or array of items.", 
+                "name": "itemOrItems"
+              }
+            ], 
+            "returns": {
+              "desc": "The collection."
+            }, 
+            "source_lines": [
+              97, 
+              104
+            ]
+          }, 
+          {
+            "desc": "Removes a single item or an array of items from the collection.  Any items\nnot contained in the collection are ignored.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "An item or array of items.", 
+                "name": "itemOrItems"
+              }
+            ], 
+            "returns": {
+              "desc": "The collection."
+            }, 
+            "source_lines": [
+              115, 
+              122
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "collection", 
+        "properties": [
+          {
+            "desc": "The number of items in the collection.", 
+            "name": "length", 
+            "source_lines": [
+              90, 
+              92
+            ]
+          }
+        ]
+      }, 
+      "console-service": {
+        "filename": "console-service.js", 
+        "internal": false, 
+        "module": "console-service"
+      }, 
+      "content": {
+        "filename": "content.js", 
+        "internal": false, 
+        "module": "content"
+      }, 
+      "cookie": {
+        "desc": "Allow access and manipulation of the chromeless platforms cookie store.", 
+        "filename": "cookie.js", 
+        "functions": [
+          {
+            "desc": "Remove a specific cookie.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "the host that the cookie is associated with", 
+                "name": "host"
+              }, 
+              {
+                "desc": "the name of the cookie", 
+                "name": "name"
+              }, 
+              {
+                "desc": "the path of the cookie", 
+                "name": "path"
+              }, 
+              {
+                "desc": "the blocked status of the cookie", 
+                "name": "blocked"
+              }
+            ], 
+            "source_lines": [
+              49, 
+              56
+            ]
+          }, 
+          {
+            "desc": "Remove all cookies.", 
+            "name": "removeAll", 
+            "source_lines": [
+              62, 
+              64
+            ]
+          }, 
+          {
+            "desc": "Get all cookies", 
+            "name": "getAllCookies", 
+            "returns": {
+              "desc": "An array of objects representing cookies.  Each object has `.host`,\n`.name`, `.expires`, `.value`, `.path`, and `.blocked` attributes.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              70, 
+              74
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "cookie", 
+        "source_lines": [
+          39, 
+          42
+        ]
+      }, 
+      "custom-protocol": {
+        "filename": "custom-protocol.js", 
+        "internal": false, 
+        "module": "custom-protocol"
+      }, 
+      "data": {
+        "filename": "utils/data.js", 
+        "functions": [
+          {
+            "desc": "Takes URI of the page and returns associated favicon URI.\nIf page under passed uri has no favicon then base64 encoded data URI of\ndefault faveicon is returned.", 
+            "name": "getFaviconURIForLocation", 
+            "params": [
+              {
+                "name": "uri", 
+                "type": "String"
+              }
+            ], 
+            "returns": {
+              "type": "String"
+            }, 
+            "source_lines": [
+              54, 
+              60
+            ]
+          }, 
+          {
+            "desc": "Takes chrome URI and returns content under that URI.", 
+            "name": "getChromeURIContent", 
+            "params": [
+              {
+                "name": "chromeURI", 
+                "type": "String"
+              }
+            ], 
+            "returns": {
+              "type": "String"
+            }, 
+            "source_lines": [
+              76, 
+              80
+            ]
+          }, 
+          {
+            "desc": "Creates a base-64 encoded ASCII string from a string of binary data.", 
+            "name": "base64Encode", 
+            "source_lines": [
+              94, 
+              96
+            ]
+          }, 
+          {
+            "desc": "Decodes a string of data which has been encoded using base-64 encoding.", 
+            "name": "base64Decode", 
+            "source_lines": [
+              100, 
+              102
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "data"
+      }, 
+      "dictionary": {
+        "filename": "dictionary.js", 
+        "internal": false, 
+        "module": "dictionary"
+      }, 
+      "dom": {
+        "filename": "windows/dom.js", 
+        "internal": false, 
+        "module": "dom"
+      }, 
+      "dragdrop": {
+        "desc": "Tools for enhancing drag and drop session. It makes possible to associate \na file with an existing drag session, and to write a file to the disk\nwhen the drop happens in the OS folder.", 
+        "filename": "dragdrop.js", 
+        "functions": [
+          {
+            "desc": "Given an existing drag event, associates a system file, a mode of \noperation ( not yet implemented, default is to write a new file ), \nand developer's callback for success or error ( when the drag fails .)", 
+            "name": "setDragData", 
+            "params": [
+              {
+                "desc": "the existing drag session event.", 
+                "name": "currentEvent", 
+                "type": "event"
+              }, 
+              {
+                "desc": "is a native path to the file.", 
+                "name": "fullPath", 
+                "type": "string"
+              }, 
+              {
+                "desc": "is the string name to be given to the copy of the file.", 
+                "name": "leafName", 
+                "type": "string"
+              }, 
+              {
+                "desc": "is string that indicates what operation to perform. Only \"write\" is supported and this parameter is not yet checked.", 
+                "name": "mode", 
+                "type": "string"
+              }, 
+              {
+                "desc": "for success.", 
+                "name": "callback", 
+                "type": "function"
+              }, 
+              {
+                "desc": "for error.", 
+                "name": "callback", 
+                "type": "function"
+              }
+            ], 
+            "source_lines": [
+              55, 
+              66
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "dragdrop", 
+        "source_lines": [
+          40, 
+          45
+        ]
+      }, 
+      "favicon": {
+        "desc": "Tools for accessing favicons, which use a local cache to minimize\nnetwork requests", 
+        "filename": "favicon.js", 
+        "functions": [
+          {
+            "desc": "Given the URI of a page, query the local cache for a\nfavicon.", 
+            "name": "getCached", 
+            "params": [
+              {
+                "desc": "The URI of the page for which a favicon is desired.", 
+                "name": "uri", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The favicon as a data URL.  If no such favicon is in the cache,\nnull is returned.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              63, 
+              70
+            ]
+          }, 
+          {
+            "desc": "Get a default favicon image.", 
+            "name": "getDefault", 
+            "returns": {
+              "desc": "A data URL containing a default favicon image", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              82, 
+              86
+            ]
+          }, 
+          {
+            "desc": "Fetch the favicon for a particular page.  This function will return\nthe favicon from the cache if available, but otherwise will issue a\nnetwork request to attempt to fetch a site's favicon.", 
+            "name": "fetch", 
+            "params": [
+              {
+                "desc": "The page for which a favicon will be fetched.", 
+                "name": "uri", 
+                "type": "string"
+              }, 
+              {
+                "desc": "A callback that will be invoked once the fetch is\n  complete.  Will be passed a single string argument which is a data url\n  containing the favicon requested.  If the icon couldn't be fetched or\n  is not available, a default will be returned.", 
+                "name": "cb", 
+                "type": "function"
+              }
+            ], 
+            "source_lines": [
+              95, 
+              106
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "favicon", 
+        "source_lines": [
+          38, 
+          42
+        ]
+      }, 
+      "file": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The path from which to construct a File object.", 
+                    "name": "path", 
+                    "type": "string"
+                  }
+                ], 
+                "returns": {
+                  "desc": "an object representation of a file", 
+                  "type": "File"
+                }, 
+                "source_lines": [
+                  272, 
+                  275
+                ]
+              }
+            ], 
+            "desc": "A file abstraction that allows direct access to meta-data\nabout a file.", 
+            "functions": [
+              {
+                "desc": "Check file existence.", 
+                "name": "exists", 
+                "returns": {
+                  "desc": "true if the file exists.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  237, 
+                  240
+                ]
+              }, 
+              {
+                "name": "isWritable", 
+                "returns": {
+                  "desc": "true if the file is writable.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  242, 
+                  243
+                ]
+              }, 
+              {
+                "name": "isReadble", 
+                "returns": {
+                  "desc": "true if the file is readable.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  245, 
+                  246
+                ]
+              }, 
+              {
+                "name": "isExecutable", 
+                "returns": {
+                  "desc": "true if the file is executable.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  248, 
+                  249
+                ]
+              }, 
+              {
+                "name": "isHidden", 
+                "returns": {
+                  "desc": "true if the file is hidden.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  251, 
+                  252
+                ]
+              }, 
+              {
+                "name": "isDirectory", 
+                "returns": {
+                  "desc": "true if the file is a directory.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  254, 
+                  255
+                ]
+              }, 
+              {
+                "name": "isFile", 
+                "returns": {
+                  "desc": "true if the file is a regular file.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  257, 
+                  258
+                ]
+              }, 
+              {
+                "name": "isSymlink", 
+                "returns": {
+                  "desc": "true if the file is a symlink.", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  260, 
+                  261
+                ]
+              }, 
+              {
+                "name": "isSpecial", 
+                "returns": {
+                  "desc": "true if the file is a special file (i.e. device)", 
+                  "type": "boolean"
+                }, 
+                "source_lines": [
+                  263, 
+                  264
+                ]
+              }, 
+              {
+                "name": "toString", 
+                "returns": {
+                  "desc": "concoct a reasonable string representation of a file", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  267, 
+                  268
+                ]
+              }
+            ], 
+            "name": "File", 
+            "properties": [
+              {
+                "desc": "The file's permissions (follows symlinks)", 
+                "name": "permissions", 
+                "source_lines": [
+                  210, 
+                  210
+                ]
+              }, 
+              {
+                "desc": "The file's permissions (does not follow symlinks)", 
+                "name": "permissionsOfLink", 
+                "source_lines": [
+                  212, 
+                  212
+                ]
+              }, 
+              {
+                "desc": "The last time this file was modified (follows symlinks)", 
+                "name": "lastModifiedTime", 
+                "source_lines": [
+                  214, 
+                  214
+                ]
+              }, 
+              {
+                "desc": "The last time this file was modified (does not follow symlinks)", 
+                "name": "lastModifiedTimeOfLink", 
+                "source_lines": [
+                  216, 
+                  216
+                ]
+              }, 
+              {
+                "desc": "Size of file in bytes (follows symlinks)", 
+                "name": "fileSize", 
+                "source_lines": [
+                  219, 
+                  219
+                ], 
+                "type": "integer"
+              }, 
+              {
+                "desc": "Size of file in bytes (does not follow symlinks)", 
+                "name": "fileSizeOfLink", 
+                "source_lines": [
+                  221, 
+                  221
+                ], 
+                "type": "integer"
+              }, 
+              {
+                "desc": "The absolute path to the file", 
+                "name": "path", 
+                "source_lines": [
+                  224, 
+                  224
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "The absolute path to the parent of the file", 
+                "name": "parent", 
+                "source_lines": [
+                  227, 
+                  227
+                ], 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              196, 
+              200
+            ]
+          }
+        ], 
+        "desc": "Allows for the reading and writing of files.", 
+        "filename": "file.js", 
+        "functions": [
+          {
+            "desc": "Opens a file in text mode and returns a string containing its entire contents.", 
+            "name": "read", 
+            "params": [
+              {
+                "desc": "The path of the file to read.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string containing the file's entire contents.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              93, 
+              100
+            ]
+          }, 
+          {
+            "desc": "Creates a text file and writes the entir contents of a string to\nit.", 
+            "name": "write", 
+            "params": [
+              {
+                "desc": "The path at which the file should be created", 
+                "name": "path"
+              }, 
+              {
+                "desc": "The content to write.", 
+                "name": "content"
+              }
+            ], 
+            "source_lines": [
+              114, 
+              120
+            ], 
+            "throws": [
+              {
+                "desc": "if file exists, or cannot be created."
+              }
+            ]
+          }, 
+          {
+            "desc": "Returns a stream providing access to the contents of a file.", 
+            "name": "open", 
+            "params": [
+              {
+                "desc": "The path of the file to open.", 
+                "name": "path", 
+                "type": "string"
+              }, 
+              {
+                "desc": "An optional string, each character of which describes a characteristic of the\nreturned stream.  If the string contains `\"r\"`, the file is opened in\nread-only mode.  `\"w\"` opens the file in write-only mode.  `\"b\"` opens the\nfile in binary mode.  If `\"b\"` is not present, the file is opened in text\nmode, and its contents are assumed to be UTF-8.  If *`mode`* is not given,\n`\"r\"` is assumed, and the file is opened in read-only text mode.", 
+                "name": "mode", 
+                "optional": true, 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A stream that can be used to access or modify the contents of the file.  See\n[`text-streams`](#module/api-utils/text-streams) and\n[`byte-streams`](#module/api-utils/byte-streams) for more information.\nOpened files should always be closed after use by calling `close` on the\nreturned stream.", 
+              "type": "stream"
+            }, 
+            "source_lines": [
+              133, 
+              153
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "file", 
+        "source_lines": [
+          42, 
+          45
+        ]
+      }, 
+      "file-picker": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The title of the dialog", 
+                    "name": "title", 
+                    "optional": true, 
+                    "type": "string"
+                  }, 
+                  {
+                    "desc": "The mode of the dialog", 
+                    "name": "mode", 
+                    "optional": true, 
+                    "type": "string"
+                  }
+                ], 
+                "source_lines": [
+                  70, 
+                  75
+                ], 
+                "throws": [
+                  {
+                    "desc": "if invalid mode is set"
+                  }
+                ]
+              }
+            ], 
+            "desc": "A class which allows you to open native \"file picker\" dialogs to allow\nthe user to select files or folders.", 
+            "functions": [
+              {
+                "desc": "Show the file picker dialog.", 
+                "name": "show", 
+                "params": [
+                  {
+                    "desc": "A callback that will be invoked once the user makes a selection.  Will\nbe passed `undefined` if nothing is selected", 
+                    "name": "callback", 
+                    "type": "function"
+                  }
+                ], 
+                "source_lines": [
+                  118, 
+                  123
+                ]
+              }
+            ], 
+            "name": "FilePicker", 
+            "properties": [
+              {
+                "desc": "The title of the dialog", 
+                "name": "title", 
+                "source_lines": [
+                  79, 
+                  82
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "The mode of the dialog.  Possible values include:\n\n + `open` to allow for the selection of a single file\n + `save` to show a dialog designed to select a save location for a file\n + `folder` to allow for the selection of a folder/directory\n + `multiple` to allow the user to select multiple files", 
+                "name": "mode", 
+                "source_lines": [
+                  85, 
+                  95
+                ], 
+                "throws": [
+                  {
+                    "desc": "if invalid mode is set"
+                  }
+                ], 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              64, 
+              69
+            ]
+          }
+        ], 
+        "desc": "A module that allows you to render various dialogs to allow the user to select\nfile(s) or directories.\n\n**Example Usage:**\n\n    // Allocate a file picker\n    const filePicker = require('file-picker');\n    var fp = filePicker.FilePicker();\n\n    // Set the dialog title and selection mode\n    fp.title = \"Hi!  Pick some files!\"\n    fp.mode = \"multiple\";\n\n    // Show the dialog and process the result!\n    fp.show(function(x) {\n        if (x === undefined) {\n            console.log(\"user selected nothing!  (canceled dialog)\");\n        } else {\n            console.log(\"you picked \" + x.length + \" files\");\n            for (var i = 0; i < x.length; i++)\n                console.log(\"  \" + i + \": \" + x[i]);\n        }\n    });", 
+        "filename": "file-picker.js", 
+        "internal": false, 
+        "module": "file-picker", 
+        "source_lines": [
+          34, 
+          59
+        ]
+      }, 
+      "fs": {
+        "desc": "The fs module provides means to interact with the file system for manipulating\nand querying files and directories.", 
+        "filename": "fs.js", 
+        "functions": [
+          {
+            "desc": "Returns an array of file names in the given directory.", 
+            "name": "list", 
+            "params": [
+              {
+                "desc": "The path of the directory.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "An array of file names.  Each is a basename, not a full path.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              77, 
+              85
+            ], 
+            "throws": [
+              {
+                "desc": "if the path points to something other than a readable directory."
+              }
+            ]
+          }, 
+          {
+            "desc": "Returns an array of [file object](file.File) in the given directory.", 
+            "name": "listObjects", 
+            "params": [
+              {
+                "desc": "The path of the directory.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "An array of file objects.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              101, 
+              109
+            ], 
+            "throws": [
+              {
+                "desc": "if the path points to something other than a readable directory."
+              }
+            ]
+          }, 
+          {
+            "desc": "Copy a file.", 
+            "name": "copy", 
+            "params": [
+              {
+                "desc": "The Path to the source file", 
+                "name": "from", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The path to the destination file", 
+                "name": "to", 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              125, 
+              130
+            ], 
+            "throws": [
+              {
+                "desc": "if the operation cannot be completed."
+              }
+            ]
+          }, 
+          {
+            "desc": "Move a file to a new location.", 
+            "name": "move", 
+            "params": [
+              {
+                "desc": "The Path to the source file", 
+                "name": "from", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The path to the destination file", 
+                "name": "to", 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              141, 
+              146
+            ], 
+            "throws": [
+              {
+                "desc": "if the operation cannot be completed."
+              }
+            ]
+          }, 
+          {
+            "desc": "Returns true if a file exists at the given path and false otherwise.", 
+            "name": "exists", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "True if the file exists and false otherwise.", 
+              "type": "boolean"
+            }, 
+            "source_lines": [
+              156, 
+              161
+            ]
+          }, 
+          {
+            "desc": "Given a path returns metadata about the file or directory.  If the path is a symlink it\nwill be dereferenced and information about the underlying file will be returned", 
+            "name": "stat", 
+            "params": [
+              {
+                "desc": "The path to a file.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Returns an object with information about the file, including:\n\n + `type` - either 'file' or 'directory'\n + `numEntries` - (for directories), the number of files in the directory.\n + `size` - (for files), the size of the file in bytes.\n + `lastModified` - (for files), the time (in seconds since epoch) of the last file modification.", 
+              "type": "object"
+            }, 
+            "source_lines": [
+              166, 
+              180
+            ], 
+            "throws": [
+              {
+                "desc": "if file doesn't exist"
+              }
+            ]
+          }, 
+          {
+            "desc": "Removes a file from the file system.  To remove directories, use `rmdir`.", 
+            "name": "remove", 
+            "params": [
+              {
+                "desc": "The path of the file to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              204, 
+              208
+            ]
+          }, 
+          {
+            "desc": "Makes a new directory named by the given path.  Any subdirectories that do not\nexist are also created.  `mkpath` can be called multiple times on the same\npath.", 
+            "name": "mkpath", 
+            "params": [
+              {
+                "desc": "The path to create.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              215, 
+              221
+            ]
+          }, 
+          {
+            "desc": "Removes a directory from the file system.  If the directory is not empty, an\nexception is thrown.", 
+            "name": "rmdir", 
+            "params": [
+              {
+                "desc": "The path of the directory to remove.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              230, 
+              235
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "fs", 
+        "source_lines": [
+          36, 
+          40
+        ]
+      }, 
+      "fullscreen": {
+        "desc": "Allows one to control fullscreen view for the main application window\n\nNOTE: Due to a bug in Gecko, enabling fullscreen mode inside the\nload handler for application code will not properly hide the taskbar.\nA workaround is to delay fullscreen mode toggling for some small number\nof milliseconds after page load (i.e. with `setTimeout()`)", 
+        "filename": "fullscreen.js", 
+        "functions": [
+          {
+            "desc": "Size the main application window to consume the full screen.", 
+            "name": "enable", 
+            "params": [
+              {
+                "desc": "the window to modify, default is\ncurrent active window.", 
+                "name": "window", 
+                "optional": true, 
+                "type": "WindowObject"
+              }
+            ], 
+            "source_lines": [
+              56, 
+              60
+            ]
+          }, 
+          {
+            "desc": "Disable fullscreen mode (noop if it wasn't enabled)", 
+            "name": "disable", 
+            "params": [
+              {
+                "desc": "the window to modify, default is\ncurrent active window.", 
+                "name": "window", 
+                "optional": true, 
+                "type": "WindowObject"
+              }
+            ], 
+            "source_lines": [
+              66, 
+              70
+            ]
+          }, 
+          {
+            "desc": "Toggle fullscreen.", 
+            "name": "toggle", 
+            "params": [
+              {
+                "desc": "the window to modify, default is\ncurrent active window.", 
+                "name": "window", 
+                "optional": true, 
+                "type": "WindowObject"
+              }
+            ], 
+            "source_lines": [
+              76, 
+              80
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "fullscreen", 
+        "source_lines": [
+          40, 
+          48
+        ]
+      }, 
+      "function": {
+        "filename": "utils/function.js", 
+        "functions": [
+          {
+            "desc": "Takes a function and returns a wrapped one instead, calling which will call\noriginal function in the next turn of event loop. This is basically utility\nto do `setTimeout(function() { ... }, 0)`, with a difference that returned\nfunction is reused, instead of creating a new one each time. This also allows\nto use this functions as event listeners.", 
+            "name": "Enqueued", 
+            "source_lines": [
+              40, 
+              46
+            ]
+          }, 
+          {
+            "desc": "Invokes `callee` by passing `params` as an arguments and `self` as `this`\npseudo-variable. Returns value that is returned by a callee.", 
+            "name": "invoke", 
+            "params": [
+              {
+                "desc": "Function to invoke.", 
+                "name": "callee", 
+                "type": "Function"
+              }, 
+              {
+                "desc": "Arguments to invoke function with.", 
+                "name": "params", 
+                "type": "Array"
+              }, 
+              {
+                "desc": "Object to be passed as a `this` pseudo variable.", 
+                "name": "self", 
+                "type": "Object"
+              }
+            ], 
+            "source_lines": [
+              53, 
+              62
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "function"
+      }, 
+      "hidden-frame": {
+        "filename": "hidden-frame.js", 
+        "internal": false, 
+        "module": "hidden-frame"
+      }, 
+      "hidden-frame-xulrunner": {
+        "filename": "hidden-frame-xulrunner.js", 
+        "internal": false, 
+        "module": "hidden-frame-xulrunner"
+      }, 
+      "hotkey": {
+        "desc": "Add shortcut key combinations or \"hotkeys\" to your application.", 
+        "filename": "hotkey.js", 
+        "functions": [
+          {
+            "desc": "Register a global hotkey that executes JS specified [command] when the key\ncombination in [hotkey] is pressed.", 
+            "name": "register", 
+            "params": [
+              {
+                "desc": "Key combination in the format of 'modifier-key'\nExamples:\n\n    accel-s, meta-shift-i, control-alt-d\n\nModifier keynames:\n\n + **shift**: The Shift key.\n + **alt**: The Alt key. On the Macintosh, this is the Option key. On Macintosh \n         this can only be used in conjunction with another modifier, since \n         Alt+Letter combinations are reserved for entering special characters \n         in text.\n + **meta**: The Meta key. On the Macintosh, this is the Command key.\n + **control**: The Control key.\n + **accel**: The key used for keyboard shortcuts on the user's platform, which \n           is Control on Windows and Linux, and Command on Mac. Usually, this \n           would be the value you would use.\n + **access**: The access key for activating menus and other elements. On Windows, \n            this is the Alt key, used in conjuction with an element's accesskey.\n + **any**: Indicates that all modifiers preceding it are optional.", 
+                "name": "hotkey", 
+                "type": "string"
+              }, 
+              {
+                "desc": "Javascript (may be of type String or Function) \n                                 to execute when the hotkey is executed.", 
+                "name": "command", 
+                "type": "string/function"
+              }, 
+              {
+                "desc": "Optional. Unique identifier for this hotkey, which will \n                     auto-generated if not provided.", 
+                "name": "id", 
+                "optional": true, 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Return the ID of the hotkey.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              134, 
+              165
+            ], 
+            "throws": [
+              {
+                "desc": "Textual exception that should be caught by the programmer.", 
+                "type": "string"
+              }
+            ]
+          }, 
+          {
+            "desc": "Register a global hotkey.", 
+            "name": "unregister", 
+            "params": [
+              {
+                "name": "hotkey", 
+                "type": "string"
+              }, 
+              {
+                "name": "command", 
+                "type": "string/function"
+              }, 
+              {
+                "name": "id", 
+                "optional": true, 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "type": "void"
+            }, 
+            "source_lines": [
+              192, 
+              200
+            ], 
+            "throws": [
+              {
+                "desc": "Textual exception that should be caught by the programmer.", 
+                "type": "string"
+              }
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "hotkey", 
+        "source_lines": [
+          37, 
+          40
+        ]
+      }, 
+      "match-pattern": {
+        "filename": "match-pattern.js", 
+        "internal": false, 
+        "module": "match-pattern"
+      }, 
+      "menu": {
+        "classes": [
+          {
+            "desc": "Represents any single menu item that should be displayed\nwith at least a label.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"menu\");\n\n    var file = menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            menu.Menu({\n                label: \"New Tab\",\n                children: [\n                    menu.Menu({ label: \"In the current window\" }),\n                    menu.Menu({ label: \"In a new window\" }),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
+              {
+                "desc": "Draw a menu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  185, 
+                  191
+                ]
+              }, 
+              {
+                "desc": "Redraws a menu element to the canvas (a XUL document) if needed.\nUsually called called by a function that performs a mutation on a SubMenu\n(like `push()`, `shift()` or `splice()`).", 
+                "name": "redraw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  229, 
+                  237
+                ]
+              }, 
+              {
+                "desc": "Register a globally accessible hotkey for this menu item that invokes \nthe 'onClick' handler if set when the key combination is pressed.", 
+                "name": "setHotKey", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "see": [
+                  "this.hotkey property"
+                ], 
+                "source_lines": [
+                  252, 
+                  259
+                ]
+              }, 
+              {
+                "desc": "Removes a menu item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  269, 
+                  276
+                ]
+              }
+            ], 
+            "name": "Menu", 
+            "source_lines": [
+              80, 
+              112
+            ]
+          }, 
+          {
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "a set of options/ properties that will be set on the \n                       menu item. Keys are case-insensitive.", 
+                    "name": "nodes", 
+                    "type": "Array"
+                  }, 
+                  {
+                    "desc": "parent Menu instance that will show the SubMenu when hovered", 
+                    "name": "parent", 
+                    "type": "Menu"
+                  }
+                ], 
+                "returns": {
+                  "type": "SubMenu"
+                }, 
+                "source_lines": [
+                  326, 
+                  332
+                ]
+              }
+            ], 
+            "desc": "Represents a collection of menu items and separators that\nshould be displayed. A SubMenu is defined with the 'children' property of a \nMenu object as an Array. Therefore, array-like functions may be used to alter\nthe contents of a SubMenu instance.\nThere is no maximum set to the amount or level of depth of submenus.\n\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Menu({\n                label: \"New Window\",\n                hotkey: \"accel-n\",\n                type: \"radio\",\n                checked: true,\n                onClick: function(e) {\n                    alert(\"yay!\");\n                }\n            }),\n            new menu.Separator()\n        ]\n    });\n    file.children.splice(0, 1);\n    file.children.splice(-1, 0, new menu.Menu({ label: \"About...\" }));", 
+            "functions": [
+              {
+                "desc": "Draw a submenu element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  344, 
+                  350
+                ]
+              }, 
+              {
+                "desc": "Removes a submenu from the canvas (a XUL document), including its children\nand does basic garbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  361, 
+                  367
+                ]
+              }, 
+              {
+                "desc": "Adds one or more elements to the end of an array and returns the new \nlength of the array.", 
+                "name": "push", 
+                "source_lines": [
+                  382, 
+                  386
+                ]
+              }, 
+              {
+                "name": "reverse", 
+                "source_lines": [
+                  400, 
+                  400
+                ]
+              }, 
+              {
+                "name": "shift", 
+                "source_lines": [
+                  401, 
+                  401
+                ]
+              }, 
+              {
+                "name": "sort", 
+                "source_lines": [
+                  402, 
+                  402
+                ]
+              }, 
+              {
+                "name": "splice", 
+                "source_lines": [
+                  403, 
+                  403
+                ]
+              }, 
+              {
+                "name": "unshift", 
+                "source_lines": [
+                  404, 
+                  404
+                ]
+              }, 
+              {
+                "desc": "Convert this SubMenu instance to an Array-representation.", 
+                "name": "toArray", 
+                "returns": {
+                  "type": "array"
+                }, 
+                "source_lines": [
+                  413, 
+                  418
+                ]
+              }, 
+              {
+                "desc": "(re-)Construct this SubMenu instance with Menu or Separator instances\nfrom array.", 
+                "name": "fromArray", 
+                "params": [
+                  {
+                    "desc": "an array of Menu or Separator instances.", 
+                    "name": "arr", 
+                    "type": "array"
+                  }
+                ], 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  426, 
+                  433
+                ]
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ], 
+                "source_lines": [
+                  449, 
+                  452
+                ]
+              }
+            ], 
+            "name": "SubMenu", 
+            "source_lines": [
+              294, 
+              325
+            ]
+          }, 
+          {
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "parent Menu or SubMenu instance that will contain \n                             the separator", 
+                    "name": "parent", 
+                    "type": "Menu/SubMenu"
+                  }
+                ], 
+                "returns": {
+                  "type": "Separator"
+                }, 
+                "source_lines": [
+                  482, 
+                  487
+                ]
+              }
+            ], 
+            "desc": "Represents any single menu item that should be displayed \nwith as separator (straight horizontal line).\nExample:\n\n    var ui   = require(\"ui\"),\n        menu = require(\"ui/menu\");\n\n    var file = new menu.Menu({\n        parent: ui.getMenu(),\n        label: \"File\",\n        children: [\n            new menu.Separator(),\n            new menu.Separator(),\n            new menu.Menu({\n                label: \"More Separators!\",\n                children: [\n                    new menu.Separator(),\n                    new menu.Separator(),\n                ]\n            })\n        ]\n    });", 
+            "functions": [
+              {
+                "desc": "Draw a separator element to the canvas (a XUL document)\nUsually this function is invoked by setParent()", 
+                "name": "draw", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  496, 
+                  502
+                ]
+              }, 
+              {
+                "desc": "Removes a separator item from the canvas (a XUL document) and does basic \ngarbage collection.", 
+                "name": "destroy", 
+                "returns": {
+                  "type": "void"
+                }, 
+                "source_lines": [
+                  512, 
+                  518
+                ]
+              }, 
+              {
+                "name": "setParent", 
+                "see": [
+                  "#setParent()"
+                ], 
+                "source_lines": [
+                  527, 
+                  530
+                ]
+              }
+            ], 
+            "name": "Separator", 
+            "source_lines": [
+              457, 
+              481
+            ]
+          }
+        ], 
+        "filename": "menu.js", 
+        "internal": false, 
+        "module": "menu"
+      }, 
+      "mime": {
+        "desc": "Tools for guessing mime types from file extensions/paths.", 
+        "filename": "mime.js", 
+        "functions": [
+          {
+            "desc": "Given a file path (or extension), look up an appropriate mime type.", 
+            "name": "guess", 
+            "params": [
+              {
+                "desc": "(`/foo/bar/baz.txt/) or just a file extension (`exe`)", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "appropriate mime type for input", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              105, 
+              110
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "mime", 
+        "properties": [
+          {
+            "desc": "The default mime type that will be used when we encounter an unknown extension\ntype.", 
+            "name": "defaultMime", 
+            "source_lines": [
+              46, 
+              50
+            ]
+          }
+        ], 
+        "source_lines": [
+          37, 
+          40
+        ]
+      }, 
+      "notifications": {
+        "filename": "notifications.js", 
+        "internal": false, 
+        "module": "notifications"
+      }, 
+      "path": {
+        "filename": "path.js", 
+        "functions": [
+          {
+            "desc": "A module that exposes abstract operations on file paths.  Functions\nin this module operate on path strings, but do not ever interact with\nthe file system.  For reading/writing files, see [file].  For other\nfilesystem operations, see [fs].", 
+            "name": "validPathPart", 
+            "source_lines": [
+              36, 
+              42
+            ]
+          }, 
+          {
+            "desc": "joins any number of path components with the platform appropriate\npath separator.", 
+            "name": "join", 
+            "params": [
+              {
+                "desc": "variable number of parameters to be joined", 
+                "name": "A", 
+                "type": "strings"
+              }
+            ], 
+            "returns": {
+              "desc": "The joined path", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              54, 
+              59
+            ]
+          }, 
+          {
+            "desc": "normalizes a path and splits it into an array of path components", 
+            "name": "split", 
+            "params": [
+              {
+                "desc": "A path to split", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "Path components.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              66, 
+              70
+            ]
+          }, 
+          {
+            "desc": "normalizes an array of path components, properly reducing entries such as\n'..' and blank paths.", 
+            "name": "normalizeArray", 
+            "params": [
+              {
+                "desc": "Path components.", 
+                "name": "components", 
+                "type": "array"
+              }
+            ], 
+            "returns": {
+              "desc": "Normalized path components.", 
+              "type": "array"
+            }, 
+            "source_lines": [
+              108, 
+              113
+            ]
+          }, 
+          {
+            "desc": "normalizes a path.", 
+            "name": "normalize", 
+            "params": [
+              {
+                "desc": "The path to normalize.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A normalized path.", 
+              "type": "stribg"
+            }, 
+            "source_lines": [
+              172, 
+              176
+            ]
+          }, 
+          {
+            "desc": "Given a path, extract the *directory name* component.  For instance,\n`dirname(\"/foo/bar/baz.txt\") --> \"/foo/bar\"`.\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "dirname", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The directory part of the path.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              181, 
+              189
+            ]
+          }, 
+          {
+            "desc": "Given a path, extract the filename component.  For instance,\n`basename(\"/foo/bar/baz.txt\") --> \"baz.txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `basename(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "basename", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }, 
+              {
+                "desc": "An extension string, if present and matches the\n                 path, will be removed from the resulting filename.", 
+                "name": "ext", 
+                "optional": true, 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The filename component of the path.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              205, 
+              217
+            ]
+          }, 
+          {
+            "desc": "Return the extension of a path:\n`extname(\"/foo/bar/baz.txt\") --> \".txt\"`.  If an extension\nargument is provided, and matches the extension present in the\npath, it will be removed: `dirname(\"/foo/bar/baz.txt\", \".txt\") --> \"baz\"`\n\n*Note: this function operates on strings alone, and will not interact with\nthe file system.*", 
+            "name": "extname", 
+            "params": [
+              {
+                "desc": "A filesystem path.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "The filename component of the path.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              226, 
+              236
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "path"
+      }, 
+      "preferences-service": {
+        "filename": "preferences-service.js", 
+        "internal": false, 
+        "module": "preferences-service"
+      }, 
+      "process": {
+        "filename": "process.js", 
+        "internal": false, 
+        "module": "process"
+      }, 
+      "registry": {
+        "filename": "utils/registry.js", 
+        "internal": false, 
+        "module": "registry"
+      }, 
+      "request": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "desc": "This constructor creates a request object that can be used to make network\nrequests. The constructor takes a single parameter `options` which is used to\nset several properties on the resulting `Request`.", 
+                "params": [
+                  {
+                    "name": "options", 
+                    "type": {
+                      "name": "object", 
+                      "properties": [
+                        {
+                          "desc": "The url to which the request will be made.", 
+                          "name": "url", 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string"
+                        }, 
+                        {
+                          "desc": "  This function will be called when the request has received a response (or in\n  terms of XHR, when `readyState == 4`). The function is passed a `Response`\n  object.", 
+                          "name": "onComplete", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "function"
+                        }, 
+                        {
+                          "desc": "  An unordered collection of name/value pairs representing headers to send\n  with the request.", 
+                          "name": "headers", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "object"
+                        }, 
+                        {
+                          "desc": "  The content to send to the server. If `content` is a string, it\n  should be URL-encoded (use `encodeURIComponent`). If `content` is\n  an object, it should be a collection of name/value pairs. Nested\n  objects & arrays should encode safely.\n\n  For `GET` requests, the query string (`content`) will be appended\n  to the URL. For `POST` requests, the query string will be sent as\n  the body of the request.", 
+                          "name": "content", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string,object"
+                        }, 
+                        {
+                          "desc": "  The type of content to send to the server. This explicitly sets the\n  `Content-Type` header. The default value is `application/x-www-form-urlencoded`.", 
+                          "name": "contentType", 
+                          "optional": true, 
+                          "source_lines": [
+                            122, 
+                            154
+                          ], 
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  }
+                ], 
+                "source_lines": [
+                  122, 
+                  154
+                ]
+              }
+            ], 
+            "desc": "The `Request` object is used to make `GET` or `POST` network requests. It is\nconstructed with a URL to which the request is sent. Optionally the user may\nspecify a collection of headers and content to send alongside the request and\na callback which will be executed once the request completes.\n\nOnce a `Request` object has been created a `GET` request can be executed by\ncalling its `get()` method, or a `POST` request by calling its `post()` method.\n\nWhen the server completes the request, the `Request` object emits a \"complete\"\nevent.  Registered event listeners are passed a `Response` object.\n\nEach `Request` object is designed to be used once. Once `GET` or `POST` are\ncalled, attempting to call either will throw an error.\n\nSince the request is not being made by any particular website, requests made\nhere are not subject to the same-domain restriction that requests made in web\npages are subject to.\n\nWith the exception of `response`, all of a `Request` object's properties\ncorrespond with the options in the constructor. Each can be set by simply\nperforming an assignment. However, keep in mind that the same validation rules\nthat apply to `options` in the constructor will apply during assignment. Thus,\neach can throw if given an invalid value.\n\nThe example below shows how to use Request to get the most recent public tweet.\n\n    var Request = require('request').Request;\n    var latestTweetRequest = Request({\n      url: \"http://api.twitter.com/1/statuses/public_timeline.json\",\n      onComplete: function (response) {\n        var tweet = response.json[0];\n        console.log(\"User: \" + tweet.user.screen_name);\n        console.log(\"Tweet: \" + tweet.text);\n      }\n    });\n\n    // Be a good consumer and check for rate limiting before doing more.\n    Request({\n      url: \"http://api.twitter.com/1/account/rate_limit_status.json\",\n      onComplete: function (response) {\n        if (response.json.remaining_hits) {\n          latestTweetRequest.get();\n        } else {\n          console.log(\"You have been rate limited!\");\n        }\n      }\n    }).get();", 
+            "functions": [
+              {
+                "desc": "Make a `GET` request.", 
+                "name": "get", 
+                "returns": {
+                  "type": "Request"
+                }, 
+                "source_lines": [
+                  225, 
+                  228
+                ]
+              }, 
+              {
+                "desc": "Make a `POST` request.", 
+                "name": "post", 
+                "returns": {
+                  "type": "Request"
+                }, 
+                "source_lines": [
+                  234, 
+                  237
+                ]
+              }
+            ], 
+            "name": "Request", 
+            "properties": [
+              {
+                "desc": "URL to send request to", 
+                "name": "url", 
+                "source_lines": [
+                  209, 
+                  209
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "content to send with the request", 
+                "name": "content", 
+                "source_lines": [
+                  210, 
+                  210
+                ], 
+                "type": "string,object"
+              }, 
+              {
+                "desc": "Content-Type to send along with the request.", 
+                "name": "contentType", 
+                "source_lines": [
+                  211, 
+                  211
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "the `Response`, populated upon completion.", 
+                "name": "response", 
+                "source_lines": [
+                  212, 
+                  212
+                ], 
+                "type": "Response"
+              }
+            ], 
+            "source_lines": [
+              71, 
+              121
+            ]
+          }
+        ], 
+        "filename": "request.js", 
+        "internal": false, 
+        "module": "request"
+      }, 
+      "self": {
+        "filename": "self.js", 
+        "internal": false, 
+        "module": "self"
+      }, 
+      "symbiont": {
+        "desc": "This trait is layered on top of `Worker` and in contrast to symbiont\nWorker constructor requires `content` option that represents content\nthat will be loaded in the provided frame, if frame is not provided\nWorker will create hidden one.", 
+        "filename": "content/symbiont.js", 
+        "functions": [
+          {
+            "desc": "The constructor requires all the options that are required by\n`require('content').Worker` with the difference that the `frame` option\nis optional. If `frame` is not provided, `contentURL` is expected.", 
+            "name": "constructor", 
+            "params": [
+              {
+                "name": "options", 
+                "type": "Object"
+              }, 
+              {
+                "desc": "URL of a content to load into `this._frame` and create worker for.", 
+                "name": "options.contentURL", 
+                "type": "String"
+              }, 
+              {
+                "desc": "iframe element that is used to load `options.contentURL` into.\n   if frame is not provided hidden iframe will be created.", 
+                "name": "options.frame", 
+                "optional": true, 
+                "type": "Element"
+              }
+            ], 
+            "source_lines": [
+              64, 
+              74
+            ]
+          }, 
+          {
+            "desc": "Listener to the `'frameReady\"` event (emitted when `iframe` is ready).\nRemoves listener, sets right permissions to the frame and loads content.", 
+            "name": "_initFrame", 
+            "source_lines": [
+              124, 
+              127
+            ]
+          }, 
+          {
+            "desc": "Creates port when the DOM is ready. Called if the value of\n`contentScriptWhen` is \"ready\".", 
+            "name": "_onReady", 
+            "source_lines": [
+              142, 
+              145
+            ]
+          }, 
+          {
+            "desc": "Creates port when the global object is created. Called if the value of\n`contentScriptWhen` is \"start\".", 
+            "name": "_onStart", 
+            "source_lines": [
+              154, 
+              157
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "symbiont", 
+        "properties": [
+          {
+            "desc": "XUL iframe or browser elements with attribute `type` being `content`.\nUsed to create `ContentSymbiont` from.", 
+            "name": "_frame", 
+            "source_lines": [
+              118, 
+              122
+            ], 
+            "type": "nsIFrame|nsIBrowser"
+          }
+        ], 
+        "source_lines": [
+          55, 
+          60
+        ]
+      }, 
+      "text-streams": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "params": [
+                  {
+                    "desc": "The stream is backed by this nsIInputStream.  It must already be\n  opened.", 
+                    "name": "inputStream"
+                  }, 
+                  {
+                    "desc": "Text in inputStream is expected to be in this character encoding.  If\n  not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl for\n  documentation on how to determine other valid values for this.", 
+                    "name": "charset"
+                  }
+                ], 
+                "source_lines": [
+                  59, 
+                  69
+                ]
+              }
+            ], 
+            "desc": "An input stream that reads text from a backing stream using a given text\nencoding.", 
+            "functions": [
+              {
+                "desc": "Reads a string from the stream.  If the stream is closed, an exception is\nthrown.", 
+                "name": "read", 
+                "params": [
+                  {
+                    "desc": "The number of characters to read.  If not given, the remainder of\n        the stream is read.", 
+                    "name": "numChars"
+                  }
+                ], 
+                "returns": {
+                  "desc": "The string read.  If the stream is already at EOS, returns the\n        empty string."
+                }, 
+                "source_lines": [
+                  81, 
+                  91
+                ]
+              }
+            ], 
+            "name": "TextReader", 
+            "source_lines": [
+              54, 
+              58
+            ]
+          }
+        ], 
+        "filename": "text-streams.js", 
+        "functions": [
+          {
+            "desc": "A buffered output stream that writes text to a backing stream using a given\ntext encoding.", 
+            "name": "TextWriter", 
+            "params": [
+              {
+                "desc": "The stream is backed by this nsIOutputStream.  It must already be\n       opened.", 
+                "name": "outputStream"
+              }, 
+              {
+                "desc": "Text will be written to outputStream using this character encoding.\n       If not given, \"UTF-8\" is assumed.  See nsICharsetConverterManager.idl\n       for documentation on how to determine other valid values for this.", 
+                "name": "charset"
+              }
+            ], 
+            "source_lines": [
+              128, 
+              139
+            ]
+          }, 
+          {
+            "desc": "Flushes the backing stream's buffer.", 
+            "name": "flush", 
+            "source_lines": [
+              165, 
+              167
+            ]
+          }, 
+          {
+            "desc": "Writes a string to the stream.  If the stream is closed, an exception is\nthrown.", 
+            "name": "write", 
+            "params": [
+              {
+                "desc": "The string to write.", 
+                "name": "str"
+              }
+            ], 
+            "source_lines": [
+              173, 
+              179
+            ]
+          }, 
+          {
+            "desc": "Writes a string on a background thread.  After the write completes, the\nbacking stream's buffer is flushed, and both the stream and the backing\nstream are closed, also on the background thread.  If the stream is already\nclosed, an exception is thrown immediately.", 
+            "name": "writeAsync", 
+            "params": [
+              {
+                "desc": "The string to write.", 
+                "name": "str"
+              }, 
+              {
+                "desc": "An optional function.  If given, it's called as callback(error) when\n       the write completes.  error is an Error object or undefined if there\n       was no error.  Inside callback, |this| is the stream object.", 
+                "name": "callback"
+              }
+            ], 
+            "source_lines": [
+              191, 
+              203
+            ]
+          }, 
+          {
+            "desc": "Closes both the stream and its backing stream.  If the stream is already\nclosed, an exception is thrown.  For TextWriters, this first flushes the\nbacking stream's buffer.", 
+            "name": "close", 
+            "source_lines": [
+              244, 
+              248
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "text-streams", 
+        "properties": [
+          {
+            "desc": "True iff the stream is closed.", 
+            "name": "closed", 
+            "source_lines": [
+              237, 
+              239
+            ]
+          }
+        ]
+      }, 
+      "thumbnail": {
+        "filename": "utils/thumbnail.js", 
+        "functions": [
+          {
+            "desc": "Creates canvas element with a thumbnail of the passed window.", 
+            "name": "getThumbnailCanvasForWindow", 
+            "params": [
+              {
+                "name": "window", 
+                "type": "Window"
+              }
+            ], 
+            "returns": {
+              "type": "Element"
+            }, 
+            "source_lines": [
+              47, 
+              52
+            ]
+          }, 
+          {
+            "desc": "Creates Base64 encoded data URI of the thumbnail for the passed window.", 
+            "name": "getThumbnailURIForWindow", 
+            "params": [
+              {
+                "name": "window", 
+                "type": "Window"
+              }
+            ], 
+            "returns": {
+              "type": "String"
+            }, 
+            "source_lines": [
+              70, 
+              74
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "thumbnail"
+      }, 
+      "timer": {
+        "filename": "timer.js", 
+        "internal": false, 
+        "module": "timer"
+      }, 
+      "traceback": {
+        "filename": "traceback.js", 
+        "internal": false, 
+        "module": "traceback"
+      }, 
+      "ui": {
+        "filename": "ui.js", 
+        "functions": [
+          {
+            "desc": "Return the current window. This function does not exist outside of the context of a window.", 
+            "name": "getCurrentWindow", 
+            "source_lines": [
+              43, 
+              45
+            ]
+          }, 
+          {
+            "desc": "Return the application's main window", 
+            "name": "getMainWindow", 
+            "source_lines": [
+              50, 
+              52
+            ]
+          }, 
+          {
+            "desc": "Return a list of currently open windows.", 
+            "name": "getOpenWindows", 
+            "source_lines": [
+              57, 
+              59
+            ]
+          }, 
+          {
+            "desc": "Return the user's idle time (for the desktop, not just the application)", 
+            "name": "getIdleTime", 
+            "source_lines": [
+              64, 
+              66
+            ]
+          }, 
+          {
+            "desc": "Return the application's main MenuItem or null if none is set.", 
+            "name": "getMenu", 
+            "source_lines": [
+              71, 
+              73
+            ]
+          }, 
+          {
+            "desc": "Set a menu for the application", 
+            "name": "setMenu", 
+            "source_lines": [
+              80, 
+              82
+            ]
+          }, 
+          {
+            "desc": "Return this application's context menu or null if none is set.", 
+            "name": "getContextMenu", 
+            "source_lines": [
+              87, 
+              89
+            ]
+          }, 
+          {
+            "desc": "Set the application's context menu", 
+            "name": "setContextMenu", 
+            "source_lines": [
+              94, 
+              96
+            ]
+          }, 
+          {
+            "desc": "Create a new menu", 
+            "name": "createMenu", 
+            "source_lines": [
+              101, 
+              103
+            ]
+          }, 
+          {
+            "desc": "Create a new menu item.", 
+            "name": "createMenuItem", 
+            "source_lines": [
+              108, 
+              110
+            ]
+          }, 
+          {
+            "desc": "Create a new separator menu item.", 
+            "name": "createSeperatorMenuItem", 
+            "source_lines": [
+              115, 
+              117
+            ]
+          }, 
+          {
+            "desc": "Create a new CheckMenuItem object.", 
+            "name": "createCheckMenuItem", 
+            "source_lines": [
+              122, 
+              124
+            ]
+          }, 
+          {
+            "desc": "Set the application icon's badge text.", 
+            "name": "setBadge", 
+            "source_lines": [
+              129, 
+              131
+            ]
+          }, 
+          {
+            "desc": "Set the application icon's badge image.", 
+            "name": "setBadgeImage", 
+            "source_lines": [
+              136, 
+              138
+            ]
+          }, 
+          {
+            "desc": "Set the dock icon", 
+            "name": "setDockIcon", 
+            "source_lines": [
+              143, 
+              145
+            ]
+          }, 
+          {
+            "desc": "Set the dock menu", 
+            "name": "setDockMenu", 
+            "source_lines": [
+              150, 
+              152
+            ]
+          }, 
+          {
+            "desc": "Set the application's icon", 
+            "name": "setIcon", 
+            "source_lines": [
+              159, 
+              161
+            ]
+          }, 
+          {
+            "desc": "Create and add a tray icon", 
+            "name": "addTray", 
+            "source_lines": [
+              171, 
+              173
+            ]
+          }, 
+          {
+            "desc": "Empty the tray of all this application's tray items", 
+            "name": "clearTray", 
+            "source_lines": [
+              188, 
+              190
+            ]
+          }, 
+          {
+            "desc": "create a UI dialog", 
+            "name": "showDialog", 
+            "source_lines": [
+              195, 
+              197
+            ]
+          }, 
+          {
+            "desc": "Get notification box (\"yellow bar\").\nCourtesy of bug 533649.", 
+            "name": "getNotificationBox", 
+            "source_lines": [
+              202, 
+              205
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "ui"
+      }, 
+      "unload": {
+        "filename": "unload.js", 
+        "internal": false, 
+        "module": "unload"
+      }, 
+      "url": {
+        "classes": [
+          {
+            "constructors": [
+              {
+                "desc": "The URL constructor creates an object that represents a URL,  verifying that\nthe provided string is a valid URL in the process.", 
+                "params": [
+                  {
+                    "desc": "A string to be converted into a URL.", 
+                    "name": "url", 
+                    "type": "string"
+                  }, 
+                  {
+                    "desc": "An optional base url which will be used to resolve the\n`url` argument if it is a relative url.", 
+                    "name": "base", 
+                    "optional": true, 
+                    "type": "string"
+                  }
+                ], 
+                "source_lines": [
+                  137, 
+                  148
+                ], 
+                "throws": [
+                  {
+                    "desc": "If `source` is not a valid URI."
+                  }
+                ]
+              }
+            ], 
+            "desc": "A class which parses a url and exposes its various\ncomponents separately.", 
+            "functions": [
+              {
+                "desc": "Converts URL class contents to a string.", 
+                "name": "toString", 
+                "returns": {
+                  "desc": "The URL as a string.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  193, 
+                  197
+                ]
+              }
+            ], 
+            "name": "URL", 
+            "properties": [
+              {
+                "desc": "The name of the protocol in the URL.", 
+                "name": "scheme", 
+                "source_lines": [
+                  168, 
+                  171
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "The username:password part of the URL, `null` if not present.", 
+                "name": "userPass", 
+                "source_lines": [
+                  173, 
+                  176
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "The host of the URL, `null` if not present.", 
+                "name": "host", 
+                "source_lines": [
+                  178, 
+                  181
+                ], 
+                "type": "string"
+              }, 
+              {
+                "desc": "The port number of the URL, `null` if none was specified.", 
+                "name": "port", 
+                "source_lines": [
+                  183, 
+                  186
+                ], 
+                "type": "integer"
+              }, 
+              {
+                "desc": "The path component of the URL.", 
+                "name": "path", 
+                "source_lines": [
+                  188, 
+                  191
+                ], 
+                "type": "string"
+              }
+            ], 
+            "source_lines": [
+              131, 
+              136
+            ]
+          }
+        ], 
+        "desc": "A URL parsing library and some utility routines to convert between native\npaths.  Includes a class representation of URLs that may be used in\nmany other modules.", 
+        "filename": "url.js", 
+        "functions": [
+          {
+            "desc": "given a string (typically the result of human input), attempt to\nguess the well formed URL intended.  For instanced, this function\nwill turn `mozilla.com` into `http://mozilla.com`", 
+            "name": "guess", 
+            "params": [
+              {
+                "desc": "A url fragment", 
+                "name": "fragment", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A guess at a well formed url.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              75, 
+              81
+            ]
+          }, 
+          {
+            "desc": "build a URL from a filename.", 
+            "name": "fromFilename", 
+            "params": [
+              {
+                "desc": "The path to convert.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string representation of a URL.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              92, 
+              97
+            ]
+          }, 
+          {
+            "desc": "build a filename from a url.", 
+            "name": "toFilename", 
+            "params": [
+              {
+                "desc": "The path to convert.", 
+                "name": "path", 
+                "type": "string"
+              }
+            ], 
+            "returns": {
+              "desc": "A string representation of a URL.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              105, 
+              110
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "url", 
+        "source_lines": [
+          37, 
+          42
+        ]
+      }, 
+      "web-content": {
+        "classes": [
+          {
+            "desc": "An object that allows you to attach to iframes containing web content\nto subscribe to events which provide information about the progress\nof loading web resources.\n\nExample Usage:\n\n    var pm = require('web-content').ProgressMonitor();\n    pm.attach(document.getElementById(\"someIFrame\");\n    pm.on('title-change', function(title) {\n      console.log(\"Title of loaded content changed: \" + title);\n    };", 
+            "events": [
+              {
+                "desc": "Allows the listener to understand approximately how much of the\npage has loaded.", 
+                "name": "progress", 
+                "payload": {
+                  "desc": "The percentage (0..100) of page load that is complete", 
+                  "type": "number"
+                }, 
+                "source_lines": [
+                  157, 
+                  162
+                ]
+              }, 
+              {
+                "desc": "Provides human readable textual strings which contain load status", 
+                "name": "status-changed", 
+                "payload": {
+                  "desc": "A description of status of the page load.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  172, 
+                  176
+                ]
+              }, 
+              {
+                "desc": "An event raised during load which emits a JavaScript object\ncontaining the \"security state\" of the page: `.state` is one of\n*`insecure`*, *`broken`*, or *`secure`* (get [more\ninfo](https://developer.mozilla.org/en/nsIWebProgressListener#State_Security_Flags)\non states), while `.strength` is *`.low`*, *`.medium`*, or\n*`high`* ( [read\nmore](https://developer.mozilla.org/en/nsIWebProgressListener#Security_Strength_Flags)\nabout *strengths*).", 
+                "name": "security-change", 
+                "payload": {
+                  "type": "object"
+                }, 
+                "source_lines": [
+                  198, 
+                  209
+                ]
+              }, 
+              {
+                "desc": "Dispatched when navigation starts.  This event is delivered before any\nnetwork interaction takes place.", 
+                "name": "load-start", 
+                "payload": {
+                  "desc": "The url of web content to be loaded.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  215, 
+                  220
+                ]
+              }, 
+              {
+                "desc": "An event raised upon completion of a top level document\nload.  Fired after all resources have been loaded, or if the load has been\nprogrammatically stopped.", 
+                "name": "load-stop", 
+                "source_lines": [
+                  233, 
+                  238
+                ]
+              }, 
+              {
+                "desc": "Dispatched when the title of web content changes during load.", 
+                "name": "title-changed", 
+                "payload": {
+                  "desc": "The new title of the web content.", 
+                  "type": "string"
+                }, 
+                "source_lines": [
+                  245, 
+                  249
+                ]
+              }
+            ], 
+            "name": "ProgressMonitor", 
+            "source_lines": [
+              41, 
+              54
+            ]
+          }
+        ], 
+        "filename": "web-content.js", 
+        "functions": [
+          {
+            "desc": "stop the loading of content within an iframe", 
+            "name": "stopload", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ], 
+            "source_lines": [
+              268, 
+              271
+            ]
+          }, 
+          {
+            "desc": "Access the title of an iframe.", 
+            "name": "title", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }
+            ], 
+            "returns": {
+              "desc": "The current title of the content in the iframe.", 
+              "type": "string"
+            }, 
+            "source_lines": [
+              277, 
+              281
+            ]
+          }, 
+          {
+            "desc": "inject a function into a web content window", 
+            "name": "inject", 
+            "params": [
+              {
+                "desc": "An iframe dom node.", 
+                "name": "frame", 
+                "type": "IFrameNode"
+              }, 
+              {
+                "desc": "the property of `window.` to which this function shall be\nattached.", 
+                "name": "attachPoint", 
+                "type": "string"
+              }, 
+              {
+                "desc": "The function that will be invoked when content in the\niframe invokes this function.", 
+                "name": "callback", 
+                "type": "function"
+              }
+            ], 
+            "source_lines": [
+              286, 
+              293
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "web-content"
+      }, 
+      "window-utils": {
+        "filename": "window-utils.js", 
+        "functions": [
+          {
+            "desc": "An iterator for XUL windows currently in the application.", 
+            "name": "windowIterator", 
+            "returns": {
+              "desc": "A generator that yields XUL windows exposing the\n        nsIDOMWindow interface."
+            }, 
+            "source_lines": [
+              47, 
+              52
+            ]
+          }
+        ], 
+        "internal": false, 
+        "module": "window-utils"
+      }, 
+      "xhr": {
+        "filename": "xhr.js", 
+        "internal": false, 
+        "module": "xhr"
+      }, 
+      "xul-app": {
+        "desc": "Use this to check whether the given version (e.g. xulApp.platformVersion)\nis in the given range. Versions must be in version comparator-compatible\nformat. See MDC for details:\nhttps://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIVersionComparator", 
+        "filename": "xul-app.js", 
+        "internal": false, 
+        "module": "xul-app", 
+        "source_lines": [
+          78, 
+          83
+        ]
+      }
+    }, 
+    "name": "lib"
+  }
+}

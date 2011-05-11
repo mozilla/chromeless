@@ -765,7 +765,7 @@ function startApp(jQuery, window) {
     });
 
     // pull in the json formated api doc database
-    jQuery.ajax({url: "packages/apidocs.json",
+    jQuery.ajax({url: "apidocs.json",
                  dataType: "json",
                  success: processAPIDocs,
                  error: onPackageError});

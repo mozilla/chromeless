@@ -15,6 +15,7 @@ directly helped build chromeless:
 * Alexandre Poirot
 * Atul Varma
 * Ben Francis
+* David Coallier
 * David Murdoch
 * Ian Bicking
 * Jim Pick
@@ -23,3 +24,4 @@ directly helped build chromeless:
 * Marcio Galli
 * Mike de Boer
 * Panagiotis Astithas
+* Ron Evans
