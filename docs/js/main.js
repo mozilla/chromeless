@@ -123,7 +123,7 @@ function startApp(jQuery, window) {
         $("#right-column").empty().append(query);
         // prettyPrint code in queuedContent
         queuedContent.find("pre > code").each(function() {
-            $(this).html(prettyPrintOne($(this).html()));
+            hljs.highlightBlock($(this)[0], "    ");
         });
         onDone();
     }
@@ -178,9 +178,8 @@ function startApp(jQuery, window) {
 
     function setupJSONView(domElem, obj) {
         domElem.click(function() {
-            $(".json-display pre").html(prettyPrintOne(JSON.stringify(obj, null, 3)));
+            $(".json-display pre").each(function (i, e) { hljs.highlightBlock(e, "    "); });
             $(".json-display").show('fast');
-            console.log("showded");
         });
     }
 
@@ -200,7 +199,6 @@ function startApp(jQuery, window) {
         }
 
         if (param.type && param.type.properties) {
-            console.log("oh yeah baby");
             var d = p.find(".desc");
             for (var i = 0; i < param.type.properties.length; i++) {
                 d.append(renderParam(param.type.properties[i]));
@@ -558,7 +556,6 @@ function startApp(jQuery, window) {
     }
 
     function showGuideDetail(name) {
-        console.log("show guide detail: " + name);
         var entry = $("#templates .guide-section").clone();
         var url = "md/dev-guide/" + name + ".md";
 
