@@ -430,7 +430,7 @@ function startApp(jQuery, window) {
         // the SHA1 tag should be encoded in the apidocs, otherwise we'll use
         // "master"
         var tag = apidocs.version ? apidocs.version : "master";
-        var ghURL = "https://github.com/mozilla/chromeless/blob/" + tag + "/packages/" + pkgName + "/lib/" + module.filename + "#L";
+        var ghURL = "https://github.com/mozilla/chromeless/blob/" + tag + "/modules/" + pkgName + "/" + module.filename + "#L";
 
         domElem.find(".invocation").each(function() {
             var thisURL = ghURL + $(this).attr('startLine') + "-" + $(this).attr('endLine');
