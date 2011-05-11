@@ -8,3 +8,5 @@ Changes in 0.3
         * (@taboca) Community require not defined (issue #96)
         * (@taboca) Event listeners broken on iframe (issue #98) 
         * (@taboca) updated ./gallery/ereader-transcoder version 
+        * (@taboca) Community: fixes window.open (issue #43)
+
