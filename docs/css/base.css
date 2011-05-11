@@ -122,7 +122,7 @@ a:hover, a:focus, a:active {
     height: 70%;
     top: 11%;
     left: 17%;
-    background-color: #444;
+    background-color: #3f3f3f;
     padding: 1%;
     z-order: 20;
     border-radius: 2em;
@@ -136,7 +136,7 @@ a:hover, a:focus, a:active {
     height: 100%;
     overflow: auto;
     line-height: 1.3em;
-    background-color: #444;
+    background-color: #3f3f3f;
 }
 
 .json-display {

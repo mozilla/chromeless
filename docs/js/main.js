@@ -178,7 +178,8 @@ function startApp(jQuery, window) {
 
     function setupJSONView(domElem, obj) {
         domElem.click(function() {
-            $(".json-display pre").each(function (i, e) { hljs.highlightBlock(e, "    "); });
+            $(".json-display code").html(JSON.stringify(obj, null, 3));
+            $(".json-display code").each(function(i, e) { hljs.highlightBlock(e, "   "); });
             $(".json-display").show('fast');
         });
     }
