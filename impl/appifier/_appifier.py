@@ -123,7 +123,7 @@ class Appifier(object):
             print "  ... copying in CommonJS packages"
 
         IGNORED_FILES = [".gitignore", ".hgignore", "install.rdf"]
-        IGNORED_FILE_SUFFIXES = ["~"]
+        IGNORED_FILE_SUFFIXES = ["~", ".test.js"]
         IGNORED_DIRS = [".svn", ".hg", "defaults"]
 
         def filter_filenames(filenames):
