@@ -54,7 +54,7 @@ of the rendering engine used in [Firefox](http://firefox.com).
 In addition to access to All Of The Web, Chromeless injects a global
 function, `require()`, which gives you access to libraries that give
 you access to the desktop.  Jump over to the
-[Using `require()`](#guide/tutorial-using-requires) section to learn more about
+[Using `require()`](#guide/tutorial-using-require) section to learn more about
 how to integrate your application into the desktop.
 
 
