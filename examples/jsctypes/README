@@ -4,3 +4,8 @@ to run this test, you need to build the native library it demonstrates accessing
 On linux/gcc:
   gcc -fPIC -shared -o lib/libmylib.so lib/mylib.c 
 
+On OSX:
+  gcc -m32 -shared -o lib/libmylib.dylib lib/mylib.c
+
+On Win32:
+  cl // XXX
