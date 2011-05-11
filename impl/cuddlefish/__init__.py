@@ -428,8 +428,21 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     path_to_modules = os.path.join(chromeless.Dirs().cuddlefish_root, "modules")
     for f in os.listdir(path_to_modules):
         resourceName = harness_guid + "-" + f
-        resources[harness_guid + "-" + f] = os.path.join(path_to_modules, f)
+        resources[resourceName] = os.path.join(path_to_modules, f)
         rootPaths.append("resource://" + resourceName + "/");
+
+    # now add custom modules as specified by the app
+    app_info = chromeless.AppInfo(dir=options.static_args["browser"])
+    if app_info.module_dirs:
+        ac_path = options.static_args["browser"]
+        if os.path.isfile(ac_path):
+            ac_path = os.path.dirname(ac_path)
+        for d in app_info.module_dirs:
+            resourceName = harness_guid + "-appmodules-" + os.path.basename(d)
+            if not os.path.isabs(d):
+                d = os.path.normpath(os.path.join(ac_path, d))
+            resources[resourceName] = d
+            rootPaths.append("resource://" + resourceName + "/")
 
     harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % harness_guid)
     harness_options = {

@@ -5,6 +5,9 @@ from datetime import datetime
 
 class AppInfo(object):
     def __init__(self, dir):
+        if os.path.isfile(dir):
+            dir = os.path.dirname(dir)
+
         app_info_path = os.path.join(dir, "appinfo.json")
         parsed_info = { }
         if os.path.isfile(app_info_path):
@@ -19,7 +22,8 @@ class AppInfo(object):
             "version": "0.1",
             "build_id": timestamp,
             "developer_email": "unknown@unknown.com",
-            "vendor": "Unknown"
+            "vendor": "Unknown",
+            "module_dirs": [ ]
         }
 
         self.object = { }

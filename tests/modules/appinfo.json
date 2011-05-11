@@ -1,0 +1,6 @@
+{
+  "name": "The BYOM App",
+  "module_dirs": [
+    "lib"
+  ]
+}

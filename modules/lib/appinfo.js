@@ -110,6 +110,13 @@ function validate(manf) {
       required: false,
       check: booleanCheck
     },
+    module_dirs: {
+      required: false,
+      check: function(x) {
+        if (!Array.isArray(x)) errorThrow();
+        x.forEach(function(y) { stringCheck(y); });
+      }
+    },
     name: {
       required: true,
       check: nonEmptyStringCheck

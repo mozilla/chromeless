@@ -1,0 +1,11 @@
+<html>
+ <head> <title> BYOM </title> </head>
+ <body>
+   I'm a little chromeless app, and I bundle custom modules.
+   Because of these modules, I know that 2 + 2 = <span id="howMuch"></span>
+ </body>
+ <script type="text/javascript">
+   const addr = require("addr");
+   document.getElementById('howMuch').textContent = addr.add(2, 2);
+ </script>
+</html>
