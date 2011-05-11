@@ -207,5 +207,5 @@ exports.main = function main(options, testCallbacks) {
 
 exports.onUnload = function (reason) {
     console.log("shutting down.");
-    appWindow.close();
+    if (appWindow) appWindow.close();
 };
