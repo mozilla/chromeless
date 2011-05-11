@@ -8,10 +8,10 @@ import appifier
 import subprocess
 import signal
 import tempfile
+import chromeless
 
 from copy import copy
 import simplejson as json
-from cuddlefish import packaging
 from cuddlefish.bunch import Bunch
 #from cuddlefish.version import get_version
 
@@ -271,18 +271,19 @@ def test_all_examples(env_root, defaults):
     fail = False
     for dirname in examples:
         print "Testing %s..." % dirname
+        output_test = os.path.join(env_root, "modules", "internal","test_harness","test-app.js")
         try:
-            import shutil 
+            import shutil
             from string import Template
 
             test_script_for_app = os.path.join(examples_dir, dirname, "test-app.js")
             browserToLaunch = os.path.join(examples_dir, dirname, "index.html")
 
-            if os.path.exists(test_script_for_app): 
-               print "tests.js exists in " + test_script_for_app
-               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
+            if os.path.exists(test_script_for_app):
+               print "Found test file for %s: %s" % (dirname, test_script_for_app)
+
                print "Will create test file in " + output_test
- 
+
                defaultBrowser = os.path.join(".", "tests" , dirname, "index.html")
                with open(test_script_for_app, 'r') as f:
                   test_content = f.read()
@@ -298,11 +299,6 @@ def test_all_examples(env_root, defaults):
                               "--static-args", json.dumps({"browser": browserToLaunch})],
                    defaults=defaults,
                    env_root=env_root)
-            else: 
-               output_test = os.path.join(env_root, "packages", "chromeless","tests","test-app.js")
-               if os.path.exists(output_test): 
-                  os.remove(output_test)
-            
         except SystemExit, e:
             fail = (e.code != 0) or fail
 
@@ -399,27 +395,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         print "Created docs in %s." % dirname
         return
 
-    target_cfg_json = None
-    if not target_cfg:
-        if not options.pkgdir:
-            options.pkgdir = find_parent_package(os.getcwd())
-            if not options.pkgdir:
-                print >>sys.stderr, ("cannot find 'package.json' in the"
-                                     " current directory or any parent.")
-                sys.exit(1)
-        else:
-            options.pkgdir = os.path.abspath(options.pkgdir)
-        if not os.path.exists(os.path.join(options.pkgdir, 'package.json')):
-            print >>sys.stderr, ("cannot find 'package.json' in"
-                                 " %s." % options.pkgdir)
-            sys.exit(1)
-
-        target_cfg_json = os.path.join(options.pkgdir, 'package.json')
-        target_cfg = packaging.get_config_in_dir(options.pkgdir)
-
-    # At this point, we're either building an XPI or running Jetpack code in
-    # a Mozilla application (which includes running tests).
-
     use_main = False
     timeout = None
     inherited_options = ['verbose', 'enable_e10s']
@@ -427,8 +402,6 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command in ("run", "package", "appify"):
         use_main = True
     elif command == "test":
-        if 'tests' not in target_cfg:
-            target_cfg['tests'] = []
         timeout = TEST_RUN_TIMEOUT
         inherited_options.extend(['iterations', 'filter', 'profileMemory'])
     else:
@@ -436,78 +409,11 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         print >>sys.stderr, "Try using '--help' for assistance."
         sys.exit(1)
 
-    if use_main and 'main' not in target_cfg:
-        # If the user supplies a template dir, then the main
-        # program may be contained in the template.
-        if not options.templatedir:
-            print >>sys.stderr, "package.json does not have a 'main' entry."
-            sys.exit(1)
+    target = "main"
 
-    if not pkg_cfg:
-        pkg_cfg = packaging.build_config(env_root, target_cfg)
-
-    target = target_cfg.name
-
-    # the harness_guid is used for an XPCOM class ID. We use the
-    # JetpackID for the add-on ID and the XPCOM contract ID.
-    if "harnessClassID" in target_cfg:
-        # For the sake of non-bootstrapped extensions, we allow to specify the
-        # classID of harness' XPCOM component in package.json. This makes it
-        # possible to register the component using a static chrome.manifest file
-        harness_guid = target_cfg["harnessClassID"]
-    else:
-        import uuid
-        harness_guid = str(uuid.uuid4())
-
-    # TODO: Consider keeping a cache of dynamic UUIDs, based
-    # on absolute filesystem pathname, in the root directory
-    # or something.
-    if command in ('package', 'run', 'appify'):
-        from cuddlefish.preflight import preflight_config
-        if target_cfg_json:
-            config_was_ok, modified = preflight_config(
-                target_cfg,
-                target_cfg_json,
-                keydir=options.keydir,
-                err_if_privkey_not_found=False
-                )
-            if not config_was_ok:
-                if modified:
-                    # we need to re-read package.json . The safest approach
-                    # is to re-run the "cfx xpi"/"cfx run" command.
-                    print >>sys.stderr, ("package.json modified: please re-run"
-                                         " 'cfx %s'" % command)
-                else:
-                    print >>sys.stderr, ("package.json needs modification:"
-                                         " please update it and then re-run"
-                                         " 'cfx %s'" % command)
-                sys.exit(1)
-        # if we make it this far, we have a JID
-    else:
-        assert command == "test"
-
-    if "id" in target_cfg:
-        jid = target_cfg["id"]
-        assert not jid.endswith("@jetpack")
-        unique_prefix = '%s-' % jid # used for resource: URLs
-    else:
-        unique_prefix = '%s-' % target
-        jid = harness_guid
-
-    assert not jid.endswith("@jetpack")
-    if (jid.startswith("jid0-") or jid.startswith("anonid0-")):
-        bundle_id = jid + "@jetpack"
-    # Don't append "@jetpack" to old-style IDs, as they should be exactly
-    # as specified by the addon author so AMO and Firefox continue to treat
-    # their addon bundles as representing the same addon (and also because
-    # they may already have an @ sign in them, and there can be only one).
-    else:
-        bundle_id = jid
-
-    # the resource: URL's prefix is treated too much like a DNS hostname
-    unique_prefix = unique_prefix.lower()
-    unique_prefix = unique_prefix.replace("@", "-at-")
-    unique_prefix = unique_prefix.replace(".", "-dot-")
+    # the harness_guid is used for an XPCOM class ID.
+    import uuid
+    harness_guid = str(uuid.uuid4())
 
     targets = [target]
     if command == "test":
@@ -516,46 +422,38 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if options.extra_packages:
         targets.extend(options.extra_packages.split(","))
 
-    deps = packaging.get_deps_for_targets(pkg_cfg, targets)
-    build = packaging.generate_build_for_target(
-        pkg_cfg, target, deps,
-        prefix=unique_prefix,  # used to create resource: URLs
-        include_dep_tests=options.dep_tests
-        )
+    resources = { }
+    rootPaths = [ ]
+    import chromeless
+    path_to_modules = os.path.join(chromeless.Dirs().cuddlefish_root, "modules")
+    for f in os.listdir(path_to_modules):
+        resourceName = harness_guid + "-" + f
+        resources[harness_guid + "-" + f] = os.path.join(path_to_modules, f)
+        rootPaths.append("resource://" + resourceName + "/");
 
-    if 'resources' in build:
-        resources = build.resources
-        for name in resources:
-            resources[name] = os.path.abspath(resources[name])
-
-    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % jid)
+    harness_contract_id = ('@mozilla.org/harness-service;1?id=%s' % harness_guid)
     harness_options = {
         'bootstrap': {
             'contractID': harness_contract_id,
             'classID': '{%s}' % harness_guid
             },
-        'jetpackID': jid,
-        'bundleID': bundle_id,
+        'jetpackID': harness_guid,
+        'bundleID': harness_guid,
         'staticArgs': options.static_args,
+        'resources': resources,
+        'loader': "resource://%s-%s/%s" % (harness_guid, "internal", "cuddlefish.js"),
+        'rootPaths': rootPaths
         }
 
-    harness_options.update(build)
-
     if command == "test":
-        # This should be contained in the test runner package.
-        harness_options['main'] = 'run-tests'
+        harness_options['main'] = 'test_harness/run-tests'
+        # XXX: we should write 'test-app' into a tempdir...
+        harness_options['testDir'] = os.path.join(chromeless.Dirs().cuddlefish_root, "modules", "internal", "test_harness")
+        resourceName = harness_guid + "-app-tests"
+        resources[resourceName] = os.path.join(harness_options['testDir'])
+        rootPaths.append("resource://" + resourceName + "/");
     else:
-        harness_options['main'] = target_cfg.get('main')
-
-    for option in inherited_options:
-        harness_options[option] = getattr(options, option)
-
-    harness_options['metadata'] = packaging.get_metadata(pkg_cfg, deps)
-
-    #sdk_version = get_version(env_root)
-    #harness_options['sdkVersion'] = sdk_version
-
-    packaging.call_plugins(pkg_cfg, deps)
+        harness_options['main'] = 'main'
 
     retval = 0
 
@@ -572,7 +470,7 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
                              harness_options=harness_options,
                              dev_mode=False)
 
-    else: 
+    else:
         browser_code_path = options.static_args["browser"]
 
         if options.profiledir:
@@ -582,14 +480,14 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
         if options.addons is not None:
             options.addons = options.addons.split(",")
 
+        print "app code path: " + browser_code_path
+
         if (platform.system() == 'Darwin'):
-            # because of the manner in which we run the application, we mus t use a
+            # because of the manner in which we run the application, we must use a
             # temporary file to enable console output
             [fd, tmppath] = tempfile.mkstemp()
             os.close(fd)
 
-            print "__init__: tmppath" + tmppath;
-            print "__init__: browser code path: " + browser_code_path
             print "And logging to '%s'" % tmppath
 
             harness_options['logFile'] = tmppath
