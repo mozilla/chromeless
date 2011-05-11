@@ -4,7 +4,7 @@
 }
 
 .module-detail a {
-    color: #444;
+    color: #3f3f3f;
 }
 
 .module-detail .invocation img {
@@ -143,7 +143,7 @@
 
 .full-api .filter_container {
     width: 100%;
-    background-color: #444;
+    background-color: #3f3f3f;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
