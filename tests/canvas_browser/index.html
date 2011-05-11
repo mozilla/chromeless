@@ -1,0 +1,68 @@
+<!-- This webpage controls the top level rendering of the browser.  it's
+     the first document that is loaded. and defines the look and feel of
+     the browser.  --> 
+
+<html>
+  <head>
+    <!-- What if the title of the top level document dictated the os level
+         process/application name? -->
+    <title>WebbyFox</title>
+    <style type="text/css" media="screen">
+	#virtualCanvas { 
+		background: -moz-element(#browserContentAreaNew) no-repeat ;
+		width:800px;
+		height:600px;
+	} 
+    </style>
+  </head>
+  <body>
+    <div id="outer">
+    <div id="browserHeader">
+        <form>
+	<input id="awesomeBox" size="20" type="text" value="http://www.google.com" />
+	<input type="submit" id="buttonGo"  value="go"></input>
+	<button id="buttonNew" >New</button>
+	<button id="buttonPersist" >All</button>
+	</form>
+    </div>
+    <div id="thumbsNavigator">
+
+    </div>
+
+    <div id="virtualBrowser" style="" ><canvas width="800" height="600" id="virtualCanvas"></canvas></div>
+    </div>
+  <style>
+    #virtualCanvas { filter:url(#f2); }
+  </style>
+  <svg height="0">
+    <filter id="f2">
+      <feColorMatrix values="0.3333 0.3333 0.3333 0 0
+                                 0.3333 0.3333 0.3333 0 0
+                                 0.3333 0.3333 0.3333 0 0
+                                 0      0      0      1 0"/>
+
+    </filter>
+  </svg>
+
+  </body>
+  <!-- Could the browser itself leverage a framework like YUI or jquery?
+       This shouldn't be that much different than slamming YUI into node.js
+       or jquery into jetpacks? -->
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+function makeBrowser() { 
+  hiddenBrowser = require("canvas-proxy").makeBrowser(document.getElementById("virtualBrowser"));
+  hiddenBrowser.setAttribute("src",document.getElementById("awesomeBox").value);
+  require("canvas-proxy").matchCanvas(document,"browserContentAreaNew",hiddenBrowser);
+} 
+
+$(document).ready(function() {
+    $("#browserHeader form").submit(function(e) {
+ 	makeBrowser();
+        return false; 
+    });
+});
+
+  </script>
+</html>

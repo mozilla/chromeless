@@ -38,8 +38,16 @@
  * ***** END LICENSE BLOCK ***** */
 
 const {Cc, Ci} = require("chrome");
+const Win = require("window-utils");
 
 const XHTML_NS ="http://www.w3.org/1999/xhtml";
+
+
+/* Proof of concept experimental implementation that has only one 
+   hidden Browser */
+
+var currWin; 
+var targetCanvas;
 
 /* This module should become more flexible so developer 
    should be able to do various type of operations with canvas
@@ -62,3 +70,45 @@ exports.snapshot = function Snapshot(frame) {
   ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWidth * aspectRatio, "rgb(255,255,255)");
   return thumbnail.toDataURL("image/png");
 }
+
+
+exports.makeBrowser = function (associatedCanvas) { 
+   // browser-container is the XUL stack in the main Chromeless lower layers 
+    currWin = Win.activeWindow;    
+    targetCanvas = associatedCanvas;
+    var browserHidden = currWin.document.createElement("browser");
+    browserHidden.setAttribute("id", "main-window-hidden");
+    browserHidden.setAttribute("width", "800");
+    browserHidden.setAttribute("type", "content-primary");
+    browserHidden.setAttribute("height", "640");
+    currWin.document.getElementById("browser-container").insertBefore(browserHidden,currWin.document.getElementById("main-window"));
+    initEvents();
+    return browserHidden; 
+} 
+
+ 
+exports.matchCanvas = function (doc, canvasTargetId, elementOrigin) { 
+   doc.mozSetImageElement(canvasTargetId, elementOrigin);
+} 
+
+var clickHandler = function (e) { 
+    e.stopPropagation();
+    if(!winUtil) { 
+        var targetWin = currWin.document.getElementById("main-window-hidden").contentWindow;
+        winUtil = targetWin.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils)
+    } 
+    console.log(" e x = " + e.clientX + " e y = " + e.clientY + " e type = " + e.type ); 
+    winUtil.sendMouseEventToWindow(e.type, e.clientX , parseInt(e.clientY-40) , 0, 1, 0);
+} 
+
+
+var winUtil = null; 
+
+var initEvents = function initEventsFunc() { 
+    canvasElement = targetCanvas;
+    canvasElement.addEventListener("mousemove", clickHandler, true); 
+    canvasElement.addEventListener("mousedown", clickHandler, true); 
+    canvasElement.addEventListener("mouseup", clickHandler, true); 
+    canvasElement.addEventListener("click", clickHandler, true); 
+} 
+
