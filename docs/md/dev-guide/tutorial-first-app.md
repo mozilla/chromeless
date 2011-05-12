@@ -23,7 +23,7 @@ Create a folder, anywhere you like, and make an `index.html` file inside with th
 Once that's saved, you can invoke chromeless from a terminal (or "command prompt")
 with a relative path to run your app:
 
-    $ ../<path>/<to>/chromless .
+    $ ../<path>/<to>/chromeless .
 
 You should see your application spring into existence!
 

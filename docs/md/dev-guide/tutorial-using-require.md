@@ -21,7 +21,7 @@ to run fullscreen.  Here is a complete application that does this:
 To run this application, simply create a directory, and add the contents of the code
 above to an `index.html` file within.  Once complete, run it under chromeless:
 
-    $ ../<path>/<to>/chromless .
+    $ ../<path>/<to>/chromeless .
 
 You'll see your app, rather harshly, consume all of your available desktop.
 
