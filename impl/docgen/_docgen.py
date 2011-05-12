@@ -66,6 +66,8 @@ def generate_static_docs(env_root, output_dir):
         # now we'll walk the lib dir and generate documenation for each module
         for root, dirs, files in os.walk(path):
             for f in files:
+                if f[-8:] == ".test.js":
+                    continue
                 if f[-3:] == ".js":
                     # now get the lib/ relative path of this module
                     relpath = os.path.join(root,f)[len(path)+1:]
