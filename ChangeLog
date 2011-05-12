@@ -1,3 +1,5 @@
+Changes in 0.4
+
 Changes in 0.3
         * (@taboca) test/demo cleanup
         * (@lloyd) nested iframes in web content no longer have a window.top that points into application code (issue #84)
