@@ -261,8 +261,8 @@
             "desc": "(read-only) The contents of the `appinfo.json` file as a javascript object", 
             "name": "contents", 
             "source_lines": [
-              210, 
-              216
+              217, 
+              223
             ], 
             "throws": [
               {
@@ -272,8 +272,8 @@
           }
         ], 
         "source_lines": [
-          197, 
-          203
+          204, 
+          210
         ]
       }, 
       "byte-streams": {
@@ -3036,5 +3036,5 @@
     }, 
     "name": "lib"
   }, 
-  "version": "20e11c7"
+  "version": "5b11a04"
 }

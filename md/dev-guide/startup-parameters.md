@@ -39,3 +39,5 @@ the seconds since Jan 1st, 1970.
 
 **resizable** - *{boolean}* Whether the main application menu should be resizable.
 
+**module_dirs** - *{array of strings}* When provided, lists additional directories containing javascript modules that should be bundled with the application and added to the `require()` search path
+
