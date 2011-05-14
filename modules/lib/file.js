@@ -24,6 +24,7 @@
  *   Drew Willcoxon <adw@mozilla.com>
  *   Mike De Boer <deboer.md@gmail.com>
  *   Lloyd Hilaiel <lloyd@mozilla.com>
+ *   Julian Viereck <julian.viereck@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -43,10 +44,12 @@
  * Allows for the reading and writing of files.
  */
 
-const {Cc,Ci,Cr} = require("chrome");
+const {Cc,Ci,Cr,Cu} = require("chrome");
 const byteStreams = require("byte-streams");
 const textStreams = require("text-streams");
 const xpcom = require("xpcom");
+Cu.import("resource://gre/modules/NetUtil.jsm", this);
+Cu.import("resource://gre/modules/FileUtils.jsm", this);
 
 // Flags passed when opening a file.  See nsprpub/pr/include/prio.h.
 const OPEN_FLAGS = {
@@ -110,6 +113,54 @@ exports.read = function read(path) {
   return str;
 };
 
+/**
+ * Opens a file in text mode and reads the entire content async.
+ *
+ * @param path {string}
+ *        The path of the file to read.
+ * @param callback {function}
+ *        The callback is passed two arguments (err, data), where data is the
+ *        contents of the file.
+ */
+exports.readAsync = function(path, callback) {
+    var file = MozFile(path);
+
+    // Check if the file exists.
+    try {
+        ensureFile(path);
+    } catch(e) {
+        // The file doesn't exist. Notify the callback and quit.
+        callback(e);
+        return
+    }
+
+    // This is based on the code from:
+    // https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Reading_from_a_file
+    NetUtil.asyncFetch(file, function(inputStream, status) {
+        if (!Components.isSuccessCode(status)) {
+            // Handle error!
+            callback(status);
+        } else {
+            var data = null;
+            try {
+                // The file data is contained within inputStream.
+                // You can read it into a string with
+                data = NetUtil.readInputStreamToString(inputStream,
+                            inputStream.available());
+            } catch (e) {
+                // Forward the error if something went wrong during reading.
+                callback(e);
+            }
+
+            // If there is some data, then everything went fine and we can
+            // pass the read data to the callback.
+            if (data != null) {
+                callback(null, data);
+            }
+        }
+
+    });
+};
 
 /**
  * Creates a text file and writes the entir contents of a string to
@@ -128,6 +179,46 @@ exports.write = function(path, content) {
     finally {
         stream.close();
     }
+};
+
+/**
+ * Writes the entire content async to the given path. If the file doesn't exist,
+ * it's created.
+ * @param path The path at which the file should be created
+ * @param content The content to write.
+ * @param overwrite If true, an already existing file is overwritten.
+ * @param callback Called once the writting is done. If there was an error
+ *      while writing, the status code is returned.
+ * @throws If file exists && !overwrite, or cannot be created.
+ */
+exports.writeAsync = function(path, content, overwrite, callback) {
+    if (!overwrite && MozFile(path).exists()) {
+        throw new Error("path exists: " + path);
+    }
+
+    // This is based on the code from:
+    // https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Writing_to_a_file
+    var file = MozFile(path)
+
+    // You can also optionally pass a flags parameter here. It defaults to
+    // FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE | FileUtils.MODE_TRUNCATE;
+    var ostream = FileUtils.openSafeFileOutputStream(file);
+
+    var converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].
+                        createInstance(Ci.nsIScriptableUnicodeConverter);
+    converter.charset = "UTF-8";
+    var istream = converter.convertToInputStream(content);
+
+    // The last argument (the callback) is optional.
+    NetUtil.asyncCopy(istream, ostream, function(status) {
+        if (!Components.isSuccessCode(status)) {
+            // Handle error!
+            callback(status);
+        } else {
+            // Data has been written to the file.
+            callback();
+        }
+    });
 };
 
 /**
