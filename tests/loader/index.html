@@ -1,0 +1,19 @@
+<html>
+ <head> <title> Cuddle love </title> </head>
+ <body>
+    Hello this example uses the cuddlefish to load a script in sandbox, execute it
+    and even better, to remove it from execution. 
+ </body>
+ <script type="text/javascript">
+   var cuddle = require("cuddlefish");
+   var aLoader = cuddle.Loader({rootPaths: ["file://"+require("app-paths").browserCodeDir + "/lib/"] , globals: { print: function (s) { console.log(s) }}  });
+   aLoader.runScript("  print('hi I am alive! ') ; require('unload').when( function() { print(' Hi, I am unloaded!!!!') } ); ");
+
+   setTimeout("finish()", 5000); 
+
+   function finish() { 
+     console.log("trying to unload...");
+     aLoader.unload();
+   } 
+ </script>
+</html>
