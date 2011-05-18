@@ -61,13 +61,6 @@ exports.getAppBrowser = function () {
         return appWindow._browser;
 }
 
-function testFunction(html) {
-  return html.replace("World", "Hello");
-}
-
-exports.testFunction = testFunction;
-
-
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
