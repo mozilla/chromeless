@@ -284,6 +284,15 @@ exports.title = function(frame) {
 };
 
 /**
+ * Access the scrollTop an iframe.  
+ * @params {IFrameNode} frame An iframe dom node.
+ * @returns {number} The current offset in pixels of the scrolling in the iframe.
+ */
+exports.scrollTop = function(frame) {
+  return frame.contentWindow.scrollY;
+};
+
+/**
  * inject a function into a web content window
  * @params {IFrameNode} frame An iframe dom node.
  * @params {string} attachPoint the property of `window.` to which this function shall be
