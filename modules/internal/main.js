@@ -129,8 +129,7 @@ function requireForBrowser(moduleName) {
 
 exports.main = function main(options, testCallbacks) {
     // access appinfo.json contents for startup parameters
-    //const ai = appinfo.contents;
-    //console.log("appinfo.json contents: ", ai);
+    const ai = appinfo.contents;
 
     var call = options.staticArgs;
     const contentWindow = require("chromeless-sandbox-window");
@@ -184,10 +183,8 @@ exports.main = function main(options, testCallbacks) {
         url: startPage,
         width: 800,
         height: 600,
-        resizable: true ,
-        menubar: false,
-        //resizable: ai.resizable ? true : false,
-        //menubar: ai.menubar ? true : false,
+        resizable: ai.resizable ? true : false,
+        menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {
