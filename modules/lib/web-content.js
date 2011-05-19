@@ -293,13 +293,25 @@ exports.scrollTop = function(frame) {
 };
 
 /**
- * inject a function into a web content window
+ * Inject a function or property into a web content window.
  * @params {IFrameNode} frame An iframe dom node.
  * @params {string} attachPoint the property of `window.` to which this function shall be
- * attached.
- * @params {function} callback The function that will be invoked when content in the
- * iframe invokes this function.
+ * attached.  This string *may* include dots '.', in which case it will be interpreted as
+ * a nested property
+ * @params {object} obj A property to attach to the specified attach point, a function or object
+ * may be used.
  */
 exports.inject = function(frame, attach, func) {
-  frame.contentWindow.wrappedJSObject[attach] = func;
+    var w = frame.contentWindow.wrappedJSObject;
+    var ar = attach.split(".");
+    while (ar.length) {
+        var x = ar.shift();
+        if (ar.length) {
+            if (!(w.hasOwnProperty(x))) w[x] = {};
+            w = w[x];
+        } else {
+            w[x] = func;
+        }
+    }
+    w[attach] = func;
 };
