@@ -22,7 +22,7 @@ function onDrop(e) {
 } 
 
 function onDragEnter(e) { 
-
+   console.log("Drag enter");
 } 
 
 function onDragLeave(e) { 
