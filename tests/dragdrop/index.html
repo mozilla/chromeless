@@ -1,21 +1,52 @@
 <html>
   <head>
-    <title>Drag files to the OS </title>
+    <title>Drag files to the OS, Drag files from the OS to here </title>
     <style type="text/css" media="screen">
     .fileitem { 
         border:1px solid black;
         padding:.51em;
         margin-bottom:.5em;
     } 
+    body { 
+	margin:0;
+	padding:0;
+        display: -moz-box;
+	width:100%;
+        height:100%;
+        -moz-box-orient: horizontal;
+    } 
+    .panel { 
+        display: -moz-box;
+        -moz-box-orient: vertical;
+        -moz-box-flex: 1;
+	margin:1em;
+	padding:1em;
+        background-color:#ccc; 
+        width:100%; 
+        height:100%;
+	overflow:auto;
+    } 
     </style>
 
   </head>
   <body >
-     <h2>Drag a file from here:</h2>
+     <!-- this panel deals with HTML5 https://developer.mozilla.org/En/DragDrop/Drag_and_Drop --> 
+     <div class="panel" id="droparea" 
+                ondragexit="onDragLeave(event);"
+                ondragenter="onDragEnter(event);"
+                ondragover="event.stopPropagation(); event.preventDefault();"
+                ondrop="onDrop(event);" >
+
+     <h2>This is nothing, but you can drop a file from a OS folder to here!</h2>
+     </div>
+     <div class="panel">
+     <h2>The following is your desktop!. You can drag things out of it to a folder</h2>
      <ol id="files">
      </ol>  
+     </div>
   </body>
-  <script type="text/javascript" src="dragdrop.js"></script>
+  <script type="text/javascript" src="dragdrop-out.js"></script>
+  <script type="text/javascript" src="dragdrop-in.js"></script>
   <script type="text/javascript" charset="utf-8">
 
     var desktopPath = require('app-paths').desktopDir; 
