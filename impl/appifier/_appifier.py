@@ -55,6 +55,41 @@ class Appifier(object):
 
         return params['output_dir']
 
+    def _recursive_copy_or_link(self, try_link, src, dst):
+        IGNORED_FILES = [".gitignore", ".hgignore", "install.rdf"]
+        IGNORED_FILE_SUFFIXES = ["~", ".test.js"]
+        IGNORED_DIRS = [".svn", ".hg", "defaults", ".git"]
+
+        os.makedirs(dst)
+
+        def filter_filenames(filenames):
+            for filename in filenames:
+                if filename in IGNORED_FILES:
+                    continue
+                if any([filename.endswith(suffix)
+                        for suffix in IGNORED_FILE_SUFFIXES]):
+                    continue
+                yield filename
+
+
+        if try_link and platform.system() != 'Windows':
+            for f in os.listdir(src):
+                if (f in IGNORED_DIRS or f in IGNORED_FILES or
+                    any([f.endswith(suffix) for suffix in IGNORED_FILE_SUFFIXES])):
+                    continue
+                os.symlink(os.path.join(src, f), os.path.join(dst, f))
+        else:
+            for dirpath, dirnames, filenames in os.walk(src):
+                goodfiles = list(filter_filenames(filenames))
+                tgt_dir = dst
+                if dirpath != src:
+                    tgt_dir = os.path.join(tgt_dir, relpath(dirpath, src))
+                if not os.path.isdir(tgt_dir):
+                    os.makedirs(tgt_dir)
+                for filename in goodfiles:
+                    shutil.copy(os.path.join(dirpath, filename), os.path.join(tgt_dir, filename))
+                dirnames[:] = [dirname for dirname in dirnames if dirname not in IGNORED_DIRS]
+
     # generate a xul application (a directory with application.ini and other stuff)
     # the application will be placed in the build/ directory and the path to it
     # will be returned
@@ -97,7 +132,7 @@ class Appifier(object):
         for f in os.listdir(template_dir):
             src = os.path.join(template_dir, f)
             dst = os.path.join(output_dir, f)
-            if (os.path.isdir(src)): 
+            if (os.path.isdir(src)):
                 shutil.copytree(src, dst)
             else:
                 shutil.copy(src, dst)
@@ -122,19 +157,6 @@ class Appifier(object):
         if verbose:
             print "  ... copying in CommonJS packages"
 
-        IGNORED_FILES = [".gitignore", ".hgignore", "install.rdf"]
-        IGNORED_FILE_SUFFIXES = ["~", ".test.js"]
-        IGNORED_DIRS = [".svn", ".hg", "defaults"]
-
-        def filter_filenames(filenames):
-            for filename in filenames:
-                if filename in IGNORED_FILES:
-                    continue
-                if any([filename.endswith(suffix)
-                        for suffix in IGNORED_FILE_SUFFIXES]):
-                    continue
-                yield filename
-
         pkg_tgt_dir = os.path.join(output_dir, "packages")
 
         new_resources = {}
@@ -145,31 +167,21 @@ class Appifier(object):
             # Always create the directory, even if it contains no files,
             # since the harness will try to access it.
             res_tgt_dir = os.path.join(pkg_tgt_dir, resource)
-            os.makedirs(res_tgt_dir)
 
             # in development mode we'll create symlinks.  otherwise we'll
             # recursively copy over required packages and filter out temp files
-            if dev_mode and platform.system() != 'Windows':
-                for f in os.listdir(abs_dirname):
-                    os.symlink(os.path.join(abs_dirname, f), os.path.join(res_tgt_dir, f))
-            else:
-                for dirpath, dirnames, filenames in os.walk(abs_dirname):
-                    goodfiles = list(filter_filenames(filenames))
-                    tgt_dir = res_tgt_dir
-                    if dirpath != abs_dirname:
-                        tgt_dir = os.path.join(tgt_dir, relpath(dirpath, abs_dirname))
-                    if not os.path.isdir(tgt_dir):
-                        os.makedirs(tgt_dir)
-                    for filename in goodfiles:
-                        shutil.copy(os.path.join(dirpath, filename), os.path.join(tgt_dir, filename))
-                    dirnames[:] = [dirname for dirname in dirnames if dirname not in IGNORED_DIRS]
+            self._recursive_copy_or_link(try_link=dev_mode,
+                                         src=abs_dirname,
+                                         dst=res_tgt_dir)
 
         harness_options['resources'] = new_resources
 
         # and browser code
         if verbose:
             print "  ... copying in browser code (%s)" % browser_code_dir 
-        shutil.copytree(browser_code_dir, os.path.join(output_dir, "browser_code"))
+        self._recursive_copy_or_link(try_link=dev_mode,
+                                     src=browser_code_dir,
+                                     dst=os.path.join(output_dir, "browser_code"))
 
         # now re-write appinfo
         if verbose:
