@@ -1,0 +1,6 @@
+<script type="text/javascript">
+  require('child_process').spawn('/bin/echo', 'abc')
+  setTimeout(function() {
+    require('process').exit()
+  }, 1000);
+</script>

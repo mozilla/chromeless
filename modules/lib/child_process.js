@@ -43,11 +43,20 @@ let GUID = 0;
 
 /**
  * spawn a child process.
- * @param command The command to execute
- * @param args Arguments to said command
+ * @param {string} command The command to execute
+ * @param {array of strings, or string} args Argument(s) to said command.  If not an array,
+ *        will be assumed to be a single argument.
  * @returns A ChildProcess
  */
 exports.spawn = function(command, args) {
+    if (!Array.isArray(args)) {
+        args = [ args ];
+    }
+    args.forEach(function(x) {
+        if (typeof x !== 'string') {
+            throw "args (passed to child_process.spawn) must be a strings";
+        }
+    });
     var child = ChildProcess();
     child.run(command, args);
     return child;
@@ -97,12 +106,12 @@ ChildProcess.prototype = {
         var file = Cc["@mozilla.org/file/local;1"]
                    .createInstance(Ci.nsILocalFile);
         file.initWithPath(command);
-        
+
         // create an nsIProcess
         this._process = Cc["@mozilla.org/process/util;1"]
                       .createInstance(Ci.nsIProcess);
         this._process.init(file);
-        
+
         // Run the process.
         // If first param is true, calling thread will be blocked until
         // called process terminates.
@@ -112,12 +121,12 @@ ChildProcess.prototype = {
         };
         this._process.runAsync(args, args.length, termObserver);
     },
-    
+
     receiveSignal: function(subject, topic, data) {
         // @todo check with Irakli (@gozala) why _emit does not exist in this context
         //this._emit("exit", (topic === "process-finished") ? 0 : -1);
     },
-    
+
     /**
      * Kill the child process and clean up resources.
      */
