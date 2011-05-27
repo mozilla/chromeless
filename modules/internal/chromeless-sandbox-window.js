@@ -17,6 +17,12 @@ function isTopLevelWindow(w) {
   return false;
 }
 
+function removeTarget ( a ) {
+  if (a && a.target && a.removeAttribute) {
+      a.removeAttribute("target");
+  }
+}
+
 var checkWindows = function(subject, url) {
 
   if (subject.window.top != subject.window.self) {
@@ -64,6 +70,19 @@ var checkWindows = function(subject, url) {
           }
       }
   }
+  
+  // Monkey patching anchor elements to remove target='_top'.
+  subject.document.addEventListener("DOMNodeInserted", function( a ){ removeTarget( a.target ); }, false);
+  subject.document.addEventListener("DOMAttrModified", function( a ){ removeTarget( a.target ); }, false);
+  subject.document.addEventListener("DOMContentLoaded", function topAs() {
+      var as = subject.document.querySelectorAll("a[target=\"_top\"]"),
+          i = 0,
+          l = as.length;
+      for(;i<l;) {
+          removeTarget( as[i++] );
+      }
+      subject.document.removeEventListener("DOMContentLoaded", topAs, false);
+  }, false);
 };
 
 observers.add("content-document-global-created", checkWindows); 
