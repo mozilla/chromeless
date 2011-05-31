@@ -1,0 +1,31 @@
+--- require.js.orig	2011-03-14 02:24:29.000000000 -0600
++++ require.js	2011-05-31 16:46:14.504932124 -0600
+@@ -8,7 +8,7 @@
+   jQuery: false, clearInterval: false, setInterval: false, self: false,
+   setTimeout: false, opera: false */
+ 
+-var require, define;
++var requirejs, define;
+ (function () {
+     //Change this version number for each release.
+     var version = "0.24.0",
+@@ -105,8 +105,8 @@
+     //Check for an existing version of require. If so, then exit out. Only allow
+     //one version of require to be active in a page. However, allow for a require
+     //config object, just exit quickly if require is an actual function.
+-    if (typeof require !== "undefined") {
+-        if (isFunction(require)) {
++    if (typeof requirejs !== "undefined") {
++        if (isFunction(requirejs)) {
+             return;
+         } else {
+             //assume it is a config object.
+@@ -1350,7 +1350,7 @@
+      * on a require that are not standardized), and to give a short
+      * name for minification/local scope use.
+      */
+-    req = require = function (deps, callback) {
++    req = requirejs = function (deps, callback) {
+ 
+         //Find the right context, use default
+         var contextName = defContextName,
