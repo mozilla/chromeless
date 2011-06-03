@@ -18,6 +18,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ *  Lloyd Hilaiel <lloyd@hilaiel.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -69,13 +70,11 @@ var ChromelessPolicy = {
   shouldLoad : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
 	let result = Ci.nsIContentPolicy.ACCEPT;
 	// only filter DOCUMENTs (not SUB_DOCUMENTs, like iframes)
-    if( aContentType === Ci.nsIContentPolicy["TYPE_DOCUMENT"]
-        // block http(s) protocols...
-        && /^http(s):/.test(aContentLocation.spec) ){
-		// make sure we deny the request now
+    if (aContentType === Ci.nsIContentPolicy["TYPE_DOCUMENT"])
+    {
 		result = Ci.nsIContentPolicy.REJECT_REQUEST;
+        console.log("navigation blocked");
 	}
-    // continue loading...
     return result;
   },
   createInstance: function(outer, iid) {

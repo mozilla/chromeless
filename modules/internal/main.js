@@ -129,9 +129,6 @@ exports.main = function main(options, testCallbacks) {
 
     var file = path.basename(call.browser);
 
-    // "requiring" this in order to run it.
-    require("chromeless-policy");
-
     var systemMode = appinfo.contents.enableSystemPrivileges ? true : false;
 
     if(systemMode) {
