@@ -284,6 +284,21 @@ exports.title = function(frame) {
 };
 
 /**
+ * Exposes the fullZoom attribute which is part of the docShell
+ * @params {IFrameNode} frame An iframe dom node.
+ * @params {zoomRatio} zoom value, from 0 to 1 
+ */
+exports.zoom = function (frame, ratio) { 
+   var frameShell = frame.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+           .getInterface(Ci.nsIWebNavigation)
+           .QueryInterface(Ci.nsIDocShell);
+
+   var contViewer = frameShell.contentViewer;
+   var docViewer = contViewer.QueryInterface(Ci.nsIMarkupDocumentViewer);
+   docViewer.fullZoom = ratio;
+} 
+
+/**
  * Access the scrollTop an iframe.  
  * @params {IFrameNode} frame An iframe dom node.
  * @returns {number} The current offset in pixels of the scrolling in the iframe.

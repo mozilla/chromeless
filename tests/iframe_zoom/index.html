@@ -1,0 +1,16 @@
+<html>
+  <body >
+   <iframe src="http://www.google.com" id="inner" width="800" height="600" border="2" ></iframe>
+  </body >
+  <script type="text/javascript">
+
+  var pm = require('web-content').ProgressMonitor();
+  var i = document.getElementById("inner");
+  pm.attach(i);
+
+  pm.on("load-stop", function (e) {
+      require('web-content').zoom(i,.5);
+  });
+
+  </script>
+</html>
