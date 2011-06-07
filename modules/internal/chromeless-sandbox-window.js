@@ -71,7 +71,7 @@ var checkWindows = function(subject, url) {
   }
 };
 
-observers.add("content-document-global-created", checkWindows); 
+observers.add("content-document-global-created", checkWindows);
 observers.add("chrome-document-global-created", checkWindows);
 
 var xulNs = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
@@ -134,6 +134,12 @@ Window.prototype = {
       break;
     case "DOMContentLoaded":
       if (event.target == this._window.document) {
+        // update window title
+        if (ai && ai.name) {
+            this._window.document.title = ai.name;
+            console.log(this._window.document.title);
+        }
+
         var browser = this._window.document.createElement("browser");
         browser.setAttribute("id", "main-window");
         browser.setAttribute("disablehistory", "indeed");
@@ -152,6 +158,11 @@ Window.prototype = {
              refthis._testCallbacks.onload();
            }, false);
         }
+        var parentWindow = this._window;
+        browser.addEventListener("DOMTitleChanged", function(evt){
+            if (evt.target.title.trim().length > 0)
+                parentWindow.document.title = evt.target.title;
+        }, false);
       }
       return false;
     };

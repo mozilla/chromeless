@@ -1,0 +1,13 @@
+<html>
+<body>
+</body>
+<script>
+console.log("no document title set.  window title should now be application title... wait 5s");
+
+setTimeout(function() {
+  document.title = "new title!";
+  document.body.appendChild(document.createElement('p'));
+  console.log("Title changed!  now check the window title");
+}, 5000);
+</script>
+</html>
