@@ -1,0 +1,27 @@
+<!doctype html>
+<title>:-)</title>
+Clicking the buttons should display a prompt, alert, and confirm dialog.<br/>
+Clicking the "Exit" button should display an "Are you sure you want to leave this page" message.<br />
+If you choose to leave the application should exit.<br />
+If you choose to stay the application should remain open.<br />
+If you choose to stay and then click the Exit button again you should be prompted again and if choose to leave the application should exit.
+<br/>
+<br />
+<button id="prompt">prompt</button>
+<button id="confirm">confirm</button>
+<button id="alert">alert</button>
+<button id="exit">Exit</button>
+
+<script>
+    var $ = function ( id ){
+        return document.getElementById( id );
+    };
+    $("prompt").onclick = function(){ prompt("You don't need to enter any text"); }
+    $("confirm").onclick = function(){ confirm("Testing confirm"); }
+    $("alert").onclick = function(){ alert("Hello, World"); }
+    
+    window.onbeforeunload = function(){
+        return "Are you sure you want to leave this page";
+    };
+    $("exit").onclick = function(){ window.exit && window.exit(); }
+</script>
