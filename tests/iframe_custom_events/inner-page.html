@@ -1,0 +1,9 @@
+<script type="text/javascript">
+  window.log("hi, I'm an awesome child.");
+  window.addEventListener("event1", function(ev) {
+    window.log("origin: " + ev.origin);
+    window.log(JSON.parse(ev.data));
+  }, false);
+  window.addEventListener("event2", function(ev) { window.log(JSON.parse(ev.data)); }, false);
+  window.addEventListener("event3", function(ev) { window.log(JSON.parse(ev.data)); }, false);
+</script>

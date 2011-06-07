@@ -1,0 +1,29 @@
+<html>
+  <body>
+    I'm a parent, I inject.
+   <iframe width="400" height="100" border="2" > 
+   </iframe>
+  </body>
+  <script type="text/javascript">
+    // let's give our child page a `window.log` function
+    const webContent = require("web-content");
+    var pm =  webContent.ProgressMonitor();
+    var iframe = document.getElementsByTagName('iframe')[0];
+    pm.attach(iframe);
+    console.log("attached");
+    pm.on("load-start", function() {
+      webContent.inject(iframe, 'log', function(x) { console.log(x); });
+    }, false);
+
+    iframe.src = "inner-page.html";
+
+    iframe.onload = function() {
+      webContent.emit(iframe, 'event1', {foo:"bar"});
+      webContent.emit(iframe, 'event2', "yo");
+
+      // now let's try to pass code through 
+      webContent.emit(iframe, 'event3', {good: "strings", evil: function() { alert("code!")}});
+    };
+
+</script>
+</html>

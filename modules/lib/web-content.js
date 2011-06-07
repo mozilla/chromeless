@@ -45,7 +45,7 @@ const events = require("events").EventEmitterTrait;
  * of loading web resources.
  *
  * Example Usage:
- * 
+ *
  *     var pm = require('web-content').ProgressMonitor();
  *     pm.attach(document.getElementById("someIFrame");
  *     pm.on('title-change', function(title) {
@@ -275,7 +275,7 @@ exports.stopload = function(frame) {
 };
 
 /**
- * Access the title of an iframe.  
+ * Access the title of an iframe.
  * @params {IFrameNode} frame An iframe dom node.
  * @returns {string} The current title of the content in the iframe.
  */
@@ -284,7 +284,7 @@ exports.title = function(frame) {
 };
 
 /**
- * Exposes the fullZoom attribute which is part of the docShell
+ * Programmatically zoom content inside an iframe
  * @params {IFrameNode} frame An iframe dom node.
  * @params {zoomRatio} zoom value, from 0 to 1 
  */
@@ -296,10 +296,47 @@ exports.zoom = function (frame, ratio) {
    var contViewer = frameShell.contentViewer;
    var docViewer = contViewer.QueryInterface(Ci.nsIMarkupDocumentViewer);
    docViewer.fullZoom = ratio;
-} 
+}
 
 /**
- * Access the scrollTop an iframe.  
+ * Emit events inside iframes hosting untrusted web content.
+ * This function gives you a way to synthesize and dispatch a
+ * [MessageEvent](https://developer.mozilla.org/en/DOM/window.postMessage#The_dispatched_event)
+ * into an iframe.  The web content should deal with the event
+ * as they would deal with a MessageEvent resulting from
+ * [window.postMessage](https://developer.mozilla.org/en/DOM/window.postMessage),
+ * that is specifically `ev.origin` will be set to 'chrome' and
+ * `ev.data` will be a JSON string representation of the `data`
+ * parameter passed to emit().
+ *
+ * Sample application code to emit an event is thus:
+ *
+ *     var iframe = document.getElementsByTagName('iframe')[0];
+ *     require("web-content").emit(iframe, 'myevent', {foo:"bar"});
+ *
+ * From web content, the event can be caught like this:
+ *
+ *     window.addEventListener("event1", function(ev) {
+ *         alert(JSON.parse(ev.data));
+ *     }, false);
+ *
+ * @param {IFrameNode} frame Where to emit the event.
+ * @param {string} name The name of the event
+ * @param {object|string} data Data to be emitted in the event
+ */
+exports.emit = function(frame, name, data) {
+    if (typeof name !== 'string')
+        throw "emit requires a string argument for event name";
+    var ev = frame.contentWindow.document.createEvent("MessageEvent");
+    // doesn't bubble, may be canceled
+    ev.initMessageEvent(name, false, true, JSON.stringify(data), "chrome", "0", frame.contentWindow);
+    frame.contentWindow.dispatchEvent(ev);
+};
+
+
+
+/**
+ * Access the scrollTop an iframe.
  * @params {IFrameNode} frame An iframe dom node.
  * @returns {number} The current offset in pixels of the scrolling in the iframe.
  */
