@@ -130,7 +130,7 @@ exports.listObjects = function(path) {
  */
 exports.copy = function(from, to) {
     from = MozFile(from);
-    ensureExists(file);
+    ensureExists(from);
     to = MozFile(to);
     if (to.isFile())
         to = to.parent;
