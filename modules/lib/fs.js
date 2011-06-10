@@ -108,11 +108,11 @@ exports.list = function list(path) {
  * @throws if the path points to something other than a readable directory.
  */
 exports.listObjects = function(path) {
-    var file = MozFile(path);
-    ensureDir(file);
-    ensureReadable(file);
+    var mpath = MozFile(path);
+    ensureDir(mpath);
+    ensureReadable(mpath);
 
-    var entries = file.directoryEntries;
+    var entries = mpath.directoryEntries;
     var entryObjects = [];
     while(entries.hasMoreElements()) {
         var entry = entries.getNext();
