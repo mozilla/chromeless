@@ -40,7 +40,12 @@ def findBrowserHTML(path):
     # "examples" directory can be omitted, but we'll automatically append it to
     # verify that file exists.
     if os.path.isdir(path):
-        path = os.path.join(path, "index.html")
+        if os.path.exists(os.path.join(path, "index.html")):
+            path = os.path.join(path, "index.html")
+        elif os.path.exists(os.path.join(path, "index.xhtml")):
+            path = os.path.join(path, "index.xhtml")
+        elif os.path.exists(os.path.join(path, "index.svg")):
+            path = os.path.join(path, "index.svg")
     # the path we return must have ui omitted
     return os.path.abspath(path)
 
