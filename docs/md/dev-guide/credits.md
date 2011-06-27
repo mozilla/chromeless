@@ -20,6 +20,7 @@ directly helped build chromeless:
 * Ian Bicking
 * Jim Pick
 * Jonathan Ballet
+* Jonathan Watt
 * Lloyd Hilaiel
 * Marcio Galli
 * Mike de Boer
