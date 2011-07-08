@@ -7,8 +7,8 @@ Copyright=
 ID=${developer_email}
 
 [Gecko]
-MinVersion=2.0
-MaxVersion=2.0
+MinVersion=2.0.1
+MaxVersion=*
 
 [XRE]
 EnableExtensionManager=true
