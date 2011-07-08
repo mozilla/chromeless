@@ -6,6 +6,7 @@ import chromeless
 from string import Template
 import simplejson as json
 from _relpath import relpath
+from util import opencopy
 
 class Appifier(object):
     def __init__(self):
@@ -187,7 +188,7 @@ class Appifier(object):
         if verbose:
             print "  ... writing application info file"
 
-        with open(os.path.join(output_dir, "browser_code", "appinfo.json"), 'w') as f:
+        with opencopy(os.path.join(output_dir, "browser_code", "appinfo.json"), 'w') as f:
             f.write(json.dumps(app_info.object, indent=4))
 
         # now munge harness_options a bit to get correct path to browser_code in
@@ -202,7 +203,7 @@ class Appifier(object):
         if verbose:
             print "  ... writing harness options"
 
-        with open(os.path.join(output_dir, "harness-options.json"), 'w') as f:
+        with opencopy(os.path.join(output_dir, "harness-options.json"), 'w') as f:
             f.write(json.dumps(harness_options, indent=4))
 
         # XXX: support for extra packages located outside of the packages/ directory!
