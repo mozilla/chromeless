@@ -59,7 +59,7 @@ class Fetcher(object):
 
     def _check_build_dir(self, buildDir):
         if not os.path.isdir(buildDir):
-            os.mkdir(buildDir)
+            os.makedirs(buildDir)
         return
 
     def _print(self, descriptor, string):
