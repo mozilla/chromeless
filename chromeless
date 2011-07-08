@@ -18,9 +18,13 @@ cuddlefish_root = os.path.dirname(os.path.abspath(sys.argv[0]))
 if 'CUDDLEFISH_ROOT' not in os.environ:
     os.environ['CUDDLEFISH_ROOT'] = cuddlefish_root
 
+# Set the "home directory" to store variable data and local configurations
+# independently for each system user.
+home_dir = os.path.expanduser("~/.chromeless")
+
 # set the "build directory", where we'll output built artifacts, download xulrunner,
 # etc.
-build_dir = os.path.join(cuddlefish_root, "build")
+build_dir = os.path.join(home_dir, "build")
 
 # add our own python-lib path to the python module search path.
 python_lib_dir = os.path.join(cuddlefish_root, "impl")
