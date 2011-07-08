@@ -32,6 +32,7 @@ software = {
             "sig": "d103f16afe6a6125bb28987a9e391fee"
         }
     }
+    "default": { "bin": { "path": "/usr/local/lib/chromeless/xulrunner" } }
 }
 
 def getConfig(platform):
@@ -41,4 +42,6 @@ def getConfig(platform):
                 return software[key]
         elif platform in key:
             return software[key]
+    if "default" in software:
+            return software["default"]
     raise RuntimeError("unsupported platform: " + platform)

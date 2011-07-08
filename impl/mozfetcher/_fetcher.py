@@ -45,12 +45,16 @@ class Fetcher(object):
             return 'error'
 
     def needs_fetch(self):
-        want = self._config["bin"]["sig"]
+        try:
+            want = self._config["bin"]["sig"]
+        except KeyError:
+            want = False
         path = os.path.join(self._buildDir, self._config["bin"]["path"])
         if os.path.exists(path) and not want:
             print 'No bin/sig setting for %s' % path
             print 'Hash:'
             print '  %s' % self._calc_md5(path)
+            return False
         return not self._md5_match(path, want)
 
     def _check_build_dir(self, buildDir):
