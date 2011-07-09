@@ -271,7 +271,7 @@ def test_all_examples(env_root, defaults):
     fail = False
     for dirname in examples:
         print "Testing %s..." % dirname
-        output_test = os.path.join(env_root, "modules", "internal","test_harness","test-app.js")
+        output_test = os.path.join(chromeless.Dirs().home_dir, "modules", "internal", "test_harness", "test-app.js")
         try:
             import shutil
             from string import Template
@@ -288,6 +288,22 @@ def test_all_examples(env_root, defaults):
                with open(test_script_for_app, 'r') as f:
                   test_content = f.read()
                   prefix_contents = 'var options = { "staticArgs": {quitWhenDone: true, "browser": "'+defaultBrowser+'" , "appBasePath": "'+env_root+'" } };' + "\n"
+
+                  try:
+                          os.makedirs(os.path.dirname(output_test))
+                  except os.error:
+                          pass
+                  for f in os.listdir(os.path.join(env_root, "modules", "internal", "test_harness")):
+                          src = os.path.join(env_root, "modules", "internal", "test_harness", f)
+                          dst = os.path.join(os.path.dirname(output_test), os.path.basename(f))
+                          if os.path.exists(dst):
+                                  continue
+                          else:
+                                  print "%s does not exist" % dst
+                          if platform.system() != 'Windows':
+                                  os.symlink(src, dst)
+                          else:
+                                  shutil.copyfile(src, dst)
 
                   with open(output_test, 'w') as ff:
                      ff.write(prefix_contents)
@@ -461,7 +477,8 @@ def run(arguments=sys.argv[1:], target_cfg=None, pkg_cfg=None,
     if command == "test":
         harness_options['main'] = 'test_harness/run-tests'
         # XXX: we should write 'test-app' into a tempdir...
-        harness_options['testDir'] = os.path.join(chromeless.Dirs().cuddlefish_root, "modules", "internal", "test_harness")
+        # YYY: testDir is now under the home. Should we place it directly under tempdir?
+        harness_options['testDir'] = os.path.join(chromeless.Dirs().home_dir, "modules", "internal", "test_harness")
         resourceName = harness_guid + "-app-tests"
         resources[resourceName] = os.path.join(harness_options['testDir'])
         rootPaths.append("resource://" + resourceName + "/");
