@@ -78,7 +78,7 @@ if len(sys.argv) > 1:
         browserToLaunch = findBrowserHTML(sys.argv[1])
 
 if browserToLaunch == None:
-    browserToLaunch = findBrowserHTML("./examples/first_browser/index.html")
+    browserToLaunch = findBrowserHTML(os.path.join(cuddlefish_root, "examples", "first_browser", "index.html"))
 
 # throw an error message if we can't figure out what html file
 # is the browser's HTML entry point
