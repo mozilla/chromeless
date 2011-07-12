@@ -1,5 +1,7 @@
+import os,chromeless
+
 software = {
-    "default": { "bin": { "path": "/usr/local/lib/chromeless/xulrunner" } }
+    "default": { "bin": { "path": os.path.join(chromeless.Dirs().cuddlefish_root, "xulrunner") } }
 }
 
 def getConfig(platform):
