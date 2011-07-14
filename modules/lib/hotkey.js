@@ -178,7 +178,11 @@ exports.register = function(hotkey, command, id) {
     bindings[id] = node;
     node.setAttribute("id", id);
     node.setAttribute("modifiers", modifiers.join(" "));
-    node.setAttribute("key", key);
+    if (key.length == 1) {
+        node.setAttribute("key", key);
+    } else if (key.length > 3 && key.substr(0,3) == "vk_") {
+        node.setAttribute("keycode", key);
+    }
     if (typeof command == "string") {
         node.setAttribute("command", command);
     }
