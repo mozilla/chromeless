@@ -1,10 +1,10 @@
 software = {
     "Linux_64bit": {
-       "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-x86_64.tar.bz2",
-       "md5": "cb0dc6ff5304b325098fc8910057884f",
+       "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0.2/runtimes/xulrunner-6.0.2.en-US.linux-x86_64.tar.bz2",
+       "md5": "a1e98013cbb4d9685461465e09b3c7c7",
        "bin": {
            "path": "xulrunner/xulrunner",
-           "sig": "d103f16afe6a6125bb28987a9e391fee"
+           "sig": "e473d9a27a10b9bf1ffb1bd8a3e6d668"
        }
     },
     # for both 32 and 64 bit darwin we'll use 32 bit binaries
@@ -25,11 +25,11 @@ software = {
         }
     },
     "Linux_32bit": {
-        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/2.0/runtimes/xulrunner-2.0.en-US.linux-i686.tar.bz2",
-        "md5": "5acef7cc816691f5c8726731ee0d8bdf",
+        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0.2/runtimes/xulrunner-6.0.2.en-US.linux-i686.tar.bz2",
+        "md5": "b348164d69ab9d1b226e98a4893029f2",
         "bin": {
             "path": "xulrunner/xulrunner",
-            "sig": "d103f16afe6a6125bb28987a9e391fee"
+            "sig": "e473d9a27a10b9bf1ffb1bd8a3e6d668"
         }
     }
 }
