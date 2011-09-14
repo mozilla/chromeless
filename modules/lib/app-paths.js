@@ -60,7 +60,7 @@ exports.profileDir = dirsvc.get("ProfD", Ci.nsIFile).path;
  * This path should be expected to be read-only.
  * @type string
  */
-exports.browserCodeDir = path.join(dirsvc.get("resource:app", Ci.nsIFile).path, "browser_code");
+exports.browserCodeDir = path.join(dirsvc.get("DefRt", Ci.nsIFile).parent.path, "browser_code");
 
 /**
  * @property startMenuDir
