@@ -204,40 +204,40 @@ exports.showDialog = function showDialog() {
  * Courtesy of bug 533649.
  */
 function getNotificationBox() {
-    /*let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
-             .getService(Ci.nsIWindowMediator),
-        chromeWindow = wm.getMostRecentWindow("navigator"),
-        notificationBox = chromeWindow.getNotificationBox(tabs.activeTab.contentWindow);*/
-    //let chromeWindow = exports.getMainWindow();
-    //inspect(chromeWindow.document.contentWindow);
-    //let notificationBox = chromeWindow.getNotificationBox(chromeWindow.contentWindow);
-    //return notificationBox;
+    // let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+    //          .getService(Ci.nsIWindowMediator),
+    //     chromeWindow = wm.getMostRecentWindow("navigator"),
+    //     notificationBox = chromeWindow.getNotificationBox(tabs.activeTab.contentWindow);*/
+    // //let chromeWindow = exports.getMainWindow();
+    // //inspect(chromeWindow.document.contentWindow);
+    // //let notificationBox = chromeWindow.getNotificationBox(chromeWindow.contentWindow);
+    // //return notificationBox;
 }
 
 exports.showNotification = function showNotification(title, text, imageURI, textClickable, onClick, onFinish, data) {
-    try {
-        notifications.notify({
-            title: title,
-            iconURL: imageURI,
-            text: text,
-            onClick: onClick
-        });
-    }
-    catch (e) {
-        return;
-        let nb = getNotificationBox(),
-            notification = nb.appendNotification(
-                text,
-                'jetpack-notification-box',
-                imageURI || 'chrome://browser/skin/Info.png',
-                nb.PRIORITY_INFO_MEDIUM,
-                []
-            );
-        timer.setTimeout(function() {
-            notification.close();
-        }, 10 * 1000);
-    }
-    /*let alertObserver = {
+    // try {
+    //     notifications.notify({
+    //         title: title,
+    //         iconURL: imageURI,
+    //         text: text,
+    //         onClick: onClick
+    //     });
+    // }
+    // catch (e) {
+    //     return;
+    //     let nb = getNotificationBox(),
+    //         notification = nb.appendNotification(
+    //             text,
+    //             'jetpack-notification-box',
+    //             imageURI || 'chrome://browser/skin/Info.png',
+    //             nb.PRIORITY_INFO_MEDIUM,
+    //             []
+    //         );
+    //     timer.setTimeout(function() {
+    //         notification.close();
+    //     }, 10 * 1000);
+    // }
+    var alertObserver = {
         observe: function(subject, topic, data) {
             if ((topic === "alertclickcallback") && !!textClickable)
                 onClick && onClick();
@@ -245,7 +245,21 @@ exports.showNotification = function showNotification(title, text, imageURI, text
                 onFinish && onFinish();
         }
     };
-    gAlertServ.showAlertNotification(imageURI, title, text, !!textClickable, data, alertObserver);*/
+    // gAlertServ.showAlertNotification(imageURI, title, text, !!textClickable, data, alertObserver);
+
+    try {
+        Cc['@mozilla.org/alerts-service;1'].
+        getService(Ci.nsIAlertsService).
+        showAlertNotification(imageURI, title, text, textClickable, '', alertObserver);   
+    } 
+    catch(e) {
+        var image = null;
+        let win = Cc['@mozilla.org/embedcomp/window-watcher;1'].
+        getService(Ci.nsIWindowWatcher).
+        openWindow(null, 'chrome://global/content/alerts/alert.xul',
+                   '_blank', 'chrome,titlebar=no,popup=yes', null);
+        win.arguments = [imageURI, title, text, false, ''];
+    } 
 };
 
 exports.beep = function beep() {
