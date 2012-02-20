@@ -45,6 +45,59 @@ download_version() {
     done
 }
 
+mdsum() {
+    md5sum "$1"|awk '{print $1}'
+}
+
+#creates md5s
+create_pkg_md5() {
+    if [[ "x$1" == "x" ]]; then
+        err_exit "Please specify the version to use"
+        return
+    fi
+    
+    #set variables and download urls
+    version="$1"
+    dl_root="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/$version"
+    
+    #all files, names, urls
+    names=("Linux_64bit" "Darwin_64bit" "Darwin_32bit" '("Windows_32bit", "Windows_64bit")' "Linux_32bit")
+    files=("xulrunner-$version.en-US.linux-x86_64.tar.bz2" "xulrunner-$version.en-US.mac-x86_64.sdk.tar.bz2" "xulrunner-$version.en-US.mac-i386.sdk.tar.bz2" "xulrunner-$version.en-US.win32.zip" "xulrunner-$version.en-US.linux-i686.tar.bz2"
+    
+    #output config file
+    echo "software = {"
+    
+    name="Linux_64bit"
+    fname="xulrunner-$version.en-US.linux-x86_64.tar.bz2"
+    url="$dl_root/runtime/$fname"
+    exename="xulrunner/xulrunner"
+    
+    #extract
+    mkdir "$fname.dir"
+    cd "$fname.dir"
+    extract "../$fname"
+    
+    #mdsum
+    md=$(mdsum "../$fname")
+    mdexe=$(mdsum "$exename")
+    
+    #clean up
+    cd ../
+    rm -rf "$fname.dir"
+    
+    cat <<endl
+    "$type": {
+       "url": "$url",
+       "md5": "$md",
+       "bin": {
+           "path": "$exename",
+           "sig": "$mdexe"
+       }
+    },
+endl
+    
+}
+
 test(){
 for file in *.zip :
 do
@@ -84,6 +137,7 @@ if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
             ""|d|D)
                 rm -rf "$dldirectory"
                 echo "Deleted!"
+                
                 mkdir "$dldirectory"
                 invalid=false
                 
@@ -94,6 +148,7 @@ if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
             a|A)
                 mv "$dldirectory" "$dldirectory.`date`"
                 echo "Moved!"
+                
                 mkdir "$dldirectory"
                 invalid=false
                 
@@ -108,10 +163,12 @@ if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
         esac
     done
 else
-    echo "No prior runs, downloading..."
+    echo "No prior runs, downloading..." 
     [[ -d "$dldirectory" ]] || mkdir "$dldirectory" # make directory if not exist
     cd "$dldirectory"
     download_version "$xulversion"
 fi
+
+pkgs="$(create_pkg_md5 "$xulversion")"
 
 echo "done!"
