@@ -21,6 +21,12 @@ extract () {
     fi
 }
 
+#extract md5 sum
+mdsum() {
+    md5sum "$1"|awk '{print $1}'
+}
+
+#output error and die
 err_exit() {
     echo "$1" >&2
     exit
@@ -44,11 +50,6 @@ download_version() {
         wget "$url"
     done
 }
-
-mdsum() {
-    md5sum "$1"|awk '{print $1}'
-}
-
 #creates md5s
 create_pkg_md5() {
     if [[ "x$1" == "x" ]]; then
@@ -56,13 +57,17 @@ create_pkg_md5() {
         return
     fi
     
-    #echo "':'$PWD;"
     #set variables and download urls
     version="$1"
+    if [[ "x$2" == "xtrue" ]]; then
+        keep=true
+    else
+        keep=false
+    fi
     dl_root="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/$version"
     
     #all files, names, urls
-    names=('"Linux_64bit"' '"Darwin_64bit"' '"Darwin_32bit"' '("Windows_32bit", "Windows_64bit")"' '"Linux_32bit"')
+    names=('"Linux_64bit"' '"Darwin_64bit"' '"Darwin_32bit"' '("Windows_32bit", "Windows_64bit")' '"Linux_32bit"')
     files=("xulrunner-$version.en-US.linux-x86_64.tar.bz2" "xulrunner-$version.en-US.mac-x86_64.sdk.tar.bz2" "xulrunner-$version.en-US.mac-i386.sdk.tar.bz2" "xulrunner-$version.en-US.win32.zip" "xulrunner-$version.en-US.linux-i686.tar.bz2")
     urlPrefixes=("runtime" "sdk" "sdk" "runtime" "runtime")
     exes=("xulrunner/xulrunner" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner/xulrunner.exe" "xulrunner/xulrunner")
@@ -79,22 +84,36 @@ create_pkg_md5() {
         exename="${exes[$i]}"
         
         #extract if not extracted
+        echo "Extracting $type" >&2
         if [[ ! -d "$fname.dir" ]]
         then
             mkdir "$fname.dir"
             cd "$fname.dir"
-            extract "../$fname"
+            extract "../$fname" 1>&2 >/dev/null
+        else
+            cd "$fname.dir"
+            echo "Using previous extraction..." >&2
         fi
         
         #mdsum
+        echo "Calculating md5 sums" >&2
         md=$(mdsum "../$fname")
         mdexe=$(mdsum "$exename")
         
         #clean up
         cd ../
-  #      rm -rf "$fname.dir"
+        if [[ $keep == false ]]
+        then
+            echo "Removing extraction" >&2
+            rm -rf "$fname.dir"
+        fi
         
         #output script
+        if [[ $(($i + 1)) < ${#urlPrefixes[*]} ]];then
+            coma=","
+        else
+            coma=""
+        fi
         cat <<endl
     $type: {
        "url": "$url",
@@ -103,37 +122,19 @@ create_pkg_md5() {
            "path": "$exename",
            "sig": "$mdexe"
        }
-    }
+    }$coma
 endl
     
-    
     done
-}
-
-tesfsfsfsft(){
-for file in *.zip :
-do
-    echo $file
-    mkdir $file.dir
-    cd $file.dir
-    extract ../$file
-    echo "----"
-    [[ -e xulrunner/xulrunner ]] && md5sum xulrunner/xulrunner
-    [[ -e xulrunner/xulrunner.exe ]] && md5sum xulrunner/xulrunner.exe
-    [[ -e xulrunner-sdk/bin/xulrunner-bin ]] && md5sum xulrunner-sdk/bin/xulrunner-bin
-    echo "---"
-    cd ../
-    rm -rf $file.dir
-done
-
+    echo "}"
 }
 
 if [[ "x$1" == "x" ]]; then
-    err_exit "Please specify the version to download. ex: '$0 10.0.2'"
+    err_exit "Please specify the version to download. ex: '$0 10.0.2 [--keep]'"
 fi
 
 xulversion="$1"
-dldirectory="xulversions"
+dldirectory="xulrunner.$xulversion"
 
 #have we run recently, and therfore the directory exists and has files in it?
 if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
@@ -155,6 +156,7 @@ if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
                 
                 cd "$dldirectory"
                 download_version "$xulversion"
+                cd ../
                 ;;
             #archive
             a|A)
@@ -166,6 +168,7 @@ if [[ -d "$dldirectory" && "$(ls -A "$dldirectory")" ]]; then
                 
                 cd "$dldirectory"
                 download_version "$xulversion"
+                cd ../
                 ;;
             #use
             u|U)
@@ -179,8 +182,19 @@ else
     [[ -d "$dldirectory" ]] || mkdir "$dldirectory" # make directory if not exist
     cd "$dldirectory"
     download_version "$xulversion"
+    cd ../
 fi
-cd "$dldirectory"
-create_pkg_md5 "$xulversion"
 
-echo "done!"
+#check if we should keep files
+keep=false
+if [[ "x$2" == "x--keep" || "x$2" == "x-keep" || "x$2" == "x-k" || "x$2" == "xkeep" ]]; then
+    keep=true
+fi
+outfile="$xulversion._config.py.head"
+
+#generate md5's and save to $outfile
+cd "$dldirectory"
+create_pkg_md5 "$xulversion" $keep > "../$outfile"
+
+echo "Wrote to $outfile"
+#done!
