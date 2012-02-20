@@ -56,49 +56,61 @@ create_pkg_md5() {
         return
     fi
     
+    #echo "':'$PWD;"
     #set variables and download urls
     version="$1"
     dl_root="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/$version"
     
     #all files, names, urls
-    names=("Linux_64bit" "Darwin_64bit" "Darwin_32bit" '("Windows_32bit", "Windows_64bit")' "Linux_32bit")
-    files=("xulrunner-$version.en-US.linux-x86_64.tar.bz2" "xulrunner-$version.en-US.mac-x86_64.sdk.tar.bz2" "xulrunner-$version.en-US.mac-i386.sdk.tar.bz2" "xulrunner-$version.en-US.win32.zip" "xulrunner-$version.en-US.linux-i686.tar.bz2"
+    names=('"Linux_64bit"' '"Darwin_64bit"' '"Darwin_32bit"' '("Windows_32bit", "Windows_64bit")"' '"Linux_32bit"')
+    files=("xulrunner-$version.en-US.linux-x86_64.tar.bz2" "xulrunner-$version.en-US.mac-x86_64.sdk.tar.bz2" "xulrunner-$version.en-US.mac-i386.sdk.tar.bz2" "xulrunner-$version.en-US.win32.zip" "xulrunner-$version.en-US.linux-i686.tar.bz2")
+    urlPrefixes=("runtime" "sdk" "sdk" "runtime" "runtime")
+    exes=("xulrunner/xulrunner" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner/xulrunner.exe" "xulrunner/xulrunner")
     
     #output config file
     echo "software = {"
     
-    name="Linux_64bit"
-    fname="xulrunner-$version.en-US.linux-x86_64.tar.bz2"
-    url="$dl_root/runtime/$fname"
-    exename="xulrunner/xulrunner"
-    
-    #extract
-    mkdir "$fname.dir"
-    cd "$fname.dir"
-    extract "../$fname"
-    
-    #mdsum
-    md=$(mdsum "../$fname")
-    mdexe=$(mdsum "$exename")
-    
-    #clean up
-    cd ../
-    rm -rf "$fname.dir"
-    
-    cat <<endl
-    "$type": {
+    #loop over all files
+    for (( i=0; i<${#urlPrefixes[*]}; i++ ));
+    do
+        type="${names[$i]}"
+        fname="${files[$i]}"
+        url="$dl_root/${urlPrefixes[$i]}/$fname"
+        exename="${exes[$i]}"
+        
+        #extract if not extracted
+        if [[ ! -d "$fname.dir" ]]
+        then
+            mkdir "$fname.dir"
+            cd "$fname.dir"
+            extract "../$fname"
+        fi
+        
+        #mdsum
+        md=$(mdsum "../$fname")
+        mdexe=$(mdsum "$exename")
+        
+        #clean up
+        cd ../
+  #      rm -rf "$fname.dir"
+        
+        #output script
+        cat <<endl
+    $type: {
        "url": "$url",
        "md5": "$md",
        "bin": {
            "path": "$exename",
            "sig": "$mdexe"
        }
-    },
+    }
 endl
     
+    
+    done
 }
 
-test(){
+tesfsfsfsft(){
 for file in *.zip :
 do
     echo $file
@@ -168,7 +180,7 @@ else
     cd "$dldirectory"
     download_version "$xulversion"
 fi
-
-pkgs="$(create_pkg_md5 "$xulversion")"
+cd "$dldirectory"
+create_pkg_md5 "$xulversion"
 
 echo "done!"
