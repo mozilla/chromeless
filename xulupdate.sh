@@ -69,7 +69,7 @@ create_pkg_md5() {
     #all files, names, urls
     names=('"Linux_64bit"' '"Darwin_64bit"' '"Darwin_32bit"' '("Windows_32bit", "Windows_64bit")' '"Linux_32bit"')
     files=("xulrunner-$version.en-US.linux-x86_64.tar.bz2" "xulrunner-$version.en-US.mac-x86_64.sdk.tar.bz2" "xulrunner-$version.en-US.mac-i386.sdk.tar.bz2" "xulrunner-$version.en-US.win32.zip" "xulrunner-$version.en-US.linux-i686.tar.bz2")
-    urlPrefixes=("runtime" "sdk" "sdk" "runtime" "runtime")
+    urlPrefixes=("runtimes" "sdk" "sdk" "runtimes" "runtimes")
     exes=("xulrunner/xulrunner" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner-sdk/bin/xulrunner-bin" "xulrunner/xulrunner.exe" "xulrunner/xulrunner")
     
     #output config file
@@ -116,12 +116,12 @@ create_pkg_md5() {
         fi
         cat <<endl
     $type: {
-       "url": "$url",
-       "md5": "$md",
-       "bin": {
-           "path": "$exename",
-           "sig": "$mdexe"
-       }
+        "url": "$url",
+        "md5": "$md",
+        "bin": {
+            "path": "$exename",
+            "sig": "$mdexe"
+        }
     }$coma
 endl
     
@@ -190,7 +190,7 @@ keep=false
 if [[ "x$2" == "x--keep" || "x$2" == "x-keep" || "x$2" == "x-k" || "x$2" == "xkeep" ]]; then
     keep=true
 fi
-outfile="$xulversion._config.py.head"
+outfile="_config.py.$xulversion.head"
 
 #generate md5's and save to $outfile
 cd "$dldirectory"
