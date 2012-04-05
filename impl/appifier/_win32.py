@@ -44,9 +44,10 @@ class OSAppifier(object):
         final_binary_path = os.path.join(output_dir, app_info.name + ".exe")
         shutil.copy(xulrunner_stub_path,  final_binary_path)
 
-        # and move the mozcrt19.dll file into place (next to the binary that
-        # requires it)
-        dllsrc = os.path.join(output_dir, "xulrunner", "mozcrt19.dll")
+        # With XULRunner 11.0 you may need to copy "gkmedias.dll" from the 
+        # xulrunner directory to the root directory
+        # See https://developer.mozilla.org/en/XULRunner/Deploying_XULRunner_1.8
+        dllsrc = os.path.join(output_dir, "xulrunner", "gkmedias.dll")
         shutil.move(dllsrc, output_dir)
 
         return { "xulrunner_app_dir": output_dir, "output_dir": output_dir } 
