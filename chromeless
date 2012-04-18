@@ -21,6 +21,7 @@ if 'CUDDLEFISH_ROOT' not in os.environ:
 # set the "build directory", where we'll output built artifacts, download xulrunner,
 # etc.
 build_dir = os.path.join(cuddlefish_root, "build")
+doc_dir = os.path.join(cuddlefish_root, "docs")
 
 # add our own python-lib path to the python module search path.
 python_lib_dir = os.path.join(cuddlefish_root, "impl")
@@ -65,6 +66,8 @@ if len(sys.argv) > 1:
         if len(sys.argv) > 2:
             browserToLaunch = findBrowserHTML(sys.argv[2])
     elif sys.argv[1] == "docs":
+        if not os.path.exists(doc_dir):
+          os.makedirs(doc_dir)
         executionMode = "sdocs" 
         print "Generating documentation"
     elif sys.argv[1] == "tests":
