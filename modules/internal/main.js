@@ -174,8 +174,8 @@ exports.main = function main(options, testCallbacks) {
        they set inner document width and height */
     appWindow = new contentWindow.Window({
         url: startPage,
-        width: 800,
-        height: 600,
+        width: ai.width != undefined ? ai.width : 800,
+        height: ai.height != undefined ? ai.height : 600,
         resizable: ai.resizable ? true : false,
         menubar: ai.menubar ? true : false,
         injectProps : {
