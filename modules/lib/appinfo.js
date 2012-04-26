@@ -121,6 +121,14 @@ function validate(manf) {
       required: true,
       check: nonEmptyStringCheck
     },
+    width: {
+      required: false,
+      check: isInteger
+    },
+    height: {
+      required: false,
+      check: isInteger
+    },
     resizable: {
       required: false,
       check: booleanCheck
