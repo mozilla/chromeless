@@ -8,7 +8,7 @@ ID=${developer_email}
 
 [Gecko]
 MinVersion=6.0.2
-MaxVersion=11.0
+MaxVersion=12.0
 
 [XRE]
 EnableExtensionManager=true
