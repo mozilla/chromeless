@@ -1,42 +1,42 @@
 software = {
     "Linux_64bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/13.0.1/runtimes/xulrunner-13.0.1.en-US.linux-x86_64.tar.bz2",
-        "md5": "cab16e288085f82b4a20c86f96e47cc9",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0.1/runtimes/xulrunner-14.0.1.en-US.linux-x86_64.tar.bz2",
+        "md5": "da461d364eda8842a86d353da747ce9b",
         "bin": {
             "path": "xulrunner/xulrunner",
-            "sig": "142eff9ce0db666e960b5d538ed7bc62"
+            "sig": "17933253745b7636f542a8641e908907"
         }
     },
     "Darwin_64bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/13.0.1/sdk/xulrunner-13.0.1.en-US.mac-x86_64.sdk.tar.bz2",
-        "md5": "a9b3847b3fa644d9d57198fb4cafe967",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0.1/sdk/xulrunner-14.0.1.en-US.mac-x86_64.sdk.tar.bz2",
+        "md5": "4b8576fc29da7ae1411e2c508f7b45a0",
         "bin": {
             "path": "xulrunner-sdk/bin/xulrunner-bin",
-            "sig": "decef764f4a0dc2ee8754dfa6eefe12e"
+            "sig": "45963475f9bf17a13b409d4d9dcd2141"
         }
     },
     "Darwin_32bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/13.0.1/sdk/xulrunner-13.0.1.en-US.mac-i386.sdk.tar.bz2",
-        "md5": "4472a3265b332c2d0066d316e739a3ae",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0.1/sdk/xulrunner-14.0.1.en-US.mac-i386.sdk.tar.bz2",
+        "md5": "592680517b940b3434b54b3e2f6f0473",
         "bin": {
             "path": "xulrunner-sdk/bin/xulrunner-bin",
-            "sig": "5c317cd130023e903a4e09323bc666fd"
+            "sig": "5ddcbfab1eb7f5675285cf374b00b5bd"
         }
     },
     ("Windows_32bit", "Windows_64bit"): {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/13.0.1/runtimes/xulrunner-13.0.1.en-US.win32.zip",
-        "md5": "006a7049ab1b1bca81fcd19bfd06e3e5",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0.1/runtimes/xulrunner-14.0.1.en-US.win32.zip",
+        "md5": "a0006d279dfdc89dbfcfdb741f3b4363",
         "bin": {
             "path": "xulrunner/xulrunner.exe",
-            "sig": "875922b027dcf40bb6d70804b5fb1d12"
+            "sig": "a8413934b428cf5ffd53cdd8ba57b3bc"
         }
     },
     "Linux_32bit": {
-        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/13.0.1/runtimes/xulrunner-13.0.1.en-US.linux-i686.tar.bz2",
-        "md5": "d58585e18fff3f6da9f73a88e7593383",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/14.0.1/runtimes/xulrunner-14.0.1.en-US.linux-i686.tar.bz2",
+        "md5": "7ef38dd388b7e902e798825ed74cee5c",
         "bin": {
             "path": "xulrunner/xulrunner",
-            "sig": "142eff9ce0db666e960b5d538ed7bc62"
+            "sig": "17933253745b7636f542a8641e908907"
         }
     }
 }
