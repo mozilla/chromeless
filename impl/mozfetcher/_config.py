@@ -17,7 +17,7 @@ software = {
         }
     },
     ( "Windows_32bit", "Windows_64bit" ): {
-        "url": "http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0.2/runtimes/xulrunner-6.0.2.en-US.win32.zip",
+        "url": "http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0.2/runtimes/xulrunner-6.0.2.en-US.win32.zip",
         "md5": "173502a8f48d8eb74baa9c7326d91733",
         "bin": {
             "path": "xulrunner/xulrunner.exe",
