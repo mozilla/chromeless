@@ -24,7 +24,7 @@ behaviors are defined by HTML, CSS, and javascript provided by the developer.
 This "main app HTML" is basically a normal webpage, but with several important differences:
 
   * The HTML file has access to a 'window.require()' function that it can use to
-    access new APIs that give it increased priviledges.
+    access new APIs that give it increased privileges.
 
   * (untrusted) Web content can be rendered inside iframes which are children of the
     top level "main app HTML".  This content cannot tell its rendered inside an iframe,
